@@ -1,0 +1,184 @@
+Question label (short version),Full question text,Question type,Relevant expertise,Notes (short),Metaculus link,Type of Metaculus question,Source/series (Metaculus),Variants to elicit,PQ,Question Code
+Focal: Average production cost of cultured (chicken) per kg,"“What will be the average production cost (per edible kg) of cultured chicken meat in the given years, expressed in value units, across all large-scale plants in the world”
+...
+
+Average Production Cost (AC): (Annualized capital charge + all operating costs)  ÷ annual kilograms of edible cultured-meat output
+
+* Capital charge: From total capital investment (TCI) amortized over the plant life from a new firm that would enter this market, adjusted for market risk 
+* Operating costs include macronutrient & micronutrient media, utilities, consumables, labor, maintenance, and plant overhead.
+
+Does not include 
+
+* R&D amortisation or clinical/regulatory approval costs (sunk costs)
+* Distribution, retail markups
+* Downstream product formulation (making “nuggets” etc.)
+* Marketing, packaging, branding
+* Corporate overhead
+* Taxes, duties, profits over and above capital costs
+
+
+
+Why average production cost? 
+
+Standard economic theory predicts that under specific ‘best-case’ conditions, firms will operate at the minimum point of their average total cost curves and prices will converge to this level, yielding zero economic profits. This essentially represents the lowest possible sustainable price in a free market.
+
+If firms have market power, e.g, because of barriers to entry, they will set higher prices (absent regulation). AC would still be an informative lower bound.
+
+​
+
+Cultured-chicken meat: Chicken-imitating products. We are considering the weight of these products before any mixture with plant products.
+
+Why chicken; considerations:
+
+Among the cultured meat products discussed, chicken seems to have the highest stakes for animal welfare (at least if we assume ‘like substitutes for like’). 
+
+However, more of the TEAs consider bovine or generic-mammal cells. Forecasters could still base their estimates on these as evidence, and explain their conversion method (e.g., density adjustments).
+
+
+
+Why ""before any mixture with plant products""?  
+
+Animal cells may be mixed with a substantial volume of plant-based inputs to reduce costs. We don't want evaluators and forecasters to consider ""what share will be mixed in"". We want them to focus on the cost of the most expensive and innovative part of this production.
+
+
+
+Years
+
+* [Very-short-run] = end of 2026 
+* [Short-Run] = Dec 31, 2031
+* [Medium-run] = Dec 31, 2036
+* [Longer-run] = Dec 31, 2051 
+
+
+
+Why these years:  These are the years Rethink Priorities chose for their forecasting work (starting a few years ago), perhaps arbitrarily. Choosing these years allows us to harmonize with this previous work and compare or pool the estimates.  RP considered 2051 for the  “30-year terminal horizon”, perhaps the point at which production would have more or less achieved an efficient optimum. 
+
+
+
+Value units: In inflation-adjusted (CPI) 2025 US dollars.
+
+* Optional alternative: Expressed relative to the average global cost of the comparable meat product, say average chicken meat (whole chicken minus bones etc.). This comparative metric might be more useful if we anticipate large changes in the structure of the economy.
+
+
+Large-scale plants: Plants producing more than 2 kt/yr.  We exclude the smallest plants, as these may represent experimental R&D work.
+","(1) PQ for evaluation,(3) Metaculus",TEA and forecasting,,https://www.metaculus.com/c/unjournal/38815/what-will-be-the-average-production-cost-per-edible-kg-of-cell-cultured-chicken-meat-at-the-end-of-the-following-years-between-2026-2051-across-all-large-scale-plants-in-the-world/,Unjournal community,Unjournal PQ,"1. Marginal Cost at Scale. While AC incorporates the capital expenditure involved in getting facilities up and running, marginal cost solely captures the cost of producing each additional kilogram of product. While these marginal costs are unlikely to reflect the sustainable market price of CM, they are important for modeling the sensitivity to market power and the nature of competition, and to considering the marginal impact of subsidies.
+2. Average Cost Function. Careful forecasters are likely to model the relationship between costs plant capacity, and global production (e.g., a  power law scaling). Explicitly stating this would help us consider how robust the AC forecast is to alternative assumptions, and to extrapolate to different scenarios.",Cell-cultured meat cost and price,CM_01
+Is cultured meat development a good investment from an animal welfare POV?,"What is the expected-value (and probability distribution) of the impact on animal welfare from funding the development of cell-cultured meat?
+Evaluators could choose to answer this in terms of:
+(i) marginal (aka incremental) funding, 
+(ii) very high levels of funding, or 
+(iii) the impact relative to the best alternative animal welfare interventions.",(2) Goal-oriented,,,,,,,Cell-cultured meat cost and price,CM_02
+"Predict-experts: Average production cost of cultured (chicken) per kg (For Metaculus forecasters, not for the PQ evaluators) ","At [resolution date ~Dec. 2026], what will be the median of the linearly aggregated beliefs among the set of Unjournal evaluators and experts over the average production cost (per edible kg) of cultured chicken meat at the end of 2051 across all large-scale plants in the world” (I.e., for this direct question for 2051, using beliefs given on this platform.)
+
+Linearly aggregated: Essentially, adding the pdfs (distributions) vertically and re-scaling these to sum to probability=1.  This is not the standard Metaculus aggregation (see discussion here [link]). 
+
+Evaluators and experts: Any of the following people who respond to this question – 
+
+1. Evaluators of papers tied to the Unjournal Cultured Meat Pivotal question (list of names or aliases to be provided by Unjournal to Metaculus; we anticipate 4 such evaluators)
+2. Any authors of the papers these evaluators chose to focus their evaluations on (UJ to identify these names or aliases to Metaculus) 
+3. Consultants: Trevor Woolley, Jacob Peacock, and Jacob Schmiess
+4. Up to 2 additional consultants to be named by David Reinstein
+5. Up to 4 additional stakeholder experts from animal welfare organizations (not including the Good Food Institute nor any other organizations mainly focused on cultured meat), to be named by David Reinstein",(3) Metaculus,,,https://www.metaculus.com/c/unjournal/39317/predict-the-experts-beliefs-over-cost-of-cultured-meat-by-2051/,Unjournal community,Unjournal PQ,,Cell-cultured meat cost and price,CM_03
+How many chickens will be slaughtered for meat globally in the following years?,"How many chickens will be slaughtered for meat globally in the following years?
+
+Years: 2025, 2032, 2052, 2122
+
+This question will resolve as the total number of chickens slaughtered for meat in the respective year for the whole world according to Our World in Data.  For example, this figure was 70.77 billion in the year 2020.
+
+The resolution for each year will be determined by the earliest credible data reported by Our World in Data; later updates or revisions by OWID will be irrelevant to the question resolution.
+
+If data reported by OWID contains a significant error (aside from typical adjustments from scheduled data releases), Metaculus may re-resolve the question at their sole discretion.  If OWID no longer reports data for a relevant year, Metaculus may use an alternative credible source of data at their discretion, or resolve as Ambiguous.
+
+If humanity goes extinct or ceases to have a developed society prior to a listed year, that sub-question will resolve as Ambiguous.
+
+Fine Print
+
+* If humanity establishes off-Earth colonies and Our World in Data adds a ""Total Humanity"" measure (or equivalent) to the chart, that measure will be used instead of the ""World"" measure.
+* For the purposes of this question, humans will be considered to be extinct if the total human population is less than 5% of their previous peak population.  ""Humans"" will be defined as members of a species with enough biological similarity to reproduce with typical 2022 humans with medical assistance which could be available in the year 1900.
+
+""Ceasing to have a developed society"" will be defined as world GDP declining to below 100 billion USD (in2021 USD, with adjustments forPurchasing Power Parity)",(3) Metaculus,,,https://www.metaculus.com/questions/12702/chickens-slaughtered-for-meat/,Moderated (Metaculus),"Ryan Beck,Forecasting OWID",,Cell-cultured meat cost and price,CM_04
+How many metric tons of ≥51% cultured meat costing <$10/kg will be sold from 2020 to 2050?,"How many metric tons of ≥51% cultured meat costing <$10/kg will be sold from 2020 to 2050?
+
+Example: the year 2025 will resolve as the average of the years 2021, 2022, 2023, 2024, 2025.
+
+Resolution will be via industry statistics from credible sources akin to the FAO & USDA (such as independent credible outside analysts, governments, inter-governmental agencies, the FAO itself, & The Good Food Institute's market research reports.) Evidence of the cultured meat containing a product's listing price and composition should come from credible media reports, online supermarket listings, or from at least three reports sourced from social media and/or submissions by Metaculus users/admin.
+
+Fine Print:
+
+* Cultured meat defined as ≥51% of the “meat”, by weight, is produced directly from animal cells (as opposed to plant protein, yeast, farmed animals). Future Meat is aiming to have a 45% chicken product & a 60% lamb product, and the rest 40-55% plant protein and water respectively (FoodNavigator, 2021). The former would not count, the latter would if this refers to weight.
+* Cultured meat here refers to meat and seafood, including but not limited to cells from fish, crustaceans, chickens, pigs, cows, sheep, turkeys.
+* The following sales do not identify the price of the product for the purpose of this question: samples given out for free, sales discounted with one-time discounts or discounts derived from coupons, or programmes such as loyalty schemes or credit card membership, amongst other pricing schemes valid for limited time or only available to a subset of customers. ""Pop-up"" restaurants that exist for a very short amount of time (such as those at a convention like CES) do not count toward resolution.
+* All figures are in 2022 inflation-adjusted USD but not PPP adjusted for location, as we believe is standard.
+* All figures are global unless otherwise stated
+* Cellular/cultivated/cultured/cell-cultured/clean/lab-grown meat are interchangeable terms used to refer to meat produced from in vitro cultivation of animal cells.
+* Cultured meat refers to any type of cut (ground meat or whole tissue like chicken breast or beef steak)
+* These questions are conditional on no transformative artificial intelligence or globally catastrophic disaster (the human population decreases by at least 10% during any period of 5 years or less occurring by the date in question). Note that by ""transformative artificial intelligence"" we mean AI-obviously-identifiable-as-such before with effects clearly comparable to or greater than the first industrial revolution: AI that precipitates either (a) economic growth of >=30% per year for at least a few years or, conversely, (b) an irreversible extinction, curtailment, or a plateau of human growth and potential"". Advances in AI with effects similar to the introduction of electricity or the internet should not be excluded, and you may wish to explicitly model it in your calculations (if you assume this is sufficiently likely) (Eg, AI assisted bioreactor design or metabolic engineering).",(3) Metaculus,,,https://www.metaculus.com/questions/10396/sales-volume-of-51-cultured-meat-10kg/,Moderated (Metaculus),"Cultured meat tournament,Animal welfare series",,Cell-cultured meat cost and price,CM_05
+How many metric tons of ≥51% cultured meat will be sold from 2020 to 2050?,"How many metric tons of ≥51% cultured meat will be sold from 2020 to 2050?
+
+Example: the year 2025 will resolve as the average of the years 2021, 2022, 2023, 2024, 2025.
+
+Resolution will be from industry statistics from credible sources akin to the FAO & USDA (such as independent credible outside analysts, governments, inter-governmental agencies, the FAO itself, & The Good Food Institute's market research reports.)
+
+Fine Print
+
+* Cultured meat defined as ≥51% of the “meat”, by weight, is produced directly from animal cells (as opposed to plant protein, yeast, farmed animals). Future Meat is aiming to have a 45% chicken product & a 60% lamb product, and the rest 40-55% plant protein and water respectively (FoodNavigator, 2021). The former would not count, the latter would if these refer to weight.
+* Cultured meat here refers to meat and seafood, including but not limited to cells from fish, crustaceans, chickens, pigs, cows, sheep, turkeys.
+* The product must be for sale, and free samples do not count. ""Pop-up"" restaurants that exist for a very short amount of time (such as those at a convention like CES) do not count toward resolution.
+* All figures are global unless otherwise stated
+* Cellular/cultivated/cultured/cell-cultured/clean/lab-grown meat are interchangeable terms used to refer to meat produced from in vitro cultivation of animal cells.
+* Cultured meat refers to any type of cut (ground meat or whole tissue like chicken breast or beef steak)
+* These questions are conditional on no transformative artificial intelligence or globally catastrophic disaster (the human population decreases by at least 10% during any period of 5 years or less occurring by the date in question). Note that by ""transformative artificial intelligence"" we mean AI-obviously-identifiable-as-such before with effects clearly comparable to or greater than the first industrial revolution: AI that precipitates either (a) economic growth of >=30% per year for at least a few years or, conversely, (b) an irreversible extinction, curtailment, or a plateau of human growth and potential"". Advances in AI with effects similar to the introduction of electricity or the internet should not be excluded, and you may wish to explicitly model it in your calculations (if you assume this is sufficiently likely) ( Eg, AI assisted bioreactor design or metabolic engineering).",(3) Metaculus,,,https://www.metaculus.com/questions/10395/sales-volume-of-51-cultured-meat/,Moderated (Metaculus),"Cultured meat tournament,Animal welfare series",,Cell-cultured meat cost and price,CM_06
+Largest single CM facility capacity by 2030,"What will be the largest cultivated meat production capacity, in metric tons per year, of a single facility by January 1, 2030?
+
+This question will resolves as the highest reported production capacity, in metric tons per year, of a single physical facility that produces cultivated meat products by January 1, 2030.
+
+The following types of evidence would decide the question:
+
+* A company publication (such as a press release) or a credible media report which reports the estimated maximum amount in metric tons that a single company produced within a 365 day time period.
+* Statements by other credible sources (such as independent credible outside analysts, governments, inter-governmental agencies) further qualify
+
+Resolution requires the cultivated meat production facility to be operational, but it need not run at maximum production capacity. For a product to be deemed a ""cultivated meat product"", it must contain at least 20% cultivated meat by weight (where cultivated meat is here defined as meat that is grown primarily or entirely in cell culture, rather than in an animal’s body).
+
+The production process may involve any medium, such as scaffolding techniques, cultivators or bioreactors. It may be further co-owned or co-operated by multiple organizations",(3) Metaculus,,,https://www.metaculus.com/questions/7035/cultivated-meat-production-capacity-2030/,Moderated (Metaculus),Alt-Protein tournament,,Cell-cultured meat cost and price,CM_07
+"What will the lowest retail price, in USD per kg, of any product containing 50% clean meat be, in the calendar year 2029?","What will the lowest retail price, in USD per kg, of any product containing 50% clean meat be, in the calendar year 2029?
+
+Resolution
+
+This question resolves as the lowest reported price, in 2019 USD per kg, of any product listed in a retail supermarkets that contains at least 50% clean meat by weight. Qualifying retail supermarkets are those based in either the U.S. or based in the European Union as of August, 2019, and Switzerland.
+
+Clean meat is here defined as meat that is grown primarily or entirely in cell culture, rather than in an animal’s body. Qualifying meats are beef, any type of poultry, pork or fish. The clean meat product must be for human consumption. Moreover, the product must have a weight exceeding 40 grams (so that the clean meat content weighs at least 20 grams). Mixtures of clean meat and other products qualify if it contains at least 50% clean meat by weight.
+
+Evidence of the clean meat containing product's listing price and composition should come from credible media reports, online supermarket listings, or from at least three reports sourced from social media and/or submissions by Metaculus users/admin.
+
+The following sales do not identify the price of the product for the purpose of this question: samples given out for free, sales discounted with one-time discounts or discounts derived from coupons, or programmes such as loyalty schemes or credit card membership, amongst other pricing schemes valid for limited time or only available to a subset of customers.
+
+A supermarket is here defined as the company that operates physical self-service retail markets that sell foods and household merchandise. The supermarket must have at least ten physical stores (although the clean meat product need only be on offer in at least one store). A list of examples of U.S. based supermarkets that qualify today can be found here. These will continue to qualify as supermarkets as long as these operate at least ten physical self-service retail markets.
+
+Prices are to be adjusted to 2019 prices using a widely used national CPI. Credibility of estimates shall be decided by Metaculus admin. In case the retail price is denominated in currencies other than USD, the conversion shall be made using the relevant spot exchange rate at the time of resolving.
+
+If no credible reports indicate that clean meat products containing at least 50% clean meat are sold in the calendar year 2029 in retail supermarkets based in either the U.S. or based in the European Union as of August, 2019, and Switzerland, the question resolves ambiguous.",(3) Metaculus,,,https://www.metaculus.com/questions/3104/what-will-the-lowest-retail-price-in-usd-per-kg-of-any-product-containing-50-clean-meat-be-in-the-calendar-year-2029/,Moderated (Metaculus),Animal welfare series,,Cell-cultured meat cost and price,CM_08
+"How much revenue will the U.S. market for clean meat generate, in the fiscal year 2030, in millions of USD?","How much revenue will the U.S. market for clean meat generate, in the fiscal year 2030, in millions of USD?
+
+Resolution: 
+
+This question resolves as a credible estimate of the revenue by companies generated from the sale of clean-meat containing products for human consumption in the U.S., in the [U.S. fiscal year](https://en.wikipedia.org/wiki/Fiscal_year#United_States) 2030. The figure shall be given in millions of USD, in 2019 prices. Qualifying products need to contain at least 1% of clean meat by weight. Clean meat is here defined as meat that is grown primarily or entirely in cell culture, rather than in an animal’s body. 
+
+Estimates should originate from a credible sources, preferably a nonprofit research organisation focusing on clean meat and related technologies, independent market research companies, consultancy reports on clean meat, journal publications by researchers not affiliated with clean meat companies. In the case a range of revenue numbers are reported, the question shall resolve as the median of this range. In the case multiple estimates are found upon resolving, the admin may choose to resolve this question as the median of different estimates, or resolve it per the estimate deemed most credible. 
+
+The question resolves ambiguously if, by the start of 2033, no credible estimates of the revenue by U.S. based companies generated from clean-meat containing products sales for the fiscal year 2030 can be found. 
+
+The question resolves in terms of 2019 USD. Hence, estimates are to be adjusted for inflation using a suitable [Bureau of Labour Statistics' CPI](https://www.bls.gov/cpi/).",(3) Metaculus,,,https://www.metaculus.com/questions/3077/how-much-revenue-will-the-us-market-for-clean-meat-generate-in-the-fiscal-year-2030-in-millions-of-usd/,Moderated (Metaculus),Animal welfare series,,Cell-cultured meat cost and price,CM_09
+Predict-experts: Animal welfare benefit of cultured meat vs best alternative Animal Welfare intervention,"At [resolution date ~Dec. 2026], what will be the median probability (linearly aggregated beliefs among the set of Unjournal evaluators and experts) that “the animal welfare benefit of (having) donated $100,000 in 2026 to fund the development and availability of cultured meat (~chicken-imitating) I look see the animal welfare benefit of having donated the same amount to support The Human League’s corporate animal welfare campaigns (for chickens). [(measured by your preferred ‘welfare-footprint-like metric’ ]","(3) Metaculus,(4) Candidate PQ",,This is also goal-oriented,https://www.metaculus.com/c/unjournal/40617/median-of-experts-beliefs-of-cultured-meats-relative-animal-welfare-benefit/,Unjournal community,Unjournal PQ,,Cell-cultured meat cost and price,CM_10
+Animal welfare benefit of cultured meat vs best alternative Animal Welfare intervention,"Will the animal welfare benefit* of having donated $100,000 in 2026 to fund the development and availability of cultured meat (~chicken-imitating) exceed the benefit of having donated the same amount to support The Human League’s corporate animal welfare campaigns (for chickens)? [Binary question, state a probability between 0 and 1]
+
+*measured by your preferred ‘welfare-footprint-like metric’ ","(3) Metaculus,(4) Candidate PQ,(2) Goal-oriented",,This is also goal-oriented,https://www.metaculus.com/c/unjournal/40925/cultured-meat-vs-corporate-campaign-animal-welfare-benefit/,Unjournal community,Unjournal PQ,,Cell-cultured meat cost and price,CM_11
+"Will most cultured meat (by volume) be produced with hydrolysates replacing growth factors in 2036? ","Will most cultured meat (by volume) be produced using hydrolysates as a replacement for expensive purified growth factors (FGF, TGF-β, insulin, etc.)  in 2036?  [Text in italics added feb 14 2025]","(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_12
+Average cost of growth factors by 2036,What will be the average cost of recombinant growth factors per gram (of input) in commercial cultured meat production in 2036?,"(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_13
+Cell media costs in 2036,What will be the cost of cell media per kg of cultured meat in 2036?,"(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_14
+Amino acid volume required to produce 1kg of cultured meat in 2036,"What will be the mass of amino acids (in grams) required per kg of cultured meat output in commercial production by 2036?*
+*[Adjusted from previous cell media volume question]","(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_15
+Maximum cell density achieved in 20k liter bioreactor by 2036,"What will be the highest cell density of cultivated meat produced in a 20,000 liter bioreactor by 2036?","(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_16
+Food-grade vs pharmaceutical-grade cell media,"By 2036, what percent of commercial cultured meat will be produced using food-grade cell media (as opposed to pharmaceutical-grade)?","(5) Subquestion, secondary q, or building-block",,"Although some past sources seem to suggest that pharmaceutical-grade cell media would be necessary for safe cultured meat production, food-grade media and bioreactors seem to be the current standard. We are currently investigating whether questions of pharmaceutical-grade vs food-grade resources are still relevant. ",,,,,Cell-cultured meat cost and price,CM_17
+Price of cultured meat with widespread hydrolysate use,"Conditional on  “most CM is produced with plant hydrolysates in 2036?”, what will be the average price of 1 kg of cultured meat?","(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_18
+Price of cultured meat without widespread hydrolysate use,"Conditional on  “most CM is NOT produced with plant hydrolysates in 2036?”, what will be the average price of 1 kg of cultured meat? ","(5) Subquestion, secondary q, or building-block",,,,,,,Cell-cultured meat cost and price,CM_19
+What share of cultured meat companies (those with capex over $10 million) will design and build their own bioreactors by 2036?,What share of cultured meat companies (those with capex over $10 million) will design and build their own bioreactors by 2036?,"(5) Subquestion, secondary q, or building-block",,"This question is based on some reports that companies can design and build their own bioreactors for a much lower cost than purchasing off-the-shelf pharmaceutical bioreactors. ",,,,,Cell-cultured meat cost and price,CM_20

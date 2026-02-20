@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+ENV/
+.env
+
+# R
+.Rhistory
+.Rdata
+.RDataTmp
+.Ruserdata
+*.Rproj.user/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Data (large files, sensitive drafts)
+*.xlsx
+*.xls
+
+# Keep CSVs tracked but ignore large data dumps
+data/raw_large/
+
+# Outputs that can be regenerated
+outputs/*.png
+outputs/*.pdf
+
+# Secrets
+.env
+*.secret
+credentials.json
