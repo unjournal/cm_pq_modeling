@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Cultured Meat Cost Model"
+  description: "Interactive Monte Carlo model for estimating 2036 cultured meat production costs"
+  navbar:
+    left:
+      - text: "Dashboard"
+        href: index.qmd
+      - text: "Documentation"
+        href: docs.qmd
+      - text: "About"
+        href: about.qmd
+  page-footer:
+    center: |
+      Built by [The Unjournal](https://unjournal.org) |
+      [Source Code](https://github.com/unjournal/cm_pq_modeling)
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+
+filters:
+  - shinylive
+
+execute:
+  freeze: auto

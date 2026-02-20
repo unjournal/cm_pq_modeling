@@ -1,0 +1,455 @@
+---
+title: "Cultured Meat Production Cost Model"
+subtitle: "Interactive Monte Carlo TEA for 2036 Cost Projections"
+format:
+  html:
+    page-layout: full
+filters:
+  - shinylive
+---
+
+```{shinylive-python}
+#| standalone: true
+#| viewerHeight: 900
+
+from shiny import App, ui, render, reactive
+import numpy as np
+import matplotlib.pyplot as plt
+from dataclasses import dataclass
+import math
+
+# ============================================================
+# MODEL CODE (embedded for Shinylive compatibility)
+# ============================================================
+
+Z_5 = -1.6448536269514722
+Z_95 = 1.6448536269514722
+
+def sample_lognormal_p5_p95(rng, p5, p95, n):
+    p5 = np.asarray(p5)
+    p95 = np.asarray(p95)
+    mu = (np.log(p5) + np.log(p95)) / 2.0
+    sigma = (np.log(p95) - np.log(p5)) / (2.0 * abs(Z_95))
+    return np.exp(mu + sigma * rng.standard_normal(n))
+
+def sample_uniform(rng, lo, hi, n):
+    return rng.uniform(lo, hi, size=n)
+
+def beta_from_mean_stdev(mean, stdev):
+    var = stdev**2
+    max_var = mean * (1 - mean)
+    if var <= 0 or var >= max_var:
+        stdev = min(stdev, math.sqrt(max_var * 0.99))
+        var = stdev**2
+    t = max_var / var - 1.0
+    a = mean * t
+    b = (1 - mean) * t
+    return max(a, 0.01), max(b, 0.01)
+
+def sample_beta_mean_stdev(rng, mean, stdev, n):
+    a, b = beta_from_mean_stdev(mean, stdev)
+    return rng.beta(a, b, size=n)
+
+def crf(wacc, n_years):
+    return wacc * (1 + wacc) ** n_years / ((1 + wacc) ** n_years - 1)
+
+def simulate(n, seed, params):
+    """Run Monte Carlo simulation with given parameters."""
+    rng = np.random.default_rng(seed)
+
+    # Unpack params
+    plant_kta_p5 = params['plant_kta_p5']
+    plant_kta_p95 = params['plant_kta_p95']
+    uptime_mean = params['uptime_mean']
+    maturity_mean = params['maturity_mean']
+    p_hydro_mean = params['p_hydro_mean']
+    p_foodgrade_mean = params['p_foodgrade_mean']
+    p_recfactors_mean = params['p_recfactors_mean']
+    wacc_p5 = params['wacc_p5']
+    wacc_p95 = params['wacc_p95']
+    asset_life_lo = params['asset_life_lo']
+    asset_life_hi = params['asset_life_hi']
+
+    # Advanced params with defaults
+    density_gL_p5 = params.get('density_gL_p5', 30)
+    density_gL_p95 = params.get('density_gL_p95', 200)
+    media_turnover_p5 = params.get('media_turnover_p5', 1.0)
+    media_turnover_p95 = params.get('media_turnover_p95', 10.0)
+
+    # Latent maturity
+    maturity = sample_beta_mean_stdev(rng, maturity_mean, 0.20, n)
+
+    # Scale and uptime
+    plant_kta = sample_lognormal_p5_p95(rng, plant_kta_p5, plant_kta_p95, n)
+    uptime = sample_beta_mean_stdev(rng, uptime_mean, 0.05, n)
+    output_kgpy = plant_kta * 1e6 * uptime
+
+    # Adoption probabilities (maturity-adjusted)
+    p_hydro = np.clip(sample_beta_mean_stdev(rng, p_hydro_mean, 0.10, n) + 0.25*(maturity-0.5), 0, 1)
+    p_foodgrade = np.clip(sample_beta_mean_stdev(rng, p_foodgrade_mean, 0.10, n) + 0.20*(maturity-0.5), 0, 1)
+    p_recf = np.clip(sample_beta_mean_stdev(rng, p_recfactors_mean, 0.15, n) + 0.25*(maturity-0.5), 0, 1)
+
+    is_hydro = rng.random(n) < p_hydro
+    is_foodgrade = rng.random(n) < p_foodgrade
+    is_recf_cheap = rng.random(n) < p_recf
+
+    # Process intensities
+    density_gL = sample_lognormal_p5_p95(rng, density_gL_p5, density_gL_p95, n)
+    cycle_days = sample_lognormal_p5_p95(rng, 0.5, 5.0, n)
+    media_turnover = sample_lognormal_p5_p95(rng, media_turnover_p5, media_turnover_p95, n)
+    L_per_kg = (1000.0 / density_gL) * media_turnover
+
+    # Media cost
+    media_cost_L = np.where(
+        is_hydro,
+        sample_lognormal_p5_p95(rng, 0.2, 1.2, n),
+        sample_lognormal_p5_p95(rng, 1.0, 4.0, n),
+    )
+    cost_media = L_per_kg * media_cost_L
+
+    # Commodity micros
+    g_comm = np.where(is_foodgrade,
+        sample_lognormal_p5_p95(rng, 0.1, 2.0, n),
+        sample_lognormal_p5_p95(rng, 1.0, 10.0, n))
+    price_comm = np.where(is_foodgrade,
+        sample_lognormal_p5_p95(rng, 0.02, 2.0, n),
+        sample_lognormal_p5_p95(rng, 0.5, 20.0, n))
+    cost_comm_micros = g_comm * price_comm
+
+    # Recombinant factors
+    g_recf = np.where(is_recf_cheap,
+        sample_lognormal_p5_p95(rng, 1e-4, 1e-2, n),
+        sample_lognormal_p5_p95(rng, 1e-3, 2e-1, n))
+    price_recf = np.where(is_recf_cheap,
+        sample_lognormal_p5_p95(rng, 0.05, 20.0, n),
+        sample_lognormal_p5_p95(rng, 5.0, 500.0, n))
+    cost_recf = g_recf * price_recf
+
+    # Other VOC
+    other_var = sample_lognormal_p5_p95(rng, 0.5, 5.0, n)
+    voc = cost_media + cost_comm_micros + cost_recf + other_var
+
+    # CAPEX
+    prod_kg_L_day = (density_gL / 1000.0) / cycle_days
+    total_working_volume_L = output_kgpy / (prod_kg_L_day * 365.0)
+
+    reactor_cost_L_pharma = sample_lognormal_p5_p95(rng, 50, 500, n)
+    custom_ratio = sample_uniform(rng, 0.35, 0.85, n)
+    custom_share = np.clip(sample_beta_mean_stdev(rng, 0.55, 0.15, n) + 0.30*(maturity-0.5), 0, 1)
+    reactor_cost_L_avg = reactor_cost_L_pharma * (custom_share*custom_ratio + (1-custom_share))
+
+    capex_s = sample_uniform(rng, 0.6, 0.9, n)
+    plant_factor = sample_lognormal_p5_p95(rng, 1.5, 3.5, n)
+    V_ref = 1e6
+    capex_total = (reactor_cost_L_avg * total_working_volume_L) * ((total_working_volume_L / V_ref) ** (capex_s - 1)) * plant_factor
+
+    # Financing
+    wacc = sample_lognormal_p5_p95(rng, wacc_p5, wacc_p95, n) - 0.03*(maturity-0.5)
+    wacc = np.clip(wacc, 0.03, None)
+    asset_life = sample_uniform(rng, asset_life_lo, asset_life_hi, n)
+    crf_val = crf(wacc, asset_life)
+    capex_perkg = (capex_total * crf_val) / output_kgpy
+
+    # Fixed OPEX
+    ref_output = 20e6 * 0.9
+    fixed_perkg_ref = sample_uniform(rng, 1.0, 6.0, n)
+    fixed_annual_ref = fixed_perkg_ref * ref_output
+    fixed_scale = sample_uniform(rng, 0.6, 1.0, n)
+    fixed_annual = fixed_annual_ref * ((output_kgpy / ref_output) ** fixed_scale)
+    fixed_perkg = fixed_annual / output_kgpy
+
+    unit_cost = voc + capex_perkg + fixed_perkg
+
+    return {
+        'unit_cost': unit_cost,
+        'cost_media': cost_media,
+        'cost_comm_micros': cost_comm_micros,
+        'cost_recf': cost_recf,
+        'cost_other_var': other_var,
+        'cost_capex': capex_perkg,
+        'cost_fixed': fixed_perkg,
+        'pct_hydro': float(np.mean(is_hydro)),
+        'pct_foodgrade': float(np.mean(is_foodgrade)),
+        'pct_recf_cheap': float(np.mean(is_recf_cheap)),
+    }
+
+# ============================================================
+# SHINY APP
+# ============================================================
+
+app_ui = ui.page_sidebar(
+    ui.sidebar(
+        ui.h4("Basic Parameters"),
+        ui.input_slider("plant_kta_p50", "Plant Capacity (kTA/yr)", 5, 100, 20, step=5),
+        ui.input_slider("uptime", "Utilization Rate", 0.6, 0.99, 0.90, step=0.01),
+        ui.input_slider("maturity", "Industry Maturity (2036)", 0.1, 0.9, 0.5, step=0.05),
+        ui.hr(),
+        ui.h5("Technology Adoption by 2036"),
+        ui.input_slider("p_hydro", "P(Hydrolysates)", 0.1, 0.9, 0.6, step=0.05),
+        ui.input_slider("p_foodgrade", "P(Food-grade micros)", 0.1, 0.9, 0.65, step=0.05),
+        ui.input_slider("p_recfactors", "P(Cheap recombinant)", 0.1, 0.9, 0.5, step=0.05),
+        ui.hr(),
+        ui.h5("Financing"),
+        ui.input_slider("wacc_range", "WACC Range (%)", 5, 30, (8, 20), step=1),
+        ui.input_slider("asset_life", "Asset Life (years)", 5, 30, (8, 20), step=1),
+        ui.hr(),
+        ui.input_action_button("run", "Run Simulation", class_="btn-primary btn-lg w-100"),
+        ui.hr(),
+        ui.accordion(
+            ui.accordion_panel(
+                "Advanced Parameters",
+                ui.input_slider("density_range", "Cell Density (g/L)", 10, 300, (30, 200), step=10),
+                ui.input_slider("media_turnover", "Media Turnover", 1, 20, (1, 10), step=1),
+                ui.p("More advanced parameters coming soon...", class_="text-muted small"),
+            ),
+            open=False
+        ),
+        width=320,
+    ),
+    ui.navset_card_tab(
+        ui.nav_panel(
+            "Cost Distribution",
+            ui.layout_columns(
+                ui.value_box(
+                    "Median Cost",
+                    ui.output_text("median_cost"),
+                    "$/kg (p50)",
+                    theme="primary",
+                ),
+                ui.value_box(
+                    "Optimistic (p5)",
+                    ui.output_text("p5_cost"),
+                    "$/kg",
+                    theme="success",
+                ),
+                ui.value_box(
+                    "Pessimistic (p95)",
+                    ui.output_text("p95_cost"),
+                    "$/kg",
+                    theme="danger",
+                ),
+                col_widths=[4, 4, 4],
+            ),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Unit Cost Distribution"),
+                    ui.output_plot("cost_histogram"),
+                ),
+                ui.card(
+                    ui.card_header("Key Probabilities"),
+                    ui.output_ui("prob_cards"),
+                ),
+                col_widths=[8, 4],
+            ),
+        ),
+        ui.nav_panel(
+            "Cost Breakdown",
+            ui.card(
+                ui.card_header("Average Cost Components ($/kg)"),
+                ui.output_plot("cost_breakdown"),
+            ),
+        ),
+        ui.nav_panel(
+            "About",
+            ui.markdown("""
+## About This Model
+
+This interactive dashboard implements a **Monte Carlo techno-economic analysis (TEA)**
+for estimating cultured meat production costs in 2036.
+
+### Model Structure
+
+The total unit cost is computed as:
+
+$$\\text{Unit Cost} = \\text{VOC} + \\text{CAPEX}_{\\text{annualized}} + \\text{Fixed OPEX}$$
+
+Where:
+- **VOC** = Media + Micronutrients + Recombinant factors + Other variable costs
+- **CAPEX** = Annualized capital costs using capital recovery factor (CRF)
+- **Fixed OPEX** = Labor, maintenance, overhead
+
+### Key Features
+
+1. **Explicit uncertainty**: All parameters are distributions, not point estimates
+2. **Maturity correlation**: Technology adoption, costs, and financing are correlated via a latent "maturity" factor
+3. **Scenario toggles**: Technology adoption (hydrolysates, food-grade, cheap recombinants) modeled as Bernoulli switches
+
+### Sources
+
+- Based on UC Davis ACBM Calculator (Risner et al., 2021)
+- Adapted for Unjournal Pivotal Questions project
+- See [The Unjournal](https://unjournal.org) for more information
+            """),
+        ),
+    ),
+    title="Cultured Meat Cost Model",
+)
+
+def server(input, output, session):
+
+    @reactive.calc
+    @reactive.event(input.run)
+    def run_simulation():
+        params = {
+            'plant_kta_p5': input.plant_kta_p50() * 0.5,
+            'plant_kta_p95': input.plant_kta_p50() * 2.0,
+            'uptime_mean': input.uptime(),
+            'maturity_mean': input.maturity(),
+            'p_hydro_mean': input.p_hydro(),
+            'p_foodgrade_mean': input.p_foodgrade(),
+            'p_recfactors_mean': input.p_recfactors(),
+            'wacc_p5': input.wacc_range()[0] / 100,
+            'wacc_p95': input.wacc_range()[1] / 100,
+            'asset_life_lo': input.asset_life()[0],
+            'asset_life_hi': input.asset_life()[1],
+            'density_gL_p5': input.density_range()[0],
+            'density_gL_p95': input.density_range()[1],
+            'media_turnover_p5': input.media_turnover()[0],
+            'media_turnover_p95': input.media_turnover()[1],
+        }
+        return simulate(n=30000, seed=42, params=params)
+
+    @output
+    @render.text
+    def median_cost():
+        res = run_simulation()
+        p50 = float(np.quantile(res['unit_cost'], 0.5))
+        return f"${p50:.2f}"
+
+    @output
+    @render.text
+    def p5_cost():
+        res = run_simulation()
+        p5 = float(np.quantile(res['unit_cost'], 0.05))
+        return f"${p5:.2f}"
+
+    @output
+    @render.text
+    def p95_cost():
+        res = run_simulation()
+        p95 = float(np.quantile(res['unit_cost'], 0.95))
+        return f"${p95:.2f}"
+
+    @output
+    @render.ui
+    def prob_cards():
+        res = run_simulation()
+        uc = res['unit_cost']
+        prob_10 = float(np.mean(uc < 10)) * 100
+        prob_25 = float(np.mean(uc < 25)) * 100
+        prob_50 = float(np.mean(uc < 50)) * 100
+
+        return ui.div(
+            ui.div(
+                ui.h5("P(Cost < $10/kg)"),
+                ui.p(f"{prob_10:.1f}%", class_="display-6 text-success" if prob_10 > 50 else "display-6 text-muted"),
+                class_="mb-3"
+            ),
+            ui.div(
+                ui.h5("P(Cost < $25/kg)"),
+                ui.p(f"{prob_25:.1f}%", class_="display-6 text-primary" if prob_25 > 50 else "display-6 text-muted"),
+                class_="mb-3"
+            ),
+            ui.div(
+                ui.h5("P(Cost < $50/kg)"),
+                ui.p(f"{prob_50:.1f}%", class_="display-6 text-info" if prob_50 > 50 else "display-6 text-muted"),
+            ),
+        )
+
+    @output
+    @render.plot
+    def cost_histogram():
+        res = run_simulation()
+        uc = res['unit_cost']
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+
+        # Clip for better visualization
+        uc_clipped = np.clip(uc, 0, np.quantile(uc, 0.99))
+
+        ax.hist(uc_clipped, bins=60, density=True, alpha=0.7, color='steelblue', edgecolor='white')
+
+        # Add percentile lines
+        p5 = np.quantile(uc, 0.05)
+        p50 = np.quantile(uc, 0.50)
+        p95 = np.quantile(uc, 0.95)
+
+        ax.axvline(p5, color='green', linestyle='--', linewidth=2, label=f'p5: ${p5:.1f}')
+        ax.axvline(p50, color='blue', linestyle='-', linewidth=2, label=f'p50: ${p50:.1f}')
+        ax.axvline(p95, color='red', linestyle='--', linewidth=2, label=f'p95: ${p95:.1f}')
+
+        # Reference lines
+        ax.axvline(10, color='darkgreen', linestyle=':', alpha=0.5, label='$10/kg (competitive)')
+        ax.axvline(25, color='orange', linestyle=':', alpha=0.5, label='$25/kg')
+
+        ax.set_xlabel('Unit Cost ($/kg)', fontsize=12)
+        ax.set_ylabel('Density', fontsize=12)
+        ax.set_title('Distribution of 2036 Cultured Meat Production Cost', fontsize=14)
+        ax.legend(loc='upper right')
+        ax.grid(alpha=0.3)
+
+        plt.tight_layout()
+        return fig
+
+    @output
+    @render.plot
+    def cost_breakdown():
+        res = run_simulation()
+
+        components = {
+            'Media': float(np.mean(res['cost_media'])),
+            'Comm. Micros': float(np.mean(res['cost_comm_micros'])),
+            'Recombinant': float(np.mean(res['cost_recf'])),
+            'Other VOC': float(np.mean(res['cost_other_var'])),
+            'CAPEX': float(np.mean(res['cost_capex'])),
+            'Fixed OPEX': float(np.mean(res['cost_fixed'])),
+        }
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+
+        colors = ['#2ecc71', '#3498db', '#9b59b6', '#95a5a6', '#e74c3c', '#f39c12']
+
+        bars = ax.barh(list(components.keys()), list(components.values()), color=colors)
+
+        # Add value labels
+        for bar, val in zip(bars, components.values()):
+            ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2,
+                   f'${val:.2f}', va='center', fontsize=11)
+
+        total = sum(components.values())
+        ax.set_xlabel('Cost ($/kg)', fontsize=12)
+        ax.set_title(f'Cost Breakdown (Total: ${total:.2f}/kg)', fontsize=14)
+        ax.set_xlim(0, max(components.values()) * 1.3)
+        ax.grid(axis='x', alpha=0.3)
+
+        plt.tight_layout()
+        return fig
+
+app = App(app_ui, server)
+```
+
+## How to Use
+
+1. **Adjust parameters** in the sidebar to match your assumptions about 2036 cultured meat production
+2. **Click "Run Simulation"** to generate new Monte Carlo samples
+3. **Explore results** across the tabs:
+   - **Cost Distribution**: See the full probability distribution and key quantiles
+   - **Cost Breakdown**: Understand which components drive costs
+   - **About**: Learn about the model methodology
+
+## Key Parameters Explained
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| Plant Capacity | Annual production capacity in kTA (thousand metric tons) | 20 kTA |
+| Utilization Rate | Fraction of capacity actually used (uptime) | 90% |
+| Industry Maturity | Latent factor (0=nascent, 1=mature) affecting all tech adoption | 0.5 |
+| P(Hydrolysates) | Probability hydrolysates replace expensive media by 2036 | 60% |
+| P(Food-grade) | Probability food-grade micros replace pharma-grade | 65% |
+| P(Cheap recombinant) | Probability growth factors become affordable | 50% |
+
+## References
+
+- Risner et al. (2021). [Preliminary Techno-Economic Assessment of Animal Cell-Based Meat](https://www.mdpi.com/2304-8158/10/1/3)
+- [UC Davis ACBM Cost Calculator](https://acbmcostcalculator.ucdavis.edu/)
+- [Unjournal Cultured Meat Evaluations](https://unjournal.org)

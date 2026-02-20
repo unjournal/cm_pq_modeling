@@ -1,0 +1,149 @@
+---
+title: "Model Documentation"
+toc: true
+---
+
+## Overview
+
+This document provides technical documentation for the cultured meat cost model, including:
+
+- Model structure and equations
+- Parameter definitions and sources
+- Methodology notes
+- Limitations and caveats
+
+## Model Structure
+
+### Core Equation
+
+The model estimates **unit production cost** ($/kg) as:
+
+$$
+\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{\text{annualized}} + \text{Fixed OPEX}
+$$
+
+Where:
+
+- **VOC** (Variable Operating Costs) = Media + Micronutrients + Recombinant factors + Other
+- **CAPEX** = Capital costs annualized via capital recovery factor (CRF)
+- **Fixed OPEX** = Labor, maintenance, overhead, scaled with plant size
+
+### Monte Carlo Simulation
+
+The model uses Monte Carlo simulation (default: 30,000 samples) to propagate uncertainty:
+
+1. Sample parameters from specified distributions
+2. Apply technology adoption switches (Bernoulli draws)
+3. Calculate unit cost for each sample
+4. Report quantiles and probabilities
+
+## Parameter Definitions
+
+### Basic Parameters
+
+| Parameter | Symbol | Distribution | Default | Unit |
+|-----------|--------|--------------|---------|------|
+| Plant capacity | $Q$ | Lognormal(p5, p95) | 5-50 | kTA/year |
+| Utilization | $u$ | Beta(mean, sd) | 0.90 | fraction |
+| Maturity index | $m$ | Beta(mean, sd) | 0.50 | 0-1 |
+
+### Technology Adoption
+
+Each technology has a base adoption probability, adjusted by maturity:
+
+$$
+P_{\text{adopted}} = \text{clip}(P_{\text{base}} + 0.25 \times (m - 0.5), 0, 1)
+$$
+
+| Technology | Base Probability | Effect |
+|------------|-----------------|--------|
+| Hydrolysates | 60% | Reduces media $/L by ~70% |
+| Food-grade micros | 65% | Reduces micro $/g by ~90% |
+| Cheap recombinant | 50% | Reduces growth factor cost dramatically |
+
+### Process Intensities
+
+| Parameter | Range (p5-p95) | Unit | Notes |
+|-----------|---------------|------|-------|
+| Cell density | 30-200 | g/L | Final biomass at harvest |
+| Cycle time | 0.5-5 | days | Time per production batch |
+| Media turnover | 1-10 | ratio | 1=batch, >1=perfusion |
+
+### Cost Components
+
+#### Variable Costs
+
+| Component | Formula | Key Drivers |
+|-----------|---------|-------------|
+| Media | $L/kg \times \$/L$ | Density, turnover, hydrolysates |
+| Comm. micros | $g/kg \times \$/g$ | Food-grade adoption |
+| Recombinant | $g/kg \times \$/g$ | Cheap tech adoption |
+| Other VOC | Lognormal(0.5, 5) | Utilities, consumables |
+
+#### Capital Costs
+
+Reactor CAPEX is computed bottom-up:
+
+1. **Volume required**: $V = Q / (\text{productivity} \times 365)$
+2. **Reactor cost**: Blend of pharma ($50-500/L) and custom reactors
+3. **Scaling**: Apply power law $K \propto V^s$ where $s \in [0.6, 0.9]$
+4. **Lang factor**: Multiply by 1.5-3.5x for total installed plant
+5. **Annualize**: Apply CRF based on WACC and asset life
+
+$$
+\text{CAPEX}_{/kg} = \frac{\text{CAPEX}_{\text{total}} \times \text{CRF}}{Q \times u}
+$$
+
+#### Fixed OPEX
+
+Scaled from reference plant (20 kTA @ 90% utilization):
+
+$$
+\text{Fixed OPEX} = \text{Ref} \times \left(\frac{Q}{Q_{\text{ref}}}\right)^s
+$$
+
+Where $s \in [0.6, 1.0]$ is the scaling exponent.
+
+## Maturity Correlation
+
+A key feature of this model is the **latent maturity factor** $m \in [0, 1]$ that induces positive correlation between:
+
+- Technology adoption probabilities
+- Custom reactor share
+- WACC (lower in mature industry)
+
+This reflects the intuition that in "good worlds" for cultured meat:
+- Technologies are more likely to be adopted
+- Industry has more custom solutions
+- Financing costs are lower due to reduced risk
+
+## Limitations
+
+### Known Limitations
+
+1. **No learning curves**: Model is a 2036 snapshot, not a trajectory
+2. **No downstream processing**: Excludes texturization, scaffolding for whole-cut
+3. **No geography**: Assumes generic costs, not region-specific
+4. **Limited contamination modeling**: No batch failure distributions
+5. **Independent samples**: Some correlations may be underspecified
+
+### Recommendations
+
+- Use for **relative comparisons** rather than absolute predictions
+- Focus on **probability thresholds** (P < $10/kg) rather than point estimates
+- **Validate key parameters** with domain experts before publication
+- **Report uncertainty ranges**, not just medians
+
+## Code Reference
+
+The full model implementation is available in the repository:
+
+- `dashboard/model.py` - Core simulation code
+- `models/cm_cost_v0.2.squiggle` - Squiggle version
+
+## Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| v0.2 | 2026-02 | Explicit scale/uptime, beta distributions, maturity factor |
+| v0.1 | 2026-01 | Initial Squiggle model based on UC Davis |

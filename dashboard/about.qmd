@@ -1,0 +1,49 @@
+---
+title: "About"
+---
+
+## The Unjournal Pivotal Questions Project
+
+This dashboard is part of [The Unjournal's](https://unjournal.org) **Pivotal Questions** initiative, which aims to synthesize research on high-stakes questions for effective altruism and global priorities.
+
+### Cultured Meat Focus
+
+The cultured meat pivotal question asks:
+
+> What will be the production cost of cultured meat in 2036, and what are the implications for animal welfare?
+
+This model helps evaluators and forecasters:
+
+1. **Quantify uncertainty** in cost projections
+2. **Identify key drivers** of cost reduction
+3. **Compare scenarios** based on technology adoption
+4. **Inform funding decisions** for animal welfare organizations
+
+## Model Development
+
+### Contributors
+
+- **David Reinstein** (The Unjournal) - Project lead
+- **David van der Linden** - Model validation
+- **Jacob Kozlowski** - Financial modeling
+- **Ash Meader** - TEA literature review
+
+### Sources
+
+The model synthesizes insights from:
+
+- Risner et al. (2021) - UC Davis ACBM Calculator
+- CE Delft TEA studies
+- Humbird (2021) - Scale-up economics
+- Rethink Priorities forecasts
+- Good Food Institute market reports
+
+## Contact
+
+- [The Unjournal](https://unjournal.org)
+- [GitHub Repository](https://github.com/unjournal/cm_pq_modeling)
+- [Pivotal Questions Documentation](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
+
+## License
+
+This project is open source. Model code and documentation are available under MIT license.
