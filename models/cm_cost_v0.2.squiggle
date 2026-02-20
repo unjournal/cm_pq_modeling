@@ -1,0 +1,182 @@
+/*
+Cultivated Meat Unit Cost Model (PQ-integrated) — v0.2 template
+Purpose: Give CM PQ evaluators a transparent, editable template.
+
+Major upgrades vs v0.1:
+1) Avoid "sample() toggles" that lock the whole run into one scenario.
+   Instead: bernoulli(p) is a distribution, then SampleSet.map applies scenario logic per sample.
+2) Explicit scale + uptime so $/kg quantities are not hiding plant size/utilization.
+3) Use bounded distributions (beta/uniform) for probabilities/shares instead of `a to b` (lognormal) for [0,1] vars.
+4) Optional maturity factor to induce correlation between "worlds" (tech adoption, capex, WACC).
+5) Split micros into commodity micros vs recombinant factors (growth factors, albumin-like proteins).
+
+Source: Squiggle Hub - https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve
+Based on UC Davis ACBM calculator (Risner et al., 2021)
+*/
+
+/// === Helpers ===
+/// Convert kTA to kg/year nameplate (1 kTA = 1,000 metric tons/year = 1e6 kg/year)
+ktaToKgPerYear(kta) = kta * 1e6
+
+/// Draw from one of two distributions, controlled by a Bernoulli SampleSetDist (0/1),
+/// returning a SampleSetDist of numbers.
+drawByToggle(toggle01, distIf1, distIf0) =
+  SampleSet.map(
+    SampleSet.fromDist(toggle01),
+    {|t| if t == 1 then sample(distIf1) else sample(distIf0)}
+  )
+
+/// === Pivotal-question inputs (edit these first) ===
+/// Think of these as "priors" elicited from PQ evaluators.
+/// Use beta() for probabilities/shares and lognormal()/uniform() for positive variables.
+
+@name("Maturity index (0-1)")
+@doc("Latent 'industry maturity' factor to correlate adoption, costs, and financing. Optional but helpful.")
+maturity = beta({mean: 0.5, stdev: 0.2})
+
+@name("Plant nameplate capacity (kTA/yr)")
+@doc("Explicit scale. Replace with PQ-elicited distribution or set pointMass(20) to mimic Risner 20 kTA.")
+plant_kta = lognormal({p5: 5, p95: 50})
+
+@name("Uptime / utilization (0-1)")
+@doc("Fraction of nameplate capacity actually produced (uptime, utilization).")
+uptime = beta({mean: 0.9, stdev: 0.05})
+
+@name("Base prob hydrolysates widely used by 2036 (0-1)")
+p_hydro_base = beta({mean: 0.6, stdev: 0.1})
+
+@name("Base prob food-grade commodity micros by 2036 (0-1)")
+p_foodgrade_base = beta({mean: 0.65, stdev: 0.1})
+
+@name("Base prob cheap recombinant factors by 2036 (0-1)")
+@doc("Captures progress on growth factors / recombinant proteins cost reduction.")
+p_recfactors_base = beta({mean: 0.5, stdev: 0.15})
+
+/// Optional: correlate adoption probabilities with maturity
+@name("Hydrolysates adoption probability (maturity-adjusted)")
+p_hydro = truncate(p_hydro_base + 0.25 * (maturity - 0.5), 0, 1)
+
+@name("Food-grade micros probability (maturity-adjusted)")
+p_foodgrade = truncate(p_foodgrade_base + 0.20 * (maturity - 0.5), 0, 1)
+
+@name("Cheap recombinant factors probability (maturity-adjusted)")
+p_recfactors = truncate(p_recfactors_base + 0.25 * (maturity - 0.5), 0, 1)
+
+/// Scenario toggles as *distributions* (not single samples!)
+is_hydro = bernoulli(p_hydro)
+is_foodgrade = bernoulli(p_foodgrade)
+is_recfactors_cheap = bernoulli(p_recfactors)
+
+/// === Process intensities & prices (conditional on scenario) ===
+/// Bulk media (macros)
+l_media_per_kg = drawByToggle(is_hydro, 5 to 20, 15 to 60)
+price_media_per_l = drawByToggle(is_hydro, 0.2 to 1.2, 1 to 4)
+
+/// Commodity micronutrients (vitamins/minerals/salts etc)
+g_comm_micros_per_kg = drawByToggle(is_foodgrade, 0.1 to 2, 1 to 10)
+price_comm_micros_per_g = drawByToggle(is_foodgrade, 0.02 to 2, 0.5 to 20)
+
+/// Recombinant factors (growth factors / albumin-like proteins)
+/// (Kept extremely flexible; evaluators should replace with their elicited ranges)
+g_recfactors_per_kg = drawByToggle(is_recfactors_cheap, 0.0001 to 0.01, 0.001 to 0.2)
+price_recfactors_per_g = drawByToggle(is_recfactors_cheap, 0.05 to 20, 5 to 500)
+
+/// === Variable cost blocks ===
+voc_media = l_media_per_kg * price_media_per_l
+voc_comm_micros = g_comm_micros_per_kg * price_comm_micros_per_g
+voc_recfactors = g_recfactors_per_kg * price_recfactors_per_g
+
+@name("Other variable costs ($/kg)")
+@doc("Utilities, disposables, waste, packaging. (Avoid double-counting fixed labor here.)")
+voc_other = 0.5 to 5
+
+voc_total = voc_media + voc_comm_micros + voc_recfactors + voc_other
+
+/// === Capital + financing (explicit scale + uptime) ===
+@name("WACC (maturity-adjusted)")
+wacc_base = lognormal({p5: 0.08, p95: 0.20})
+wacc = truncateLeft(wacc_base - 0.03 * (maturity - 0.5), 0.03)
+
+@name("Asset lifetime (years)")
+asset_life = uniform(8, 20)
+
+crf = wacc * (1 + wacc) ^ asset_life / ((1 + wacc) ^ asset_life - 1)
+
+/// CAPEX model: set at reference scale then apply economy-of-scale exponent
+ref_kta = 20
+scale_ratio = plant_kta / ref_kta
+
+@name("Total CAPEX scaling exponent (K ~ Q^s)")
+@doc("If s<1, capex per unit capacity falls with scale. Typical TEA assumes ~0.6-0.9.")
+capex_scale_exp = uniform(0.6, 0.9)
+
+@name("Pharma-grade CAPEX @ 20kTA ($ per annual kg capacity)")
+capex_pharma_ref_percap = 5 to 25
+
+capex_pharma_percap =
+  capex_pharma_ref_percap * (scale_ratio ^ (capex_scale_exp - 1))
+
+@name("Custom reactor share (0-1)")
+custom_reactor_share_base = beta({mean: 0.55, stdev: 0.15})
+custom_reactor_share = truncate(custom_reactor_share_base + 0.30*(maturity-0.5), 0, 1)
+
+@name("Custom vs pharma CAPEX ratio")
+custom_capex_ratio = uniform(0.35, 0.85)
+
+capex_avg_percap =
+  capex_pharma_percap *
+  (custom_reactor_share * custom_capex_ratio + (1 - custom_reactor_share))
+
+/// Divide by uptime to convert $/kg-capacity to $/kg-produced
+capital_cost_perkg = capex_avg_percap * crf / uptime
+
+/// === Fixed OPEX (explicit scale + uptime) ===
+/// Define fixed OPEX at ref scale via a per-kg reference, then scale and divide by output
+@name("Fixed OPEX per kg @ 20kTA and 0.9 uptime ($/kg)")
+fixed_opex_perkg_ref = uniform(1, 6)
+
+ref_output_kgpy = ktaToKgPerYear(ref_kta) * 0.9
+fixed_opex_annual_ref = fixed_opex_perkg_ref * ref_output_kgpy
+
+@name("Fixed OPEX scaling exponent (F ~ Q^s)")
+fixed_opex_scale_exp = uniform(0.6, 1.0)
+
+fixed_opex_annual = fixed_opex_annual_ref * (scale_ratio ^ fixed_opex_scale_exp)
+
+output_kgpy = ktaToKgPerYear(plant_kta) * uptime
+fixed_opex_perkg = fixed_opex_annual / output_kgpy
+
+/// === Total fully-loaded unit cost ===
+/// Note: This includes a capital charge (WACC/CRF), so it's closer to a "levelized unit cost"
+/// than accounting COGS.
+unit_cost = voc_total + capital_cost_perkg + fixed_opex_perkg
+
+/// === Diagnostics: compute the "hard-coded" % reductions as *implied* by your parameterization ===
+media_cost_nohydro = (15 to 60) * (1 to 4)
+media_cost_hydro = (5 to 20) * (0.2 to 1.2)
+implied_media_reduction = 1 - median(media_cost_hydro) / median(media_cost_nohydro)
+
+comm_micros_cost_nofg = (1 to 10) * (0.5 to 20)
+comm_micros_cost_fg = (0.1 to 2) * (0.02 to 2)
+implied_comm_micros_reduction = 1 - median(comm_micros_cost_fg) / median(comm_micros_cost_nofg)
+
+/// === Outputs ===
+summary = {
+  unit_p5 = quantile(unit_cost, 0.05)
+  unit_p50 = quantile(unit_cost, 0.50)
+  unit_p95 = quantile(unit_cost, 0.95)
+  unit_mean = mean(unit_cost)
+
+  prob_lt_10 = cdf(unit_cost, 10)
+  prob_lt_25 = cdf(unit_cost, 25)
+
+  media_share_voc = median(voc_media / voc_total)
+  comm_micros_share_voc = median(voc_comm_micros / voc_total)
+  recfactors_share_voc = median(voc_recfactors / voc_total)
+  capex_share_total = median(capital_cost_perkg / unit_cost)
+
+  { unit_p5, unit_p50, unit_p95, unit_mean, prob_lt_10, prob_lt_25,
+    media_share_voc, comm_micros_share_voc, recfactors_share_voc, capex_share_total,
+    implied_media_reduction, implied_comm_micros_reduction
+  }
+}

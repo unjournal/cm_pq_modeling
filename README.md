@@ -26,6 +26,32 @@ cm_pq_modeling/
 └── docs/                    # Working notes, evaluator guidance
 ```
 
+## Models
+
+### Squiggle Cost Model (v0.2)
+
+Location: `models/cm_cost_v0.2.squiggle`
+
+A Monte Carlo cost model estimating per-kg production cost for cultured meat in 2036. Core identity:
+
+```
+Unit Cost = Variable Costs + Capital Cost + Fixed OPEX
+```
+
+**Key features:**
+- Explicit scale (plant capacity) and utilization parameters
+- Beta distributions for probabilities/shares (bounded 0-1)
+- Maturity factor to correlate technology adoption, costs, and financing
+- Scenario toggles: hydrolysates, food-grade micros, cheap recombinant factors
+
+**Live model:** [Squiggle Hub](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
+
+Based on UC Davis ACBM calculator (Risner et al., 2021).
+
+### Model Evaluation
+
+See `docs/Cultivated Meat Model Eval.md` for detailed critique and improvement recommendations from David van der Linden and Jakub Kozlowski.
+
 ## Status
 
 🚧 **Early development** — Structure and scope being defined.
