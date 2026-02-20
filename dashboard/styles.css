@@ -1,0 +1,126 @@
+/* Custom styles for Cultured Meat Cost Model Dashboard */
+
+/* Increase spacing between sections */
+.accordion-panel {
+    margin-bottom: 1rem;
+}
+
+.sidebar .accordion {
+    font-size: 0.9rem;
+}
+
+/* Make value boxes more prominent */
+.value-box {
+    min-height: 120px;
+}
+
+/* Better card spacing */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+/* Header styling */
+.display-5 {
+    color: #1a365d;
+}
+
+/* Improve sidebar readability */
+.sidebar h4 {
+    color: #2d3748;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.sidebar h5 {
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+/* Tab content spacing */
+.tab-content {
+    padding: 1.5rem 0;
+}
+
+/* Better accordion styling */
+.accordion-button {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+}
+
+.accordion-body {
+    font-size: 0.85rem;
+    background-color: #f8f9fa;
+}
+
+/* Process explainer code block */
+.accordion-body pre {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+}
+
+/* Probability cards styling */
+.prob-card .card-header {
+    font-weight: 600;
+}
+
+/* Footer styling */
+footer, .footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 2rem;
+    margin-top: 3rem;
+}
+
+/* Make plots larger on desktop */
+@media (min-width: 992px) {
+    .shiny-plot-output {
+        min-height: 400px;
+    }
+}
+
+/* Improve table readability in markdown */
+.tab-pane table {
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.tab-pane th, .tab-pane td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-pane th {
+    background-color: #f7fafc;
+    font-weight: 600;
+}
+
+/* Feedback prompt styling */
+.feedback-prompt {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin: 2rem 0;
+}
+
+.feedback-prompt h4 {
+    color: white;
+    margin-bottom: 0.75rem;
+}
+
+.feedback-prompt a {
+    color: #faf089;
+}
+
+/* Hypothesis sidebar hint */
+.hypothesis-hint {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+}
