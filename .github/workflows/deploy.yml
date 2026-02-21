@@ -37,11 +37,6 @@ jobs:
         with:
           version: "1.6.40"
 
-      - name: Install Shinylive extension
-        run: |
-          cd dashboard
-          quarto add quarto-ext/shinylive --no-prompt
-
       - name: Render Dashboard
         run: |
           cd dashboard
