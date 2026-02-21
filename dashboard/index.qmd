@@ -556,6 +556,23 @@ The relative sizes shift dramatically based on technology adoption assumptions.
                 ),
 
                 ui.nav_panel(
+                    "Component Distributions",
+                    ui.div(
+                        ui.h4("Cost Component Distributions", class_="mb-3"),
+                        ui.p("Individual distributions for each cost driver (like Squiggle/Guesstimate visualizations):",
+                             class_="text-muted mb-4"),
+                        ui.output_plot("component_distributions", height="500px"),
+
+                        ui.hr(class_="my-4"),
+
+                        ui.h4("Cumulative Distribution (CDF)", class_="mb-3"),
+                        ui.p("Probability of cost being below each threshold:", class_="text-muted"),
+                        ui.output_plot("cost_cdf", height="350px"),
+                        class_="mb-4"
+                    ),
+                ),
+
+                ui.nav_panel(
                     "Technology Adoption",
                     ui.div(
                         ui.h4("Realized Adoption Rates", class_="mb-4"),
@@ -677,21 +694,21 @@ def server(input, output, session):
     def median_cost():
         res = run_simulation()
         p50 = float(np.quantile(res['unit_cost'], 0.5))
-        return f"${p50:.2f}"
+        return f"${p50:.1f}"
 
     @output
     @render.text
     def p5_cost():
         res = run_simulation()
         p5 = float(np.quantile(res['unit_cost'], 0.05))
-        return f"${p5:.2f}"
+        return f"${p5:.1f}"
 
     @output
     @render.text
     def p95_cost():
         res = run_simulation()
         p95 = float(np.quantile(res['unit_cost'], 0.95))
-        return f"${p95:.2f}"
+        return f"${p95:.1f}"
 
     @output
     @render.ui
@@ -877,6 +894,97 @@ def server(input, output, session):
         plt.tight_layout()
         return fig
 
+    @output
+    @render.plot
+    def component_distributions():
+        """Show individual distributions for each cost component - Squiggle/Guesstimate style."""
+        res = run_simulation()
+
+        fig, axes = plt.subplots(2, 3, figsize=(14, 8))
+        axes = axes.flatten()
+
+        components = [
+            ('Media', res['cost_media'], '#27ae60'),
+            ('Micronutrients', res['cost_comm_micros'], '#3498db'),
+            ('Growth Factors', res['cost_recf'], '#9b59b6'),
+            ('Other VOC', res['cost_other_var'], '#7f8c8d'),
+            ('CAPEX', res['cost_capex'], '#e74c3c'),
+            ('Fixed OPEX', res['cost_fixed'], '#f39c12'),
+        ]
+
+        for idx, (name, data, color) in enumerate(components):
+            ax = axes[idx]
+
+            # Clip extreme values for better visualization
+            clip_val = np.quantile(data, 0.98)
+            data_clipped = np.clip(data, 0, clip_val)
+
+            # Create gradient-filled histogram (Squiggle-style)
+            n, bins, patches = ax.hist(data_clipped, bins=40, density=True, alpha=0.8,
+                                       color=color, edgecolor='white', linewidth=0.5)
+
+            # Add percentile markers
+            p5 = np.quantile(data, 0.05)
+            p50 = np.quantile(data, 0.50)
+            p95 = np.quantile(data, 0.95)
+
+            ax.axvline(p50, color='black', linestyle='-', linewidth=2, alpha=0.8)
+            ax.axvline(p5, color='black', linestyle='--', linewidth=1.5, alpha=0.5)
+            ax.axvline(p95, color='black', linestyle='--', linewidth=1.5, alpha=0.5)
+
+            # Title with stats
+            ax.set_title(f'{name}\np50: ${p50:.1f} | 90% CI: ${p5:.1f} - ${p95:.1f}',
+                        fontsize=11, fontweight='bold')
+            ax.set_xlabel('$/kg', fontsize=10)
+            ax.set_ylabel('')
+            ax.set_yticks([])  # Clean look like Squiggle
+            ax.grid(alpha=0.2, axis='x')
+
+        plt.suptitle('Cost Component Distributions (90% confidence intervals shown)',
+                    fontsize=14, fontweight='bold', y=1.02)
+        plt.tight_layout()
+        return fig
+
+    @output
+    @render.plot
+    def cost_cdf():
+        """Cumulative distribution function - shows probability of being below each cost level."""
+        res = run_simulation()
+        uc = res['unit_cost']
+
+        fig, ax = plt.subplots(figsize=(12, 5))
+
+        # Sort for CDF
+        sorted_costs = np.sort(uc)
+        cdf = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs)
+
+        # Plot CDF with gradient fill
+        ax.fill_between(sorted_costs, 0, cdf, alpha=0.3, color='steelblue')
+        ax.plot(sorted_costs, cdf, color='steelblue', linewidth=2.5)
+
+        # Add reference lines for key thresholds
+        thresholds = [10, 25, 50, 100]
+        colors = ['#27ae60', '#3498db', '#f39c12', '#e74c3c']
+        for thresh, col in zip(thresholds, colors):
+            prob = np.mean(uc < thresh)
+            ax.axvline(thresh, color=col, linestyle='--', linewidth=2, alpha=0.7)
+            ax.axhline(prob, color=col, linestyle=':', linewidth=1, alpha=0.5,
+                      xmax=thresh/max(sorted_costs))
+            ax.annotate(f'${thresh}: {prob*100:.0f}%', xy=(thresh, prob),
+                       xytext=(thresh + 2, prob + 0.05),
+                       fontsize=10, color=col, fontweight='bold')
+
+        ax.set_xlabel('Unit Production Cost ($/kg)', fontsize=13)
+        ax.set_ylabel('Cumulative Probability', fontsize=13)
+        ax.set_title('Cumulative Distribution: Probability of Cost Below Threshold',
+                    fontsize=15, fontweight='bold')
+        ax.set_xlim(0, min(np.quantile(uc, 0.99), 200))
+        ax.set_ylim(0, 1.05)
+        ax.grid(alpha=0.3)
+
+        plt.tight_layout()
+        return fig
+
 app = App(app_ui, server)
 ```
 
@@ -893,8 +1001,23 @@ app = App(app_ui, server)
 4. **Navigate the result tabs** to see:
    - **Cost Distribution**: Full probability distribution with key percentiles
    - **Cost Breakdown**: Which components drive costs
+   - **Component Distributions**: Individual distributions for each cost driver (Squiggle-style)
    - **Technology Adoption**: Realized adoption rates and process parameters
    - **Model Details**: Equations and sources
+
+## Pivotal Questions Context
+
+This model is part of [The Unjournal's Pivotal Questions](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) initiative.
+
+**The cultured meat pivotal question asks:**
+
+> What will be the production cost of cultured meat by 2036, and what does this imply for animal welfare interventions?
+
+**Related resources:**
+- [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
+- [Cultured meat Metaculus questions](https://www.metaculus.com/questions/?search=cultured%20meat)
+- [The Unjournal cultured meat evaluations](https://unjournal.org)
+- [Squiggle model version](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
 
 ---
 
