@@ -76,7 +76,59 @@ The main app is embedded in `dashboard/index.qmd` as a `{shinylive-python}` code
 - Shinylive extension (committed in _extensions/)
 ```
 
-### Known Issues / Debugging
+### CURRENT BLOCKING ISSUE (Feb 2025)
+
+**Status**: Shinylive dashboard NOT working - shows 404 errors for Python wheel files
+
+**The Problem**:
+When loading the dashboard in browser, shinylive fails to load required Python packages (.whl files). The browser console shows errors like:
+```
+404: /site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/shiny-1.5.1-py3-none-any.whl
+404: /site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/typing_extensions-4.11.0-py3-none-any.whl
+... (18+ wheel files)
+```
+
+**Paradox**: The wheel files DO exist in `_site/site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/` - they are correctly generated during `quarto render`. But the browser/service worker cannot fetch them.
+
+**Current Versions**:
+- Quarto: 1.6.40
+- Shinylive Python package: 0.8.5
+- Shinylive assets version: 0.10.7
+- Shinylive Quarto extension: 0.2.0
+
+**What Has Been Tried**:
+1. ✗ Upgrading Quarto from 1.4.550 to 1.6.40
+2. ✗ Installing shinylive Python package (`pip install shinylive`)
+3. ✗ Updating shinylive extension (`quarto add quarto-ext/shinylive`)
+4. ✗ Adding `#| packages: [shiny, numpy, matplotlib]` directive
+5. ✗ Setting `embed-resources: false` in _quarto.yml
+6. ✗ Editing shinylive.lua to remove warning text prepend
+7. ✗ Clean rebuild (`rm -rf _site _freeze && quarto render`)
+8. ✗ Different ports for preview server
+9. ✗ Checking file permissions (files are readable)
+
+**Suspected Root Causes** (unconfirmed):
+- Service worker (shinylive-sw.js) path resolution issues
+- Version mismatch between extension (0.2.0) and assets (0.10.7)
+- Browser caching of stale service worker
+- Pyodide loading mechanism incompatibility
+
+**Files to Investigate**:
+- `_site/site_libs/quarto-contrib/shinylive-0.10.7/shinylive-sw.js` - Service worker
+- `_extensions/quarto-ext/shinylive/shinylive.lua` - Lua filter that processes code blocks
+- Browser DevTools > Application > Service Workers
+
+**Next Steps to Try**:
+1. Clear browser service workers and hard refresh
+2. Try in incognito/private window
+3. Check if issue is browser-specific (Chrome vs Firefox vs Safari)
+4. Test with shinylive standalone (not Quarto) to isolate issue
+5. Check shinylive GitHub issues for similar reports
+6. Try older/newer version combinations
+
+See `dashboard/TROUBLESHOOTING.md` for detailed debugging steps.
+
+### Previous Known Issues
 
 **Shinylive "No module named 'shiny'" error**:
 - Occurs when shinylive Python package version doesn't match extension version
@@ -87,7 +139,6 @@ The main app is embedded in `dashboard/index.qmd` as a `{shinylive-python}` code
 **Version Compatibility**:
 - Shinylive extension and Python package versions must match
 - Quarto version affects shinylive compatibility
-- Current working combo: Quarto 1.6.40, shinylive extension 0.2.0
 
 ## Model Details
 

@@ -1,0 +1,19 @@
+---
+title: "Shinylive Test"
+filters:
+  - shinylive
+---
+
+```{shinylive-python}
+#| standalone: true
+#| viewerHeight: 400
+
+from shiny import App, ui
+
+app_ui = ui.page_fluid(
+    ui.h2("Hello Shinylive!"),
+    ui.p("If you see this, shinylive is working.")
+)
+
+app = App(app_ui, None)
+```
