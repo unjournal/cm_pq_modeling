@@ -30,12 +30,12 @@ jobs:
           python-version: '3.11'
 
       - name: Install shinylive Python package
-        run: pip install shinylive
+        run: pip install shinylive>=0.6.0
 
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: "1.4.550"
+          version: "1.6.40"
 
       - name: Install Shinylive extension
         run: |
