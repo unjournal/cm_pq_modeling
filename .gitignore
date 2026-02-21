@@ -37,3 +37,7 @@ outputs/*.pdf
 .env
 *.secret
 credentials.json
+
+# Private content (kept locally, not in public repo)
+.private/
+.claude/

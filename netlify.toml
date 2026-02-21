@@ -1,0 +1,7 @@
+[build]
+  base = "dashboard"
+  publish = "_site"
+  command = "pip install shinylive && quarto add quarto-ext/shinylive --no-prompt && quarto render"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
