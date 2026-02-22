@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site
+  post-render:
+    - python scripts/fix_shinylive_sw.py
 
 website:
   title: "Cultured Meat Cost Model"

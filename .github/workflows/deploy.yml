@@ -35,7 +35,7 @@ jobs:
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: "1.6.40"
+          version: "1.8.27"
 
       - name: Render Dashboard
         run: |

@@ -108,6 +108,37 @@ shinylive export . site
 python -m http.server -d site
 ```
 
+## Fix: Service Worker Base-Path Rewrite (GitHub Pages)
+
+**Symptom**: The browser requests wheels at `/site_libs/...` (missing repo base path) and gets 404 on GitHub Pages.
+
+**Root cause**: The Shinylive service worker rewrites requests from `/cm_pq_modeling/app_x/...` to `/...`, dropping the repo base path. On GitHub Pages this breaks asset and wheel paths.
+
+**Fix**: Patch `shinylive-sw.js` after render to preserve the base path.
+
+This repo includes a post-render patch that rewrites:
+```
+url.pathname = url.pathname.replace(appPathRegex, "/");
+```
+to:
+```
+url.pathname = url.pathname.replace(appPathRegex, base_path + "/");
+```
+
+### How It Is Applied
+- A post-render hook in `dashboard/_quarto.yml` runs:
+  `python scripts/fix_shinylive_sw.py`
+- It patches:
+  - `_site/shinylive-sw.js`
+  - `_site/site_libs/quarto-contrib/shinylive-*/shinylive-sw.js`
+
+### Verify
+1. `quarto render`
+2. Open `test.html` (incognito)
+3. Check DevTools > Network for `.whl` requests:
+   - They should be under `/cm_pq_modeling/site_libs/...` on GitHub Pages
+   - They should return 200
+
 ### 6. Check Shinylive GitHub Issues
 
 - https://github.com/posit-dev/py-shinylive/issues
