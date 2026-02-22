@@ -544,27 +544,30 @@ stats = {
 
 ### Results Summary
 
-<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+```{ojs}
+//| echo: false
+html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Median Cost (p50)</h4>
-<h2 style="margin: 0.5rem 0;">${'$' + stats.p50.toFixed(1)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${stats.p50.toFixed(1)}/kg</h2>
 <small>Half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Optimistic (p5)</h4>
-<h2 style="margin: 0.5rem 0;">${'$' + stats.p5.toFixed(1)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${stats.p5.toFixed(1)}/kg</h2>
 <small>Only 5% of simulations cheaper</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
-<h2 style="margin: 0.5rem 0;">${'$' + stats.p95.toFixed(1)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${stats.p95.toFixed(1)}/kg</h2>
 <small>95% of simulations cheaper</small>
 </div>
 
-</div>
+</div>`
+```
 
 ### Cost Distribution
 
@@ -628,7 +631,9 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
+```{ojs}
+//| echo: false
+html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
 
 <div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $10/kg)</h5>
@@ -654,7 +659,8 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 <small>Below current production estimates</small>
 </div>
 
-</div>
+</div>`
+```
 
 ### Cost Breakdown
 
@@ -724,7 +730,9 @@ The relative sizes shift dramatically based on technology adoption assumptions.
 
 ### Technology Adoption (Realized)
 
-<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
+```{ojs}
+//| echo: false
+html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
 
 <div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>Hydrolysates Adopted</h5>
@@ -744,7 +752,8 @@ The relative sizes shift dramatically based on technology adoption assumptions.
 <small>of simulations have cheap factors</small>
 </div>
 
-</div>
+</div>`
+```
 
 :::
 
