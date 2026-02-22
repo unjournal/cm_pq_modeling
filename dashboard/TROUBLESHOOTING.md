@@ -139,6 +139,28 @@ url.pathname = url.pathname.replace(appPathRegex, base_path + "/");
    - They should be under `/cm_pq_modeling/site_libs/...` on GitHub Pages
    - They should return 200
 
+## Localhost Refused to Connect (Chrome / macOS)
+
+If you see `ERR_CONNECTION_REFUSED` for `http://localhost:<port>` or
+`http://127.0.0.1:<port>`, Shinylive isn't the issue. The local HTTP server
+is not reachable from the browser.
+
+### What We Observed
+- `python -m http.server` **responds to curl** (HTTP 200 for `test.html`)
+- Browser still shows `ERR_CONNECTION_REFUSED` on the same port
+- `file://` URLs show code only due to CORS/service worker restrictions
+
+### Quick Checks
+1. Try `http://127.0.0.1:<port>/test.html` (avoid `localhost` name resolution).
+2. Use a fresh Chrome profile or Incognito (disable extensions/proxy add-ons).
+3. Try Safari (rules out Chrome-only blockers).
+4. Verify server is running:
+   - Terminal 1: `python -m http.server <port> -d _site`
+   - Terminal 2: `curl -I http://127.0.0.1:<port>/test.html`
+
+If curl works but the browser refuses to connect, it’s likely a local
+browser proxy/extension or security tool blocking loopback HTTP.
+
 ### 6. Check Shinylive GitHub Issues
 
 - https://github.com/posit-dev/py-shinylive/issues

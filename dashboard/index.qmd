@@ -8,8 +8,6 @@ format:
     include-after-body:
       text: |
         <script src="https://hypothes.is/embed.js" async></script>
-filters:
-  - shinylive
 ---
 
 ::: {.callout-tip collapse="false"}
@@ -22,191 +20,8 @@ This model is under active development. We welcome your comments and suggestions
 - **Questions**: Email [contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 
-```{shinylive-python}
-#| standalone: true
-#| viewerHeight: 1600
-#| packages: [shiny, numpy, matplotlib]
-
-from shiny import App, ui, render, reactive
-import numpy as np
-import matplotlib.pyplot as plt
-from dataclasses import dataclass
-import math
-
-# ============================================================
-# MODEL CODE
-# ============================================================
-
-Z_5 = -1.6448536269514722
-Z_95 = 1.6448536269514722
-
-def sample_lognormal_p5_p95(rng, p5, p95, n):
-    """Sample from lognormal given 5th and 95th percentiles."""
-    p5 = np.asarray(p5)
-    p95 = np.asarray(p95)
-    mu = (np.log(p5) + np.log(p95)) / 2.0
-    sigma = (np.log(p95) - np.log(p5)) / (2.0 * abs(Z_95))
-    return np.exp(mu + sigma * rng.standard_normal(n))
-
-def sample_uniform(rng, lo, hi, n):
-    return rng.uniform(lo, hi, size=n)
-
-def beta_from_mean_stdev(mean, stdev):
-    """Convert mean/stdev to beta distribution parameters."""
-    var = stdev**2
-    max_var = mean * (1 - mean)
-    if var <= 0 or var >= max_var:
-        stdev = min(stdev, math.sqrt(max_var * 0.99))
-        var = stdev**2
-    t = max_var / var - 1.0
-    a = mean * t
-    b = (1 - mean) * t
-    return max(a, 0.01), max(b, 0.01)
-
-def sample_beta_mean_stdev(rng, mean, stdev, n):
-    """Sample from beta distribution given mean and stdev."""
-    a, b = beta_from_mean_stdev(mean, stdev)
-    return rng.beta(a, b, size=n)
-
-def crf(wacc, n_years):
-    """Capital Recovery Factor for annualizing CAPEX."""
-    return wacc * (1 + wacc) ** n_years / ((1 + wacc) ** n_years - 1)
-
-def simulate(n, seed, params):
-    """Run Monte Carlo simulation with given parameters."""
-    rng = np.random.default_rng(seed)
-
-    # Unpack params
-    plant_kta_p5 = params['plant_kta_p5']
-    plant_kta_p95 = params['plant_kta_p95']
-    uptime_mean = params['uptime_mean']
-    maturity_mean = params['maturity_mean']
-    p_hydro_mean = params['p_hydro_mean']
-    p_foodgrade_mean = params['p_foodgrade_mean']
-    p_recfactors_mean = params['p_recfactors_mean']
-    wacc_p5 = params['wacc_p5']
-    wacc_p95 = params['wacc_p95']
-    asset_life_lo = params['asset_life_lo']
-    asset_life_hi = params['asset_life_hi']
-
-    # Process params
-    density_gL_p5 = params.get('density_gL_p5', 30)
-    density_gL_p95 = params.get('density_gL_p95', 200)
-    media_turnover_p5 = params.get('media_turnover_p5', 1.0)
-    media_turnover_p95 = params.get('media_turnover_p95', 10.0)
-
-    # Model structure options
-    include_capex = params.get('include_capex', True)
-    include_fixed_opex = params.get('include_fixed_opex', True)
-    distribution_type = params.get('distribution_type', 'lognormal')
-
-    # Latent maturity factor (0 = nascent industry, 1 = mature)
-    maturity = sample_beta_mean_stdev(rng, maturity_mean, 0.20, n)
-
-    # Scale and uptime
-    plant_kta = sample_lognormal_p5_p95(rng, plant_kta_p5, plant_kta_p95, n)
-    uptime = sample_beta_mean_stdev(rng, uptime_mean, 0.05, n)
-    output_kgpy = plant_kta * 1e6 * uptime
-
-    # Adoption probabilities (maturity-adjusted)
-    p_hydro = np.clip(sample_beta_mean_stdev(rng, p_hydro_mean, 0.10, n) + 0.25*(maturity-0.5), 0, 1)
-    p_foodgrade = np.clip(sample_beta_mean_stdev(rng, p_foodgrade_mean, 0.10, n) + 0.20*(maturity-0.5), 0, 1)
-    p_recf = np.clip(sample_beta_mean_stdev(rng, p_recfactors_mean, 0.15, n) + 0.25*(maturity-0.5), 0, 1)
-
-    is_hydro = rng.random(n) < p_hydro
-    is_foodgrade = rng.random(n) < p_foodgrade
-    is_recf_cheap = rng.random(n) < p_recf
-
-    # Process intensities
-    density_gL = sample_lognormal_p5_p95(rng, density_gL_p5, density_gL_p95, n)
-    cycle_days = sample_lognormal_p5_p95(rng, 0.5, 5.0, n)
-    media_turnover = sample_lognormal_p5_p95(rng, media_turnover_p5, media_turnover_p95, n)
-    L_per_kg = (1000.0 / density_gL) * media_turnover
-
-    # Media cost (largest driver for most scenarios)
-    media_cost_L = np.where(
-        is_hydro,
-        sample_lognormal_p5_p95(rng, 0.2, 1.2, n),
-        sample_lognormal_p5_p95(rng, 1.0, 4.0, n),
-    )
-    cost_media = L_per_kg * media_cost_L
-
-    # Commodity micronutrients
-    g_comm = np.where(is_foodgrade,
-        sample_lognormal_p5_p95(rng, 0.1, 2.0, n),
-        sample_lognormal_p5_p95(rng, 1.0, 10.0, n))
-    price_comm = np.where(is_foodgrade,
-        sample_lognormal_p5_p95(rng, 0.02, 2.0, n),
-        sample_lognormal_p5_p95(rng, 0.5, 20.0, n))
-    cost_comm_micros = g_comm * price_comm
-
-    # Recombinant growth factors
-    g_recf = np.where(is_recf_cheap,
-        sample_lognormal_p5_p95(rng, 1e-4, 1e-2, n),
-        sample_lognormal_p5_p95(rng, 1e-3, 2e-1, n))
-    price_recf = np.where(is_recf_cheap,
-        sample_lognormal_p5_p95(rng, 0.05, 20.0, n),
-        sample_lognormal_p5_p95(rng, 5.0, 500.0, n))
-    cost_recf = g_recf * price_recf
-
-    # Other variable operating costs
-    other_var = sample_lognormal_p5_p95(rng, 0.5, 5.0, n)
-    voc = cost_media + cost_comm_micros + cost_recf + other_var
-
-    # CAPEX calculation
-    if include_capex:
-        prod_kg_L_day = (density_gL / 1000.0) / cycle_days
-        total_working_volume_L = output_kgpy / (prod_kg_L_day * 365.0)
-        reactor_cost_L_pharma = sample_lognormal_p5_p95(rng, 50, 500, n)
-        custom_ratio = sample_uniform(rng, 0.35, 0.85, n)
-        custom_share = np.clip(sample_beta_mean_stdev(rng, 0.55, 0.15, n) + 0.30*(maturity-0.5), 0, 1)
-        reactor_cost_L_avg = reactor_cost_L_pharma * (custom_share*custom_ratio + (1-custom_share))
-        capex_s = sample_uniform(rng, 0.6, 0.9, n)
-        plant_factor = sample_lognormal_p5_p95(rng, 1.5, 3.5, n)
-        V_ref = 1e6
-        capex_total = (reactor_cost_L_avg * total_working_volume_L) * ((total_working_volume_L / V_ref) ** (capex_s - 1)) * plant_factor
-        wacc = sample_lognormal_p5_p95(rng, wacc_p5, wacc_p95, n) - 0.03*(maturity-0.5)
-        wacc = np.clip(wacc, 0.03, None)
-        asset_life = sample_uniform(rng, asset_life_lo, asset_life_hi, n)
-        crf_val = crf(wacc, asset_life)
-        capex_perkg = (capex_total * crf_val) / output_kgpy
-    else:
-        capex_perkg = np.zeros(n)
-
-    # Fixed OPEX calculation
-    if include_fixed_opex:
-        ref_output = 20e6 * 0.9
-        fixed_perkg_ref = sample_uniform(rng, 1.0, 6.0, n)
-        fixed_annual_ref = fixed_perkg_ref * ref_output
-        fixed_scale = sample_uniform(rng, 0.6, 1.0, n)
-        fixed_annual = fixed_annual_ref * ((output_kgpy / ref_output) ** fixed_scale)
-        fixed_perkg = fixed_annual / output_kgpy
-    else:
-        fixed_perkg = np.zeros(n)
-
-    unit_cost = voc + capex_perkg + fixed_perkg
-
-    return {
-        'unit_cost': unit_cost,
-        'cost_media': cost_media,
-        'cost_comm_micros': cost_comm_micros,
-        'cost_recf': cost_recf,
-        'cost_other_var': other_var,
-        'cost_capex': capex_perkg,
-        'cost_fixed': fixed_perkg,
-        'pct_hydro': float(np.mean(is_hydro)),
-        'pct_foodgrade': float(np.mean(is_foodgrade)),
-        'pct_recf_cheap': float(np.mean(is_recf_cheap)),
-        'maturity_samples': maturity,
-        'density_samples': density_gL,
-    }
-
-# ============================================================
-# SHINY APP UI
-# ============================================================
-
-process_explainer = """
-### How Cultured Meat Production Works
+::: {.callout-note collapse="true"}
+## Learn: How Cultured Meat Production Works
 
 Cultured (cell-based) meat is produced by growing animal cells in large bioreactors, similar to brewing but with mammalian cells instead of yeast.
 
@@ -232,14 +47,15 @@ Cultured (cell-based) meat is produced by growing animal cells in large bioreact
 5. **Cycle Time**: Days per batch. Faster = more batches/year = lower cost per kg.
 
 **Why costs could drop dramatically:**
+
 - Hydrolysates (cheap plant proteins) replacing expensive pure amino acids
 - Food-grade ingredients replacing pharma-grade
 - Economies of scale in growth factor production
 - Learning curve in reactor design
-"""
+:::
 
-distributions_explainer = """
-### Understanding the Uncertainty Model
+::: {.callout-note collapse="true"}
+## Learn: Understanding Uncertainty & Distributions
 
 This model uses **Monte Carlo simulation**: we sample thousands of possible futures and see what distribution of costs emerges.
 
@@ -255,253 +71,549 @@ This model uses **Monte Carlo simulation**: we sample thousands of possible futu
 
 - **p5 (5th percentile)**: "Optimistic" - only 5% of simulations are cheaper
 - **p50 (median)**: Middle outcome - half above, half below
-- **p95 (95th percentile)**: "Pessimistic" - 95% of simulations are cheaper
+- **p95 (95th percentile)**: "Pessimistic" - 95% of simulations cheaper
 
 **The "Maturity" Correlation:**
 
 A key feature is the **latent maturity factor** that links:
+
 - Technology adoption rates
 - Reactor costs
 - Financing costs (WACC)
 
 In "good worlds" for cultured meat (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
-"""
+:::
 
-app_ui = ui.page_fluid(
-    # Header section with more space
-    ui.div(
-        ui.h1("Cultured Meat Production Cost Model", class_="display-5 fw-bold mb-2"),
-        ui.p("Interactive Monte Carlo techno-economic analysis projecting 2036 production costs",
-             class_="lead text-muted mb-4"),
-        class_="text-center py-4 mb-4"
-    ),
+---
 
-    # Process explanation accordion (educational content)
-    ui.accordion(
-        ui.accordion_panel(
-            "Learn: How Cultured Meat Production Works",
-            ui.markdown(process_explainer),
-            icon=ui.span("?", class_="badge bg-info rounded-pill")
-        ),
-        ui.accordion_panel(
-            "Learn: Understanding Uncertainty & Distributions",
-            ui.markdown(distributions_explainer),
-            icon=ui.span("?", class_="badge bg-info rounded-pill")
-        ),
-        id="learn_accordion",
-        open=False,
-        class_="mb-5"
-    ),
+## Interactive Model
 
-    ui.hr(class_="my-4"),
+```{ojs}
+//| echo: false
 
-    # Main content: Sidebar + Results
-    ui.layout_sidebar(
-        ui.sidebar(
-            # Model structure options
-            ui.h4("Model Structure", class_="mb-3"),
-            ui.accordion(
-                ui.accordion_panel(
-                    "What to include in cost calculation",
-                    ui.input_checkbox("include_capex", "Include capital costs (CAPEX)", value=True),
-                    ui.input_checkbox("include_fixed_opex", "Include fixed operating costs", value=True),
-                    ui.p("Uncheck to see variable costs only", class_="text-muted small mt-2"),
-                ),
-                open=False,
-                class_="mb-3"
-            ),
+// ============================================================
+// SEEDED RANDOM NUMBER GENERATOR
+// ============================================================
 
-            ui.hr(),
+// Simple mulberry32 PRNG (fast, good quality for Monte Carlo)
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
 
-            # Basic parameters with tooltips
-            ui.h4("Basic Parameters", class_="mb-3"),
+// ============================================================
+// STATISTICAL SAMPLING FUNCTIONS
+// ============================================================
 
-            ui.div(
-                ui.input_slider("plant_kta_p50", "Plant Capacity (kTA/yr)", 5, 100, 20, step=5),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Annual production capacity in thousand metric tons. "
-                             "Current pilots: <1 kTA. Commercial target: 10-50 kTA.", class_="small"),
-                        ui.p("Distribution: Lognormal with your value as median, spread to 0.5x-2x.", class_="small text-muted"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-3"
-            ),
+// Box-Muller transform for standard normal
+function boxMuller(rng) {
+  const u1 = rng();
+  const u2 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
 
-            ui.div(
-                ui.input_slider("uptime", "Utilization Rate", 0.6, 0.99, 0.90, step=0.01),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Fraction of capacity actually used. Accounts for downtime, "
-                             "cleaning, maintenance. 90% is optimistic for new industry.", class_="small"),
-                        ui.p("Distribution: Beta with your value as mean, stdev=0.05.", class_="small text-muted"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-3"
-            ),
+// Sample from lognormal given p5 and p95
+function sampleLognormalP5P95(rng, p5, p95, n) {
+  const Z_95 = 1.6448536269514722;
+  const mu = (Math.log(p5) + Math.log(p95)) / 2;
+  const sigma = (Math.log(p95) - Math.log(p5)) / (2 * Z_95);
 
-            ui.div(
-                ui.input_slider("maturity", "Industry Maturity by 2036", 0.1, 0.9, 0.5, step=0.05),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("A latent factor (0=nascent, 1=mature) that affects all technology adoption, "
-                             "reactor costs, and financing. High maturity = correlated improvements.", class_="small"),
-                        ui.p("Distribution: Beta with your value as mean, stdev=0.20.", class_="small text-muted"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-4"
-            ),
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) {
+    samples[i] = Math.exp(mu + sigma * boxMuller(rng));
+  }
+  return samples;
+}
 
-            ui.hr(),
+// Sample uniform
+function sampleUniform(rng, lo, hi, n) {
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) {
+    samples[i] = lo + (hi - lo) * rng();
+  }
+  return samples;
+}
 
-            # Technology adoption
-            ui.h4("Technology Adoption by 2036", class_="mb-3"),
-            ui.p("Probability each cost-reducing technology is widely adopted", class_="text-muted small mb-3"),
+// Beta distribution parameters from mean/stdev
+function betaFromMeanStdev(mean, stdev) {
+  let variance = stdev * stdev;
+  const maxVar = mean * (1 - mean);
+  if (variance <= 0 || variance >= maxVar) {
+    stdev = Math.sqrt(maxVar * 0.99);
+    variance = stdev * stdev;
+  }
+  const t = maxVar / variance - 1;
+  const a = Math.max(mean * t, 0.01);
+  const b = Math.max((1 - mean) * t, 0.01);
+  return [a, b];
+}
 
-            ui.div(
-                ui.input_slider("p_hydro", "P(Hydrolysates)", 0.1, 0.9, 0.6, step=0.05),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Hydrolysates are cheap plant-protein digests that can replace "
-                             "expensive pharmaceutical-grade amino acids. Reduces media cost by ~70%.", class_="small"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-3"
-            ),
+// Sample from beta using Joehnk's algorithm (simple, works for all a,b > 0)
+function sampleBeta(rng, a, b) {
+  // Use gamma ratio method
+  const gammaA = sampleGamma(rng, a);
+  const gammaB = sampleGamma(rng, b);
+  return gammaA / (gammaA + gammaB);
+}
 
-            ui.div(
-                ui.input_slider("p_foodgrade", "P(Food-grade micros)", 0.1, 0.9, 0.65, step=0.05),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Food-grade micronutrients (vitamins, minerals) are much cheaper "
-                             "than pharma-grade. Reduces micronutrient cost by ~90%.", class_="small"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-3"
-            ),
+// Sample from gamma distribution (Marsaglia and Tsang's method)
+function sampleGamma(rng, shape) {
+  if (shape < 1) {
+    return sampleGamma(rng, shape + 1) * Math.pow(rng(), 1 / shape);
+  }
 
-            ui.div(
-                ui.input_slider("p_recfactors", "P(Cheap recombinant factors)", 0.1, 0.9, 0.5, step=0.05),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Growth factors (proteins signaling cell growth) are currently very expensive. "
-                             "Recombinant production at scale could reduce costs 100-1000x.", class_="small"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-4"
-            ),
+  const d = shape - 1/3;
+  const c = 1 / Math.sqrt(9 * d);
 
-            ui.hr(),
+  while (true) {
+    let x, v;
+    do {
+      x = boxMuller(rng);
+      v = 1 + c * x;
+    } while (v <= 0);
 
-            # Financing parameters
-            ui.h4("Financing", class_="mb-3"),
+    v = v * v * v;
+    const u = rng();
 
-            ui.div(
-                ui.input_slider("wacc_range", "WACC Range (%)", 5, 30, (8, 20), step=1),
-                ui.accordion(
-                    ui.accordion_panel(
-                        "What is this?",
-                        ui.p("Weighted Average Cost of Capital. Higher WACC = riskier industry = "
-                             "higher required returns. Tech startups: 15-25%. Food industry: 8-12%.", class_="small"),
-                        ui.p("Distribution: Lognormal with these as p5-p95 bounds.", class_="small text-muted"),
-                    ),
-                    open=False,
-                    class_="mb-2"
-                ),
-                class_="mb-3"
-            ),
+    if (u < 1 - 0.0331 * (x * x) * (x * x)) return d * v;
+    if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+  }
+}
 
-            ui.input_slider("asset_life", "Asset Life (years)", 5, 30, (8, 20), step=1),
+// Sample from beta given mean/stdev
+function sampleBetaMeanStdev(rng, mean, stdev, n) {
+  const [a, b] = betaFromMeanStdev(mean, stdev);
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) {
+    samples[i] = sampleBeta(rng, a, b);
+  }
+  return samples;
+}
 
-            ui.hr(),
+// Capital Recovery Factor
+function crf(wacc, nYears) {
+  return wacc * Math.pow(1 + wacc, nYears) / (Math.pow(1 + wacc, nYears) - 1);
+}
 
-            # Process parameters (advanced)
-            ui.accordion(
-                ui.accordion_panel(
-                    "Advanced: Process Intensities",
-                    ui.input_slider("density_range", "Cell Density at Harvest (g/L)", 10, 300, (30, 200), step=10),
-                    ui.p("Current best: ~50 g/L. Theoretical max: ~200-300 g/L.", class_="small text-muted"),
+// Clip values between min and max
+function clip(arr, min, max) {
+  return arr.map(v => Math.min(Math.max(v, min), max));
+}
 
-                    ui.input_slider("media_turnover", "Media Turnover Ratio", 1, 20, (1, 10), step=1),
-                    ui.p("1 = batch mode (single fill). >1 = perfusion (continuous media exchange).", class_="small text-muted"),
-                ),
-                open=False,
-                class_="mb-4"
-            ),
+// Element-wise operations
+function add(a, b) { return a.map((v, i) => v + b[i]); }
+function mul(a, b) { return a.map((v, i) => v * b[i]); }
+function div(a, b) { return a.map((v, i) => v / b[i]); }
+function scale(arr, s) { return arr.map(v => v * s); }
 
-            ui.hr(),
+// ============================================================
+// MAIN SIMULATION FUNCTION
+// ============================================================
 
-            # Run button
-            ui.input_action_button("run", "Run Simulation (30,000 samples)",
-                                   class_="btn-primary btn-lg w-100 my-3"),
+function simulate(n, seed, params) {
+  const rng = mulberry32(seed);
 
-            ui.p("Results will appear in the panels to the right.", class_="text-muted small text-center"),
+  // Latent maturity factor
+  const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
 
-            width=380,
-        ),
+  // Scale and uptime
+  const plant_kta = sampleLognormalP5P95(rng, params.plant_kta_p5, params.plant_kta_p95, n);
+  const uptime = sampleBetaMeanStdev(rng, params.uptime_mean, 0.05, n);
+  const output_kgpy = mul(scale(plant_kta, 1e6), uptime);
 
-        # Main results panel
-        ui.div(
-            # Summary statistics cards
-            ui.h3("Results Summary", class_="mb-4"),
+  // Adoption probabilities (maturity-adjusted)
+  let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
+  p_hydro = clip(add(p_hydro, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
 
-            ui.layout_columns(
-                ui.value_box(
-                    "Median Cost (p50)",
-                    ui.output_text("median_cost"),
-                    "$/kg - Half of simulations above, half below",
-                    theme="primary",
-                    full_screen=False,
-                ),
-                ui.value_box(
-                    "Optimistic (p5)",
-                    ui.output_text("p5_cost"),
-                    "$/kg - Only 5% of simulations cheaper",
-                    theme="success",
-                    full_screen=False,
-                ),
-                ui.value_box(
-                    "Pessimistic (p95)",
-                    ui.output_text("p95_cost"),
-                    "$/kg - 95% of simulations cheaper",
-                    theme="danger",
-                    full_screen=False,
-                ),
-                col_widths=[4, 4, 4],
-                class_="mb-5"
-            ),
+  let p_foodgrade = sampleBetaMeanStdev(rng, params.p_foodgrade_mean, 0.10, n);
+  p_foodgrade = clip(add(p_foodgrade, scale(maturity.map(m => m - 0.5), 0.20)), 0, 1);
 
-            ui.hr(class_="my-4"),
+  let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
+  p_recf = clip(add(p_recf, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
 
-            # Tabs for different views
-            ui.navset_card_tab(
-                ui.nav_panel(
-                    "Cost Distribution",
-                    ui.div(
-                        ui.h4("Unit Cost Distribution", class_="mb-3"),
-                        ui.output_plot("cost_histogram", height="400px"),
-                        ui.accordion(
-                            ui.accordion_panel(
-                                "How to read this chart",
-                                ui.markdown("""
+  // Bernoulli draws for adoption
+  const is_hydro = p_hydro.map(p => rng() < p);
+  const is_foodgrade = p_foodgrade.map(p => rng() < p);
+  const is_recf_cheap = p_recf.map(p => rng() < p);
+
+  // Process intensities
+  const density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
+  const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+  const media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
+  const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
+
+  // Media cost
+  const media_cost_hydro = sampleLognormalP5P95(rng, 0.2, 1.2, n);
+  const media_cost_pharma = sampleLognormalP5P95(rng, 1.0, 4.0, n);
+  const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
+  const cost_media = mul(L_per_kg, media_cost_L);
+
+  // Commodity micronutrients
+  const g_comm_food = sampleLognormalP5P95(rng, 0.1, 2.0, n);
+  const g_comm_pharma = sampleLognormalP5P95(rng, 1.0, 10.0, n);
+  const g_comm = is_foodgrade.map((f, i) => f ? g_comm_food[i] : g_comm_pharma[i]);
+
+  const price_comm_food = sampleLognormalP5P95(rng, 0.02, 2.0, n);
+  const price_comm_pharma = sampleLognormalP5P95(rng, 0.5, 20.0, n);
+  const price_comm = is_foodgrade.map((f, i) => f ? price_comm_food[i] : price_comm_pharma[i]);
+  const cost_comm_micros = mul(g_comm, price_comm);
+
+  // Recombinant growth factors
+  const g_recf_cheap = sampleLognormalP5P95(rng, 1e-4, 1e-2, n);
+  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 2e-1, n);
+  const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
+
+  const price_recf_cheap = sampleLognormalP5P95(rng, 0.05, 20.0, n);
+  const price_recf_exp = sampleLognormalP5P95(rng, 5.0, 500.0, n);
+  const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
+  const cost_recf = mul(g_recf, price_recf);
+
+  // Other variable costs
+  const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+
+  // VOC total
+  const voc = add(add(add(cost_media, cost_comm_micros), cost_recf), other_var);
+
+  // CAPEX calculation
+  let capex_perkg = new Array(n).fill(0);
+  if (params.include_capex) {
+    const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
+    const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
+    const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
+    const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
+    let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
+    custom_share = clip(add(custom_share, scale(maturity.map(m => m - 0.5), 0.30)), 0, 1);
+
+    const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
+      p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i]))
+    );
+
+    const capex_s = sampleUniform(rng, 0.6, 0.9, n);
+    const plant_factor = sampleLognormalP5P95(rng, 1.5, 3.5, n);
+    const V_ref = 1e6;
+
+    const capex_total = reactor_cost_L_avg.map((r, i) =>
+      r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]
+    );
+
+    let wacc = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
+    wacc = clip(wacc.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
+
+    const asset_life = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
+    const crf_val = wacc.map((w, i) => crf(w, asset_life[i]));
+
+    capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
+  }
+
+  // Fixed OPEX calculation
+  let fixed_perkg = new Array(n).fill(0);
+  if (params.include_fixed_opex) {
+    const ref_output = 20e6 * 0.9;
+    const fixed_perkg_ref = sampleUniform(rng, 1.0, 6.0, n);
+    const fixed_annual_ref = scale(fixed_perkg_ref, ref_output);
+    const fixed_scale = sampleUniform(rng, 0.6, 1.0, n);
+
+    const fixed_annual = fixed_annual_ref.map((f, i) =>
+      f * Math.pow(output_kgpy[i] / ref_output, fixed_scale[i])
+    );
+    fixed_perkg = div(fixed_annual, output_kgpy);
+  }
+
+  // Total unit cost
+  const unit_cost = add(add(voc, capex_perkg), fixed_perkg);
+
+  return {
+    unit_cost,
+    cost_media,
+    cost_comm_micros,
+    cost_recf,
+    cost_other_var: other_var,
+    cost_capex: capex_perkg,
+    cost_fixed: fixed_perkg,
+    pct_hydro: is_hydro.filter(x => x).length / n,
+    pct_foodgrade: is_foodgrade.filter(x => x).length / n,
+    pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
+    maturity_samples: maturity,
+    density_samples: density_gL
+  };
+}
+
+// Statistical helpers
+function quantile(arr, q) {
+  const sorted = [...arr].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * q;
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  const frac = idx - lo;
+  return sorted[lo] * (1 - frac) + sorted[hi] * frac;
+}
+
+function mean(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+```
+
+### Model Parameters
+
+::: {.panel-sidebar}
+
+**Model Structure**
+
+```{ojs}
+//| echo: false
+viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
+viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
+```
+
+---
+
+**Basic Parameters**
+
+```{ojs}
+//| echo: false
+viewof plant_capacity = Inputs.range([5, 100], {
+  value: 20, step: 5,
+  label: "Plant Capacity (kTA/yr)"
+})
+```
+<details><summary>What is this?</summary>
+Annual production capacity in thousand metric tons. Current pilots: <1 kTA. Commercial target: 10-50 kTA.
+</details>
+
+```{ojs}
+//| echo: false
+viewof uptime = Inputs.range([0.6, 0.99], {
+  value: 0.90, step: 0.01,
+  label: "Utilization Rate"
+})
+```
+<details><summary>What is this?</summary>
+Fraction of capacity actually used. Accounts for downtime, cleaning, maintenance. 90% is optimistic for new industry.
+</details>
+
+```{ojs}
+//| echo: false
+viewof maturity = Inputs.range([0.1, 0.9], {
+  value: 0.5, step: 0.05,
+  label: "Industry Maturity by 2036"
+})
+```
+<details><summary>What is this?</summary>
+A latent factor (0=nascent, 1=mature) that affects all technology adoption, reactor costs, and financing. High maturity = correlated improvements.
+</details>
+
+---
+
+**Technology Adoption by 2036**
+
+```{ojs}
+//| echo: false
+viewof p_hydro = Inputs.range([0.1, 0.9], {
+  value: 0.6, step: 0.05,
+  label: "P(Hydrolysates)"
+})
+```
+<details><summary>What is this?</summary>
+Hydrolysates are cheap plant-protein digests that can replace expensive pharmaceutical-grade amino acids. Reduces media cost by ~70%.
+</details>
+
+```{ojs}
+//| echo: false
+viewof p_foodgrade = Inputs.range([0.1, 0.9], {
+  value: 0.65, step: 0.05,
+  label: "P(Food-grade micros)"
+})
+```
+<details><summary>What is this?</summary>
+Food-grade micronutrients (vitamins, minerals) are much cheaper than pharma-grade. Reduces micronutrient cost by ~90%.
+</details>
+
+```{ojs}
+//| echo: false
+viewof p_recfactors = Inputs.range([0.1, 0.9], {
+  value: 0.5, step: 0.05,
+  label: "P(Cheap recombinant factors)"
+})
+```
+<details><summary>What is this?</summary>
+Growth factors (proteins signaling cell growth) are currently very expensive. Recombinant production at scale could reduce costs 100-1000x.
+</details>
+
+---
+
+**Financing**
+
+```{ojs}
+//| echo: false
+viewof wacc_lo = Inputs.range([5, 20], {
+  value: 8, step: 1,
+  label: "WACC Low (%)"
+})
+viewof wacc_hi = Inputs.range([10, 35], {
+  value: 20, step: 1,
+  label: "WACC High (%)"
+})
+viewof asset_life_lo = Inputs.range([5, 15], {
+  value: 8, step: 1,
+  label: "Asset Life Low (years)"
+})
+viewof asset_life_hi = Inputs.range([10, 30], {
+  value: 20, step: 1,
+  label: "Asset Life High (years)"
+})
+```
+
+---
+
+**Advanced: Process Intensities**
+
+<details>
+<summary>Show advanced parameters</summary>
+
+```{ojs}
+//| echo: false
+viewof density_lo = Inputs.range([10, 100], {
+  value: 30, step: 10,
+  label: "Cell Density Low (g/L)"
+})
+viewof density_hi = Inputs.range([50, 300], {
+  value: 200, step: 10,
+  label: "Cell Density High (g/L)"
+})
+viewof media_turnover_lo = Inputs.range([1, 5], {
+  value: 1, step: 1,
+  label: "Media Turnover Low"
+})
+viewof media_turnover_hi = Inputs.range([2, 20], {
+  value: 10, step: 1,
+  label: "Media Turnover High"
+})
+```
+</details>
+
+:::
+
+::: {.panel-fill}
+
+```{ojs}
+//| echo: false
+
+// Run simulation reactively whenever inputs change
+results = {
+  const params = {
+    plant_kta_p5: plant_capacity * 0.5,
+    plant_kta_p95: plant_capacity * 2.0,
+    uptime_mean: uptime,
+    maturity_mean: maturity,
+    p_hydro_mean: p_hydro,
+    p_foodgrade_mean: p_foodgrade,
+    p_recfactors_mean: p_recfactors,
+    wacc_p5: wacc_lo / 100,
+    wacc_p95: wacc_hi / 100,
+    asset_life_lo: asset_life_lo,
+    asset_life_hi: asset_life_hi,
+    density_gL_p5: density_lo,
+    density_gL_p95: density_hi,
+    media_turnover_p5: media_turnover_lo,
+    media_turnover_p95: media_turnover_hi,
+    include_capex: include_capex,
+    include_fixed_opex: include_fixed_opex
+  };
+
+  return simulate(30000, 42, params);
+}
+
+// Calculate statistics
+stats = {
+  const uc = results.unit_cost;
+  return {
+    p5: quantile(uc, 0.05),
+    p50: quantile(uc, 0.50),
+    p95: quantile(uc, 0.95),
+    prob_10: uc.filter(x => x < 10).length / uc.length * 100,
+    prob_25: uc.filter(x => x < 25).length / uc.length * 100,
+    prob_50: uc.filter(x => x < 50).length / uc.length * 100,
+    prob_100: uc.filter(x => x < 100).length / uc.length * 100
+  };
+}
+```
+
+### Results Summary
+
+<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+
+<div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
+<h4 style="margin: 0; opacity: 0.9;">Median Cost (p50)</h4>
+<h2 style="margin: 0.5rem 0;">${'$' + stats.p50.toFixed(1)}/kg</h2>
+<small>Half of simulations above, half below</small>
+</div>
+
+<div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
+<h4 style="margin: 0; opacity: 0.9;">Optimistic (p5)</h4>
+<h2 style="margin: 0.5rem 0;">${'$' + stats.p5.toFixed(1)}/kg</h2>
+<small>Only 5% of simulations cheaper</small>
+</div>
+
+<div class="card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
+<h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
+<h2 style="margin: 0.5rem 0;">${'$' + stats.p95.toFixed(1)}/kg</h2>
+<small>95% of simulations cheaper</small>
+</div>
+
+</div>
+
+### Cost Distribution
+
+```{ojs}
+//| echo: false
+Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
+```
+
+```{ojs}
+//| echo: false
+{
+  const uc = results.unit_cost;
+  const clipVal = Math.min(quantile(uc, 0.98), 200);
+  const clipped = uc.filter(x => x <= clipVal);
+
+  return Plot.plot({
+    width: 800,
+    height: 400,
+    marginLeft: 60,
+    marginBottom: 50,
+    x: {
+      label: "Unit Production Cost ($/kg)",
+      domain: [0, clipVal * 1.05]
+    },
+    y: {
+      label: "Frequency",
+      grid: true
+    },
+    marks: [
+      Plot.rectY(clipped, Plot.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
+      Plot.ruleX([stats.p5], {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
+      Plot.ruleX([stats.p50], {stroke: "blue", strokeWidth: 3}),
+      Plot.ruleX([stats.p95], {stroke: "red", strokeWidth: 2, strokeDasharray: "5,5"}),
+      Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+      Plot.ruleX([25], {stroke: "orange", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+      Plot.text([
+        {x: stats.p5 + 2, y: 2500, text: `p5: $${stats.p5.toFixed(1)}`},
+        {x: stats.p50 + 2, y: 3000, text: `p50: $${stats.p50.toFixed(1)}`},
+        {x: stats.p95 + 2, y: 2500, text: `p95: $${stats.p95.toFixed(1)}`}
+      ], {x: "x", y: "y", text: "text", fontSize: 12})
+    ],
+    title: "Projected 2036 Cultured Meat Production Cost Distribution"
+  })
+}
+```
+
+<details>
+<summary>How to read this chart</summary>
+
 **The histogram** shows the distribution of simulated production costs.
 
 - **Blue bars**: Frequency of each cost level across 30,000 simulations
@@ -512,482 +624,129 @@ app_ui = ui.page_fluid(
 - **Orange dotted**: $25/kg reference (premium product viable)
 
 The **width** of the distribution shows uncertainty. Narrow = confident. Wide = uncertain.
-                                """),
-                            ),
-                            open=False,
-                            class_="mt-3"
-                        ),
-                        class_="mb-5"
-                    ),
-                    ui.hr(),
-                    ui.div(
-                        ui.h4("Probability Thresholds", class_="mb-4"),
-                        ui.output_ui("prob_cards"),
-                        class_="mb-4"
-                    ),
-                ),
+</details>
 
-                ui.nav_panel(
-                    "Cost Breakdown",
-                    ui.div(
-                        ui.h4("Average Cost Components", class_="mb-3"),
-                        ui.output_plot("cost_breakdown", height="400px"),
-                        ui.accordion(
-                            ui.accordion_panel(
-                                "Understanding the cost components",
-                                ui.markdown("""
+### Probability Thresholds
+
+<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
+
+<div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>P(Cost < $10/kg)</h5>
+<h2 style="color: #27ae60;">${stats.prob_10.toFixed(1)}%</h2>
+<small>Price-competitive with conventional ground beef</small>
+</div>
+
+<div class="card" style="border: 2px solid ${stats.prob_25 > 50 ? '#3498db' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>P(Cost < $25/kg)</h5>
+<h2 style="color: #3498db;">${stats.prob_25.toFixed(1)}%</h2>
+<small>Viable as premium product</small>
+</div>
+
+<div class="card" style="border: 2px solid ${stats.prob_50 > 50 ? '#f39c12' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>P(Cost < $50/kg)</h5>
+<h2 style="color: #f39c12;">${stats.prob_50.toFixed(1)}%</h2>
+<small>Similar to wagyu beef</small>
+</div>
+
+<div class="card" style="border: 2px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>P(Cost < $100/kg)</h5>
+<h2 style="color: #e74c3c;">${stats.prob_100.toFixed(1)}%</h2>
+<small>Below current production estimates</small>
+</div>
+
+</div>
+
+### Cost Breakdown
+
+```{ojs}
+//| echo: false
+{
+  const components = [
+    {name: "Media", value: mean(results.cost_media), color: "#27ae60"},
+    {name: "Micronutrients", value: mean(results.cost_comm_micros), color: "#3498db"},
+    {name: "Growth Factors", value: mean(results.cost_recf), color: "#9b59b6"},
+    {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
+    {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
+    {name: "Fixed OPEX", value: mean(results.cost_fixed), color: "#f39c12"}
+  ].sort((a, b) => b.value - a.value);
+
+  const total = components.reduce((s, c) => s + c.value, 0);
+
+  return Plot.plot({
+    width: 800,
+    height: 350,
+    marginLeft: 150,
+    marginRight: 100,
+    x: {
+      label: "Average Cost ($/kg)",
+      grid: true
+    },
+    y: {
+      label: null
+    },
+    marks: [
+      Plot.barX(components, {
+        y: "name",
+        x: "value",
+        fill: "color",
+        sort: {y: "-x"}
+      }),
+      Plot.text(components, {
+        y: "name",
+        x: d => d.value + 0.5,
+        text: d => `$${d.value.toFixed(2)} (${(d.value/total*100).toFixed(0)}%)`,
+        textAnchor: "start",
+        fontSize: 12
+      })
+    ],
+    title: `Cost Breakdown by Component (Total: $${total.toFixed(2)}/kg)`
+  })
+}
+```
+
+<details>
+<summary>Understanding the cost components</summary>
+
 **Variable Operating Costs (VOC):**
+
 - **Media**: Nutrient broth for cell growth (amino acids, glucose, vitamins)
 - **Comm. Micros**: Commercial micronutrients (minerals, trace elements)
 - **Recombinant**: Growth factors (proteins signaling cell division)
 - **Other VOC**: Utilities, consumables, waste disposal
 
 **Fixed Costs:**
+
 - **CAPEX**: Capital costs (reactors, facilities) annualized via Capital Recovery Factor
 - **Fixed OPEX**: Labor, maintenance, overhead (scales with plant size)
 
 The relative sizes shift dramatically based on technology adoption assumptions.
-                                """),
-                            ),
-                            open=False,
-                            class_="mt-3"
-                        ),
-                        class_="mb-5"
-                    ),
-                ),
+</details>
 
-                ui.nav_panel(
-                    "Component Distributions",
-                    ui.div(
-                        ui.h4("Cost Component Distributions", class_="mb-3"),
-                        ui.p("Individual distributions for each cost driver (like Squiggle/Guesstimate visualizations):",
-                             class_="text-muted mb-4"),
-                        ui.output_plot("component_distributions", height="500px"),
+### Technology Adoption (Realized)
 
-                        ui.hr(class_="my-4"),
+<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
 
-                        ui.h4("Cumulative Distribution (CDF)", class_="mb-3"),
-                        ui.p("Probability of cost being below each threshold:", class_="text-muted"),
-                        ui.output_plot("cost_cdf", height="350px"),
-                        class_="mb-4"
-                    ),
-                ),
+<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>Hydrolysates Adopted</h5>
+<h2 style="color: #27ae60;">${(results.pct_hydro * 100).toFixed(0)}%</h2>
+<small>of simulations use hydrolysates</small>
+</div>
 
-                ui.nav_panel(
-                    "Technology Adoption",
-                    ui.div(
-                        ui.h4("Realized Adoption Rates", class_="mb-4"),
-                        ui.p("These are the actual adoption rates after maturity adjustment:", class_="text-muted"),
-                        ui.output_ui("adoption_cards"),
+<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>Food-Grade Micros</h5>
+<h2 style="color: #3498db;">${(results.pct_foodgrade * 100).toFixed(0)}%</h2>
+<small>of simulations use food-grade</small>
+</div>
 
-                        ui.hr(class_="my-4"),
+<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
+<h5>Cheap Growth Factors</h5>
+<h2 style="color: #9b59b6;">${(results.pct_recf_cheap * 100).toFixed(0)}%</h2>
+<small>of simulations have cheap factors</small>
+</div>
 
-                        ui.h4("Process Parameters Distribution", class_="mb-3"),
-                        ui.output_plot("process_distribution", height="350px"),
-                        class_="mb-4"
-                    ),
-                ),
+</div>
 
-                ui.nav_panel(
-                    "Model Details",
-                    ui.div(
-                        ui.markdown("""
-## Model Equations
-
-### Unit Cost Formula
-
-$$\\text{Unit Cost} = \\text{VOC} + \\text{CAPEX}_{\\text{annualized}} + \\text{Fixed OPEX}$$
-
-### Variable Operating Costs
-
-$$\\text{VOC} = \\text{Media} + \\text{Micronutrients} + \\text{Recombinant} + \\text{Other}$$
-
-Media cost is computed as:
-$$\\text{Media Cost} = \\frac{1000}{\\text{density (g/L)}} \\times \\text{turnover} \\times \\text{\\$/L}$$
-
-### Capital Recovery Factor (CRF)
-
-$$\\text{CRF} = \\frac{\\text{WACC} \\times (1 + \\text{WACC})^n}{(1 + \\text{WACC})^n - 1}$$
-
-Where WACC = Weighted Average Cost of Capital, n = asset life in years.
-
-### Maturity Correlation
-
-Technology adoption probabilities are adjusted by maturity:
-
-$$P_{\\text{adjusted}} = \\text{clip}(P_{\\text{base}} + k \\times (m - 0.5), 0, 1)$$
-
-Where m is the maturity factor (0-1) and k is the sensitivity coefficient.
-
----
-
-## Sources
-
-- **Risner et al. (2021)**: UC Davis ACBM Calculator - baseline parameters
-- **CE Delft TEA studies**: European cost projections
-- **Humbird (2021)**: Scale-up economics analysis
-- **Good Food Institute**: Industry benchmarks
-- **Rethink Priorities**: Forecasting methodology
-
----
-
-## Limitations
-
-1. **Static 2036 snapshot** - no learning curves or trajectories
-2. **No downstream processing** - excludes texturization, scaffolding
-3. **No geography** - assumes generic costs
-4. **Limited contamination modeling** - no batch failure distributions
-                        """),
-                        class_="p-3"
-                    ),
-                ),
-            ),
-            class_="px-4"
-        ),
-    ),
-
-    # Footer
-    ui.div(
-        ui.hr(),
-        ui.p("Model developed for The Unjournal Pivotal Questions project. ",
-             ui.a("Documentation", href="docs.html"), " | ",
-             ui.a("About", href="about.html"), " | ",
-             ui.a("GitHub", href="https://github.com/unjournal/cm_pq_modeling", target="_blank"),
-             class_="text-center text-muted"),
-        class_="mt-5 pb-4"
-    ),
-
-    class_="container-fluid"
-)
-
-# ============================================================
-# SHINY SERVER
-# ============================================================
-
-def server(input, output, session):
-
-    @reactive.calc
-    @reactive.event(input.run)
-    def run_simulation():
-        params = {
-            'plant_kta_p5': input.plant_kta_p50() * 0.5,
-            'plant_kta_p95': input.plant_kta_p50() * 2.0,
-            'uptime_mean': input.uptime(),
-            'maturity_mean': input.maturity(),
-            'p_hydro_mean': input.p_hydro(),
-            'p_foodgrade_mean': input.p_foodgrade(),
-            'p_recfactors_mean': input.p_recfactors(),
-            'wacc_p5': input.wacc_range()[0] / 100,
-            'wacc_p95': input.wacc_range()[1] / 100,
-            'asset_life_lo': input.asset_life()[0],
-            'asset_life_hi': input.asset_life()[1],
-            'density_gL_p5': input.density_range()[0],
-            'density_gL_p95': input.density_range()[1],
-            'media_turnover_p5': input.media_turnover()[0],
-            'media_turnover_p95': input.media_turnover()[1],
-            'include_capex': input.include_capex(),
-            'include_fixed_opex': input.include_fixed_opex(),
-        }
-        return simulate(n=30000, seed=42, params=params)
-
-    @output
-    @render.text
-    def median_cost():
-        res = run_simulation()
-        p50 = float(np.quantile(res['unit_cost'], 0.5))
-        return f"${p50:.1f}"
-
-    @output
-    @render.text
-    def p5_cost():
-        res = run_simulation()
-        p5 = float(np.quantile(res['unit_cost'], 0.05))
-        return f"${p5:.1f}"
-
-    @output
-    @render.text
-    def p95_cost():
-        res = run_simulation()
-        p95 = float(np.quantile(res['unit_cost'], 0.95))
-        return f"${p95:.1f}"
-
-    @output
-    @render.ui
-    def prob_cards():
-        res = run_simulation()
-        uc = res['unit_cost']
-        prob_10 = float(np.mean(uc < 10)) * 100
-        prob_25 = float(np.mean(uc < 25)) * 100
-        prob_50 = float(np.mean(uc < 50)) * 100
-        prob_100 = float(np.mean(uc < 100)) * 100
-
-        return ui.layout_columns(
-            ui.card(
-                ui.card_header("P(Cost < $10/kg)", class_="bg-success text-white" if prob_10 > 25 else ""),
-                ui.card_body(
-                    ui.h2(f"{prob_10:.1f}%", class_="text-center"),
-                    ui.p("Price-competitive with conventional ground beef", class_="text-muted small text-center"),
-                ),
-            ),
-            ui.card(
-                ui.card_header("P(Cost < $25/kg)", class_="bg-primary text-white" if prob_25 > 50 else ""),
-                ui.card_body(
-                    ui.h2(f"{prob_25:.1f}%", class_="text-center"),
-                    ui.p("Viable as premium product", class_="text-muted small text-center"),
-                ),
-            ),
-            ui.card(
-                ui.card_header("P(Cost < $50/kg)", class_="bg-info text-white" if prob_50 > 50 else ""),
-                ui.card_body(
-                    ui.h2(f"{prob_50:.1f}%", class_="text-center"),
-                    ui.p("Similar to wagyu beef", class_="text-muted small text-center"),
-                ),
-            ),
-            ui.card(
-                ui.card_header("P(Cost < $100/kg)"),
-                ui.card_body(
-                    ui.h2(f"{prob_100:.1f}%", class_="text-center"),
-                    ui.p("Below current production estimates", class_="text-muted small text-center"),
-                ),
-            ),
-            col_widths=[3, 3, 3, 3],
-        )
-
-    @output
-    @render.ui
-    def adoption_cards():
-        res = run_simulation()
-
-        return ui.layout_columns(
-            ui.card(
-                ui.card_header("Hydrolysates Adopted"),
-                ui.card_body(
-                    ui.h3(f"{res['pct_hydro']*100:.0f}%", class_="text-center text-success"),
-                    ui.p("of simulations use hydrolysates", class_="text-muted small text-center"),
-                ),
-            ),
-            ui.card(
-                ui.card_header("Food-Grade Micros"),
-                ui.card_body(
-                    ui.h3(f"{res['pct_foodgrade']*100:.0f}%", class_="text-center text-primary"),
-                    ui.p("of simulations use food-grade", class_="text-muted small text-center"),
-                ),
-            ),
-            ui.card(
-                ui.card_header("Cheap Growth Factors"),
-                ui.card_body(
-                    ui.h3(f"{res['pct_recf_cheap']*100:.0f}%", class_="text-center text-info"),
-                    ui.p("of simulations have cheap factors", class_="text-muted small text-center"),
-                ),
-            ),
-            col_widths=[4, 4, 4],
-        )
-
-    @output
-    @render.plot
-    def cost_histogram():
-        res = run_simulation()
-        uc = res['unit_cost']
-
-        fig, ax = plt.subplots(figsize=(12, 5))
-
-        # Clip for better visualization
-        clip_val = min(np.quantile(uc, 0.98), 200)
-        uc_clipped = np.clip(uc, 0, clip_val)
-
-        ax.hist(uc_clipped, bins=60, density=True, alpha=0.7, color='steelblue', edgecolor='white')
-
-        # Add percentile lines
-        p5 = np.quantile(uc, 0.05)
-        p50 = np.quantile(uc, 0.50)
-        p95 = np.quantile(uc, 0.95)
-
-        ax.axvline(p5, color='green', linestyle='--', linewidth=2.5, label=f'p5: ${p5:.1f}')
-        ax.axvline(p50, color='blue', linestyle='-', linewidth=2.5, label=f'p50: ${p50:.1f}')
-        ax.axvline(p95, color='red', linestyle='--', linewidth=2.5, label=f'p95: ${p95:.1f}')
-
-        # Reference lines
-        if clip_val >= 10:
-            ax.axvline(10, color='darkgreen', linestyle=':', alpha=0.6, linewidth=2, label='$10/kg (competitive)')
-        if clip_val >= 25:
-            ax.axvline(25, color='orange', linestyle=':', alpha=0.6, linewidth=2, label='$25/kg (premium)')
-
-        ax.set_xlabel('Unit Production Cost ($/kg)', fontsize=13)
-        ax.set_ylabel('Probability Density', fontsize=13)
-        ax.set_title('Projected 2036 Cultured Meat Production Cost Distribution', fontsize=15, fontweight='bold')
-        ax.legend(loc='upper right', fontsize=10)
-        ax.grid(alpha=0.3, axis='y')
-        ax.set_xlim(0, clip_val * 1.05)
-
-        plt.tight_layout()
-        return fig
-
-    @output
-    @render.plot
-    def cost_breakdown():
-        res = run_simulation()
-
-        components = {
-            'Media': float(np.mean(res['cost_media'])),
-            'Micronutrients': float(np.mean(res['cost_comm_micros'])),
-            'Growth Factors': float(np.mean(res['cost_recf'])),
-            'Other VOC': float(np.mean(res['cost_other_var'])),
-            'CAPEX (annualized)': float(np.mean(res['cost_capex'])),
-            'Fixed OPEX': float(np.mean(res['cost_fixed'])),
-        }
-
-        fig, ax = plt.subplots(figsize=(12, 5))
-
-        colors = ['#27ae60', '#3498db', '#9b59b6', '#7f8c8d', '#e74c3c', '#f39c12']
-
-        # Sort by value for cleaner visualization
-        sorted_items = sorted(components.items(), key=lambda x: x[1], reverse=True)
-        names = [x[0] for x in sorted_items]
-        values = [x[1] for x in sorted_items]
-
-        bars = ax.barh(names, values, color=colors[:len(names)], edgecolor='white', linewidth=1)
-
-        # Add value labels
-        for bar, val in zip(bars, values):
-            pct = val / sum(values) * 100
-            ax.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height()/2,
-                   f'${val:.2f} ({pct:.0f}%)', va='center', fontsize=11)
-
-        total = sum(values)
-        ax.set_xlabel('Average Cost ($/kg)', fontsize=13)
-        ax.set_title(f'Cost Breakdown by Component (Total: ${total:.2f}/kg)', fontsize=15, fontweight='bold')
-        ax.set_xlim(0, max(values) * 1.4)
-        ax.grid(axis='x', alpha=0.3)
-        ax.invert_yaxis()  # Largest at top
-
-        plt.tight_layout()
-        return fig
-
-    @output
-    @render.plot
-    def process_distribution():
-        res = run_simulation()
-
-        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-
-        # Maturity distribution
-        ax1 = axes[0]
-        ax1.hist(res['maturity_samples'], bins=40, density=True, alpha=0.7, color='purple', edgecolor='white')
-        ax1.set_xlabel('Maturity Factor', fontsize=12)
-        ax1.set_ylabel('Density', fontsize=12)
-        ax1.set_title('Industry Maturity Distribution', fontsize=13, fontweight='bold')
-        ax1.axvline(np.mean(res['maturity_samples']), color='darkred', linestyle='--',
-                   label=f"Mean: {np.mean(res['maturity_samples']):.2f}")
-        ax1.legend()
-        ax1.grid(alpha=0.3)
-
-        # Cell density distribution
-        ax2 = axes[1]
-        ax2.hist(res['density_samples'], bins=40, density=True, alpha=0.7, color='teal', edgecolor='white')
-        ax2.set_xlabel('Cell Density (g/L)', fontsize=12)
-        ax2.set_ylabel('Density', fontsize=12)
-        ax2.set_title('Harvest Cell Density Distribution', fontsize=13, fontweight='bold')
-        ax2.axvline(np.mean(res['density_samples']), color='darkred', linestyle='--',
-                   label=f"Mean: {np.mean(res['density_samples']):.0f} g/L")
-        ax2.legend()
-        ax2.grid(alpha=0.3)
-
-        plt.tight_layout()
-        return fig
-
-    @output
-    @render.plot
-    def component_distributions():
-        """Show individual distributions for each cost component - Squiggle/Guesstimate style."""
-        res = run_simulation()
-
-        fig, axes = plt.subplots(2, 3, figsize=(14, 8))
-        axes = axes.flatten()
-
-        components = [
-            ('Media', res['cost_media'], '#27ae60'),
-            ('Micronutrients', res['cost_comm_micros'], '#3498db'),
-            ('Growth Factors', res['cost_recf'], '#9b59b6'),
-            ('Other VOC', res['cost_other_var'], '#7f8c8d'),
-            ('CAPEX', res['cost_capex'], '#e74c3c'),
-            ('Fixed OPEX', res['cost_fixed'], '#f39c12'),
-        ]
-
-        for idx, (name, data, color) in enumerate(components):
-            ax = axes[idx]
-
-            # Clip extreme values for better visualization
-            clip_val = np.quantile(data, 0.98)
-            data_clipped = np.clip(data, 0, clip_val)
-
-            # Create gradient-filled histogram (Squiggle-style)
-            n, bins, patches = ax.hist(data_clipped, bins=40, density=True, alpha=0.8,
-                                       color=color, edgecolor='white', linewidth=0.5)
-
-            # Add percentile markers
-            p5 = np.quantile(data, 0.05)
-            p50 = np.quantile(data, 0.50)
-            p95 = np.quantile(data, 0.95)
-
-            ax.axvline(p50, color='black', linestyle='-', linewidth=2, alpha=0.8)
-            ax.axvline(p5, color='black', linestyle='--', linewidth=1.5, alpha=0.5)
-            ax.axvline(p95, color='black', linestyle='--', linewidth=1.5, alpha=0.5)
-
-            # Title with stats
-            ax.set_title(f'{name}\np50: ${p50:.1f} | 90% CI: ${p5:.1f} - ${p95:.1f}',
-                        fontsize=11, fontweight='bold')
-            ax.set_xlabel('$/kg', fontsize=10)
-            ax.set_ylabel('')
-            ax.set_yticks([])  # Clean look like Squiggle
-            ax.grid(alpha=0.2, axis='x')
-
-        plt.suptitle('Cost Component Distributions (90% confidence intervals shown)',
-                    fontsize=14, fontweight='bold', y=1.02)
-        plt.tight_layout()
-        return fig
-
-    @output
-    @render.plot
-    def cost_cdf():
-        """Cumulative distribution function - shows probability of being below each cost level."""
-        res = run_simulation()
-        uc = res['unit_cost']
-
-        fig, ax = plt.subplots(figsize=(12, 5))
-
-        # Sort for CDF
-        sorted_costs = np.sort(uc)
-        cdf = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs)
-
-        # Plot CDF with gradient fill
-        ax.fill_between(sorted_costs, 0, cdf, alpha=0.3, color='steelblue')
-        ax.plot(sorted_costs, cdf, color='steelblue', linewidth=2.5)
-
-        # Add reference lines for key thresholds
-        thresholds = [10, 25, 50, 100]
-        colors = ['#27ae60', '#3498db', '#f39c12', '#e74c3c']
-        for thresh, col in zip(thresholds, colors):
-            prob = np.mean(uc < thresh)
-            ax.axvline(thresh, color=col, linestyle='--', linewidth=2, alpha=0.7)
-            ax.axhline(prob, color=col, linestyle=':', linewidth=1, alpha=0.5,
-                      xmax=thresh/max(sorted_costs))
-            ax.annotate(f'${thresh}: {prob*100:.0f}%', xy=(thresh, prob),
-                       xytext=(thresh + 2, prob + 0.05),
-                       fontsize=10, color=col, fontweight='bold')
-
-        ax.set_xlabel('Unit Production Cost ($/kg)', fontsize=13)
-        ax.set_ylabel('Cumulative Probability', fontsize=13)
-        ax.set_title('Cumulative Distribution: Probability of Cost Below Threshold',
-                    fontsize=15, fontweight='bold')
-        ax.set_xlim(0, min(np.quantile(uc, 0.99), 200))
-        ax.set_ylim(0, 1.05)
-        ax.grid(alpha=0.3)
-
-        plt.tight_layout()
-        return fig
-
-app = App(app_ui, server)
-```
+:::
 
 ---
 
@@ -997,14 +756,13 @@ app = App(app_ui, server)
 
 2. **Adjust parameters** in the left sidebar. Each parameter has an expandable explanation.
 
-3. **Click "Run Simulation"** to generate 30,000 Monte Carlo samples.
+3. **Results update automatically** as you change parameters - no need to click a button.
 
-4. **Navigate the result tabs** to see:
+4. **Navigate the results** to see:
    - **Cost Distribution**: Full probability distribution with key percentiles
+   - **Probability Thresholds**: Chances of hitting key price points
    - **Cost Breakdown**: Which components drive costs
-   - **Component Distributions**: Individual distributions for each cost driver (Squiggle-style)
-   - **Technology Adoption**: Realized adoption rates and process parameters
-   - **Model Details**: Equations and sources
+   - **Technology Adoption**: Realized adoption rates
 
 ## Pivotal Questions Context
 
@@ -1015,10 +773,40 @@ This model is part of [The Unjournal's Pivotal Questions](https://globalimpact.g
 > What will be the production cost of cultured meat by 2036, and what does this imply for animal welfare interventions?
 
 **Related resources:**
+
 - [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
 - [Cultured meat Metaculus questions](https://www.metaculus.com/questions/?search=cultured%20meat)
 - [The Unjournal cultured meat evaluations](https://unjournal.org)
 - [Squiggle model version](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
+
+---
+
+## Model Details
+
+### Unit Cost Formula
+
+$$\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{\text{annualized}} + \text{Fixed OPEX}$$
+
+### Variable Operating Costs
+
+$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Recombinant} + \text{Other}$$
+
+Media cost is computed as:
+$$\text{Media Cost} = \frac{1000}{\text{density (g/L)}} \times \text{turnover} \times \text{\$/L}$$
+
+### Capital Recovery Factor (CRF)
+
+$$\text{CRF} = \frac{\text{WACC} \times (1 + \text{WACC})^n}{(1 + \text{WACC})^n - 1}$$
+
+Where WACC = Weighted Average Cost of Capital, n = asset life in years.
+
+### Maturity Correlation
+
+Technology adoption probabilities are adjusted by maturity:
+
+$$P_{\text{adjusted}} = \text{clip}(P_{\text{base}} + k \times (m - 0.5), 0, 1)$$
+
+Where m is the maturity factor (0-1) and k is the sensitivity coefficient.
 
 ---
 
@@ -1033,13 +821,23 @@ The model reveals several important patterns:
 | Low maturity (0.3-) | $50-100+/kg | Pharma-grade inputs, high financing costs |
 
 **Most sensitive parameters:**
+
 1. Technology adoption (especially hydrolysates)
 2. Cell density at harvest
 3. Industry maturity (affects multiple factors)
 
 ---
 
-## References
+## Limitations
+
+1. **Static 2036 snapshot** - no learning curves or trajectories
+2. **No downstream processing** - excludes texturization, scaffolding
+3. **No geography** - assumes generic costs
+4. **Limited contamination modeling** - no batch failure distributions
+
+---
+
+## Sources
 
 - [Risner et al. (2021) - UC Davis ACBM Calculator](https://www.mdpi.com/2304-8158/10/1/3)
 - [The Unjournal - Cultured Meat Evaluations](https://unjournal.org)

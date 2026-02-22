@@ -1,8 +1,6 @@
 project:
   type: website
   output-dir: _site
-  post-render:
-    - python scripts/fix_shinylive_sw.py
 
 website:
   title: "Cultured Meat Cost Model"
@@ -29,10 +27,6 @@ format:
     toc-depth: 3
     code-fold: true
     code-tools: true
-    embed-resources: false
-
-filters:
-  - shinylive
 
 execute:
   freeze: auto

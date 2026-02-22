@@ -24,18 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install shinylive Python package
-        run: pip install shinylive>=0.6.0
-
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: "1.8.27"
+          version: "1.6.40"
 
       - name: Render Dashboard
         run: |
