@@ -323,8 +323,15 @@ function simulate(n, seed, params) {
     fixed_perkg = div(fixed_annual, output_kgpy);
   }
 
+  // Downstream processing (scaffolding, texturization) for structured products
+  let downstream_perkg = new Array(n).fill(0);
+  if (params.include_downstream) {
+    // Downstream adds $2-15/kg for structured products
+    downstream_perkg = sampleLognormalP5P95(rng, 2.0, 15.0, n);
+  }
+
   // Total unit cost
-  const unit_cost = add(add(voc, capex_perkg), fixed_perkg);
+  const unit_cost = add(add(add(voc, capex_perkg), fixed_perkg), downstream_perkg);
 
   return {
     unit_cost,
@@ -334,6 +341,7 @@ function simulate(n, seed, params) {
     cost_other_var: other_var,
     cost_capex: capex_perkg,
     cost_fixed: fixed_perkg,
+    cost_downstream: downstream_perkg,
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_foodgrade: is_foodgrade.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
@@ -367,7 +375,16 @@ function mean(arr) {
 //| echo: false
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
 viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
+viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
 ```
+<details><summary>What are these options?</summary>
+
+- **CAPEX**: Bioreactor and facility capital costs, annualized
+- **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size)
+- **Downstream**: Scaffolding, texturization, and forming for structured products
+
+**Note:** Downstream processing adds $2-15/kg for structured products (steaks, chicken breast). Not needed for ground meat applications.
+</details>
 
 ---
 
@@ -408,39 +425,104 @@ A latent factor (0=nascent, 1=mature) that affects all technology adoption, reac
 
 ---
 
-**Technology Adoption by 2036**
+**Target Year**
+
+```{ojs}
+//| echo: false
+viewof target_year = Inputs.range([2028, 2040], {
+  value: 2036, step: 1,
+  label: "Projection Year"
+})
+```
+<details><summary>What does the year affect?</summary>
+Earlier years → lower [maturity](#industry-maturity-deep-dive), less technology adoption.
+Later years → more time for cost reductions and scale-up.
+The model adjusts maturity expectations based on years from 2024.
+</details>
+
+---
+
+**Technology Adoption by ${target_year}**
+
+Probability that each cost-reducing technology is widely adopted by the target year.
 
 ```{ojs}
 //| echo: false
 viewof p_hydro = Inputs.range([0.1, 0.9], {
   value: 0.6, step: 0.05,
-  label: "P(Hydrolysates)"
+  label: "P(Hydrolysates for media)"
 })
 ```
-<details><summary>What is this?</summary>
-Hydrolysates are cheap plant-protein digests that can replace expensive pharmaceutical-grade amino acids. Reduces media cost by ~70%.
+<details><summary>What is this? (click to expand)</summary>
+
+**Hydrolysates** are enzymatically digested plant proteins (soy, wheat, yeast) that provide amino acids for cell growth media.
+
+**Why it matters:**
+
+| Media Type | Cost ($/L) | Source |
+|------------|-----------|--------|
+| Pharma-grade amino acids | $1.00 - $4.00 | Model: p5-p95 |
+| Hydrolysate-based | $0.20 - $1.20 | Model: p5-p95 |
+
+Hydrolysates are already standard in industrial fermentation. The question is regulatory acceptance for food products and optimization for mammalian cell growth.
+
+**Note:** This is separate from [growth factors](#growth-factors-explanation) - hydrolysates provide bulk amino acids, not signaling proteins.
+
+*See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
 ```{ojs}
 //| echo: false
 viewof p_foodgrade = Inputs.range([0.1, 0.9], {
   value: 0.65, step: 0.05,
-  label: "P(Food-grade micros)"
+  label: "P(Food-grade micronutrients)"
 })
 ```
-<details><summary>What is this?</summary>
-Food-grade micronutrients (vitamins, minerals) are much cheaper than pharma-grade. Reduces micronutrient cost by ~90%.
+<details><summary>What is this? (click to expand)</summary>
+
+**Micronutrients** include vitamins, minerals, and trace elements needed for cell metabolism.
+
+**Why it matters:**
+
+| Grade | Usage (g/kg meat) | Price ($/g) | Cost Impact |
+|-------|------------------|-------------|-------------|
+| Pharma-grade | 1.0 - 10.0 | $0.50 - $20 | $0.50 - $200/kg |
+| Food-grade | 0.1 - 2.0 | $0.02 - $2 | $0.002 - $4/kg |
+
+Pharma-grade uses ultra-pure compounds at precise concentrations. Food-grade uses commodity ingredients acceptable for human consumption.
+
+*See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
+<a id="growth-factors-explanation"></a>
 ```{ojs}
 //| echo: false
 viewof p_recfactors = Inputs.range([0.1, 0.9], {
   value: 0.5, step: 0.05,
-  label: "P(Cheap recombinant factors)"
+  label: "P(Cheap growth factors)"
 })
 ```
-<details><summary>What is this?</summary>
-Growth factors (proteins signaling cell growth) are currently very expensive. Recombinant production at scale could reduce costs 100-1000x.
+<details><summary>What is this? (click to expand)</summary>
+
+**Growth factors** are signaling proteins (FGF, IGF, TGF-β, etc.) that tell cells to proliferate. They are currently the most expensive media component.
+
+**Why costs vary so dramatically:**
+
+| Scenario | Usage (g/kg) | Price ($/g) | Cost/kg meat |
+|----------|-------------|-------------|--------------|
+| Current pharma | 0.001 - 0.2 | $5 - $500 | $0.005 - $100 |
+| Cheap recombinant | 0.0001 - 0.01 | $0.05 - $20 | ~$0.00001 - $0.20 |
+
+**How "cheap" happens:**
+
+1. **Recombinant production at scale**: Producing growth factors in bacteria/yeast at industrial scale (like insulin production)
+2. **Reduced usage**: Cell lines engineered to need less growth factor, or autocrine production
+3. **Recycling**: Recovering and reusing growth factors from spent media
+4. **Alternatives**: Small molecule mimetics that are cheaper to synthesize
+
+**This is NOT the same as hydrolysates.** Some have proposed that certain hydrolysate fractions might provide growth-stimulating activity, but this remains unproven at scale. The model treats these as separate probabilities.
+
+*See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
 ---
@@ -504,11 +586,16 @@ viewof media_turnover_hi = Inputs.range([2, 20], {
 
 // Run simulation reactively whenever inputs change
 results = {
+  // Adjust maturity based on target year (2024 baseline)
+  // Later years allow more time for industry development
+  const yearFactor = Math.max(0, Math.min(1, (target_year - 2024) / 20));
+  const adjustedMaturity = maturity * (0.5 + 0.5 * yearFactor);
+
   const params = {
     plant_kta_p5: plant_capacity * 0.5,
     plant_kta_p95: plant_capacity * 2.0,
     uptime_mean: uptime,
-    maturity_mean: maturity,
+    maturity_mean: adjustedMaturity,
     p_hydro_mean: p_hydro,
     p_foodgrade_mean: p_foodgrade,
     p_recfactors_mean: p_recfactors,
@@ -521,7 +608,8 @@ results = {
     media_turnover_p5: media_turnover_lo,
     media_turnover_p95: media_turnover_hi,
     include_capex: include_capex,
-    include_fixed_opex: include_fixed_opex
+    include_fixed_opex: include_fixed_opex,
+    include_downstream: include_downstream
   };
 
   return simulate(30000, 42, params);
@@ -609,7 +697,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
         {x: stats.p95 + 2, y: 2500, text: `p95: $${stats.p95.toFixed(1)}`}
       ], {x: "x", y: "y", text: "text", fontSize: 12})
     ],
-    title: "Projected 2036 Cultured Meat Production Cost Distribution"
+    title: `Projected ${target_year} Cultured Meat Production Cost Distribution`
   })
 }
 ```
@@ -667,14 +755,17 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 ```{ojs}
 //| echo: false
 {
-  const components = [
+  const allComponents = [
     {name: "Media", value: mean(results.cost_media), color: "#27ae60"},
     {name: "Micronutrients", value: mean(results.cost_comm_micros), color: "#3498db"},
     {name: "Growth Factors", value: mean(results.cost_recf), color: "#9b59b6"},
     {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
     {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
-    {name: "Fixed OPEX", value: mean(results.cost_fixed), color: "#f39c12"}
-  ].sort((a, b) => b.value - a.value);
+    {name: "Fixed OPEX", value: mean(results.cost_fixed), color: "#f39c12"},
+    {name: "Downstream", value: mean(results.cost_downstream), color: "#1abc9c"}
+  ];
+  // Filter out zero-value components (e.g., downstream when not included)
+  const components = allComponents.filter(c => c.value > 0.001).sort((a, b) => b.value - a.value);
 
   const total = components.reduce((s, c) => s + c.value, 0);
 
@@ -728,6 +819,75 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 The relative sizes shift dramatically based on technology adoption assumptions.
 </details>
 
+### Component Distributions
+
+Individual distributions for each cost driver (Squiggle/Guesstimate style):
+
+```{ojs}
+//| echo: false
+{
+  const allComponents = [
+    {name: "Media", data: results.cost_media, color: "#27ae60"},
+    {name: "Micronutrients", data: results.cost_comm_micros, color: "#3498db"},
+    {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
+    {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
+    {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
+    {name: "Fixed OPEX", data: results.cost_fixed, color: "#f39c12"},
+    {name: "Downstream", data: results.cost_downstream, color: "#1abc9c"}
+  ];
+
+  // Filter out components with all zeros (e.g., downstream when not included)
+  const components = allComponents.filter(c => mean(c.data) > 0.001);
+
+  const plots = components.map(comp => {
+    const p5 = quantile(comp.data, 0.05);
+    const p50 = quantile(comp.data, 0.50);
+    const p95 = quantile(comp.data, 0.95);
+    const clipVal = Math.max(quantile(comp.data, 0.98), 0.1);
+    const clipped = comp.data.filter(x => x <= clipVal && x >= 0);
+
+    return Plot.plot({
+      width: 380,
+      height: 180,
+      marginLeft: 40,
+      marginBottom: 35,
+      marginTop: 30,
+      x: {
+        label: "$/kg",
+        domain: [0, clipVal * 1.1]
+      },
+      y: {
+        label: null,
+        ticks: []
+      },
+      marks: [
+        Plot.rectY(clipped, Plot.binX({y: "count"}, {x: d => d, fill: comp.color, fillOpacity: 0.7})),
+        Plot.ruleX([p5], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
+        Plot.ruleX([p50], {stroke: "black", strokeWidth: 2}),
+        Plot.ruleX([p95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
+      ],
+      title: `${comp.name}: p50 $${p50.toFixed(2)} (90% CI: $${p5.toFixed(2)} - $${p95.toFixed(2)})`
+    });
+  });
+
+  return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0;">
+    ${plots.map(p => html`<div>${p}</div>`)}
+  </div>`;
+}
+```
+
+<details>
+<summary>Reading these distributions</summary>
+
+Each mini-histogram shows the distribution for one cost component across 30,000 simulations:
+
+- **Solid black line**: Median (p50) - the middle value
+- **Dashed black lines**: 5th and 95th percentiles (90% confidence interval)
+- **Width of distribution**: Uncertainty - wider means more uncertain
+
+These are like Squiggle/Guesstimate visualizations - they show the full range of possible values, not just a point estimate.
+</details>
+
 ### Technology Adoption (Realized)
 
 ```{ojs}
@@ -754,6 +914,133 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 </div>`
 ```
+
+### Industry Maturity Deep Dive
+
+The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that correlates multiple model inputs. Higher maturity means:
+
+- Higher technology adoption rates
+- Lower reactor costs (more custom/food-grade)
+- Lower financing costs (WACC)
+
+```{ojs}
+//| echo: false
+{
+  // Maturity distribution
+  const maturityPlot = Plot.plot({
+    width: 400,
+    height: 250,
+    marginLeft: 50,
+    marginBottom: 40,
+    x: {
+      label: "Maturity Factor",
+      domain: [0, 1]
+    },
+    y: {
+      label: "Frequency",
+      grid: true
+    },
+    marks: [
+      Plot.rectY(results.maturity_samples, Plot.binX({y: "count"}, {x: d => d, fill: "#8e44ad", fillOpacity: 0.7})),
+      Plot.ruleX([quantile(results.maturity_samples, 0.5)], {stroke: "black", strokeWidth: 2}),
+      Plot.ruleX([quantile(results.maturity_samples, 0.05)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
+      Plot.ruleX([quantile(results.maturity_samples, 0.95)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
+    ],
+    title: `Maturity Distribution (median: ${quantile(results.maturity_samples, 0.5).toFixed(2)})`
+  });
+
+  // Cell density distribution
+  const densityPlot = Plot.plot({
+    width: 400,
+    height: 250,
+    marginLeft: 50,
+    marginBottom: 40,
+    x: {
+      label: "Cell Density (g/L)",
+      domain: [0, Math.min(quantile(results.density_samples, 0.98) * 1.1, 350)]
+    },
+    y: {
+      label: "Frequency",
+      grid: true
+    },
+    marks: [
+      Plot.rectY(results.density_samples, Plot.binX({y: "count"}, {x: d => d, fill: "#16a085", fillOpacity: 0.7})),
+      Plot.ruleX([quantile(results.density_samples, 0.5)], {stroke: "black", strokeWidth: 2}),
+      Plot.ruleX([quantile(results.density_samples, 0.05)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
+      Plot.ruleX([quantile(results.density_samples, 0.95)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
+    ],
+    title: `Cell Density Distribution (median: ${quantile(results.density_samples, 0.5).toFixed(0)} g/L)`
+  });
+
+  return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0;">
+    <div>${maturityPlot}</div>
+    <div>${densityPlot}</div>
+  </div>`;
+}
+```
+
+```{ojs}
+//| echo: false
+{
+  // Sample subset for scatter plot (too many points otherwise)
+  const sampleSize = 2000;
+  const step = Math.floor(results.unit_cost.length / sampleSize);
+  const scatterData = [];
+  for (let i = 0; i < results.unit_cost.length; i += step) {
+    scatterData.push({
+      maturity: results.maturity_samples[i],
+      cost: results.unit_cost[i],
+      density: results.density_samples[i]
+    });
+  }
+
+  return Plot.plot({
+    width: 800,
+    height: 350,
+    marginLeft: 60,
+    marginBottom: 50,
+    x: {
+      label: "Industry Maturity Factor",
+      domain: [0, 1]
+    },
+    y: {
+      label: "Unit Cost ($/kg)",
+      domain: [0, Math.min(quantile(results.unit_cost, 0.95), 150)],
+      grid: true
+    },
+    color: {
+      label: "Cell Density (g/L)",
+      scheme: "viridis",
+      legend: true
+    },
+    marks: [
+      Plot.dot(scatterData, {
+        x: "maturity",
+        y: "cost",
+        fill: "density",
+        fillOpacity: 0.5,
+        r: 3
+      }),
+      Plot.linearRegressionY(scatterData, {x: "maturity", y: "cost", stroke: "red", strokeWidth: 2})
+    ],
+    title: "Maturity vs Unit Cost (colored by cell density)"
+  });
+}
+```
+
+<details>
+<summary>Understanding the maturity correlation</summary>
+
+The scatter plot shows how **maturity** (x-axis) relates to **unit cost** (y-axis), with points colored by **cell density**.
+
+**Key patterns:**
+
+- **Negative slope**: Higher maturity → lower costs (red trend line)
+- **Color gradient**: Higher density (yellow) tends to cluster at lower costs
+- **Spread**: Even at high maturity, costs vary due to other random factors
+
+This correlation structure prevents unrealistic scenarios where technology succeeds but financing remains difficult, or vice versa.
+</details>
 
 :::
 
