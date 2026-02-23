@@ -1,17 +1,24 @@
 /*
-Cultivated Meat Unit Cost Model (PQ-integrated) — v0.2 template
-Purpose: Give CM PQ evaluators a transparent, editable template.
+Cultivated Chicken Unit Cost Model (PQ-integrated) — v0.2 template
+Purpose: Give CM PQ evaluators a transparent, editable template for estimating
+cultured chicken production costs under various technology scenarios.
 
-Major upgrades vs v0.1:
-1) Avoid "sample() toggles" that lock the whole run into one scenario.
-   Instead: bernoulli(p) is a distribution, then SampleSet.map applies scenario logic per sample.
-2) Explicit scale + uptime so $/kg quantities are not hiding plant size/utilization.
-3) Use bounded distributions (beta/uniform) for probabilities/shares instead of `a to b` (lognormal) for [0,1] vars.
-4) Optional maturity factor to induce correlation between "worlds" (tech adoption, capex, WACC).
-5) Split micros into commodity micros vs recombinant factors (growth factors, albumin-like proteins).
+RELATIONSHIP TO DASHBOARD:
+This Squiggle model is a REFERENCE implementation. The interactive dashboard at
+https://unjournal.github.io/cm_pq_modeling/ uses equivalent logic with additional
+features (GF progress slider, sensitivity analysis, visualizations). Key parameters
+are kept consistent between both versions.
+
+MAJOR FEATURES:
+1) Bernoulli toggles for technology adoption (hydrolysates, food-grade micros, scalable GFs)
+2) Explicit scale + uptime so $/kg quantities are not hiding plant size/utilization
+3) Beta distributions for probabilities/shares (bounded 0-1)
+4) Latent maturity factor correlating tech adoption, reactor costs, and financing
+5) Separate commodity micronutrients vs recombinant growth factors
 
 Source: Squiggle Hub - https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve
 Based on UC Davis ACBM calculator (Risner et al., 2021)
+Last synced with dashboard: 2026-02-23
 */
 
 /// === Helpers ===
@@ -43,13 +50,14 @@ plant_kta = lognormal({p5: 5, p95: 50})
 uptime = beta({mean: 0.9, stdev: 0.05})
 
 @name("Base prob hydrolysates widely used by 2036 (0-1)")
-p_hydro_base = beta({mean: 0.6, stdev: 0.1})
+@doc("Hydrolysates = plant/yeast protein digests for amino acids in BASAL MEDIA (not growth factors). 2024-25 research shows widespread industry adoption. Default 75% reflects current trajectory.")
+p_hydro_base = beta({mean: 0.75, stdev: 0.10})
 
 @name("Base prob food-grade commodity micros by 2036 (0-1)")
 p_foodgrade_base = beta({mean: 0.65, stdev: 0.1})
 
-@name("Base prob cheap recombinant factors by 2036 (0-1)")
-@doc("Captures progress on growth factors / recombinant proteins cost reduction.")
+@name("Base prob scalable GF technology by 2036 (0-1)")
+@doc("Probability that at least one breakthrough GF production method reaches commercial scale. Breakthroughs include: (1) Autocrine cell lines producing own FGF2 (Mosa Meat/Tufts 2023), (2) Plant molecular farming ($1-10/g target, BioBetter), (3) Precision fermentation at scale, (4) Polyphenol substitution reducing GF needs by 80%.")
 p_recfactors_base = beta({mean: 0.5, stdev: 0.15})
 
 /// Optional: correlate adoption probabilities with maturity
@@ -77,12 +85,17 @@ g_comm_micros_per_kg = drawByToggle(is_foodgrade, 0.1 to 2, 1 to 10)
 price_comm_micros_per_g = drawByToggle(is_foodgrade, 0.02 to 2, 0.5 to 20)
 
 /// Recombinant factors (growth factors: FGF-2, IGF-1, TGF-β, etc.)
-/// CRITICAL: GFs are 55-95% of media cost at current prices!
-/// Current prices: FGF-2 ~$50,000/g, TGF-β up to $1M/g
-/// Industry target: $1-10/g with scaled recombinant production
+/// CRITICAL: GFs are 55-95% of media cost at current research prices!
+/// Current prices (2024): FGF-2 ~$50,000/g, TGF-β up to $1M/g
+///
+/// "Cheap" scenario triggers if ANY of: autocrine cells, plant farming,
+/// precision fermentation, or polyphenol substitution reaches scale.
+/// See p_recfactors_base @doc for specific technology options.
+///
 /// Quantity based on ~10-100 ng/mL in media × 20-60 L/kg = 0.0002-0.006 g/kg
+/// (lower usage in "cheap" scenario due to thermostable variants, recycling)
 g_recfactors_per_kg = drawByToggle(is_recfactors_cheap, 0.0001 to 0.005, 0.0005 to 0.02)
-/// "Cheap" = scaled recombinant achieved; "Expensive" = limited progress from current
+/// "Cheap" = breakthrough tech achieved ($1-100/g); "Expensive" = limited progress ($500-50000/g)
 price_recfactors_per_g = drawByToggle(is_recfactors_cheap, 1 to 100, 500 to 50000)
 
 /// === Variable cost blocks ===

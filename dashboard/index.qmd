@@ -540,25 +540,30 @@ Probability that each cost-reducing technology is widely adopted by the target y
 
 ```{ojs}
 //| echo: false
-viewof p_hydro = Inputs.range([0.1, 0.9], {
-  value: 0.6, step: 0.05,
-  label: "P(Hydrolysates for media)"
+viewof p_hydro = Inputs.range([0.3, 0.95], {
+  value: 0.75, step: 0.05,
+  label: "P(Hydrolysates for basal media)"
 })
 ```
 <details><summary>What is this? (click to expand)</summary>
 
-**Hydrolysates** are enzymatically digested plant proteins (soy, wheat, yeast) that provide amino acids for cell growth media.
+**Hydrolysates** are enzymatically digested plant/yeast proteins that provide **amino acids for basal media** — the bulk nutrient broth that cells grow in.
 
-**Why it matters:**
+**Important clarification:** Hydrolysates replace **amino acids**, NOT growth factors. These are completely separate cost categories:
+
+| Component | What it provides | Hydrolysate impact |
+|-----------|-----------------|-------------------|
+| **Basal media** | Amino acids, glucose, vitamins | ✅ Hydrolysates reduce cost ~70% |
+| **Growth factors** | FGF-2, IGF-1, TGF-β signaling proteins | ❌ Hydrolysates don't help |
+
+**Cost comparison:**
 
 | Media Type | Cost ($/L) | Source |
 |------------|-----------|--------|
-| Pharma-grade amino acids | $1.00 - $4.00 | Model: p5-p95 |
-| Hydrolysate-based | $0.20 - $1.20 | Model: p5-p95 |
+| Pharma-grade amino acids | $1.00 – $4.00 | Model range |
+| Hydrolysate-based | $0.20 – $1.20 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC11663224/): ~$2/kg amino acids |
 
-Hydrolysates are already standard in industrial fermentation. The question is regulatory acceptance for food products and optimization for mammalian cell growth.
-
-**Note:** This is separate from [growth factors](#growth-factors-explanation) - hydrolysates provide bulk amino acids, not signaling proteins.
+**Why 75% baseline?** [Recent research (2024-2025)](https://www.nature.com/articles/s41538-024-00352-0) shows hydrolysates are already validated across plant, yeast, insect, and fish sources. Companies like IntegriCulture have reduced media components by replacing amino acids with yeast extract. The main uncertainty is regulatory approval for food products, not technical feasibility.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
@@ -591,7 +596,7 @@ Pharma-grade uses ultra-pure compounds at precise concentrations. Food-grade use
 //| echo: false
 viewof p_recfactors = Inputs.range([0.1, 0.9], {
   value: 0.5, step: 0.05,
-  label: "P(Cheap growth factors)"
+  label: "P(Scalable GF technology)"
 })
 ```
 
@@ -606,42 +611,54 @@ viewof gf_progress = Inputs.range([0, 100], {
 
 **Two controls for growth factors:**
 
-1. **P(Cheap growth factors)** — Probability that scaled recombinant production is achieved. Affects whether "cheap" or "expensive" price regime is used.
+1. **P(Scalable GF technology)** — Probability that *at least one* breakthrough production method reaches commercial scale. This switches between "expensive" and "cheap" price distributions.
 
-2. **GF cost reduction progress** — How far along the price reduction curve we are:
-   - **0%** = Current prices ($5,000-500,000/g for expensive scenario)
-   - **50%** = Midway ($500-50,000/g)
-   - **100%** = Industry target achieved ($1-100/g for cheap, $50-5,000/g for expensive)
+2. **GF cost reduction progress** — How far along the price reduction curve we are within each regime:
+   - **0%** = Current prices ($5,000-500,000/g expensive; $100-10,000/g cheap)
+   - **50%** = Midway
+   - **100%** = Industry target achieved ($1-100/g cheap; $50-5,000/g expensive)
 
-This allows you to model scenarios like "scaled production is achieved (high P) but prices haven't dropped as much as hoped (low progress)".
+**Growth factors** are signaling proteins (FGF-2, IGF-1, TGF-β, etc.) that tell cells to proliferate. Currently **the most expensive media component** — often 55-95% of media cost at research scale.
 
-**Growth factors** are signaling proteins (FGF-2, IGF-1, TGF-β, etc.) that tell cells to proliferate. They are currently **the most expensive media component** — often 55-95% of media cost.
-
-**Current vs. projected prices (this is critical!):**
+**Current vs. projected prices:**
 
 | Scenario | Price ($/g) | Status | Source |
 |----------|-------------|--------|--------|
 | Research-grade FGF-2 | $50,000 | Current (2024) | [CEN](https://cen.acs.org/food/Inside-effort-cut-cost-cultivated/101/i33) |
 | Research-grade TGF-β | $1,000,000 | Current | GFI analysis |
-| Limited progress | $500 - $50,000 | Model "expensive" | Conservative projection |
-| Scaled recombinant | $1 - $100 | Model "cheap" | Industry target |
+| Model "expensive" | $500 - $50,000 | Limited progress | Conservative projection |
+| Model "cheap" | $1 - $100 | Breakthrough achieved | Industry target |
 | Plant-based (BioBetter) | ~$1 | Target | [FoodNavigator](https://www.foodnavigator.com/Article/2022/09/12/biobetter-s-growth-factor-innovation-cuts-cost-of-cultured-meat/) |
+
+---
+
+**What triggers the "cheap" scenario? (Key breakthroughs)**
+
+The probability slider represents whether **at least one** of these technology approaches succeeds at commercial scale by the target year:
+
+| Technology | Mechanism | Target price | Status (2025) |
+|------------|-----------|--------------|---------------|
+| **Autocrine cell lines** | Engineer cells to produce their own FGF2, eliminating external supply | ~$0/g (no purchase needed) | [Proof of concept 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) — Mosa Meat, Tufts collaborations |
+| **Plant molecular farming** | Express GFs in transgenic tobacco/lettuce | $1-10/g | [BioBetter](https://www.foodnavigator.com/Article/2022/09/12/biobetter-s-growth-factor-innovation-cuts-cost-of-cultured-meat/), [ORF Genetics](https://orfgenetics.com/) pilots |
+| **Precision fermentation** | High-density E. coli/yeast expression (like insulin) | $10-100/g | [GFI 2024 analysis](https://gfi.org/science/the-science-of-cultivated-meat/) — scaling remains key challenge |
+| **Polyphenol substitution** | Curcumin (NaCur) activates FGF receptors, reduces FGF2 needs by 80% | N/A (reduces quantity) | [Research 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Thermostable variants** | FGF2-G3 with 20-day half-life (vs hours) | Same $/g, less usage | [Enantis](https://www.enantis.com/) commercial product |
+
+**Why this is modeled as a binary switch + continuous progress:**
+
+- The **switch** represents whether *any* scalable technology reaches commercial viability
+- The **progress slider** represents how far costs have dropped within that regime
+- Even in the "expensive" scenario (no breakthrough), incremental improvements occur
+- This structure captures the bimodal nature of the uncertainty: either scalable production is achieved, or it isn't
 
 **Model cost impact:**
 
 | Scenario | Usage (g/kg) | Price ($/g) | **Cost/kg chicken** |
 |----------|-------------|-------------|---------------------|
-| Limited progress | 0.0005 - 0.02 | $500 - $50,000 | **$0.25 - $1,000** |
-| Scaled recombinant | 0.0001 - 0.005 | $1 - $100 | **$0.0001 - $0.50** |
+| No breakthrough | 0.0005 - 0.02 | $500 - $50,000 | **$0.25 - $1,000** |
+| Breakthrough achieved | 0.0001 - 0.005 | $1 - $100 | **$0.0001 - $0.50** |
 
-**How "cheap" happens:**
-
-1. **Recombinant production at scale**: E. coli, yeast, or plant-based systems (like insulin production)
-2. **Reduced usage**: Autocrine cell lines that produce their own growth factors ([2024 research](https://futuretimeline.net/blog/2024/02/15-lab-grown-meat-costs-future-timeline.htm))
-3. **Thermostable variants**: FGF2-G3 with 20-day half-life reduces media change frequency
-4. **Recycling**: Recovering and reusing growth factors from spent media
-
-**This is a pivotal uncertainty.** If scaled recombinant production succeeds, growth factors become negligible. If not, they dominate the cost breakdown.
+**This is a pivotal uncertainty.** The [GFI 2024 State of the Industry report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) identifies growth factor cost reduction as one of the top technical challenges. If solved, GFs become negligible; if not, they dominate the cost structure.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
@@ -1315,7 +1332,7 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 | [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) | Full documentation on the PQ framework |
 | [Cultured meat on Metaculus](https://www.metaculus.com/questions/?search=cultured%20meat) | Forecasting questions with community predictions |
 | [The Unjournal](https://unjournal.org) | Independent evaluations of impactful research |
-| [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) | Alternative model implementation in Squiggle |
+| [Squiggle reference model](../models/cm_cost_v0.2.squiggle) | Local reference implementation (parameters synced with this dashboard) |
 | [UC Davis ACBM Calculator](https://acbmcostcalculator.ucdavis.edu/) | Original academic cost model (Risner et al.) |
 | [Good Food Institute](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Industry reports and data |
 
@@ -1326,7 +1343,7 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 ::: {.callout-tip}
 **Code references:** [JavaScript source (this page)](#full-source-code) | [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)
 
-*Note: An older [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) exists but uses different parameters. This dashboard is the current version.*
+*A [Squiggle reference model](../models/cm_cost_v0.2.squiggle) is maintained with equivalent parameters. The SquiggleHub version may differ; this dashboard and the local `.squiggle` file are kept in sync.*
 :::
 
 This section presents the model structure **top-down**: starting with the final output and unpacking each component.
