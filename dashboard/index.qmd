@@ -800,6 +800,15 @@ stats = {
 
 ```{ojs}
 //| echo: false
+html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
+<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of cultured chicken</strong> (wet weight, unprocessed) in <strong>${targetYear}</strong>, based on ${n.toLocaleString()} Monte Carlo simulations. This is the cost to produce meat in a bioreactor — not retail price, which would include processing, distribution, and margins.
+<br><br>
+<strong>Why it matters:</strong> If production costs reach <strong>~$10/kg</strong> (comparable to conventional chicken), cultured meat could compete at scale. If costs remain <strong>>$50/kg</strong>, the technology may remain niche. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
+</div>`
+```
+
+```{ojs}
+//| echo: false
 html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
@@ -885,6 +894,8 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
+These percentages answer: **"What's the chance that production costs fall below key price points?"** — based on the parameter distributions you've set above. These are the decision-relevant outputs for evaluating whether cultured meat can compete with conventional chicken.
+
 ```{ojs}
 //| echo: false
 html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
@@ -892,31 +903,33 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 <div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $10/kg)</h5>
 <h2 style="color: #27ae60;">${stats.prob_10.toFixed(1)}%</h2>
-<small>Price-competitive with conventional chicken breast</small>
+<small>Price-competitive with conventional chicken</small>
 </div>
 
 <div class="card" style="border: 2px solid ${stats.prob_25 > 50 ? '#3498db' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $25/kg)</h5>
 <h2 style="color: #3498db;">${stats.prob_25.toFixed(1)}%</h2>
-<small>Viable as premium poultry product</small>
+<small>Premium product viable</small>
 </div>
 
 <div class="card" style="border: 2px solid ${stats.prob_50 > 50 ? '#f39c12' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $50/kg)</h5>
 <h2 style="color: #f39c12;">${stats.prob_50.toFixed(1)}%</h2>
-<small>Premium specialty chicken range</small>
+<small>Specialty/niche market</small>
 </div>
 
 <div class="card" style="border: 2px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $100/kg)</h5>
 <h2 style="color: #e74c3c;">${stats.prob_100.toFixed(1)}%</h2>
-<small>Below current production estimates</small>
+<small>Below early estimates</small>
 </div>
 
 </div>`
 ```
 
 ### Cost Breakdown
+
+**Where does the cost come from?** This chart shows the average contribution of each cost component across all simulations. The largest bars are the cost drivers to focus on — these are where technological progress or parameter uncertainty has the most impact.
 
 ```{ojs}
 //| echo: false
