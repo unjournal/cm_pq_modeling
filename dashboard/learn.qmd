@@ -1,0 +1,326 @@
+---
+title: "How Cultured Chicken is Made"
+subtitle: "A Deep Dive into Cellular Agriculture Production"
+toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+::: {.callout-tip}
+**Return to:** [Interactive Cost Model](index.qmd)
+:::
+
+## Overview
+
+**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing avian muscle cells in bioreactors — essentially brewing meat instead of raising and slaughtering animals. This page explains the production process in detail and how each step affects production costs.
+
+```
+   CELL BANK           SEED TRAIN          PRODUCTION           HARVEST          PROCESSING
+      [O]         -->   [OOO]      -->    [OOOOOOO]      -->    [===]      -->    [≡≡≡]
+   (starter       (scale up in          (large-scale         (separate         (texture &
+    cells)         small reactors)       bioreactors)          cells)            form)
+```
+
+---
+
+## Why Chicken?
+
+Several factors make chicken an attractive first target for cultured meat:
+
+| Factor | Advantage | Source |
+|--------|-----------|--------|
+| **Cell biology** | Chicken satellite cells show higher yields than bovine | [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
+| **Spontaneous immortalization** | Some avian cells can divide indefinitely without genetic modification | [Nature Food 2022](https://www.nature.com/articles/s43016-022-00658-w) |
+| **Market size** | Chicken is the most consumed meat globally | FAO data |
+| **Animal welfare** | Higher welfare stakes per kg (more birds affected than cattle) | ACE analysis |
+| **Growth factors** | Similar FGF-2/IGF-1 requirements to bovine (~100 ng/mL) | [PMC 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+
+---
+
+## Step 1: Cell Banking
+
+### What Happens
+
+A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via biopsy) or from cell lines that have been immortalized for continuous growth.
+
+### Cell Types Used
+
+| Cell Type | Description | Pros | Cons |
+|-----------|-------------|------|------|
+| **Satellite cells** (myoblasts) | Muscle stem cells that differentiate into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80) |
+| **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable | Regulatory complexity, consumer perception |
+| **iPSCs** | Induced pluripotent stem cells | Can become any cell type | Complex, expensive |
+
+### Cost Impact
+
+Cell banking is a **one-time setup cost** that's amortized over many production runs. A well-characterized cell bank can support years of production.
+
+::: {.callout-note}
+**Key insight:** The "doubling limit" of cells matters enormously. If cells can only double 50 times before senescing, you need to maintain master cell banks and regularly restart from frozen stocks. Immortalized lines eliminate this constraint.
+:::
+
+---
+
+## Step 2: Seed Train (Scale-Up)
+
+### What Happens
+
+Cells are progressively expanded from small flasks to larger and larger bioreactors:
+
+```
+Thaw vial    →    T-flask    →    Spinner flask    →    Small reactor    →    Production reactor
+(~1 million)     (~10 million)    (~100 million)        (~1 billion)          (~100 billion+)
+```
+
+Each step increases volume by ~10×. A typical seed train might be:
+
+- Day 0: Thaw 1 mL vial (10⁶ cells)
+- Day 3: Transfer to 100 mL flask
+- Day 6: Transfer to 1 L spinner
+- Day 9: Transfer to 10 L reactor
+- Day 12: Transfer to 100 L reactor
+- Day 15: Transfer to 1,000 L production reactor
+
+### Cost Impact
+
+The seed train phase:
+- Uses **expensive, small-scale equipment** (research-grade)
+- Requires **manual handling** and skilled labor
+- Consumes **high-quality media** (often pharma-grade)
+
+This is why **achieving high cell densities** is critical — if you can grow cells to 200 g/L instead of 30 g/L, you need far fewer reactor transfers and less total media.
+
+---
+
+## Step 3: Production Bioreactors
+
+### The Core Technology
+
+Production-scale bioreactors are the heart of cultured meat manufacturing. They must:
+
+1. **Maintain sterility** — Any contamination means losing the entire batch
+2. **Supply oxygen** — Cells need O₂ but are shear-sensitive
+3. **Remove CO₂** — Metabolic waste that acidifies media
+4. **Control temperature** — Typically 37°C for mammalian cells
+5. **Provide nutrients** — Via media perfusion or batch feeding
+
+### Bioreactor Types
+
+| Type | Description | Scale | Cost Range |
+|------|-------------|-------|------------|
+| **Stirred-tank** | Traditional design with impeller mixing | 1-20,000 L | $50-500/L (pharma) |
+| **Air-lift** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L |
+| **Packed-bed** | Cells grow on scaffolds, media flows through | 10-1,000 L | $100-300/L |
+| **Hollow-fiber** | Cells grow in porous tubes | 1-100 L | $200-1,000/L |
+| **Custom food-grade** | Simplified designs for food production | 1,000-100,000 L | $10-50/L (target) |
+
+::: {.callout-important}
+**This is a pivotal cost driver.** Pharma-grade stainless steel bioreactors cost $50-500/L. If cultured meat can use simplified food-grade designs (similar to beer brewing), costs could drop to $10-50/L — a 10× reduction.
+:::
+
+### Batch vs. Perfusion
+
+**Batch mode:** Fill reactor, grow cells, harvest everything, clean, repeat.
+- Simpler operation
+- Lower yields (cells exhaust nutrients)
+- 5-10 day cycles
+
+**Perfusion mode:** Continuously add fresh media and remove spent media while cells grow.
+- Higher cell densities (100-200+ g/L possible)
+- More complex operation
+- Continuous production possible
+
+The **media turnover** parameter in our model captures this:
+- Turnover = 1: Batch mode (use same media throughout)
+- Turnover = 5-10: Perfusion (replace media multiple times)
+
+---
+
+## Step 4: Media Composition
+
+### The "Food" for Cells
+
+Cell culture media contains everything cells need to grow:
+
+| Component | Function | Cost Driver |
+|-----------|----------|-------------|
+| **Amino acids** | Building blocks for proteins | Hydrolysates vs. pure amino acids |
+| **Glucose** | Energy source | Commodity, cheap |
+| **Vitamins** | Metabolic cofactors | B-complex, etc. |
+| **Minerals/salts** | Osmotic balance, enzyme function | Cheap |
+| **Lipids** | Cell membrane building | Moderate |
+| **Growth factors** | Signaling proteins (FGF, IGF, TGF-β) | **MAJOR COST DRIVER** |
+| **Serum** (if used) | Complex supplement | Very expensive, ethical issues |
+
+### The Serum-Free Challenge
+
+Traditional cell culture uses **fetal bovine serum (FBS)** — a complex mixture that provides growth factors, hormones, and attachment proteins. Problems:
+- **Expensive**: $200-600/L
+- **Variable**: Batch-to-batch inconsistency
+- **Ethical**: Defeats purpose of avoiding animal slaughter
+- **Limited supply**: Cannot scale with industry
+
+The cultured meat industry **must** use serum-free media. This requires:
+- Identifying which growth factors are essential
+- Producing those factors at scale
+- Optimizing formulations for each cell type
+
+### Hydrolysates: The Big Win for Amino Acids
+
+**Hydrolysates** are enzymatically digested proteins from plants (soy, wheat) or yeast. They provide:
+- Complete amino acid profiles
+- Some peptides and growth-promoting factors
+- Food-grade status
+
+| Media Type | Cost ($/L) | Status |
+|------------|-----------|--------|
+| Pharma-grade amino acids | $1.00 - $4.00 | Current standard |
+| Hydrolysate-based | $0.20 - $1.20 | Validated for many cell types |
+
+::: {.callout-tip}
+**Key insight:** Hydrolysates can reduce amino acid costs by 70-90%. This is why the "P(Hydrolysates)" parameter in our model has such a large impact.
+:::
+
+---
+
+## Step 5: Growth Factors — The Pivotal Challenge
+
+### What Are Growth Factors?
+
+**Growth factors** are signaling proteins that tell cells to:
+- **Proliferate** (divide and multiply)
+- **Differentiate** (become muscle, fat, etc.)
+- **Survive** (avoid programmed cell death)
+
+Key growth factors for cultured meat:
+
+| Factor | Function | Current Price | Target Price |
+|--------|----------|---------------|--------------|
+| **FGF-2** (bFGF) | Proliferation, maintain stemness | ~$50,000/g | $1-10/g |
+| **IGF-1** | Proliferation, differentiation | ~$10,000/g | $1-10/g |
+| **TGF-β** | Differentiation, ECM production | ~$1,000,000/g | $10-100/g |
+| **EGF** | Proliferation | ~$5,000/g | $1-10/g |
+
+### Why Are They So Expensive?
+
+Current growth factors are produced for **medical research** markets where:
+- Volumes are tiny (milligrams)
+- Purity requirements are extreme
+- Customers pay premium prices
+
+The cultured meat industry needs:
+- **Tonnes** per year (not milligrams)
+- **Food-grade** purity (not medical-grade)
+- **$1-10/g** prices (not $10,000-1,000,000/g)
+
+### Solutions Being Developed
+
+| Approach | Mechanism | Status | Target Price |
+|----------|-----------|--------|--------------|
+| **Precision fermentation** | E. coli/yeast produce GFs at scale | Scaling up | $10-100/g |
+| **Plant molecular farming** | Transgenic plants express GFs | Pilots (BioBetter) | $1-10/g |
+| **Autocrine cell lines** | Engineer cells to make their own GFs | [Proof of concept](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) | ~$0/g |
+| **Small molecule substitutes** | Chemicals that activate GF receptors | Research | <$1/g |
+| **Thermostable variants** | FGF2-G3 with 20-day half-life | [Commercial](https://www.enantis.com/) | Reduces usage |
+
+::: {.callout-important}
+**This is THE pivotal uncertainty.** If any of these approaches succeeds at scale, growth factors become negligible (<$1/kg chicken). If none succeed, growth factors could be >$100/kg — making cultured meat uneconomic.
+:::
+
+---
+
+## Step 6: Harvest & Processing
+
+### Cell Harvest
+
+After cells reach target density, they're separated from the media:
+- **Centrifugation**: Spin to separate cells
+- **Filtration**: Filter through membranes
+- **Settling**: Allow cells to settle naturally
+
+The harvested cells form a **cell paste** — essentially a slurry of muscle cells.
+
+### Forming Product (Downstream Processing)
+
+For **unstructured products** (ground meat, nuggets):
+- Mix cell paste with binders, fats, flavors
+- Form into shapes
+- Minimal processing needed
+- **Cost: ~$0-5/kg**
+
+For **structured products** (chicken breast, steak):
+- Requires scaffolds or 3D printing
+- Cells must organize into aligned fibers
+- Much more complex
+- **Cost: ~$5-20/kg additional**
+
+::: {.callout-note}
+Our model includes an optional "downstream processing" toggle that adds $2-15/kg for structured products.
+:::
+
+---
+
+## Cost Breakdown Summary
+
+Putting it all together, here's how costs typically break down:
+
+```
+                    ┌─────────────────────────────────────────────┐
+                    │          TOTAL UNIT COST ($/kg)             │
+                    ├─────────────────────────────────────────────┤
+                    │                                             │
+  Variable ────────►│  Media + Growth Factors + Micros + Other   │◄── 40-70%
+  Costs             │  (scales with production volume)            │
+                    │                                             │
+                    ├─────────────────────────────────────────────┤
+                    │                                             │
+  Capital ─────────►│  Bioreactors + Facility (annualized)       │◄── 15-35%
+  Costs             │  (fixed, spread over annual output)         │
+                    │                                             │
+                    ├─────────────────────────────────────────────┤
+                    │                                             │
+  Fixed ───────────►│  Labor + Maintenance + Overhead            │◄── 10-25%
+  OPEX              │  (scales with plant size, not production)   │
+                    │                                             │
+                    └─────────────────────────────────────────────┘
+```
+
+### Key Levers for Cost Reduction
+
+| Lever | Impact | Feasibility |
+|-------|--------|-------------|
+| **Hydrolysates for amino acids** | -30-50% of media cost | High (validated) |
+| **Cheap growth factors** | -50-90% of GF cost | Uncertain (pivotal) |
+| **High cell density** | -50-80% of media volume | Medium (research needed) |
+| **Food-grade reactors** | -50-80% of CAPEX | Medium (engineering) |
+| **Scale (larger plants)** | -30-50% of fixed costs | High (capital dependent) |
+
+---
+
+## Further Resources
+
+### Video Explainers
+
+- [Good Food Institute: How Cultivated Meat is Made](https://www.youtube.com/watch?v=8jVy-QF7VqE) (5 min overview)
+- [UPSIDE Foods factory tour](https://www.youtube.com/watch?v=HuVudZvOz0o) (inside a real facility)
+- [Mosa Meat production process](https://www.youtube.com/watch?v=1H_R-y-QYZE) (detailed technical)
+
+### Academic Papers
+
+- [Risner et al. (2021) - Preliminary TEA of Cultured Meat](https://www.mdpi.com/2304-8158/10/1/3) — UC Davis cost model
+- [Humbird (2021) - Scale-Up Economics of Cultured Meat](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent analysis
+- [GFI State of the Industry Report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) — Annual industry overview
+
+### Interactive Tools
+
+- [UC Davis ACBM Calculator](https://acbmcostcalculator.ucdavis.edu/) — Academic cost model
+- **This Dashboard**: [Interactive Monte Carlo Model](index.qmd) — Play with parameters
+
+---
+
+::: {.callout-tip}
+**Return to:** [Interactive Cost Model](index.qmd)
+:::

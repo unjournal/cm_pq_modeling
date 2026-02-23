@@ -20,50 +20,77 @@ This model is under active development. We welcome your comments and suggestions
 - **Questions**: Email [contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 
-::: {.callout-note collapse="true"}
-## Learn: How Cultured Chicken Production Works
+```{=html}
+<div style="display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem 0;">
+  <button id="toggle-hypothesis" onclick="toggleHypothesis()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa;">
+    Hide Annotations Sidebar
+  </button>
+  <button id="toggle-fullwidth" onclick="toggleFullWidth()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa;">
+    Expand Content
+  </button>
+</div>
 
-Cultured (cell-based) chicken is produced by growing avian muscle cells in large bioreactors, similar to brewing but with animal cells instead of yeast.
+<script>
+function toggleHypothesis() {
+  const frame = document.querySelector('.annotator-frame');
+  const btn = document.getElementById('toggle-hypothesis');
+  if (frame) {
+    if (frame.style.display === 'none') {
+      frame.style.display = '';
+      btn.textContent = 'Hide Annotations Sidebar';
+    } else {
+      frame.style.display = 'none';
+      btn.textContent = 'Show Annotations Sidebar';
+    }
+  }
+}
 
-**Why focus on chicken?** Chicken cells have some advantages: [higher satellite cell yields](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/), [potential for spontaneous immortalization](https://www.nature.com/articles/s43016-022-00658-w), and chicken has higher animal welfare stakes per kg (more individual birds affected). Growth factor requirements (FGF-2, IGF-1) are [similar to bovine cells](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) at ~100 ng/mL optimal concentrations.
+function toggleFullWidth() {
+  const body = document.body;
+  const btn = document.getElementById('toggle-fullwidth');
+  const main = document.querySelector('main.content');
 
-**The basic process:**
+  if (body.classList.contains('fullwidth-mode')) {
+    body.classList.remove('fullwidth-mode');
+    if (main) main.style.maxWidth = '';
+    btn.textContent = 'Expand Content';
+  } else {
+    body.classList.add('fullwidth-mode');
+    if (main) main.style.maxWidth = '100%';
+    btn.textContent = 'Normal Width';
+    // Also hide hypothesis when going fullwidth
+    const frame = document.querySelector('.annotator-frame');
+    if (frame) frame.style.display = 'none';
+    document.getElementById('toggle-hypothesis').textContent = 'Show Annotations Sidebar';
+  }
+}
+</script>
+
+<style>
+.fullwidth-mode .page-columns {
+  max-width: 100% !important;
+}
+.fullwidth-mode main.content {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+.fullwidth-mode .column-page {
+  max-width: 100% !important;
+}
+</style>
+```
+
+::: {.callout-note}
+## New to Cultured Meat?
+
+**[Read our deep dive: How Cultured Chicken is Made](learn.qmd)** — a detailed guide covering cell banking, bioreactors, media composition, growth factors, and why each step affects costs.
+
+Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**.
 
 ```
-   CELL BANK           SEED TRAIN          PRODUCTION           HARVEST
-      [O]         -->   [OOO]      -->    [OOOOOOO]      -->    [===]
-   (starter       (scale up in          (large-scale           (separate
-    cells)         small reactors)       bioreactors)           cells)
+   CELL BANK  →  SEED TRAIN  →  PRODUCTION  →  HARVEST  →  PRODUCT
+      [O]          [OOO]        [OOOOOOO]       [===]       [≡≡≡]
 ```
-
-**Key Cost Drivers (modeled separately in this tool):**
-
-1. **Media** (base nutrients): The bulk nutrient broth — amino acids, vitamins, glucose. This is separate from growth factors. With hydrolysates: $0.20-1.20/L. With pharma-grade amino acids: $1-4/L.
-
-2. **Micronutrients**: Minerals, trace elements. Food-grade ($0.02-2/g) vs pharma-grade ($0.50-20/g).
-
-3. **Growth Factors** (signaling proteins): FGF, IGF, TGF-β etc. — these are SEPARATE from media. Currently expensive ($5-500/g) but potentially $0.05-20/g with recombinant production at scale.
-
-4. **Bioreactors** (CAPEX): Large stainless steel vessels. Pharma-grade costs $50-500/L, but food-grade custom reactors could be 3-10x cheaper.
-
-5. **Cell Density**: How many grams of cells per liter at harvest. Higher = more meat per reactor = lower cost.
-
-**Why "media" costs can dominate even without growth factors:**
-
-The formula is: `Media $/kg = (1000 / density) × turnover × $/L`
-
-With low density (30 g/L) and high turnover (10×), even cheap $0.50/L media becomes: `(1000/30) × 10 × 0.5 = $167/kg`
-
-With high density (200 g/L) and perfusion (1×): `(1000/200) × 1 × 0.5 = $2.50/kg`
-
-This is why cell density and media turnover are critical parameters.
-
-**Why costs could drop dramatically:**
-
-- Hydrolysates (cheap plant proteins) replacing expensive pure amino acids
-- Food-grade ingredients replacing pharma-grade
-- Economies of scale in growth factor production
-- Learning curve in reactor design
 :::
 
 ::: {.callout-note collapse="true"}
@@ -1098,22 +1125,28 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
     .map(c => ({...c, absCorr: Math.abs(c.corr)}))
     .sort((a, b) => b.absCorr - a.absCorr);
 
-  return Plot.plot({
-    width: 800,
-    height: 400,
-    marginLeft: 140,
-    marginRight: 60,
+  const sensitivityPlot = Plot.plot({
+    width: 850,
+    height: 450,
+    marginLeft: 170,
+    marginRight: 70,
     x: {
       label: "Spearman Correlation with Unit Cost",
       domain: [-1, 1],
-      grid: true
+      grid: true,
+      labelOffset: 40
     },
     y: {
-      label: null
+      label: null,
+      tickFormat: d => d,
+      tickSize: 0
     },
     color: {
       domain: ["Increases cost", "Decreases cost"],
       range: ["#e74c3c", "#27ae60"]
+    },
+    style: {
+      fontSize: "14px"
     },
     marks: [
       Plot.barX(sorted, {
@@ -1125,14 +1158,19 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
       Plot.ruleX([0], {stroke: "black", strokeWidth: 1}),
       Plot.text(sorted, {
         y: "name",
-        x: d => d.corr > 0 ? d.corr + 0.03 : d.corr - 0.03,
+        x: d => d.corr > 0 ? d.corr + 0.04 : d.corr - 0.04,
         text: d => d.corr.toFixed(2),
         textAnchor: d => d.corr > 0 ? "start" : "end",
-        fontSize: 11
+        fontSize: 13,
+        fontWeight: 500
       })
-    ],
-    title: "Parameter Sensitivity: Correlation with Unit Cost"
+    ]
   });
+
+  return html`<div style="font-size: 1em;">
+    <div style="font-weight: normal; font-size: 1.1em; margin-bottom: 0.5rem; color: #333;">Parameter Sensitivity: Correlation with Unit Cost</div>
+    ${sensitivityPlot}
+  </div>`;
 }
 ```
 
@@ -1176,11 +1214,16 @@ The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that corr
 //| echo: false
 {
   // Maturity distribution
+  const matP5 = quantile(results.maturity_samples, 0.05);
+  const matP50 = quantile(results.maturity_samples, 0.50);
+  const matP95 = quantile(results.maturity_samples, 0.95);
+
   const maturityPlot = Plot.plot({
     width: 400,
-    height: 250,
+    height: 220,
     marginLeft: 50,
     marginBottom: 40,
+    marginTop: 10,
     x: {
       label: "Maturity Factor",
       domain: [0, 1]
@@ -1191,19 +1234,24 @@ The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that corr
     },
     marks: [
       Plot.rectY(results.maturity_samples, Plot.binX({y: "count"}, {x: d => d, fill: "#8e44ad", fillOpacity: 0.7})),
-      Plot.ruleX([quantile(results.maturity_samples, 0.5)], {stroke: "black", strokeWidth: 2}),
-      Plot.ruleX([quantile(results.maturity_samples, 0.05)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
-      Plot.ruleX([quantile(results.maturity_samples, 0.95)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
-    ],
-    title: `Maturity Distribution (median: ${quantile(results.maturity_samples, 0.5).toFixed(2)})`
+      Plot.ruleX([matP50], {stroke: "black", strokeWidth: 2}),
+      Plot.ruleX([matP5], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
+      Plot.ruleX([matP95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
+    ]
   });
+  const matLabel = `Maturity Distribution (median: ${matP50.toFixed(2)}, 90% CI: ${matP5.toFixed(2)} – ${matP95.toFixed(2)})`;
 
   // Cell density distribution
+  const denP5 = quantile(results.density_samples, 0.05);
+  const denP50 = quantile(results.density_samples, 0.50);
+  const denP95 = quantile(results.density_samples, 0.95);
+
   const densityPlot = Plot.plot({
     width: 400,
-    height: 250,
+    height: 220,
     marginLeft: 50,
     marginBottom: 40,
+    marginTop: 10,
     x: {
       label: "Cell Density (g/L)",
       domain: [0, Math.min(quantile(results.density_samples, 0.98) * 1.1, 350)]
@@ -1214,16 +1262,22 @@ The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that corr
     },
     marks: [
       Plot.rectY(results.density_samples, Plot.binX({y: "count"}, {x: d => d, fill: "#16a085", fillOpacity: 0.7})),
-      Plot.ruleX([quantile(results.density_samples, 0.5)], {stroke: "black", strokeWidth: 2}),
-      Plot.ruleX([quantile(results.density_samples, 0.05)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
-      Plot.ruleX([quantile(results.density_samples, 0.95)], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
-    ],
-    title: `Cell Density Distribution (median: ${quantile(results.density_samples, 0.5).toFixed(0)} g/L)`
+      Plot.ruleX([denP50], {stroke: "black", strokeWidth: 2}),
+      Plot.ruleX([denP5], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
+      Plot.ruleX([denP95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
+    ]
   });
+  const denLabel = `Cell Density Distribution (median: ${denP50.toFixed(0)} g/L, 90% CI: ${denP5.toFixed(0)} – ${denP95.toFixed(0)})`;
 
   return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0;">
-    <div>${maturityPlot}</div>
-    <div>${densityPlot}</div>
+    <div style="font-size: 0.9em;">
+      <div style="font-weight: normal; margin-bottom: 0.3rem; color: #333;">${matLabel}</div>
+      ${maturityPlot}
+    </div>
+    <div style="font-size: 0.9em;">
+      <div style="font-weight: normal; margin-bottom: 0.3rem; color: #333;">${denLabel}</div>
+      ${densityPlot}
+    </div>
   </div>`;
 }
 ```
@@ -1243,11 +1297,12 @@ The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that corr
     });
   }
 
-  return Plot.plot({
+  const scatterPlot = Plot.plot({
     width: 800,
-    height: 350,
+    height: 320,
     marginLeft: 60,
     marginBottom: 50,
+    marginTop: 10,
     x: {
       label: "Industry Maturity Factor",
       domain: [0, 1]
@@ -1271,9 +1326,13 @@ The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that corr
         r: 3
       }),
       Plot.linearRegressionY(scatterData, {x: "maturity", y: "cost", stroke: "red", strokeWidth: 2})
-    ],
-    title: "Maturity vs Unit Cost (colored by cell density)"
+    ]
   });
+
+  return html`<div style="font-size: 0.95em;">
+    <div style="font-weight: normal; margin-bottom: 0.3rem; color: #333;">Maturity vs Unit Cost (colored by cell density)</div>
+    ${scatterPlot}
+  </div>`;
 }
 ```
 
@@ -1343,151 +1402,16 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 ---
 
-## Model Formulas & Code {#model-formulas}
+## Technical Reference
 
-::: {.callout-tip}
-**Code references:** [JavaScript source (this page)](#full-source-code) | [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)
+::: {.callout-note}
+**[View Full Technical Documentation](docs.qmd)** — Complete model formulas, parameter definitions, code reference, and methodology.
 
-*A [Squiggle reference model](../models/cm_cost_v0.2.squiggle) is maintained with equivalent parameters. The SquiggleHub version may differ; this dashboard and the local `.squiggle` file are kept in sync.*
-:::
+Quick reference:
 
-This section presents the model structure **top-down**: starting with the final output and unpacking each component.
+$$\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{/\text{kg}} + \text{Fixed OPEX}_{/\text{kg}} + \text{Downstream}_{/\text{kg}}$$
 
-### 1. Total Unit Cost
-
-The model estimates **unit production cost** ($/kg) by summing four components:
-
-$$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
-
-<details>
-<summary>What does each term mean?</summary>
-
-| Term | Description | Typical range |
-|------|-------------|---------------|
-| **VOC** | Variable operating costs — inputs that scale with production | $5–100/kg |
-| **CAPEX/kg** | Annualized capital costs (bioreactors, facilities) | $1–20/kg |
-| **Fixed OPEX/kg** | Labor, maintenance, overhead | $1–10/kg |
-| **Downstream/kg** | Scaffolding, texturization (for structured products) | $2–15/kg if enabled |
-
-</details>
-
-### 2. Variable Operating Costs (VOC)
-
-VOC is the sum of four input categories:
-
-$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Growth Factors} + \text{Other}$$
-
-<details>
-<summary>2a. Media Cost</summary>
-
-Media cost depends on **how much liquid** you need per kg of meat:
-
-$$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{L per kg wet cells}} \times \underbrace{\text{turnover}}_{\text{media changes}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
-
-**Example calculation:**
-- Cell density: 50 g/L → need 1000/50 = 20 L per kg
-- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L/kg
-- Media price: $0.50/L (hydrolysates) → 60 × 0.50 = **$30/kg**
-
-The price per liter depends on whether **hydrolysates** (cheap plant-based amino acids) are used:
-
-| Scenario | Price range ($/L) |
-|----------|-------------------|
-| With hydrolysates | $0.20 – $1.20 |
-| Pharma-grade amino acids | $1.00 – $4.00 |
-
-</details>
-
-<details>
-<summary>2b. Growth Factor Cost</summary>
-
-Growth factors (FGF-2, IGF-1, TGF-β) are the most price-volatile component:
-
-$$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
-
-The **GF progress slider** interpolates between current and target prices:
-
-$$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
-
-At 0% progress: current prices ($5,000–500,000/g)
-At 100% progress: target prices ($1–100/g for cheap scenario)
-
-</details>
-
-### 3. Annualized Capital Costs
-
-Capital costs are **annualized** using the Capital Recovery Factor (CRF):
-
-$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output (kg)}}$$
-
-Where CRF converts a lump sum to annual payments:
-
-$$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
-
-<details>
-<summary>What is CRF?</summary>
-
-**Capital Recovery Factor** answers: "If I borrow $X at interest rate r for n years, what's my annual payment?"
-
-| WACC | Asset Life | CRF | Meaning |
-|------|------------|-----|---------|
-| 10% | 15 years | 13.1% | Pay 13.1% of capital cost annually |
-| 15% | 10 years | 19.9% | Pay 19.9% of capital cost annually |
-| 20% | 8 years | 26.1% | Pay 26.1% of capital cost annually |
-
-Higher WACC or shorter asset life → higher annual capital charge.
-
-</details>
-
-### 4. Technology Adoption & Maturity
-
-The model uses a **latent maturity factor** (0–1) to correlate technology adoption, reactor costs, and financing:
-
-$$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
-
-<details>
-<summary>What does "bound" mean?</summary>
-
-**bound(x, 0, 1)** ensures the result stays between 0 and 1. Also called "clip" or "clamp" in programming.
-
-- If x < 0, return 0
-- If x > 1, return 1
-- Otherwise, return x
-
-This prevents impossible probabilities like -0.2 or 1.3.
-
-</details>
-
-**Why correlate?** In "good worlds" for cultured chicken:
-- Technologies are more likely adopted (higher P)
-- Custom reactors are more common (lower CAPEX)
-- Financing is cheaper (lower WACC)
-
-This prevents unrealistic scenarios where technology succeeds but financing remains prohibitively expensive.
-
-### 5. Monte Carlo Simulation
-
-The model runs **30,000 simulations**, each time:
-
-1. Draw random values for all uncertain parameters
-2. Draw technology adoption outcomes (Bernoulli coin flips)
-3. Calculate unit cost for that scenario
-4. Collect results into a distribution
-
-This produces the histograms and probability thresholds shown above.
-
-::: {.callout-note collapse="true"}
-## Full Source Code {#full-source-code}
-
-The complete JavaScript implementation is embedded in this page. Key functions:
-
-- `simulate(n, seed, params)` — Main Monte Carlo loop
-- `sampleLognormalP5P95(rng, p5, p95, n)` — Sample from lognormal given percentiles
-- `sampleBetaMeanStdev(rng, mean, sd, n)` — Sample from beta distribution
-- `crf(wacc, years)` — Capital Recovery Factor calculation
-- `spearmanCorr(x, y)` — Rank correlation for sensitivity analysis
-
-View the page source or see the [Python reference implementation](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) for details.
+The model runs **30,000 Monte Carlo simulations**, sampling from parameter distributions and technology adoption switches to produce cost distributions and probability thresholds.
 :::
 
 ---

@@ -1,5 +1,6 @@
 ---
-title: "Model Documentation"
+title: "Technical Reference"
+subtitle: "Model Formulas, Parameters, and Code Documentation"
 toc: true
 format:
   html:
@@ -8,47 +9,151 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip collapse="false"}
-## Share Your Feedback
-
-Use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge) to annotate any part of this documentation. Your comments help improve the model!
+::: {.callout-tip}
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd)
 :::
 
 ## Overview
 
-This document provides technical documentation for the cultured chicken cost model, including:
+This document provides complete technical documentation for the cultured chicken cost model:
 
-- Model structure and equations
-- Parameter definitions and sources
-- Methodology notes
-- Limitations and caveats
+- [Model Formulas](#model-formulas) — Mathematical structure and equations
+- [Parameter Definitions](#parameter-definitions) — All inputs with distributions and sources
+- [Code Reference](#code-reference) — Implementation details
+- [Limitations](#limitations) — Known caveats and recommendations
 
-## Model Structure
+---
 
-### Core Equation
+## Model Formulas {#model-formulas}
 
-The model estimates **unit production cost** ($/kg) as:
+This section presents the model structure **top-down**: starting with the final output and unpacking each component.
 
-$$
-\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{\text{annualized}} + \text{Fixed OPEX}
-$$
+### 1. Total Unit Cost
 
-Where:
+The model estimates **unit production cost** ($/kg) by summing four components:
 
-- **VOC** (Variable Operating Costs) = Media + Micronutrients + Recombinant factors + Other
-- **CAPEX** = Capital costs annualized via capital recovery factor (CRF)
-- **Fixed OPEX** = Labor, maintenance, overhead, scaled with plant size
+$$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
 
-### Monte Carlo Simulation
+<details>
+<summary>What does each term mean?</summary>
 
-The model uses Monte Carlo simulation (default: 30,000 samples) to propagate uncertainty:
+| Term | Description | Typical range |
+|------|-------------|---------------|
+| **VOC** | Variable operating costs — inputs that scale with production | $5–100/kg |
+| **CAPEX/kg** | Annualized capital costs (bioreactors, facilities) | $1–20/kg |
+| **Fixed OPEX/kg** | Labor, maintenance, overhead | $1–10/kg |
+| **Downstream/kg** | Scaffolding, texturization (for structured products) | $2–15/kg if enabled |
 
-1. Sample parameters from specified distributions
-2. Apply technology adoption switches (Bernoulli draws)
-3. Calculate unit cost for each sample
-4. Report quantiles and probabilities
+</details>
 
-## Parameter Definitions
+### 2. Variable Operating Costs (VOC)
+
+VOC is the sum of four input categories:
+
+$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Growth Factors} + \text{Other}$$
+
+<details>
+<summary>2a. Media Cost</summary>
+
+Media cost depends on **how much liquid** you need per kg of meat:
+
+$$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{L per kg wet cells}} \times \underbrace{\text{turnover}}_{\text{media changes}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
+
+**Example calculation:**
+- Cell density: 50 g/L → need 1000/50 = 20 L per kg
+- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L/kg
+- Media price: $0.50/L (hydrolysates) → 60 × 0.50 = **$30/kg**
+
+The price per liter depends on whether **hydrolysates** (cheap plant-based amino acids) are used:
+
+| Scenario | Price range ($/L) |
+|----------|-------------------|
+| With hydrolysates | $0.20 – $1.20 |
+| Pharma-grade amino acids | $1.00 – $4.00 |
+
+</details>
+
+<details>
+<summary>2b. Growth Factor Cost</summary>
+
+Growth factors (FGF-2, IGF-1, TGF-β) are the most price-volatile component:
+
+$$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
+
+The **GF progress slider** interpolates between current and target prices:
+
+$$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
+
+At 0% progress: current prices ($5,000–500,000/g)
+At 100% progress: target prices ($1–100/g for cheap scenario)
+
+</details>
+
+### 3. Annualized Capital Costs
+
+Capital costs are **annualized** using the Capital Recovery Factor (CRF):
+
+$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output (kg)}}$$
+
+Where CRF converts a lump sum to annual payments:
+
+$$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
+
+<details>
+<summary>What is CRF?</summary>
+
+**Capital Recovery Factor** answers: "If I borrow $X at interest rate r for n years, what's my annual payment?"
+
+| WACC | Asset Life | CRF | Meaning |
+|------|------------|-----|---------|
+| 10% | 15 years | 13.1% | Pay 13.1% of capital cost annually |
+| 15% | 10 years | 19.9% | Pay 19.9% of capital cost annually |
+| 20% | 8 years | 26.1% | Pay 26.1% of capital cost annually |
+
+Higher WACC or shorter asset life → higher annual capital charge.
+
+</details>
+
+### 4. Technology Adoption & Maturity
+
+The model uses a **latent maturity factor** (0–1) to correlate technology adoption, reactor costs, and financing:
+
+$$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
+
+<details>
+<summary>What does "bound" mean?</summary>
+
+**bound(x, 0, 1)** ensures the result stays between 0 and 1. Also called "clip" or "clamp" in programming.
+
+- If x < 0, return 0
+- If x > 1, return 1
+- Otherwise, return x
+
+This prevents impossible probabilities like -0.2 or 1.3.
+
+</details>
+
+**Why correlate?** In "good worlds" for cultured chicken:
+- Technologies are more likely adopted (higher P)
+- Custom reactors are more common (lower CAPEX)
+- Financing is cheaper (lower WACC)
+
+This prevents unrealistic scenarios where technology succeeds but financing remains prohibitively expensive.
+
+### 5. Monte Carlo Simulation
+
+The model runs **30,000 simulations**, each time:
+
+1. Draw random values for all uncertain parameters
+2. Draw technology adoption outcomes (Bernoulli coin flips)
+3. Calculate unit cost for that scenario
+4. Collect results into a distribution
+
+This produces the histograms and probability thresholds shown in the dashboard.
+
+---
+
+## Parameter Definitions {#parameter-definitions}
 
 ### Basic Parameters
 
@@ -63,14 +168,14 @@ The model uses Monte Carlo simulation (default: 30,000 samples) to propagate unc
 Each technology has a base adoption probability, adjusted by maturity:
 
 $$
-P_{\text{adopted}} = \text{clip}(P_{\text{base}} + 0.25 \times (m - 0.5), 0, 1)
+P_{\text{adopted}} = \text{bound}(P_{\text{base}} + 0.25 \times (m - 0.5), 0, 1)
 $$
 
-| Technology | Base Probability | Effect |
-|------------|-----------------|--------|
-| Hydrolysates | 60% | Reduces media $/L by ~70% |
-| Food-grade micros | 65% | Reduces micro $/g by ~90% |
-| Cheap recombinant | 50% | Reduces growth factor cost dramatically |
+| Technology | Base Probability | Effect | Notes |
+|------------|-----------------|--------|-------|
+| Hydrolysates | 75% | Reduces media $/L by ~70% | High confidence based on 2024-25 research |
+| Food-grade micros | 65% | Reduces micro $/g by ~90% | Regulatory dependent |
+| Scalable GF technology | 50% | Switches to "cheap" GF prices | Pivotal uncertainty |
 
 ### Process Intensities
 
@@ -80,67 +185,68 @@ $$
 | Cycle time | 0.5-5 | days | Time per production batch |
 | Media turnover | 1-10 | ratio | 1=batch, >1=perfusion |
 
-### Cost Components
+### Growth Factor Price Scenarios
 
-#### Variable Costs
+| Scenario | Quantity (g/kg) | Price ($/g) | Status |
+|----------|----------------|-------------|--------|
+| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | Industry target |
+| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Conservative projection |
 
-| Component | Formula | Key Drivers |
-|-----------|---------|-------------|
-| Media | $L/kg \times \$/L$ | Density, turnover, hydrolysates |
-| Comm. micros | $g/kg \times \$/g$ | Food-grade adoption |
-| Recombinant | $g/kg \times \$/g$ | Cheap tech adoption |
-| Other VOC | Lognormal(0.5, 5) | Utilities, consumables |
+Breakthrough technologies that could trigger the "cheap" scenario:
+- Autocrine cell lines (cells produce own FGF2)
+- Plant molecular farming ($1-10/g target)
+- Precision fermentation at scale
+- Polyphenol substitution (reduces GF requirements by 80%)
 
-#### Capital Costs
+### Capital Cost Parameters
 
-Reactor CAPEX is computed bottom-up:
+| Parameter | Range | Notes |
+|-----------|-------|-------|
+| WACC | 8-20% | Weighted average cost of capital |
+| Asset life | 8-20 years | Equipment depreciation period |
+| CAPEX scale exponent | 0.6-0.9 | Economies of scale (K ~ Q^s) |
+| Pharma-grade CAPEX | $5-25/kg capacity | At 20 kTA reference scale |
+| Custom reactor ratio | 0.35-0.85 | Cost relative to pharma-grade |
 
-1. **Volume required**: $V = Q / (\text{productivity} \times 365)$
-2. **Reactor cost**: Blend of pharma ($50-500/L) and custom reactors
-3. **Scaling**: Apply power law $K \propto V^s$ where $s \in [0.6, 0.9]$
-4. **Lang factor**: Multiply by 1.5-3.5x for total installed plant
-5. **Annualize**: Apply CRF based on WACC and asset life
+---
 
-$$
-\text{CAPEX}_{/kg} = \frac{\text{CAPEX}_{\text{total}} \times \text{CRF}}{Q \times u}
-$$
+## Code Reference {#code-reference}
 
-#### Fixed OPEX
+The full model implementation is available in multiple formats:
 
-Scaled from reference plant (20 kTA @ 90% utilization):
+| Format | Location | Notes |
+|--------|----------|-------|
+| **JavaScript** (interactive) | Embedded in [dashboard](index.qmd) | Primary implementation |
+| **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Standalone script |
+| **Squiggle** (reference) | [models/cm_cost_v0.2.squiggle](../models/cm_cost_v0.2.squiggle) | Synced with dashboard parameters |
 
-$$
-\text{Fixed OPEX} = \text{Ref} \times \left(\frac{Q}{Q_{\text{ref}}}\right)^s
-$$
+### Key Functions
 
-Where $s \in [0.6, 1.0]$ is the scaling exponent.
+The JavaScript implementation includes:
 
-## Maturity Correlation
+- `simulate(n, seed, params)` — Main Monte Carlo loop
+- `sampleLognormalP5P95(rng, p5, p95, n)` — Sample from lognormal given percentiles
+- `sampleBetaMeanStdev(rng, mean, sd, n)` — Sample from beta distribution
+- `crf(wacc, years)` — Capital Recovery Factor calculation
+- `spearmanCorr(x, y)` — Rank correlation for sensitivity analysis
 
-A key feature of this model is the **latent maturity factor** $m \in [0, 1]$ that induces positive correlation between:
+View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd) for the complete implementation.
 
-- Technology adoption probabilities
-- Custom reactor share
-- WACC (lower in mature industry)
+---
 
-This reflects the intuition that in "good worlds" for cultured chicken:
-- Technologies are more likely to be adopted
-- Industry has more custom solutions
-- Financing costs are lower due to reduced risk
-
-## Limitations
+## Limitations {#limitations}
 
 ### Known Limitations
 
-1. **Static snapshot model**: The model projects costs for a single target year (adjustable 2026-2050). It does not model year-over-year learning curves, experience curves, or cost trajectories. Instead, the "maturity" parameter serves as a proxy for cumulative industry development. Lower maturity values represent scenarios where progress has been slower; higher values represent faster progress.
+1. **Static snapshot model** — Projects costs for a single target year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
-2. **Downstream processing is optional**: Texturization, scaffolding, and forming costs can be included via the "Include downstream processing" toggle. When enabled, this adds $2-15/kg for structured products. Not needed for ground meat applications.
+2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
 
-3. **No geography**: Assumes generic global costs, not region-specific factors (labor rates, energy costs, regulatory environments).
+3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
-4. **Limited contamination modeling**: No batch failure distributions or contamination event modeling. Real-world operations would face periodic batch losses.
+4. **Limited contamination modeling** — No batch failure or contamination event distributions.
 
-5. **Some correlations may be underspecified**: While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and cycle time) are treated as independent.
+5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and cycle time) are treated as independent.
 
 ### Recommendations for Use
 
@@ -152,16 +258,21 @@ This reflects the intuition that in "good worlds" for cultured chicken:
 | **Report uncertainty ranges**, not just medians | Wide 90% CIs reflect genuine epistemic uncertainty; hiding this gives false confidence |
 | **Consider correlated scenarios** via the maturity slider | The maturity factor captures the intuition that "good worlds" have multiple improvements occurring together |
 
-## Code Reference
+---
 
-The full model implementation is available in the repository:
+## Sources
 
-- `dashboard/model.py` - Core simulation code
-- `models/cm_cost_v0.2.squiggle` - Squiggle version
+- [Risner et al. (2021) - UC Davis ACBM Calculator](https://www.mdpi.com/2304-8158/10/1/3) — Original academic cost model
+- [Humbird (2021) - Scale-Up Economics](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent TEA analysis
+- [Good Food Institute - State of the Industry Reports](https://gfi.org) — Annual industry overview
+- [The Unjournal - Cultured Meat Evaluations](https://unjournal.org) — Independent research evaluations
+
+---
 
 ## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v0.3 | 2026-02 | Separated Learn page, consolidated technical docs |
 | v0.2 | 2026-02 | Explicit scale/uptime, beta distributions, maturity factor |
 | v0.1 | 2026-01 | Initial Squiggle model based on UC Davis |

@@ -9,7 +9,9 @@ website:
     left:
       - text: "Dashboard"
         href: index.qmd
-      - text: "Documentation"
+      - text: "Learn"
+        href: learn.qmd
+      - text: "Technical Reference"
         href: docs.qmd
       - text: "About"
         href: about.qmd
