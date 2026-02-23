@@ -125,6 +125,22 @@ footer, .footer {
     font-size: 0.9rem;
 }
 
+/* Make Hypothesis sidebar narrower */
+.annotator-frame {
+    width: 280px !important;
+    max-width: 280px !important;
+}
+
+/* Hypothesis collapsed state - show minimal indicator */
+.annotator-frame.annotator-collapsed {
+    width: 30px !important;
+}
+
+/* Reduce hypothesis sidebar impact on content */
+body.hypothesis-sidebar-open {
+    margin-right: 290px;
+}
+
 /* Make sidebar explainers wider when expanded */
 .panel-sidebar details {
     position: relative;

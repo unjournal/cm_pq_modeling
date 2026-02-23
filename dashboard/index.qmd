@@ -10,12 +10,12 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip collapse="false"}
-## Share Your Feedback
+::: {.callout-tip collapse="true"}
+## Share Your Feedback (click to expand)
 
 This model is under active development. We welcome your comments and suggestions!
 
-- **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge of the page) to annotate specific parts
+- **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge to open/close)
 - **General feedback**: [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
 - **Questions**: Email [contact@unjournal.org](mailto:contact@unjournal.org)
 :::
@@ -285,11 +285,22 @@ function simulate(n, seed, params) {
   const g_recf_exp = sampleLognormalP5P95(rng, 5e-4, 2e-2, n);   // Standard usage
   const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
 
-  // Price ($/g) - UPDATED to reflect realistic ranges
-  // "Cheap" = scaled recombinant production achieved (industry target)
-  // "Expensive" = limited progress from current prices
-  const price_recf_cheap = sampleLognormalP5P95(rng, 1.0, 100.0, n);   // Scaled production: $1-100/g
-  const price_recf_exp = sampleLognormalP5P95(rng, 500.0, 50000.0, n); // Limited progress: $500-50,000/g
+  // Price ($/g) - Scaled by gf_progress parameter (0-100%)
+  // At 0% progress: current prices ($5k-500k expensive, $100-10k cheap)
+  // At 100% progress: target prices ($50-5k expensive, $1-100 cheap)
+  const progress = params.gf_progress / 100;  // 0 to 1
+
+  // Interpolate price ranges based on progress
+  // Cheap scenario: $100-10,000 at 0% → $1-100 at 100%
+  const cheap_p5 = 100 * Math.pow(0.01, progress);   // 100 → 1
+  const cheap_p95 = 10000 * Math.pow(0.01, progress); // 10000 → 100
+  const price_recf_cheap = sampleLognormalP5P95(rng, cheap_p5, cheap_p95, n);
+
+  // Expensive scenario: $5,000-500,000 at 0% → $50-5,000 at 100%
+  const exp_p5 = 5000 * Math.pow(0.01, progress);    // 5000 → 50
+  const exp_p95 = 500000 * Math.pow(0.01, progress); // 500000 → 5000
+  const price_recf_exp = sampleLognormalP5P95(rng, exp_p5, exp_p95, n);
+
   const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
   const cost_recf = mul(g_recf, price_recf);
 
@@ -534,7 +545,26 @@ viewof p_recfactors = Inputs.range([0.1, 0.9], {
   label: "P(Cheap growth factors)"
 })
 ```
-<details><summary>What is this? (click to expand)</summary>
+
+```{ojs}
+//| echo: false
+viewof gf_progress = Inputs.range([0, 100], {
+  value: 50, step: 5,
+  label: "GF cost reduction progress (%)"
+})
+```
+<details><summary>What do these sliders control? (click to expand)</summary>
+
+**Two controls for growth factors:**
+
+1. **P(Cheap growth factors)** — Probability that scaled recombinant production is achieved. Affects whether "cheap" or "expensive" price regime is used.
+
+2. **GF cost reduction progress** — How far along the price reduction curve we are:
+   - **0%** = Current prices ($5,000-500,000/g for expensive scenario)
+   - **50%** = Midway ($500-50,000/g)
+   - **100%** = Industry target achieved ($1-100/g for cheap, $50-5,000/g for expensive)
+
+This allows you to model scenarios like "scaled production is achieved (high P) but prices haven't dropped as much as hoped (low progress)".
 
 **Growth factors** are signaling proteins (FGF-2, IGF-1, TGF-β, etc.) that tell cells to proliferate. They are currently **the most expensive media component** — often 55-95% of media cost.
 
@@ -651,7 +681,8 @@ results = {
     media_turnover_p95: media_turnover_hi,
     include_capex: include_capex,
     include_fixed_opex: include_fixed_opex,
-    include_downstream: include_downstream
+    include_downstream: include_downstream,
+    gf_progress: gf_progress
   };
 
   return simulate(30000, 42, params);
@@ -1136,7 +1167,11 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 ---
 
-## Model Details
+## Model Formulas & Code {#model-formulas}
+
+::: {.callout-important}
+**Jump to:** [Full JavaScript source](#full-source-code) | [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) | [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)
+:::
 
 ### Unit Cost Formula
 
@@ -1162,6 +1197,95 @@ Technology adoption probabilities are adjusted by maturity:
 $$P_{\text{adjusted}} = \text{clip}(P_{\text{base}} + k \times (m - 0.5), 0, 1)$$
 
 Where m is the maturity factor (0-1) and k is the sensitivity coefficient.
+
+### Full Source Code (Pseudocode) {#full-source-code}
+
+::: {.callout-note collapse="true"}
+## View Model Logic (Squiggle-style pseudocode)
+
+```
+// === SAMPLING DISTRIBUTIONS ===
+maturity        ~ Beta(mean=maturity_slider, sd=0.20)
+plant_kta       ~ Lognormal(p5=capacity*0.5, p95=capacity*2.0)
+uptime          ~ Beta(mean=uptime_slider, sd=0.05)
+output_kg_year  = plant_kta * 1e6 * uptime
+
+// === TECHNOLOGY ADOPTION (maturity-adjusted) ===
+p_hydro_adj     = clip(p_hydro_base + 0.25*(maturity - 0.5), 0, 1)
+p_foodgrade_adj = clip(p_foodgrade_base + 0.20*(maturity - 0.5), 0, 1)
+p_recf_adj      = clip(p_recfactors_base + 0.25*(maturity - 0.5), 0, 1)
+
+is_hydro        ~ Bernoulli(p_hydro_adj)
+is_foodgrade    ~ Bernoulli(p_foodgrade_adj)
+is_recf_cheap   ~ Bernoulli(p_recf_adj)
+
+// === PROCESS INTENSITIES ===
+density_gL      ~ Lognormal(p5=30, p95=200)    // g/L at harvest
+cycle_days      ~ Lognormal(p5=0.5, p95=5.0)   // days per batch
+media_turnover  ~ Lognormal(p5=1, p95=10)      // 1=batch, >1=perfusion
+L_per_kg        = (1000 / density_gL) * media_turnover
+
+// === VARIABLE OPERATING COSTS ===
+// Media ($/kg)
+media_cost_L    = is_hydro ? Lognormal(0.2, 1.2) : Lognormal(1.0, 4.0)
+cost_media      = L_per_kg * media_cost_L
+
+// Micronutrients ($/kg)
+g_comm          = is_foodgrade ? Lognormal(0.1, 2) : Lognormal(1, 10)
+price_comm      = is_foodgrade ? Lognormal(0.02, 2) : Lognormal(0.5, 20)
+cost_micros     = g_comm * price_comm
+
+// Growth Factors ($/kg) - scaled by gf_progress slider
+progress        = gf_progress / 100  // 0 to 1
+cheap_p5        = 100 * (0.01)^progress   // $100 → $1
+cheap_p95       = 10000 * (0.01)^progress // $10k → $100
+exp_p5          = 5000 * (0.01)^progress  // $5k → $50
+exp_p95         = 500000 * (0.01)^progress // $500k → $5k
+
+g_recf          = is_recf_cheap ? Lognormal(1e-4, 5e-3) : Lognormal(5e-4, 2e-2)
+price_recf      = is_recf_cheap ? Lognormal(cheap_p5, cheap_p95)
+                                : Lognormal(exp_p5, exp_p95)
+cost_recf       = g_recf * price_recf
+
+other_voc       ~ Lognormal(0.5, 5.0)
+VOC             = cost_media + cost_micros + cost_recf + other_voc
+
+// === CAPEX (if enabled) ===
+productivity    = (density_gL / 1000) / cycle_days  // kg/L/day
+volume_L        = output_kg_year / (productivity * 365)
+reactor_cost_L  ~ Lognormal(50, 500)  // $/L pharma
+custom_ratio    ~ Uniform(0.35, 0.85)
+custom_share    = clip(Beta(0.55, 0.15) + 0.30*(maturity-0.5), 0, 1)
+avg_reactor_$L  = reactor_cost_L * (custom_share*custom_ratio + (1-custom_share))
+
+capex_scale     ~ Uniform(0.6, 0.9)
+plant_factor    ~ Lognormal(1.5, 3.5)
+capex_total     = avg_reactor_$L * volume_L * (volume_L/1e6)^(capex_scale-1) * plant_factor
+
+wacc            = clip(Lognormal(0.08, 0.20) - 0.03*(maturity-0.5), 0.03, 1)
+asset_life      ~ Uniform(8, 20)
+CRF             = wacc * (1+wacc)^asset_life / ((1+wacc)^asset_life - 1)
+capex_per_kg    = (capex_total * CRF) / output_kg_year
+
+// === FIXED OPEX (if enabled) ===
+ref_output      = 20e6 * 0.9  // 20 kTA @ 90% utilization
+fixed_ref       ~ Uniform(1, 6)  // $/kg at reference
+fixed_scale     ~ Uniform(0.6, 1.0)
+fixed_per_kg    = fixed_ref * (output_kg_year / ref_output)^(fixed_scale - 1)
+
+// === DOWNSTREAM (if enabled) ===
+downstream_per_kg ~ Lognormal(2, 15)  // for structured products
+
+// === TOTAL ===
+unit_cost       = VOC + capex_per_kg + fixed_per_kg + downstream_per_kg
+```
+
+**Notes:**
+- `Lognormal(p5, p95)` means 5th and 95th percentiles
+- `clip(x, lo, hi)` bounds x to [lo, hi]
+- `^` is exponentiation
+- Maturity factor induces positive correlation between technology adoption, reactor costs, and WACC
+:::
 
 ---
 
