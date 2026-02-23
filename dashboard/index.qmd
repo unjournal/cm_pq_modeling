@@ -377,8 +377,19 @@ function simulate(n, seed, params) {
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_foodgrade: is_foodgrade.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
+    // Input parameters for sensitivity analysis
     maturity_samples: maturity,
-    density_samples: density_gL
+    density_samples: density_gL,
+    media_turnover_samples: media_turnover,
+    L_per_kg_samples: L_per_kg,
+    media_cost_L_samples: media_cost_L,
+    is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
+    is_foodgrade_samples: is_foodgrade.map(x => x ? 1 : 0),
+    is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
+    g_recf_samples: g_recf,
+    price_recf_samples: price_recf,
+    plant_kta_samples: plant_kta,
+    uptime_samples: uptime
   };
 }
 
@@ -394,6 +405,44 @@ function quantile(arr, q) {
 
 function mean(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+// Spearman rank correlation coefficient
+function spearmanCorr(x, y) {
+  const n = x.length;
+
+  // Rank function (handles ties with average rank)
+  function rank(arr) {
+    const sorted = arr.map((v, i) => ({v, i})).sort((a, b) => a.v - b.v);
+    const ranks = new Array(n);
+    let i = 0;
+    while (i < n) {
+      let j = i;
+      while (j < n - 1 && sorted[j + 1].v === sorted[j].v) j++;
+      const avgRank = (i + j) / 2 + 1;
+      for (let k = i; k <= j; k++) ranks[sorted[k].i] = avgRank;
+      i = j + 1;
+    }
+    return ranks;
+  }
+
+  const rx = rank(x);
+  const ry = rank(y);
+
+  // Pearson correlation of ranks
+  const meanRx = mean(rx);
+  const meanRy = mean(ry);
+
+  let num = 0, denX = 0, denY = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = rx[i] - meanRx;
+    const dy = ry[i] - meanRy;
+    num += dx * dy;
+    denX += dx * dx;
+    denY += dy * dy;
+  }
+
+  return num / Math.sqrt(denX * denY);
 }
 ```
 
@@ -987,6 +1036,102 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 </div>`
 ```
+
+### Sensitivity Analysis (Tornado Chart)
+
+Which parameters have the most impact on the final cost? This chart shows **Spearman rank correlations** between each input parameter and the unit cost.
+
+```{ojs}
+//| echo: false
+{
+  // Calculate correlations between inputs and unit cost
+  const uc = results.unit_cost;
+
+  const correlations = [
+    {name: "Cell Density (g/L)", corr: spearmanCorr(results.density_samples, uc), direction: "inverse"},
+    {name: "Media Turnover", corr: spearmanCorr(results.media_turnover_samples, uc), direction: "direct"},
+    {name: "L/kg (volume)", corr: spearmanCorr(results.L_per_kg_samples, uc), direction: "direct"},
+    {name: "Media $/L", corr: spearmanCorr(results.media_cost_L_samples, uc), direction: "direct"},
+    {name: "Uses Hydrolysates", corr: spearmanCorr(results.is_hydro_samples, uc), direction: "inverse"},
+    {name: "Uses Food-Grade", corr: spearmanCorr(results.is_foodgrade_samples, uc), direction: "inverse"},
+    {name: "Has Cheap GFs", corr: spearmanCorr(results.is_recf_cheap_samples, uc), direction: "inverse"},
+    {name: "GF Quantity (g/kg)", corr: spearmanCorr(results.g_recf_samples, uc), direction: "direct"},
+    {name: "GF Price ($/g)", corr: spearmanCorr(results.price_recf_samples, uc), direction: "direct"},
+    {name: "Industry Maturity", corr: spearmanCorr(results.maturity_samples, uc), direction: "inverse"},
+    {name: "Plant Capacity", corr: spearmanCorr(results.plant_kta_samples, uc), direction: "inverse"},
+    {name: "Utilization Rate", corr: spearmanCorr(results.uptime_samples, uc), direction: "inverse"}
+  ];
+
+  // Sort by absolute correlation
+  const sorted = correlations
+    .map(c => ({...c, absCorr: Math.abs(c.corr)}))
+    .sort((a, b) => b.absCorr - a.absCorr);
+
+  return Plot.plot({
+    width: 800,
+    height: 400,
+    marginLeft: 140,
+    marginRight: 60,
+    x: {
+      label: "Spearman Correlation with Unit Cost",
+      domain: [-1, 1],
+      grid: true
+    },
+    y: {
+      label: null
+    },
+    color: {
+      domain: ["Increases cost", "Decreases cost"],
+      range: ["#e74c3c", "#27ae60"]
+    },
+    marks: [
+      Plot.barX(sorted, {
+        y: "name",
+        x: "corr",
+        fill: d => d.corr > 0 ? "Increases cost" : "Decreases cost",
+        sort: {y: "-x", reduce: d => Math.abs(d)}
+      }),
+      Plot.ruleX([0], {stroke: "black", strokeWidth: 1}),
+      Plot.text(sorted, {
+        y: "name",
+        x: d => d.corr > 0 ? d.corr + 0.03 : d.corr - 0.03,
+        text: d => d.corr.toFixed(2),
+        textAnchor: d => d.corr > 0 ? "start" : "end",
+        fontSize: 11
+      })
+    ],
+    title: "Parameter Sensitivity: Correlation with Unit Cost"
+  });
+}
+```
+
+<details>
+<summary>How to read this chart (click to expand)</summary>
+
+**Tornado chart interpretation:**
+
+- **Bars extending right (red)**: Parameters that **increase cost** when they increase
+  - Higher media $/L → higher cost
+  - Higher GF price → higher cost
+  - Higher L/kg volume → higher cost
+
+- **Bars extending left (green)**: Parameters that **decrease cost** when they increase
+  - Higher cell density → lower cost (less media needed)
+  - Higher maturity → lower cost (better technology, cheaper inputs)
+  - Using hydrolysates → lower cost (cheaper amino acids)
+
+- **Bar length**: How much that parameter affects the output
+  - |correlation| > 0.5 = strong effect
+  - |correlation| 0.3-0.5 = moderate effect
+  - |correlation| < 0.3 = weak effect
+
+**This is Spearman rank correlation**, which captures monotonic relationships (not just linear). A correlation of -0.7 means "when this parameter is high, costs tend to be low" across the 30,000 simulations.
+
+**Key insight**: The parameters with the longest bars are the ones to focus on when:
+- Forecasting (these drive your uncertainty)
+- Prioritizing R&D (these are the levers to pull)
+- Gathering expert input (these are worth eliciting carefully)
+</details>
 
 ### Industry Maturity Deep Dive
 
