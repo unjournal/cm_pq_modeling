@@ -987,19 +987,19 @@ function formatCost(val) {
   // Filter out components with all zeros (e.g., downstream when not included)
   const components = allComponents.filter(c => mean(c.data) > 0.001);
 
-  const plots = components.map(comp => {
+  const plotData = components.map(comp => {
     const p5 = quantile(comp.data, 0.05);
     const p50 = quantile(comp.data, 0.50);
     const p95 = quantile(comp.data, 0.95);
     const clipVal = Math.max(quantile(comp.data, 0.98), 0.1);
     const clipped = comp.data.filter(x => x <= clipVal && x >= 0);
 
-    return Plot.plot({
+    const plot = Plot.plot({
       width: 420,
-      height: 200,
+      height: 180,
       marginLeft: 45,
       marginBottom: 35,
-      marginTop: 25,
+      marginTop: 10,
       x: {
         label: "$/kg",
         domain: [0, clipVal * 1.1]
@@ -1013,13 +1013,18 @@ function formatCost(val) {
         Plot.ruleX([p5], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"}),
         Plot.ruleX([p50], {stroke: "black", strokeWidth: 2}),
         Plot.ruleX([p95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
-      ],
-      title: `${comp.name}: $${formatCost(p50)} (90% CI: ${formatCost(p5)} – ${formatCost(p95)})`
+      ]
     });
+
+    const label = `${comp.name}: $${formatCost(p50)} (90% CI: ${formatCost(p5)} – ${formatCost(p95)})`;
+    return {plot, label};
   });
 
   return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1rem 0;">
-    ${plots.map(p => html`<div style="font-size: 0.9em;">${p}</div>`)}
+    ${plotData.map(d => html`<div style="font-size: 0.9em;">
+      <div style="font-weight: normal; margin-bottom: 0.3rem; color: #333;">${d.label}</div>
+      ${d.plot}
+    </div>`)}
   </div>`;
 }
 ```
