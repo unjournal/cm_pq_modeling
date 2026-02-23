@@ -943,10 +943,19 @@ The relative sizes shift dramatically based on technology adoption assumptions.
 
 ### Component Distributions
 
-Individual distributions for each cost driver (Squiggle/Guesstimate style):
+Individual distributions for each cost driver:
 
 ```{ojs}
 //| echo: false
+
+// Format cost with appropriate precision
+function formatCost(val) {
+  if (val >= 30) return Math.round(val).toString();
+  if (val >= 1) return val.toFixed(1);
+  if (val >= 0.1) return val.toFixed(2);
+  return val.toFixed(3);
+}
+
 {
   const allComponents = [
     {name: "Media", data: results.cost_media, color: "#27ae60"},
@@ -969,11 +978,11 @@ Individual distributions for each cost driver (Squiggle/Guesstimate style):
     const clipped = comp.data.filter(x => x <= clipVal && x >= 0);
 
     return Plot.plot({
-      width: 380,
-      height: 180,
-      marginLeft: 40,
+      width: 420,
+      height: 200,
+      marginLeft: 45,
       marginBottom: 35,
-      marginTop: 30,
+      marginTop: 25,
       x: {
         label: "$/kg",
         domain: [0, clipVal * 1.1]
@@ -988,12 +997,12 @@ Individual distributions for each cost driver (Squiggle/Guesstimate style):
         Plot.ruleX([p50], {stroke: "black", strokeWidth: 2}),
         Plot.ruleX([p95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
       ],
-      title: `${comp.name}: p50 $${p50.toFixed(2)} (90% CI: $${p5.toFixed(2)} - $${p95.toFixed(2)})`
+      title: `${comp.name}: $${formatCost(p50)} (90% CI: ${formatCost(p5)} – ${formatCost(p95)})`
     });
   });
 
-  return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0;">
-    ${plots.map(p => html`<div>${p}</div>`)}
+  return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1rem 0;">
+    ${plots.map(p => html`<div style="font-size: 0.9em;">${p}</div>`)}
   </div>`;
 }
 ```
@@ -1314,122 +1323,149 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 ## Model Formulas & Code {#model-formulas}
 
-::: {.callout-important}
-**Jump to:** [Full JavaScript source](#full-source-code) | [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) | [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)
+::: {.callout-tip}
+**Code references:** [JavaScript source (this page)](#full-source-code) | [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)
+
+*Note: An older [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) exists but uses different parameters. This dashboard is the current version.*
 :::
 
-### Unit Cost Formula
+This section presents the model structure **top-down**: starting with the final output and unpacking each component.
 
-$$\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{\text{annualized}} + \text{Fixed OPEX}$$
+### 1. Total Unit Cost
 
-### Variable Operating Costs
+The model estimates **unit production cost** ($/kg) by summing four components:
 
-$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Recombinant} + \text{Other}$$
+$$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
 
-Media cost is computed as:
-$$\text{Media Cost} = \frac{1000}{\text{density (g/L)}} \times \text{turnover} \times \text{\$/L}$$
+<details>
+<summary>What does each term mean?</summary>
 
-### Capital Recovery Factor (CRF)
+| Term | Description | Typical range |
+|------|-------------|---------------|
+| **VOC** | Variable operating costs — inputs that scale with production | $5–100/kg |
+| **CAPEX/kg** | Annualized capital costs (bioreactors, facilities) | $1–20/kg |
+| **Fixed OPEX/kg** | Labor, maintenance, overhead | $1–10/kg |
+| **Downstream/kg** | Scaffolding, texturization (for structured products) | $2–15/kg if enabled |
 
-$$\text{CRF} = \frac{\text{WACC} \times (1 + \text{WACC})^n}{(1 + \text{WACC})^n - 1}$$
+</details>
 
-Where WACC = Weighted Average Cost of Capital, n = asset life in years.
+### 2. Variable Operating Costs (VOC)
 
-### Maturity Correlation
+VOC is the sum of four input categories:
 
-Technology adoption probabilities are adjusted by maturity:
+$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Growth Factors} + \text{Other}$$
 
-$$P_{\text{adjusted}} = \text{clip}(P_{\text{base}} + k \times (m - 0.5), 0, 1)$$
+<details>
+<summary>2a. Media Cost</summary>
 
-Where m is the maturity factor (0-1) and k is the sensitivity coefficient.
+Media cost depends on **how much liquid** you need per kg of meat:
 
-### Full Source Code (Pseudocode) {#full-source-code}
+$$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{L per kg wet cells}} \times \underbrace{\text{turnover}}_{\text{media changes}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
+
+**Example calculation:**
+- Cell density: 50 g/L → need 1000/50 = 20 L per kg
+- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L/kg
+- Media price: $0.50/L (hydrolysates) → 60 × 0.50 = **$30/kg**
+
+The price per liter depends on whether **hydrolysates** (cheap plant-based amino acids) are used:
+
+| Scenario | Price range ($/L) |
+|----------|-------------------|
+| With hydrolysates | $0.20 – $1.20 |
+| Pharma-grade amino acids | $1.00 – $4.00 |
+
+</details>
+
+<details>
+<summary>2b. Growth Factor Cost</summary>
+
+Growth factors (FGF-2, IGF-1, TGF-β) are the most price-volatile component:
+
+$$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
+
+The **GF progress slider** interpolates between current and target prices:
+
+$$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
+
+At 0% progress: current prices ($5,000–500,000/g)
+At 100% progress: target prices ($1–100/g for cheap scenario)
+
+</details>
+
+### 3. Annualized Capital Costs
+
+Capital costs are **annualized** using the Capital Recovery Factor (CRF):
+
+$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output (kg)}}$$
+
+Where CRF converts a lump sum to annual payments:
+
+$$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
+
+<details>
+<summary>What is CRF?</summary>
+
+**Capital Recovery Factor** answers: "If I borrow $X at interest rate r for n years, what's my annual payment?"
+
+| WACC | Asset Life | CRF | Meaning |
+|------|------------|-----|---------|
+| 10% | 15 years | 13.1% | Pay 13.1% of capital cost annually |
+| 15% | 10 years | 19.9% | Pay 19.9% of capital cost annually |
+| 20% | 8 years | 26.1% | Pay 26.1% of capital cost annually |
+
+Higher WACC or shorter asset life → higher annual capital charge.
+
+</details>
+
+### 4. Technology Adoption & Maturity
+
+The model uses a **latent maturity factor** (0–1) to correlate technology adoption, reactor costs, and financing:
+
+$$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
+
+<details>
+<summary>What does "bound" mean?</summary>
+
+**bound(x, 0, 1)** ensures the result stays between 0 and 1. Also called "clip" or "clamp" in programming.
+
+- If x < 0, return 0
+- If x > 1, return 1
+- Otherwise, return x
+
+This prevents impossible probabilities like -0.2 or 1.3.
+
+</details>
+
+**Why correlate?** In "good worlds" for cultured chicken:
+- Technologies are more likely adopted (higher P)
+- Custom reactors are more common (lower CAPEX)
+- Financing is cheaper (lower WACC)
+
+This prevents unrealistic scenarios where technology succeeds but financing remains prohibitively expensive.
+
+### 5. Monte Carlo Simulation
+
+The model runs **30,000 simulations**, each time:
+
+1. Draw random values for all uncertain parameters
+2. Draw technology adoption outcomes (Bernoulli coin flips)
+3. Calculate unit cost for that scenario
+4. Collect results into a distribution
+
+This produces the histograms and probability thresholds shown above.
 
 ::: {.callout-note collapse="true"}
-## View Model Logic (Squiggle-style pseudocode)
+## Full Source Code {#full-source-code}
 
-```
-// === SAMPLING DISTRIBUTIONS ===
-maturity        ~ Beta(mean=maturity_slider, sd=0.20)
-plant_kta       ~ Lognormal(p5=capacity*0.5, p95=capacity*2.0)
-uptime          ~ Beta(mean=uptime_slider, sd=0.05)
-output_kg_year  = plant_kta * 1e6 * uptime
+The complete JavaScript implementation is embedded in this page. Key functions:
 
-// === TECHNOLOGY ADOPTION (maturity-adjusted) ===
-p_hydro_adj     = clip(p_hydro_base + 0.25*(maturity - 0.5), 0, 1)
-p_foodgrade_adj = clip(p_foodgrade_base + 0.20*(maturity - 0.5), 0, 1)
-p_recf_adj      = clip(p_recfactors_base + 0.25*(maturity - 0.5), 0, 1)
+- `simulate(n, seed, params)` — Main Monte Carlo loop
+- `sampleLognormalP5P95(rng, p5, p95, n)` — Sample from lognormal given percentiles
+- `sampleBetaMeanStdev(rng, mean, sd, n)` — Sample from beta distribution
+- `crf(wacc, years)` — Capital Recovery Factor calculation
+- `spearmanCorr(x, y)` — Rank correlation for sensitivity analysis
 
-is_hydro        ~ Bernoulli(p_hydro_adj)
-is_foodgrade    ~ Bernoulli(p_foodgrade_adj)
-is_recf_cheap   ~ Bernoulli(p_recf_adj)
-
-// === PROCESS INTENSITIES ===
-density_gL      ~ Lognormal(p5=30, p95=200)    // g/L at harvest
-cycle_days      ~ Lognormal(p5=0.5, p95=5.0)   // days per batch
-media_turnover  ~ Lognormal(p5=1, p95=10)      // 1=batch, >1=perfusion
-L_per_kg        = (1000 / density_gL) * media_turnover
-
-// === VARIABLE OPERATING COSTS ===
-// Media ($/kg)
-media_cost_L    = is_hydro ? Lognormal(0.2, 1.2) : Lognormal(1.0, 4.0)
-cost_media      = L_per_kg * media_cost_L
-
-// Micronutrients ($/kg)
-g_comm          = is_foodgrade ? Lognormal(0.1, 2) : Lognormal(1, 10)
-price_comm      = is_foodgrade ? Lognormal(0.02, 2) : Lognormal(0.5, 20)
-cost_micros     = g_comm * price_comm
-
-// Growth Factors ($/kg) - scaled by gf_progress slider
-progress        = gf_progress / 100  // 0 to 1
-cheap_p5        = 100 * (0.01)^progress   // $100 → $1
-cheap_p95       = 10000 * (0.01)^progress // $10k → $100
-exp_p5          = 5000 * (0.01)^progress  // $5k → $50
-exp_p95         = 500000 * (0.01)^progress // $500k → $5k
-
-g_recf          = is_recf_cheap ? Lognormal(1e-4, 5e-3) : Lognormal(5e-4, 2e-2)
-price_recf      = is_recf_cheap ? Lognormal(cheap_p5, cheap_p95)
-                                : Lognormal(exp_p5, exp_p95)
-cost_recf       = g_recf * price_recf
-
-other_voc       ~ Lognormal(0.5, 5.0)
-VOC             = cost_media + cost_micros + cost_recf + other_voc
-
-// === CAPEX (if enabled) ===
-productivity    = (density_gL / 1000) / cycle_days  // kg/L/day
-volume_L        = output_kg_year / (productivity * 365)
-reactor_cost_L  ~ Lognormal(50, 500)  // $/L pharma
-custom_ratio    ~ Uniform(0.35, 0.85)
-custom_share    = clip(Beta(0.55, 0.15) + 0.30*(maturity-0.5), 0, 1)
-avg_reactor_$L  = reactor_cost_L * (custom_share*custom_ratio + (1-custom_share))
-
-capex_scale     ~ Uniform(0.6, 0.9)
-plant_factor    ~ Lognormal(1.5, 3.5)
-capex_total     = avg_reactor_$L * volume_L * (volume_L/1e6)^(capex_scale-1) * plant_factor
-
-wacc            = clip(Lognormal(0.08, 0.20) - 0.03*(maturity-0.5), 0.03, 1)
-asset_life      ~ Uniform(8, 20)
-CRF             = wacc * (1+wacc)^asset_life / ((1+wacc)^asset_life - 1)
-capex_per_kg    = (capex_total * CRF) / output_kg_year
-
-// === FIXED OPEX (if enabled) ===
-ref_output      = 20e6 * 0.9  // 20 kTA @ 90% utilization
-fixed_ref       ~ Uniform(1, 6)  // $/kg at reference
-fixed_scale     ~ Uniform(0.6, 1.0)
-fixed_per_kg    = fixed_ref * (output_kg_year / ref_output)^(fixed_scale - 1)
-
-// === DOWNSTREAM (if enabled) ===
-downstream_per_kg ~ Lognormal(2, 15)  // for structured products
-
-// === TOTAL ===
-unit_cost       = VOC + capex_per_kg + fixed_per_kg + downstream_per_kg
-```
-
-**Notes:**
-- `Lognormal(p5, p95)` means 5th and 95th percentiles
-- `clip(x, lo, hi)` bounds x to [lo, hi]
-- `^` is exponentiation
-- Maturity factor induces positive correlation between technology adoption, reactor costs, and WACC
+View the page source or see the [Python reference implementation](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) for details.
 :::
 
 ---
