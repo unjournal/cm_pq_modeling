@@ -3,8 +3,8 @@ project:
   output-dir: _site
 
 website:
-  title: "Cultured Meat Cost Model"
-  description: "Interactive Monte Carlo model for estimating 2036 cultured meat production costs"
+  title: "Cultured Chicken Cost Model"
+  description: "Interactive Monte Carlo model for estimating cultured chicken production costs"
   navbar:
     left:
       - text: "Dashboard"

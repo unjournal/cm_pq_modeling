@@ -1,16 +1,27 @@
 ---
 title: "About"
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
 ---
+
+::: {.callout-tip collapse="false"}
+## Share Your Feedback
+
+Use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge) to annotate this page. Your comments help improve the project!
+:::
 
 ## The Unjournal Pivotal Questions Project
 
 This dashboard is part of [The Unjournal's](https://unjournal.org) **Pivotal Questions** initiative, which aims to synthesize research on high-stakes questions for effective altruism and global priorities.
 
-### Cultured Meat Focus
+### Cultured Chicken Focus
 
-The cultured meat pivotal question asks:
+The cultured chicken pivotal question asks:
 
-> What will be the production cost of cultured meat in 2036, and what are the implications for animal welfare?
+> What will be the production cost of cultured chicken by [target year], and what are the implications for animal welfare?
 
 This model helps evaluators and forecasters:
 

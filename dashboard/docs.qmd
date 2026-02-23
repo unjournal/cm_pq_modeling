@@ -1,11 +1,22 @@
 ---
 title: "Model Documentation"
 toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
 ---
+
+::: {.callout-tip collapse="false"}
+## Share Your Feedback
+
+Use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge) to annotate any part of this documentation. Your comments help improve the model!
+:::
 
 ## Overview
 
-This document provides technical documentation for the cultured meat cost model, including:
+This document provides technical documentation for the cultured chicken cost model, including:
 
 - Model structure and equations
 - Parameter definitions and sources
@@ -112,7 +123,7 @@ A key feature of this model is the **latent maturity factor** $m \in [0, 1]$ tha
 - Custom reactor share
 - WACC (lower in mature industry)
 
-This reflects the intuition that in "good worlds" for cultured meat:
+This reflects the intuition that in "good worlds" for cultured chicken:
 - Technologies are more likely to be adopted
 - Industry has more custom solutions
 - Financing costs are lower due to reduced risk
@@ -121,18 +132,25 @@ This reflects the intuition that in "good worlds" for cultured meat:
 
 ### Known Limitations
 
-1. **No learning curves**: Model is a 2036 snapshot, not a trajectory
-2. **No downstream processing**: Excludes texturization, scaffolding for whole-cut
-3. **No geography**: Assumes generic costs, not region-specific
-4. **Limited contamination modeling**: No batch failure distributions
-5. **Independent samples**: Some correlations may be underspecified
+1. **Static snapshot model**: The model projects costs for a single target year (adjustable 2026-2050). It does not model year-over-year learning curves, experience curves, or cost trajectories. Instead, the "maturity" parameter serves as a proxy for cumulative industry development. Lower maturity values represent scenarios where progress has been slower; higher values represent faster progress.
 
-### Recommendations
+2. **Downstream processing is optional**: Texturization, scaffolding, and forming costs can be included via the "Include downstream processing" toggle. When enabled, this adds $2-15/kg for structured products. Not needed for ground meat applications.
 
-- Use for **relative comparisons** rather than absolute predictions
-- Focus on **probability thresholds** (P < $10/kg) rather than point estimates
-- **Validate key parameters** with domain experts before publication
-- **Report uncertainty ranges**, not just medians
+3. **No geography**: Assumes generic global costs, not region-specific factors (labor rates, energy costs, regulatory environments).
+
+4. **Limited contamination modeling**: No batch failure distributions or contamination event modeling. Real-world operations would face periodic batch losses.
+
+5. **Some correlations may be underspecified**: While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and cycle time) are treated as independent.
+
+### Recommendations for Use
+
+| Recommendation | Justification |
+|----------------|---------------|
+| Use for **relative comparisons** rather than absolute predictions | Model parameters have wide uncertainty bands; the direction and magnitude of differences between scenarios is more robust than point estimates |
+| Focus on **probability thresholds** (P < $10/kg) rather than point estimates | Probabilities integrate over parameter uncertainty and are more decision-relevant for pivotal questions |
+| **Validate key parameters** with domain experts before publication | Literature-derived ranges may not reflect latest industry knowledge; some parameters (e.g., growth factor costs) are changing rapidly |
+| **Report uncertainty ranges**, not just medians | Wide 90% CIs reflect genuine epistemic uncertainty; hiding this gives false confidence |
+| **Consider correlated scenarios** via the maturity slider | The maturity factor captures the intuition that "good worlds" have multiple improvements occurring together |
 
 ## Code Reference
 

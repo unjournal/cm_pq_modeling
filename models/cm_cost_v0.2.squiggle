@@ -76,10 +76,14 @@ price_media_per_l = drawByToggle(is_hydro, 0.2 to 1.2, 1 to 4)
 g_comm_micros_per_kg = drawByToggle(is_foodgrade, 0.1 to 2, 1 to 10)
 price_comm_micros_per_g = drawByToggle(is_foodgrade, 0.02 to 2, 0.5 to 20)
 
-/// Recombinant factors (growth factors / albumin-like proteins)
-/// (Kept extremely flexible; evaluators should replace with their elicited ranges)
-g_recfactors_per_kg = drawByToggle(is_recfactors_cheap, 0.0001 to 0.01, 0.001 to 0.2)
-price_recfactors_per_g = drawByToggle(is_recfactors_cheap, 0.05 to 20, 5 to 500)
+/// Recombinant factors (growth factors: FGF-2, IGF-1, TGF-β, etc.)
+/// CRITICAL: GFs are 55-95% of media cost at current prices!
+/// Current prices: FGF-2 ~$50,000/g, TGF-β up to $1M/g
+/// Industry target: $1-10/g with scaled recombinant production
+/// Quantity based on ~10-100 ng/mL in media × 20-60 L/kg = 0.0002-0.006 g/kg
+g_recfactors_per_kg = drawByToggle(is_recfactors_cheap, 0.0001 to 0.005, 0.0005 to 0.02)
+/// "Cheap" = scaled recombinant achieved; "Expensive" = limited progress from current
+price_recfactors_per_g = drawByToggle(is_recfactors_cheap, 1 to 100, 500 to 50000)
 
 /// === Variable cost blocks ===
 voc_media = l_media_per_kg * price_media_per_l

@@ -124,3 +124,60 @@ footer, .footer {
     margin: 1.5rem 0;
     font-size: 0.9rem;
 }
+
+/* Make sidebar explainers wider when expanded */
+.panel-sidebar details {
+    position: relative;
+}
+
+.panel-sidebar details[open] {
+    position: relative;
+    z-index: 100;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+}
+
+/* For larger screens, expand even more */
+@media (min-width: 768px) {
+    .panel-sidebar details[open] {
+        width: 450px;
+        max-width: 90vw;
+    }
+}
+
+.panel-sidebar details summary {
+    cursor: pointer;
+    color: #3182ce;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.panel-sidebar details summary:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.panel-sidebar details > *:not(summary) {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 0.5rem;
+    background: #f7fafc;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.panel-sidebar details table {
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.panel-sidebar details th,
+.panel-sidebar details td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}

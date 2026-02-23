@@ -1,6 +1,6 @@
 ---
-title: "Cultured Meat Production Cost Model"
-subtitle: "Interactive Monte Carlo TEA for 2036 Cost Projections"
+title: "Cultured Chicken Production Cost Model"
+subtitle: "Interactive Monte Carlo TEA for Cost Projections"
 format:
   html:
     page-layout: full
@@ -21,9 +21,11 @@ This model is under active development. We welcome your comments and suggestions
 :::
 
 ::: {.callout-note collapse="true"}
-## Learn: How Cultured Meat Production Works
+## Learn: How Cultured Chicken Production Works
 
-Cultured (cell-based) meat is produced by growing animal cells in large bioreactors, similar to brewing but with mammalian cells instead of yeast.
+Cultured (cell-based) chicken is produced by growing avian muscle cells in large bioreactors, similar to brewing but with animal cells instead of yeast.
+
+**Why focus on chicken?** Chicken cells have some advantages: [higher satellite cell yields](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/), [potential for spontaneous immortalization](https://www.nature.com/articles/s43016-022-00658-w), and chicken has higher animal welfare stakes per kg (more individual birds affected). Growth factor requirements (FGF-2, IGF-1) are [similar to bovine cells](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) at ~100 ng/mL optimal concentrations.
 
 **The basic process:**
 
@@ -34,17 +36,27 @@ Cultured (cell-based) meat is produced by growing animal cells in large bioreact
     cells)         small reactors)       bioreactors)           cells)
 ```
 
-**Key Cost Drivers:**
+**Key Cost Drivers (modeled separately in this tool):**
 
-1. **Media** (40-60% of costs): The nutrient broth cells grow in. Like an expensive smoothie of amino acids, vitamins, glucose, and growth factors.
+1. **Media** (base nutrients): The bulk nutrient broth — amino acids, vitamins, glucose. This is separate from growth factors. With hydrolysates: $0.20-1.20/L. With pharma-grade amino acids: $1-4/L.
 
-2. **Growth Factors** (10-40%): Proteins that signal cells to grow. Currently very expensive ($1000s/gram) but prices dropping fast.
+2. **Micronutrients**: Minerals, trace elements. Food-grade ($0.02-2/g) vs pharma-grade ($0.50-20/g).
 
-3. **Bioreactors** (CAPEX): Large stainless steel vessels. Pharma-grade costs $50-500/L, but food-grade custom reactors could be 3-10x cheaper.
+3. **Growth Factors** (signaling proteins): FGF, IGF, TGF-β etc. — these are SEPARATE from media. Currently expensive ($5-500/g) but potentially $0.05-20/g with recombinant production at scale.
 
-4. **Cell Density**: How many grams of cells per liter at harvest. Higher = more meat per reactor = lower cost.
+4. **Bioreactors** (CAPEX): Large stainless steel vessels. Pharma-grade costs $50-500/L, but food-grade custom reactors could be 3-10x cheaper.
 
-5. **Cycle Time**: Days per batch. Faster = more batches/year = lower cost per kg.
+5. **Cell Density**: How many grams of cells per liter at harvest. Higher = more meat per reactor = lower cost.
+
+**Why "media" costs can dominate even without growth factors:**
+
+The formula is: `Media $/kg = (1000 / density) × turnover × $/L`
+
+With low density (30 g/L) and high turnover (10×), even cheap $0.50/L media becomes: `(1000/30) × 10 × 0.5 = $167/kg`
+
+With high density (200 g/L) and perfusion (1×): `(1000/200) × 1 × 0.5 = $2.50/kg`
+
+This is why cell density and media turnover are critical parameters.
 
 **Why costs could drop dramatically:**
 
@@ -81,7 +93,7 @@ A key feature is the **latent maturity factor** that links:
 - Reactor costs
 - Financing costs (WACC)
 
-In "good worlds" for cultured meat (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
+In "good worlds" for cultured chicken (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
 :::
 
 ---
@@ -262,13 +274,22 @@ function simulate(n, seed, params) {
   const price_comm = is_foodgrade.map((f, i) => f ? price_comm_food[i] : price_comm_pharma[i]);
   const cost_comm_micros = mul(g_comm, price_comm);
 
-  // Recombinant growth factors
-  const g_recf_cheap = sampleLognormalP5P95(rng, 1e-4, 1e-2, n);
-  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 2e-1, n);
+  // Recombinant growth factors (FGF-2, IGF-1, TGF-β, etc.)
+  // CRITICAL: Literature shows GFs can be 55-95% of media cost at current prices
+  // Current prices: FGF-2 ~$50,000/g, TGF-β up to $1M/g
+  // Target prices: $1-10/g with scaled recombinant production
+
+  // Quantity (g/kg meat) - based on typical concentrations in media
+  // ~10-100 ng/mL in media × 20-60 L/kg = 0.0002-0.006 g/kg
+  const g_recf_cheap = sampleLognormalP5P95(rng, 1e-4, 5e-3, n);  // Reduced usage with optimization
+  const g_recf_exp = sampleLognormalP5P95(rng, 5e-4, 2e-2, n);   // Standard usage
   const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
 
-  const price_recf_cheap = sampleLognormalP5P95(rng, 0.05, 20.0, n);
-  const price_recf_exp = sampleLognormalP5P95(rng, 5.0, 500.0, n);
+  // Price ($/g) - UPDATED to reflect realistic ranges
+  // "Cheap" = scaled recombinant production achieved (industry target)
+  // "Expensive" = limited progress from current prices
+  const price_recf_cheap = sampleLognormalP5P95(rng, 1.0, 100.0, n);   // Scaled production: $1-100/g
+  const price_recf_exp = sampleLognormalP5P95(rng, 500.0, 50000.0, n); // Limited progress: $500-50,000/g
   const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
   const cost_recf = mul(g_recf, price_recf);
 
@@ -397,8 +418,19 @@ viewof plant_capacity = Inputs.range([5, 100], {
   label: "Plant Capacity (kTA/yr)"
 })
 ```
-<details><summary>What is this?</summary>
-Annual production capacity in thousand metric tons. Current pilots: <1 kTA. Commercial target: 10-50 kTA.
+<details><summary>What is this? (click to expand)</summary>
+
+**Annual production capacity** in thousand metric tons (kTA). Current pilots: <1 kTA. Commercial target: 10-50 kTA.
+
+**What plant size affects:**
+
+| Cost Component | Effect of Larger Plant |
+|----------------|----------------------|
+| CAPEX per kg | ↓ Scales sub-linearly (power law ~0.6-0.9) |
+| Fixed OPEX per kg | ↓ Overhead spread over more output |
+| Variable costs per kg | — No direct effect (same $/L, $/g) |
+
+Larger plants have **lower per-kg costs** due to economies of scale in capital and fixed costs. Variable costs (media, growth factors) don't change with scale — they depend on technology adoption.
 </details>
 
 ```{ojs}
@@ -429,7 +461,7 @@ A latent factor (0=nascent, 1=mature) that affects all technology adoption, reac
 
 ```{ojs}
 //| echo: false
-viewof target_year = Inputs.range([2028, 2040], {
+viewof target_year = Inputs.range([2026, 2050], {
   value: 2036, step: 1,
   label: "Projection Year"
 })
@@ -504,23 +536,33 @@ viewof p_recfactors = Inputs.range([0.1, 0.9], {
 ```
 <details><summary>What is this? (click to expand)</summary>
 
-**Growth factors** are signaling proteins (FGF, IGF, TGF-β, etc.) that tell cells to proliferate. They are currently the most expensive media component.
+**Growth factors** are signaling proteins (FGF-2, IGF-1, TGF-β, etc.) that tell cells to proliferate. They are currently **the most expensive media component** — often 55-95% of media cost.
 
-**Why costs vary so dramatically:**
+**Current vs. projected prices (this is critical!):**
 
-| Scenario | Usage (g/kg) | Price ($/g) | Cost/kg meat |
-|----------|-------------|-------------|--------------|
-| Current pharma | 0.001 - 0.2 | $5 - $500 | $0.005 - $100 |
-| Cheap recombinant | 0.0001 - 0.01 | $0.05 - $20 | ~$0.00001 - $0.20 |
+| Scenario | Price ($/g) | Status | Source |
+|----------|-------------|--------|--------|
+| Research-grade FGF-2 | $50,000 | Current (2024) | [CEN](https://cen.acs.org/food/Inside-effort-cut-cost-cultivated/101/i33) |
+| Research-grade TGF-β | $1,000,000 | Current | GFI analysis |
+| Limited progress | $500 - $50,000 | Model "expensive" | Conservative projection |
+| Scaled recombinant | $1 - $100 | Model "cheap" | Industry target |
+| Plant-based (BioBetter) | ~$1 | Target | [FoodNavigator](https://www.foodnavigator.com/Article/2022/09/12/biobetter-s-growth-factor-innovation-cuts-cost-of-cultured-meat/) |
+
+**Model cost impact:**
+
+| Scenario | Usage (g/kg) | Price ($/g) | **Cost/kg chicken** |
+|----------|-------------|-------------|---------------------|
+| Limited progress | 0.0005 - 0.02 | $500 - $50,000 | **$0.25 - $1,000** |
+| Scaled recombinant | 0.0001 - 0.005 | $1 - $100 | **$0.0001 - $0.50** |
 
 **How "cheap" happens:**
 
-1. **Recombinant production at scale**: Producing growth factors in bacteria/yeast at industrial scale (like insulin production)
-2. **Reduced usage**: Cell lines engineered to need less growth factor, or autocrine production
-3. **Recycling**: Recovering and reusing growth factors from spent media
-4. **Alternatives**: Small molecule mimetics that are cheaper to synthesize
+1. **Recombinant production at scale**: E. coli, yeast, or plant-based systems (like insulin production)
+2. **Reduced usage**: Autocrine cell lines that produce their own growth factors ([2024 research](https://futuretimeline.net/blog/2024/02/15-lab-grown-meat-costs-future-timeline.htm))
+3. **Thermostable variants**: FGF2-G3 with 20-day half-life reduces media change frequency
+4. **Recycling**: Recovering and reusing growth factors from spent media
 
-**This is NOT the same as hydrolysates.** Some have proposed that certain hydrolysate fractions might provide growth-stimulating activity, but this remains unproven at scale. The model treats these as separate probabilities.
+**This is a pivotal uncertainty.** If scaled recombinant production succeeds, growth factors become negligible. If not, they dominate the cost breakdown.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
@@ -697,7 +739,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
         {x: stats.p95 + 2, y: 2500, text: `p95: $${stats.p95.toFixed(1)}`}
       ], {x: "x", y: "y", text: "text", fontSize: 12})
     ],
-    title: `Projected ${target_year} Cultured Meat Production Cost Distribution`
+    title: `Projected ${target_year} Cultured Chicken Production Cost Distribution`
   })
 }
 ```
@@ -711,7 +753,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 - **Green dashed line**: 5th percentile (optimistic scenario)
 - **Blue solid line**: Median (50th percentile)
 - **Red dashed line**: 95th percentile (pessimistic scenario)
-- **Dark green dotted**: $10/kg reference (competitive with conventional meat)
+- **Dark green dotted**: $10/kg reference (competitive with conventional chicken)
 - **Orange dotted**: $25/kg reference (premium product viable)
 
 The **width** of the distribution shows uncertainty. Narrow = confident. Wide = uncertain.
@@ -726,19 +768,19 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 <div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $10/kg)</h5>
 <h2 style="color: #27ae60;">${stats.prob_10.toFixed(1)}%</h2>
-<small>Price-competitive with conventional ground beef</small>
+<small>Price-competitive with conventional chicken breast</small>
 </div>
 
 <div class="card" style="border: 2px solid ${stats.prob_25 > 50 ? '#3498db' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $25/kg)</h5>
 <h2 style="color: #3498db;">${stats.prob_25.toFixed(1)}%</h2>
-<small>Viable as premium product</small>
+<small>Viable as premium poultry product</small>
 </div>
 
 <div class="card" style="border: 2px solid ${stats.prob_50 > 50 ? '#f39c12' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $50/kg)</h5>
 <h2 style="color: #f39c12;">${stats.prob_50.toFixed(1)}%</h2>
-<small>Similar to wagyu beef</small>
+<small>Premium specialty chicken range</small>
 </div>
 
 <div class="card" style="border: 2px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
@@ -1048,7 +1090,7 @@ This correlation structure prevents unrealistic scenarios where technology succe
 
 ## Quick Start
 
-1. **Explore the "Learn" sections** at the top to understand how cultured meat production works and how this model handles uncertainty.
+1. **Explore the "Learn" sections** at the top to understand how cultured chicken production works and how this model handles uncertainty.
 
 2. **Adjust parameters** in the left sidebar. Each parameter has an expandable explanation.
 
@@ -1062,18 +1104,35 @@ This correlation structure prevents unrealistic scenarios where technology succe
 
 ## Pivotal Questions Context
 
-This model is part of [The Unjournal's Pivotal Questions](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) initiative.
+This model is part of [The Unjournal's **Pivotal Questions** initiative](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) — a project to identify and quantify uncertainties that matter most for high-impact decisions.
 
-**The cultured meat pivotal question asks:**
+::: {.callout-note collapse="true"}
+## What is a "Pivotal Question"?
 
-> What will be the production cost of cultured meat by 2036, and what does this imply for animal welfare interventions?
+A **pivotal question** is one where resolving the uncertainty would significantly change optimal resource allocation. For cultured chicken:
 
-**Related resources:**
+- If costs reach **<$10/kg by 2036**: Large-scale displacement of conventional chicken becomes plausible → prioritize support for industry scale-up
+- If costs remain **>$50/kg**: Focus shifts to alternative interventions (plant-based, policy, etc.)
 
-- [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
-- [Cultured meat Metaculus questions](https://www.metaculus.com/questions/?search=cultured%20meat)
-- [The Unjournal cultured meat evaluations](https://unjournal.org)
-- [Squiggle model version](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
+The pivotal question framework helps prioritize research and forecasting efforts where they matter most.
+
+See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
+:::
+
+**The cultured chicken pivotal question asks:**
+
+> What will be the production cost of cultured chicken by [target year], and what does this imply for animal welfare interventions?
+
+**Key links:**
+
+| Resource | Description |
+|----------|-------------|
+| [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) | Full documentation on the PQ framework |
+| [Cultured meat on Metaculus](https://www.metaculus.com/questions/?search=cultured%20meat) | Forecasting questions with community predictions |
+| [The Unjournal](https://unjournal.org) | Independent evaluations of impactful research |
+| [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve) | Alternative model implementation in Squiggle |
+| [UC Davis ACBM Calculator](https://acbmcostcalculator.ucdavis.edu/) | Original academic cost model (Risner et al.) |
+| [Good Food Institute](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Industry reports and data |
 
 ---
 
@@ -1126,10 +1185,13 @@ The model reveals several important patterns:
 
 ## Limitations
 
-1. **Static 2036 snapshot** - no learning curves or trajectories
-2. **No downstream processing** - excludes texturization, scaffolding
-3. **No geography** - assumes generic costs
-4. **Limited contamination modeling** - no batch failure distributions
+1. **Static snapshot model** — Projects costs for a single target year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
+
+2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
+
+3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
+
+4. **Limited contamination modeling** — No batch failure or contamination event distributions.
 
 ---
 
