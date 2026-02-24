@@ -55,37 +55,75 @@ $$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Growth Factors} + \t
 <details>
 <summary>2a. Media Cost</summary>
 
-Media cost depends on **how much liquid** you need per kg of meat:
+Media is the liquid nutrient broth that feeds growing cells. Media cost depends on **how much liquid** you need per kg of meat:
 
 $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{L per kg wet cells}} \times \underbrace{\text{turnover}}_{\text{media changes}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
 
+**Variable definitions:**
+
+- **Cell density (g/L)**: Final concentration of cells at harvest. Higher density = less media needed per kg. The 1000 converts g/L to L/kg (since 1 kg = 1000 g).
+- **Media turnover**: How many times the media volume is replaced during a production run. Batch systems (turnover = 1) use one fill; perfusion systems (turnover = 3–10) continuously flow fresh media through.
+- **Price ($/L)**: Cost per liter of complete media formulation.
+
 **Example calculation:**
+
 - Cell density: 50 g/L → need 1000/50 = 20 L per kg
-- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L/kg
+- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L total per kg
 - Media price: $0.50/L (hydrolysates) → 60 × 0.50 = **$30/kg**
 
-The price per liter depends on whether **hydrolysates** (cheap plant-based amino acids) are used:
+**Why does density vary?** Achievable density depends on cell type, bioreactor design, and operating mode. Batch cultures typically reach 30–50 g/L; perfusion cultures with optimized conditions can reach 100–200 g/L ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)).
 
-| Scenario | Price range ($/L) |
-|----------|-------------------|
-| With hydrolysates | $0.20 – $1.20 |
-| Pharma-grade amino acids | $1.00 – $4.00 |
+**Hydrolysates vs. pharma-grade amino acids:**
+
+| Scenario | Price range ($/L) | What it means |
+|----------|-------------------|---------------|
+| With hydrolysates | $0.20 – $1.20 | Amino acids from digested plant/yeast proteins (soy, wheat, etc.) |
+| Pharma-grade amino acids | $1.00 – $4.00 | Individual purified amino acids, as used in pharmaceutical manufacturing |
+
+Hydrolysates cost less because they're produced from commodity feedstocks via enzymatic digestion, rather than synthetic chemistry or purification.
 
 </details>
 
 <details>
 <summary>2b. Growth Factor Cost</summary>
 
-Growth factors (FGF-2, IGF-1, TGF-β) are the most price-volatile component:
+Growth factors (FGF-2, IGF-1, TGF-β) are signaling proteins that tell cells to proliferate. They are the most price-volatile component:
 
-$$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
+$$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg meat}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
 
-The **GF progress slider** interpolates between current and target prices:
+#### The GF Progress Slider
+
+The dashboard's **GF Technology Progress** slider lets you explore scenarios between today's research prices and potential future breakthroughs:
 
 $$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
 
-At 0% progress: current prices ($5,000–500,000/g)
-At 100% progress: target prices ($1–100/g for cheap scenario)
+Where **progress** is the slider value (0 to 1):
+
+| Progress | Calculation | Effective price multiplier |
+|----------|-------------|---------------------------|
+| 0% (today) | $P \times 0.01^0 = P \times 1$ | 100% of current prices |
+| 50% | $P \times 0.01^{0.5} = P \times 0.1$ | 10% of current prices |
+| 100% (breakthrough) | $P \times 0.01^1 = P \times 0.01$ | 1% of current prices |
+
+This creates a smooth exponential interpolation: at 50% progress, prices are ~10× lower; at 100%, ~100× lower.
+
+#### Why a Binary "Cheap vs. Expensive" Scenario?
+
+The model also includes a **Bernoulli toggle** (coin flip) that switches between two price regimes. This is a simplification, but reflects real industry dynamics:
+
+**The breakthrough technologies are substitutes, not complements:**
+
+- **Autocrine cell lines** — cells engineered to produce their own FGF2 → GF cost ≈ $0
+- **Plant molecular farming** — GFs expressed in tobacco/rice → target $1-10/g
+- **Precision fermentation** — microbial production at scale → target $10-100/g
+
+If **any one** of these succeeds at commercial scale, the "cheap" price regime applies. The model doesn't sum their effects because they're alternative solutions to the same problem.
+
+**The uncertainty is discrete, not continuous:**
+
+At the pivotal question level, we're asking: "Will at least one breakthrough technology reach commercial viability by 2036?" This is more naturally modeled as a probability (50%) than a continuous distribution.
+
+The slider complements this by letting users explore "what if progress is partial?" scenarios.
 
 </details>
 
@@ -114,11 +152,37 @@ Higher WACC or shorter asset life → higher annual capital charge.
 
 </details>
 
-### 4. Technology Adoption & Maturity
+### 4. Technology Adoption & Maturity {#maturity-factor}
 
-The model uses a **latent maturity factor** (0–1) to correlate technology adoption, reactor costs, and financing:
+The model uses a **maturity factor** to create realistic correlations between different aspects of industry development. Without this, the Monte Carlo simulation would generate unrealistic scenarios (e.g., breakthrough growth factor technology but prohibitively expensive financing).
+
+#### The Maturity Factor ($m$)
+
+The maturity factor is a single number between 0 and 1 representing overall industry development:
+
+- **$m = 0$**: Nascent industry — early R&D stage, no scale-up
+- **$m = 0.5$**: Moderate development — pilots running, some commercial activity
+- **$m = 1$**: Mature industry — established supply chains, proven technology
+
+Each simulation draws $m$ from a Beta distribution (default: mean 0.5, stdev 0.2).
+
+#### How Maturity Adjusts Adoption Probabilities
+
+Each technology's adoption probability is adjusted based on the maturity draw:
 
 $$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
+
+Where:
+
+- $P_{\text{base}}$ = base adoption probability for that technology (e.g., 0.75 for hydrolysates)
+- $k$ = sensitivity coefficient (how much maturity affects this technology; typically 0.20–0.30)
+- $m$ = maturity factor drawn for this simulation (0–1)
+- $\text{bound}(\cdot, 0, 1)$ = clips result to valid probability range [0, 1]
+
+**Example:** If hydrolysates have $P_{\text{base}} = 0.75$ and $k = 0.25$:
+
+- In a "bad world" ($m = 0.2$): $P = 0.75 + 0.25 \times (0.2 - 0.5) = 0.675$
+- In a "good world" ($m = 0.8$): $P = 0.75 + 0.25 \times (0.8 - 0.5) = 0.825$
 
 <details>
 <summary>What does "bound" mean?</summary>
@@ -133,12 +197,22 @@ This prevents impossible probabilities like -0.2 or 1.3.
 
 </details>
 
-**Why correlate?** In "good worlds" for cultured chicken:
-- Technologies are more likely adopted (higher P)
-- Custom reactors are more common (lower CAPEX)
-- Financing is cheaper (lower WACC)
+#### What Gets Correlated
 
-This prevents unrealistic scenarios where technology succeeds but financing remains prohibitively expensive.
+The maturity factor simultaneously adjusts:
+
+| Component | Effect when $m$ is high | Justification |
+|-----------|------------------------|---------------|
+| Technology adoption rates | Higher probability of hydrolysates, cheap GFs | More R&D investment, proven pilots |
+| Custom reactor share | More facilities use food-grade equipment | Supply chain development |
+| WACC (financing cost) | Lower interest rates | Reduced investor risk perception |
+
+**Why this matters:** In a world where growth factor technology succeeds, it's more plausible that:
+1. Other technologies also succeed (shared R&D ecosystem)
+2. Investors see lower risk (proven technology → cheaper capital)
+3. Custom reactor suppliers exist (developed supply chain)
+
+The maturity factor captures this "worlds come in bundles" intuition without requiring us to specify every pairwise correlation.
 
 ### 5. Monte Carlo Simulation
 
@@ -155,58 +229,142 @@ This produces the histograms and probability thresholds shown in the dashboard.
 
 ## Parameter Definitions {#parameter-definitions}
 
+This section defines all model inputs. Each parameter links back to where it appears in the [cost equations](#model-formulas).
+
 ### Basic Parameters
 
-| Parameter | Symbol | Distribution | Default | Unit |
-|-----------|--------|--------------|---------|------|
-| Plant capacity | $Q$ | Lognormal(p5, p95) | 5-50 | kTA/year |
-| Utilization | $u$ | Beta(mean, sd) | 0.90 | fraction |
-| Maturity index | $m$ | Beta(mean, sd) | 0.50 | 0-1 |
+| Parameter | Symbol | Distribution | Default | Unit | Used in |
+|-----------|--------|--------------|---------|------|---------|
+| Plant capacity | $Q$ | Lognormal(p5, p95) | 5–50 | kTA/year | [CAPEX/kg](#annualized-capital-costs), Fixed OPEX |
+| Utilization | $u$ | Beta(mean, sd) | 0.90 | fraction | Annual output = $Q \times u$ |
+| Maturity index | $m$ | Beta(mean, sd) | 0.50 | 0–1 | [Technology adoption](#maturity-factor), WACC adjustment |
+
+**Why these distributions?**
+
+- **Lognormal** for plant capacity: Capacity is positive and right-skewed (most plants are medium-sized, few are very large). Lognormal naturally captures this. The p5/p95 parameterization lets us specify "90% of plants are between 5 and 50 kTA."
+- **Beta** for utilization and maturity: Both are bounded between 0 and 1. Beta distributions are flexible for modeling proportions and can be parameterized with mean/stdev.
+
+These choices follow standard practice in techno-economic assessments ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3)).
 
 ### Technology Adoption
 
-Each technology has a base adoption probability, adjusted by maturity:
+Each technology has a base adoption probability, adjusted by the [maturity factor](#maturity-factor):
 
 $$
-P_{\text{adopted}} = \text{bound}(P_{\text{base}} + 0.25 \times (m - 0.5), 0, 1)
+P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.5), 0, 1)
 $$
 
-| Technology | Base Probability | Effect | Notes |
-|------------|-----------------|--------|-------|
-| Hydrolysates | 75% | Reduces media $/L by ~70% | High confidence based on 2024-25 research |
-| Food-grade micros | 65% | Reduces micro $/g by ~90% | Regulatory dependent |
-| Scalable GF technology | 50% | Switches to "cheap" GF prices | Pivotal uncertainty |
+| Technology | Base Prob | $k$ | Effect on cost | Notes |
+|------------|-----------|-----|----------------|-------|
+| [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
+| [Food-grade micronutrients](learn.qmd#media-composition) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | Commodity vitamins/minerals vs. pharma-grade |
+| [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices | Any breakthrough: autocrine, plant farming, precision fermentation |
 
 ### Process Intensities
 
-| Parameter | Range (p5-p95) | Unit | Notes |
-|-----------|---------------|------|-------|
-| Cell density | 30-200 | g/L | Final biomass at harvest |
-| Cycle time | 0.5-5 | days | Time per production batch |
-| Media turnover | 1-10 | ratio | 1=batch, >1=perfusion |
+These parameters determine how much media is needed per kg of meat. See [Media Cost equation](#variable-operating-costs-voc).
 
-### Growth Factor Price Scenarios
+| Parameter | Range (p5–p95) | Unit | Definition | Cost impact |
+|-----------|----------------|------|------------|-------------|
+| Cell density | 30–200 | g/L | Final biomass concentration at harvest | Higher → less media per kg |
+| Cycle time | 0.5–5 | days | Duration of one production batch | Affects throughput, not directly in cost equation |
+| Media turnover | 1–10 | × | Times media is replaced per batch | Higher → more media cost, but enables higher density |
 
-| Scenario | Quantity (g/kg) | Price ($/g) | Status |
-|----------|----------------|-------------|--------|
-| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | Industry target |
-| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Conservative projection |
+**Media turnover explained:** In **batch mode** (turnover = 1), the reactor is filled once and cells grow until nutrients deplete. In **perfusion mode** (turnover > 1), fresh media continuously flows in while spent media exits. Perfusion uses more media but achieves higher cell densities.
 
-Breakthrough technologies that could trigger the "cheap" scenario:
-- Autocrine cell lines (cells produce own FGF2)
-- Plant molecular farming ($1-10/g target)
-- Precision fermentation at scale
-- Polyphenol substitution (reduces GF requirements by 80%)
+### Growth Factor Price Scenarios {#gf-scenarios}
 
-### Capital Cost Parameters
+The model uses two discrete price scenarios, selected by a Bernoulli draw (see [why binary](#why-a-binary-cheap-vs-expensive-scenario) above):
 
-| Parameter | Range | Notes |
-|-----------|-------|-------|
-| WACC | 8-20% | Weighted average cost of capital |
-| Asset life | 8-20 years | Equipment depreciation period |
-| CAPEX scale exponent | 0.6-0.9 | Economies of scale (K ~ Q^s) |
-| Pharma-grade CAPEX | $5-25/kg capacity | At 20 kTA reference scale |
-| Custom reactor ratio | 0.35-0.85 | Cost relative to pharma-grade |
+| Scenario | Quantity (g/kg) | Price ($/g) | What it represents |
+|----------|----------------|-------------|-------------------|
+| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | At least one breakthrough reaches commercial scale |
+| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Incremental improvements only; no step-change |
+
+**Why different quantities too?** Breakthrough technologies often reduce both price and required amount:
+
+- **Thermostable variants** (e.g., [FGF2-G3 from Enantis](https://www.enantis.com/)) have 20-day half-life vs. hours, reducing dosing frequency
+- **Autocrine lines** produce GFs continuously, maintaining optimal concentrations
+- **Recycling systems** recover GFs from spent media
+
+**Breakthrough technologies (any one could trigger "cheap"):**
+
+| Technology | Mechanism | Current status | Target price |
+|------------|-----------|----------------|--------------|
+| Autocrine cell lines | Cells engineered to produce own FGF2 | [Proof of concept](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) | ~$0/g |
+| Plant molecular farming | GFs expressed in tobacco, rice | Pilot scale | $1–10/g |
+| Precision fermentation | Microbial production at scale | Scaling up | $10–100/g |
+| Small molecule substitutes | Chemicals that activate GF receptors | Research | <$1/g |
+
+### Capital Cost Parameters {#capex-parameters}
+
+#### Reference Scale: Why 20 kTA?
+
+The model defines CAPEX at a **reference scale of 20 kTA** (20,000 metric tons/year), then adjusts for actual plant size using economies of scale. We use 20 kTA because:
+
+1. It matches the scale in [Risner et al. (2021)](https://www.mdpi.com/2304-8158/10/1/3), enabling direct comparison
+2. It represents a plausible first commercial-scale facility
+3. Published cost estimates are most reliable around this scale
+
+#### Economies of Scale: The $K \sim Q^s$ Relationship
+
+Capital costs don't scale linearly with capacity. A plant 10× larger doesn't cost 10× more — it benefits from **economies of scale**:
+
+$$\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times \left(\frac{Q}{Q_{\text{ref}}}\right)^s$$
+
+Where:
+
+- $K$ = total capital cost (we use $K$ as shorthand for CAPEX)
+- $Q$ = plant capacity; $Q_{\text{ref}}$ = reference capacity (20 kTA)
+- $s$ = scale exponent (0.6–0.9)
+
+**What the exponent means:**
+
+| Scale exponent $s$ | If capacity doubles... | Example industries |
+|--------------------|------------------------|-------------------|
+| 1.0 | CAPEX doubles (no economies) | Modular, containerized systems |
+| 0.7 | CAPEX increases 62% | Chemical plants, refineries |
+| 0.6 | CAPEX increases 52% | Power plants, large bioreactors |
+
+The range 0.6–0.9 reflects uncertainty about whether cultured meat will achieve chemical-industry economies (0.6) or remain more modular (0.9).
+
+#### Pharma-Grade vs. Food-Grade Equipment
+
+**Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:
+
+- 316L stainless steel, electropolished surfaces
+- Extensive validation, documentation
+- Designed for injectable drug production
+- Cost: **$50–500 per liter** installed capacity
+
+**Food-grade** (or "custom") equipment is simpler:
+
+- Standard stainless steel (304 or food-grade 316)
+- Less stringent validation
+- Similar to brewing or dairy equipment
+- Target cost: **$10–50 per liter** — comparable to [beer brewing ($5–15/L)](https://www.brewersassociation.org/)
+
+The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.
+
+| Parameter | Range | Definition | Where it appears |
+|-----------|-------|------------|------------------|
+| WACC | 8–20% | Weighted average cost of capital | [CRF equation](#annualized-capital-costs) — the $r$ term |
+| Asset life | 8–20 years | How long equipment lasts before replacement | [CRF equation](#annualized-capital-costs) — the $n$ term |
+| Scale exponent | 0.6–0.9 | Economies of scale (see above) | CAPEX scaling |
+| Pharma-grade CAPEX | $5–25/kg capacity | At 20 kTA reference scale | Baseline capital cost |
+| Custom reactor ratio | 0.35–0.85 | Food-grade cost ÷ pharma-grade cost | Equipment type mix |
+
+#### WACC Justification
+
+**WACC (Weighted Average Cost of Capital)** represents the blended cost of debt and equity financing. Our 8–20% range reflects:
+
+| Benchmark | Typical WACC | Source |
+|-----------|--------------|--------|
+| Established food companies | 6–10% | Industry averages |
+| Biotech startups (pre-revenue) | 15–25% | VC expected returns |
+| Cultured meat companies | 12–20% | [Humbird (2021)](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) assumption |
+
+The high end (20%) reflects that most cultured meat companies are venture-backed with no revenue. As the industry matures ([higher $m$](#maturity-factor)), WACC should decline toward food-industry norms.
 
 ---
 
@@ -218,7 +376,7 @@ The full model implementation is available in multiple formats:
 |--------|----------|-------|
 | **JavaScript** (interactive) | Embedded in [dashboard](index.qmd) | Primary implementation |
 | **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Standalone script |
-| **Squiggle** (reference) | [models/cm_cost_v0.2.squiggle](../models/cm_cost_v0.2.squiggle) | Synced with dashboard parameters |
+| **Squiggle** (reference) | [models/cm_cost_v0.2.squiggle](https://github.com/unjournal/cm_pq_modeling/blob/main/models/cm_cost_v0.2.squiggle) | Synced with dashboard parameters |
 
 ### Key Functions
 
@@ -250,13 +408,21 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 ### Recommendations for Use
 
-| Recommendation | Justification |
-|----------------|---------------|
-| Use for **relative comparisons** rather than absolute predictions | Model parameters have wide uncertainty bands; the direction and magnitude of differences between scenarios is more robust than point estimates |
-| Focus on **probability thresholds** (P < $10/kg) rather than point estimates | Probabilities integrate over parameter uncertainty and are more decision-relevant for pivotal questions |
-| **Validate key parameters** with domain experts before publication | Literature-derived ranges may not reflect latest industry knowledge; some parameters (e.g., growth factor costs) are changing rapidly |
-| **Report uncertainty ranges**, not just medians | Wide 90% CIs reflect genuine epistemic uncertainty; hiding this gives false confidence |
-| **Consider correlated scenarios** via the maturity slider | The maturity factor captures the intuition that "good worlds" have multiple improvements occurring together |
+| Recommendation | What it means | Why |
+|----------------|---------------|-----|
+| Use for **relative comparisons** | Compare scenarios: "How much does cheap GF technology reduce costs?" rather than "Costs will be $X/kg" | Parameter uncertainty is wide; the *difference* between scenarios is more robust than absolute values |
+| Focus on **probability thresholds** | Ask "What's P(cost < $10/kg)?" not "What's the expected cost?" | Probabilities integrate over uncertainty and map to decisions ("Is this worth pursuing?") |
+| **Validate parameters** with experts | Before publishing, check that ranges match current industry knowledge | Published literature lags industry by 1–3 years; some parameters (GF costs) change rapidly |
+| **Report uncertainty ranges** | Always show 90% CI, not just median | Wide intervals reflect genuine uncertainty; suppressing them gives false confidence |
+| **Explore correlated scenarios** | Use the [maturity slider](#maturity-factor) to see "good world" vs "bad world" bundles | Technologies, financing, and supply chains develop together — independent draws miss this |
+
+**What "relative comparisons" means in practice:**
+
+✅ **Good use:** "Achieving 150 g/L cell density instead of 50 g/L would reduce costs by 40–60%"
+
+❌ **Risky use:** "Cultured chicken will cost $8.50/kg by 2030"
+
+The model is better at estimating *how much* a technology improvement helps than *what the final cost will be*, because relative effects are less sensitive to baseline assumptions.
 
 ---
 
