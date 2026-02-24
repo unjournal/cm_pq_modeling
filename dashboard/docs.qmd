@@ -104,39 +104,67 @@ Growth factors (FGF-2, IGF-1, TGF-β) are signaling proteins that tell cells to 
 
 $$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg meat}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
 
-#### The GF Progress Slider
+#### How GF Cost Feeds into Total Cost
 
-The dashboard's **GF Technology Progress** slider lets you explore scenarios between today's research prices and potential future breakthroughs:
+Growth factor cost is one of the four components of Variable Operating Costs:
+
+$$\text{VOC} = \text{Media} + \text{Micronutrients} + \underbrace{\text{Growth Factors}}_{\text{this section}} + \text{Other}$$
+
+And VOC feeds into total unit cost (see [Section 1](#total-unit-cost)).
+
+#### Two Ways to Explore GF Uncertainty
+
+The dashboard provides **two controls** for growth factor prices that work together:
+
+| Control | What it does | When to use |
+|---------|--------------|-------------|
+| **Binary toggle** (Bernoulli) | Flips between "cheap" and "expensive" price regimes | Default Monte Carlo — samples from uncertain future |
+| **Progress slider** | Manually sets a point between current and target prices | Scenario analysis — "what if we're 50% of the way there?" |
+
+**How they interact:** The slider **overrides** the binary toggle. When you move the slider from 0%, you're saying "ignore the coin flip; assume this level of progress."
+
+#### The Progress Slider Formula
 
 $$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
 
-Where **progress** is the slider value (0 to 1):
+**Why 0.01?** This base was chosen so that at 100% progress, prices are 1/100th of current prices — roughly the gap between today's research prices and industry targets:
 
-| Progress | Calculation | Effective price multiplier |
-|----------|-------------|---------------------------|
-| 0% (today) | $P \times 0.01^0 = P \times 1$ | 100% of current prices |
-| 50% | $P \times 0.01^{0.5} = P \times 0.1$ | 10% of current prices |
-| 100% (breakthrough) | $P \times 0.01^1 = P \times 0.01$ | 1% of current prices |
+- Current FGF-2: ~$50,000/g → Target: ~$500/g (100× reduction)
+- Current TGF-β: ~$1,000,000/g → Target: ~$10,000/g (100× reduction)
 
-This creates a smooth exponential interpolation: at 50% progress, prices are ~10× lower; at 100%, ~100× lower.
+| Progress slider | Price multiplier | Intuition |
+|-----------------|------------------|-----------|
+| 0% | × 1.00 | Today's prices |
+| 25% | × 0.32 | ~3× cheaper |
+| 50% | × 0.10 | ~10× cheaper |
+| 75% | × 0.032 | ~30× cheaper |
+| 100% | × 0.01 | ~100× cheaper (targets achieved) |
 
-#### Why a Binary "Cheap vs. Expensive" Scenario?
+#### The Binary "Cheap vs. Expensive" Toggle
 
-The model also includes a **Bernoulli toggle** (coin flip) that switches between two price regimes. This is a simplification, but reflects real industry dynamics:
+In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by default) to select between two price regimes:
 
-**The breakthrough technologies are substitutes, not complements:**
+**"Expensive" regime (limited progress):**
 
-- **Autocrine cell lines** — cells engineered to produce their own FGF2 → GF cost ≈ $0
-- **Plant molecular farming** — GFs expressed in tobacco/rice → target $1-10/g
-- **Precision fermentation** — microbial production at scale → target $10-100/g
+| Parameter | Range | Source |
+|-----------|-------|--------|
+| Quantity | 0.0005 – 0.02 g/kg | Higher usage due to degradation |
+| Price | $500 – $50,000/g | Incremental cost reduction only |
 
-If **any one** of these succeeds at commercial scale, the "cheap" price regime applies. The model doesn't sum their effects because they're alternative solutions to the same problem.
+**"Cheap" regime (breakthrough achieved):**
 
-**The uncertainty is discrete, not continuous:**
+| Parameter | Range | Source |
+|-----------|-------|--------|
+| Quantity | 0.0001 – 0.005 g/kg | Lower usage (thermostable, recycling) |
+| Price | $1 – $100/g | [GFI industry targets](https://gfi.org/science/the-science-of-cultivated-meat/) |
 
-At the pivotal question level, we're asking: "Will at least one breakthrough technology reach commercial viability by 2036?" This is more naturally modeled as a probability (50%) than a continuous distribution.
+**Why binary, not continuous?** The breakthrough technologies are **substitutes**:
 
-The slider complements this by letting users explore "what if progress is partial?" scenarios.
+- **Autocrine cell lines** — cells produce their own FGF2 → GF cost ≈ $0
+- **Plant molecular farming** — target $1-10/g
+- **Precision fermentation** — target $10-100/g
+
+If **any one** succeeds, the industry shifts to the cheap regime. We're asking "will at least one breakthrough work?" — a yes/no question.
 
 </details>
 
@@ -331,7 +359,9 @@ These parameters determine how much media is needed per kg of meat. See [Media C
 
 ### Growth Factor Price Scenarios {#gf-scenarios}
 
-The model uses two discrete price scenarios, selected by a Bernoulli draw (see [why binary](#why-a-binary-cheap-vs-expensive-scenario) above):
+These parameters feed into the [GF Cost equation](#how-gf-cost-feeds-into-total-cost): GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).
+
+The model uses two discrete price scenarios, selected by a Bernoulli draw (see [why binary](#the-binary-cheap-vs-expensive-toggle) above):
 
 | Scenario | Quantity (g/kg) | Price ($/g) | What it represents |
 |----------|----------------|-------------|-------------------|
@@ -403,13 +433,13 @@ The range 0.6–0.9 reflects uncertainty about whether cultured meat will achiev
 
 The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.
 
-| Parameter | Range | Definition | Where it appears |
-|-----------|-------|------------|------------------|
-| WACC | 8–20% | Weighted average cost of capital | [CRF equation](#annualized-capital-costs) — the $r$ term |
-| Asset life | 8–20 years | How long equipment lasts before replacement | [CRF equation](#annualized-capital-costs) — the $n$ term |
-| Scale exponent | 0.6–0.9 | Economies of scale (see above) | CAPEX scaling |
-| Pharma-grade CAPEX | $5–25/kg capacity | At 20 kTA reference scale | Baseline capital cost |
-| Custom reactor ratio | 0.35–0.85 | Food-grade cost ÷ pharma-grade cost | Equipment type mix |
+| Parameter | Range | Definition | Equation |
+|-----------|-------|------------|----------|
+| WACC | 8–20% | Weighted average cost of capital | $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
+| Asset life | 8–20 years | Depreciation period for bioreactors and facilities | $n$ in CRF formula — see [Section 3](#annualized-capital-costs) |
+| Scale exponent | 0.6–0.9 | Economies of scale power | $s$ in CAPEX = CAPEX$_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [above](#economies-of-scale-the-k-sim-qs-relationship) |
+| Pharma-grade CAPEX | $5–25/kg capacity | Base capital cost at 20 kTA | CAPEX$_{\text{ref}}$ in scaling equation |
+| Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on CAPEX$_{\text{ref}}$ when using food-grade |
 
 #### WACC Justification
 
