@@ -114,10 +114,10 @@ Several factors make chicken an attractive first target for cultured meat:
 | Factor | Advantage | Source |
 |--------|-----------|--------|
 | **Cell biology** | Chicken satellite cells can be cultured effectively and show robust viability | [Kim et al. 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
-| **Spontaneous immortalization** | Some avian cells can divide indefinitely without genetic modification | [Stout et al. 2022, Nature Food](https://www.nature.com/articles/s43016-022-00658-w) |
+| **Spontaneous immortalization** | Some avian cells can divide indefinitely without genetic modification | [Pasitka et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
 | **Market size** | Chicken is the most consumed meat globally (~130 million tonnes/year) | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
 | **Animal welfare** | ~70 billion chickens slaughtered annually vs ~300 million cattle | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
-| **Growth factors** | Similar FGF-2/IGF-1 requirements to bovine (~10-100 ng/mL optimal) | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Growth factors** | Similar FGF-2/IGF-1 requirements to bovine (~10-100 ng/mL optimal) | [Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
 
 ---
 
@@ -195,9 +195,9 @@ A **cell bank** is a frozen inventory of starter cells that can be thawed and ex
 
 | Cell Type | Description | Pros | Cons | Source |
 |-----------|-------------|------|------|--------|
-| **Satellite cells** (myoblasts) | Muscle stem cells that differentiate into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80 before senescence) | [Ding et al. 2018](https://www.sciencedirect.com/science/article/pii/S0309174018300494) |
-| **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable, no senescence | Regulatory complexity, GMO perception | [Stout et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
-| **iPSCs** | Induced pluripotent stem cells | Can become any cell type | Complex differentiation protocols | [Guan et al. 2022](https://www.sciencedirect.com/science/article/pii/S2405844022001505) |
+| **Satellite cells** (myoblasts) | Muscle stem cells that differentiate into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80 before senescence) | [Ding et al. 2018](https://www.nature.com/articles/s41598-018-28746-7) |
+| **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable, no senescence | Regulatory complexity, GMO perception | [Pasitka et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
+| **iPSCs** | Induced pluripotent stem cells | Can become any cell type | Complex differentiation protocols | [Choi et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9686897/) |
 
 ### Cost Impact
 
@@ -526,7 +526,7 @@ The cultured meat industry **must** use serum-free media. All approved cultured 
 | Hydrolysate-based | $0.20 - $1.20 | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
 
 ::: {.callout-tip}
-**Key insight:** Hydrolysates can reduce amino acid costs by 70-90%. Multiple studies have validated their use for muscle cell culture ([Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)).
+**Key insight:** Hydrolysates can reduce amino acid costs by 70-90%. Multiple studies have validated their use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)).
 :::
 
 ---
@@ -608,7 +608,7 @@ Current growth factors are produced for **medical research** markets where volum
 | **Precision fermentation** | E. coli/yeast produce GFs at scale | Scaling up | $10-100/g | [GFI 2024](https://gfi.org/science/the-science-of-cultivated-meat/) |
 | **Plant molecular farming** | Transgenic plants express GFs | Pilots | $1-10/g | [BioBetter](https://www.foodnavigator.com/Article/2022/09/12/biobetter-s-growth-factor-innovation-cuts-cost-of-cultured-meat/) |
 | **Autocrine cell lines** | Engineer cells to make their own GFs | Proof of concept | ~$0/g | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) |
-| **Small molecule substitutes** | Chemicals that activate GF receptors | Research | <$1/g | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Small molecule substitutes** | Chemicals that activate GF receptors | Research | <$1/g | [Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
 | **Thermostable variants** | FGF2-G3 with 20-day half-life | Commercial | Reduces usage | [Enantis](https://www.enantis.com/) |
 
 ::: {.callout-important}
@@ -720,7 +720,7 @@ Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/
 
 - [Risner et al. (2021) - "Preliminary Techno-Economic Assessment of Animal Cell-Based Meat"](https://www.mdpi.com/2304-8158/10/1/3) — UC Davis cost model
 - [Humbird (2021) - "Scale-Up Economics of Cultured Meat"](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent TEA analysis
-- [Stout et al. (2022) - "Immortalized Chicken Cells"](https://www.nature.com/articles/s43016-022-00658-w) — Spontaneous immortalization in avian cells
+- [Pasitka et al. (2022) - "Spontaneous immortalization of chicken fibroblasts"](https://www.nature.com/articles/s43016-022-00658-w) — Spontaneous immortalization in avian cells
 - [GFI State of the Industry Report 2024](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) — Annual industry overview
 
 ### Interactive Tools
