@@ -21,14 +21,14 @@ This is The Unjournal's modeling repository for **cultured meat pivotal question
 
 ```
 cm_pq_modeling/
-├── dashboard/           # Interactive Quarto + Shinylive dashboard
-│   ├── index.qmd        # Main dashboard with embedded Shiny Python app
-│   ├── model.py         # Standalone Python model (reference)
-│   ├── docs.qmd         # Model documentation page
+├── dashboard/           # Interactive Quarto + OJS dashboard
+│   ├── index.qmd        # Main dashboard with Monte Carlo simulation (OJS)
+│   ├── learn.qmd        # Educational content: how cultured meat is made
+│   ├── docs.qmd         # Technical reference: formulas and parameters
 │   ├── about.qmd        # About page
 │   ├── styles.css       # Custom styling
 │   ├── _quarto.yml      # Quarto project config
-│   └── _extensions/     # Shinylive Quarto extension
+│   └── model.py         # Standalone Python model (reference, not used by dashboard)
 ├── models/              # Model code versions
 │   ├── cm_cost_v0.2.squiggle  # Squiggle version of cost model
 │   └── README.md        # Parameter guide for evaluators
@@ -43,23 +43,27 @@ cm_pq_modeling/
 
 ## Dashboard Technology Stack
 
-### Quarto + Shinylive
+### Quarto + Observable JS (OJS)
 - **Quarto**: Document/website generator (v1.6+)
-- **Shinylive**: Runs Python Shiny apps in browser via WebAssembly (Pyodide)
+- **Observable JS (OJS)**: Reactive JavaScript for interactive visualizations
 - **No server required**: Fully static hosting on GitHub Pages
+
+The dashboard was migrated from Shinylive (Python via WebAssembly) to OJS in Feb 2026 to resolve service worker path issues that caused 404 errors for Python wheel files.
 
 ### Key Dashboard Features
 - Monte Carlo simulation (30,000 samples)
 - Interactive parameter sliders with explanatory accordions
-- Multiple visualization tabs (distributions, breakdown, CDF)
+- Multiple visualization tabs (distributions, breakdown, CDF, sensitivity)
 - Hypothesis integration for inline comments
-- Model structure toggles (include/exclude CAPEX, Fixed OPEX)
+- Model structure toggles (include/exclude CAPEX, Fixed OPEX, Downstream)
+- Target year slider (2026-2050) affecting technology adoption probabilities
 
 ### Dashboard Code Structure
-The main app is embedded in `dashboard/index.qmd` as a `{shinylive-python}` code block. Key sections:
-1. **Model functions**: `simulate()`, sampling functions, CRF calculation
-2. **UI definition**: `app_ui` with sidebar, tabs, value boxes
-3. **Server logic**: Reactive calculations and plot rendering
+The main app is embedded in `dashboard/index.qmd` using OJS code blocks (`{ojs}`). Key sections:
+1. **Model functions**: `simulate()`, sampling functions, CRF calculation (pure JavaScript)
+2. **UI definition**: OJS inputs (`Inputs.range()`, `Inputs.toggle()`, etc.)
+3. **Reactive calculations**: OJS reactive cells auto-update on input changes
+4. **Visualizations**: Plot.js for histograms, CDFs, and bar charts
 
 ## Deployment
 
@@ -70,75 +74,14 @@ The main app is embedded in `dashboard/index.qmd` as a `{shinylive-python}` code
 
 ### Build Requirements
 ```yaml
-- Python 3.11
-- pip install shinylive
 - Quarto 1.6.40+
-- Shinylive extension (committed in _extensions/)
 ```
 
-### CURRENT BLOCKING ISSUE (Feb 2025)
+No Python dependencies are required for the dashboard — all simulation logic runs in JavaScript via OJS.
 
-**Status**: Shinylive dashboard NOT working - shows 404 errors for Python wheel files
+### Historical Note: Shinylive Migration
 
-**The Problem**:
-When loading the dashboard in browser, shinylive fails to load required Python packages (.whl files). The browser console shows errors like:
-```
-404: /site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/shiny-1.5.1-py3-none-any.whl
-404: /site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/typing_extensions-4.11.0-py3-none-any.whl
-... (18+ wheel files)
-```
-
-**Paradox**: The wheel files DO exist in `_site/site_libs/quarto-contrib/shinylive-0.10.7/shinylive/pyodide/` - they are correctly generated during `quarto render`. But the browser/service worker cannot fetch them.
-
-**Current Versions**:
-- Quarto: 1.6.40
-- Shinylive Python package: 0.8.5
-- Shinylive assets version: 0.10.7
-- Shinylive Quarto extension: 0.2.0
-
-**What Has Been Tried**:
-1. ✗ Upgrading Quarto from 1.4.550 to 1.6.40
-2. ✗ Installing shinylive Python package (`pip install shinylive`)
-3. ✗ Updating shinylive extension (`quarto add quarto-ext/shinylive`)
-4. ✗ Adding `#| packages: [shiny, numpy, matplotlib]` directive
-5. ✗ Setting `embed-resources: false` in _quarto.yml
-6. ✗ Editing shinylive.lua to remove warning text prepend
-7. ✗ Clean rebuild (`rm -rf _site _freeze && quarto render`)
-8. ✗ Different ports for preview server
-9. ✗ Checking file permissions (files are readable)
-
-**Suspected Root Causes** (unconfirmed):
-- Service worker (shinylive-sw.js) path resolution issues
-- Version mismatch between extension (0.2.0) and assets (0.10.7)
-- Browser caching of stale service worker
-- Pyodide loading mechanism incompatibility
-
-**Files to Investigate**:
-- `_site/site_libs/quarto-contrib/shinylive-0.10.7/shinylive-sw.js` - Service worker
-- `_extensions/quarto-ext/shinylive/shinylive.lua` - Lua filter that processes code blocks
-- Browser DevTools > Application > Service Workers
-
-**Next Steps to Try**:
-1. Clear browser service workers and hard refresh
-2. Try in incognito/private window
-3. Check if issue is browser-specific (Chrome vs Firefox vs Safari)
-4. Test with shinylive standalone (not Quarto) to isolate issue
-5. Check shinylive GitHub issues for similar reports
-6. Try older/newer version combinations
-
-See `dashboard/TROUBLESHOOTING.md` for detailed debugging steps.
-
-### Previous Known Issues
-
-**Shinylive "No module named 'shiny'" error**:
-- Occurs when shinylive Python package version doesn't match extension version
-- Extension version in `_extensions/quarto-ext/shinylive/_extension.yml`
-- Test locally with `quarto preview` before deploying
-- Check browser console for detailed errors
-
-**Version Compatibility**:
-- Shinylive extension and Python package versions must match
-- Quarto version affects shinylive compatibility
+The dashboard originally used Shinylive (Python via WebAssembly) but was migrated to OJS in Feb 2026 due to persistent service worker issues causing 404 errors for wheel files. The OJS implementation is simpler, faster to load, and requires no Python dependencies.
 
 ## Model Details
 
@@ -216,10 +159,4 @@ quarto render               # Build static site to _site/
 
 # Deploy (automatic via GitHub Actions on push to main)
 git push origin main        # Triggers deploy workflow
-
-# Check shinylive version
-cat _extensions/quarto-ext/shinylive/_extension.yml
-
-# Install/update shinylive extension
-quarto add quarto-ext/shinylive --no-prompt
 ```

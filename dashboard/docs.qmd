@@ -127,7 +127,7 @@ The dashboard provides **two controls** for growth factor prices that work toget
 
 $$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
 
-**Why 0.01?** This base was chosen so that at 100% progress, prices are 1/100th of current prices — roughly the gap between today's research prices and industry targets:
+**Why 0.01?** This base was chosen so that at 100% progress, prices are 1/100th of current prices — roughly the gap between today's research prices and [industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/):
 
 - Current FGF-2: ~$50,000/g → Target: ~$500/g (100× reduction)
 - Current TGF-β: ~$1,000,000/g → Target: ~$10,000/g (100× reduction)
@@ -149,14 +149,14 @@ In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by d
 | Parameter | Range | Source |
 |-----------|-------|--------|
 | Quantity | 0.0005 – 0.02 g/kg | Higher usage due to degradation |
-| Price | $500 – $50,000/g | Incremental cost reduction only |
+| Price | $500 – $50,000/g | Current FGF-2 ~$50,000/g, TGF-β up to $1M/g ([GFI analysis](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/)) |
 
 **"Cheap" regime (breakthrough achieved):**
 
 | Parameter | Range | Source |
 |-----------|-------|--------|
 | Quantity | 0.0001 – 0.005 g/kg | Lower usage (thermostable, recycling) |
-| Price | $1 – $100/g | [GFI industry targets](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| Price | $1 – $100/g | [GFI industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) — studies suggest $4/g achievable |
 
 **Why binary, not continuous?** The breakthrough technologies are **substitutes**:
 
@@ -420,16 +420,16 @@ The range 0.6–0.9 reflects uncertainty about whether cultured meat will achiev
 **Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:
 
 - 316L stainless steel, electropolished surfaces
-- Extensive validation, documentation
+- Extensive validation, documentation (GMP compliance)
 - Designed for injectable drug production
-- Cost: **$50–500 per liter** installed capacity
+- Cost: **$50–500 per liter** installed capacity — typical pharmaceutical bioreactors cost [£250,000+ for standard units](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/)
 
 **Food-grade** (or "custom") equipment is simpler:
 
-- Standard stainless steel (304 or food-grade 316)
-- Less stringent validation
+- Standard stainless steel (304 or food-grade 316) — [304 can replace pharma-required 316 for food operations](https://gfi.org/solutions/novel-bioreactor-technologies/)
+- Less stringent validation (GRAS vs. pharmaceutical purity)
 - Similar to brewing or dairy equipment
-- Target cost: **$10–50 per liter** — comparable to [beer brewing ($5–15/L)](https://www.brewersassociation.org/)
+- Target cost: **$10–50 per liter** — Meatly's [320L pilot bioreactor costs ~£12,500](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/) (~$39/L), comparable to [beer brewing ($5–15/L)](https://www.brewersassociation.org/)
 
 The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.
 
