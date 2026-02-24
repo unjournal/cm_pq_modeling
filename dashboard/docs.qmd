@@ -75,12 +75,25 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 
 **Hydrolysates vs. pharma-grade amino acids:**
 
-| Scenario | Price range ($/L) | What it means |
-|----------|-------------------|---------------|
-| With hydrolysates | $0.20 – $1.20 | Amino acids from digested plant/yeast proteins (soy, wheat, etc.) |
-| Pharma-grade amino acids | $1.00 – $4.00 | Individual purified amino acids, as used in pharmaceutical manufacturing |
+| Scenario | Price range ($/L) | What it means | Source |
+|----------|-------------------|---------------|--------|
+| With hydrolysates | $0.20 – $1.20 | Amino acids from digested plant/yeast proteins | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
+| Pharma-grade amino acids | $1.00 – $4.00 | Individual purified amino acids | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
 
 Hydrolysates cost less because they're produced from commodity feedstocks via enzymatic digestion, rather than synthetic chemistry or purification.
+
+#### Media Cost per kg at Different Cell Densities
+
+Since both $/L and cell density matter, here's how they combine (assuming turnover = 3):
+
+| Cell density | Liters/kg | @ $0.50/L (hydrolysates) | @ $2.00/L (pharma-grade) |
+|--------------|-----------|--------------------------|--------------------------|
+| 30 g/L | 100 L | **$50/kg** | **$200/kg** |
+| 50 g/L | 60 L | **$30/kg** | **$120/kg** |
+| 100 g/L | 30 L | **$15/kg** | **$60/kg** |
+| 200 g/L | 15 L | **$7.50/kg** | **$30/kg** |
+
+**Key insight:** Doubling cell density cuts media cost in half — density improvements are as valuable as halving media price.
 
 </details>
 
@@ -137,18 +150,32 @@ Where CRF converts a lump sum to annual payments:
 
 $$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
 
+**Variables in this formula:**
+
+- $r$ = WACC (weighted average cost of capital) — your cost of financing
+- $n$ = asset life in years — how long the equipment lasts
+
 <details>
-<summary>What is CRF?</summary>
+<summary>What is CRF? (Intuitive explanation)</summary>
 
-**Capital Recovery Factor** answers: "If I borrow $X at interest rate r for n years, what's my annual payment?"
+**Capital Recovery Factor** answers: "If I borrow $X at interest rate $r$ for $n$ years, what annual payment covers both principal and interest?"
 
-| WACC | Asset Life | CRF | Meaning |
-|------|------------|-----|---------|
-| 10% | 15 years | 13.1% | Pay 13.1% of capital cost annually |
-| 15% | 10 years | 19.9% | Pay 19.9% of capital cost annually |
-| 20% | 8 years | 26.1% | Pay 26.1% of capital cost annually |
+**Intuition:** Think of CRF as the "annual rent" you pay on capital. If you buy a $100M facility:
 
-Higher WACC or shorter asset life → higher annual capital charge.
+- At CRF = 10%, you pay $10M/year
+- At CRF = 20%, you pay $20M/year
+
+CRF is always higher than just "1/asset_life" because you're also paying interest, not just depreciation.
+
+**Why does CRF matter?** It converts a one-time construction cost into an annual charge that gets divided across all kg produced. Higher CRF = higher $/kg.
+
+| WACC ($r$) | Asset Life ($n$) | CRF | Annual payment on $100M |
+|------------|------------------|-----|------------------------|
+| 10% | 15 years | 13.1% | $13.1M/year |
+| 15% | 10 years | 19.9% | $19.9M/year |
+| 20% | 8 years | 26.1% | $26.1M/year |
+
+Higher WACC or shorter asset life → higher annual capital charge → higher $/kg.
 
 </details>
 
@@ -207,12 +234,42 @@ The maturity factor simultaneously adjusts:
 | Custom reactor share | More facilities use food-grade equipment | Supply chain development |
 | WACC (financing cost) | Lower interest rates | Reduced investor risk perception |
 
+<details>
+<summary>Why should technology success correlate with cheaper financing?</summary>
+
+This is not an assumption that technology *causes* cheaper financing. Rather, both are symptoms of the same underlying cause: **industry development**.
+
+**The causal story:**
+
+1. If the cultured meat industry develops well by 2036, we'd expect:
+   - More companies reaching commercial scale → proven unit economics
+   - Successful pilots → reduced technology risk
+   - Regulatory approvals → reduced market risk
+   - Growing consumer acceptance → larger addressable market
+
+2. All of these reduce investor risk perception, which lowers WACC:
+   - Early-stage ventures: 15–25% WACC (high risk premium)
+   - Proven technology, growing market: 8–12% WACC (approaching food industry norms)
+
+3. The same favorable conditions that enable technology adoption also enable cheaper financing.
+
+**What the model is NOT saying:**
+
+- ❌ "Cheap growth factors will magically make financing cheaper"
+- ✅ "Worlds where GF technology succeeds are also worlds where the industry is more developed, which independently leads to cheaper financing"
+
+This is a **latent variable** approach: $m$ represents unobserved industry development that affects multiple outcomes.
+
+</details>
+
 **Why this matters:** In a world where growth factor technology succeeds, it's more plausible that:
 1. Other technologies also succeed (shared R&D ecosystem)
 2. Investors see lower risk (proven technology → cheaper capital)
 3. Custom reactor suppliers exist (developed supply chain)
 
 The maturity factor captures this "worlds come in bundles" intuition without requiring us to specify every pairwise correlation.
+
+**Limitation:** This approach assumes all technologies develop together. In reality, some might succeed while others fail (e.g., cheap GFs but slow bioreactor scale-up). A more sophisticated model could specify different correlation structures, but this adds complexity without clear empirical grounding.
 
 ### 5. Monte Carlo Simulation
 
