@@ -17,11 +17,92 @@ format:
 
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing avian muscle cells in bioreactors — essentially brewing meat instead of raising and slaughtering animals. This page explains the production process in detail and how each step affects production costs.
 
-```
-   CELL BANK           SEED TRAIN          PRODUCTION           HARVEST          PROCESSING
-      [O]         -->   [OOO]      -->    [OOOOOOO]      -->    [===]      -->    [≡≡≡]
-   (starter       (scale up in          (large-scale         (separate         (texture &
-    cells)         small reactors)       bioreactors)          cells)            form)
+```{=html}
+<svg viewBox="0 0 900 180" style="width: 100%; max-width: 900px; margin: 2rem auto; display: block;">
+  <!-- Background -->
+  <rect width="900" height="180" fill="#f8f9fa" rx="8"/>
+
+  <!-- Step 1: Cell Bank -->
+  <g transform="translate(50, 40)">
+    <circle cx="40" cy="40" r="35" fill="#3498db" opacity="0.2" stroke="#3498db" stroke-width="2"/>
+    <circle cx="40" cy="40" r="8" fill="#3498db"/>
+    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Cell Bank</text>
+    <text x="40" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">Frozen starter</text>
+    <text x="40" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">cells</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path d="M130 80 L170 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 2: Seed Train -->
+  <g transform="translate(180, 40)">
+    <ellipse cx="50" cy="40" rx="45" ry="35" fill="#9b59b6" opacity="0.2" stroke="#9b59b6" stroke-width="2"/>
+    <circle cx="35" cy="35" r="6" fill="#9b59b6"/>
+    <circle cx="50" cy="45" r="6" fill="#9b59b6"/>
+    <circle cx="65" cy="35" r="6" fill="#9b59b6"/>
+    <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Seed Train</text>
+    <text x="50" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">Scale up in</text>
+    <text x="50" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">small reactors</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path d="M280 80 L320 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 3: Production -->
+  <g transform="translate(330, 25)">
+    <rect x="10" y="15" width="90" height="70" rx="10" fill="#27ae60" opacity="0.2" stroke="#27ae60" stroke-width="2"/>
+    <circle cx="35" cy="40" r="5" fill="#27ae60"/>
+    <circle cx="55" cy="35" r="5" fill="#27ae60"/>
+    <circle cx="75" cy="45" r="5" fill="#27ae60"/>
+    <circle cx="45" cy="55" r="5" fill="#27ae60"/>
+    <circle cx="65" cy="60" r="5" fill="#27ae60"/>
+    <text x="55" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Production</text>
+    <text x="55" y="130" text-anchor="middle" font-size="10" fill="#7f8c8d">Large bioreactors</text>
+  </g>
+
+  <!-- Arrow 3 -->
+  <path d="M440 80 L480 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 4: Harvest -->
+  <g transform="translate(490, 40)">
+    <rect x="10" y="10" width="80" height="60" rx="5" fill="#f39c12" opacity="0.2" stroke="#f39c12" stroke-width="2"/>
+    <line x1="20" y1="25" x2="80" y2="25" stroke="#f39c12" stroke-width="2"/>
+    <line x1="20" y1="40" x2="80" y2="40" stroke="#f39c12" stroke-width="2"/>
+    <line x1="20" y1="55" x2="80" y2="55" stroke="#f39c12" stroke-width="2"/>
+    <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Harvest</text>
+    <text x="50" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">Separate cells</text>
+    <text x="50" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">from media</text>
+  </g>
+
+  <!-- Arrow 4 -->
+  <path d="M590 80 L630 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 5: Processing -->
+  <g transform="translate(640, 40)">
+    <rect x="10" y="10" width="80" height="60" rx="5" fill="#e74c3c" opacity="0.2" stroke="#e74c3c" stroke-width="2"/>
+    <rect x="25" y="25" width="50" height="30" rx="3" fill="#e74c3c" opacity="0.5"/>
+    <text x="50" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Processing</text>
+    <text x="50" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">Form into</text>
+    <text x="50" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">products</text>
+  </g>
+
+  <!-- Arrow 5 -->
+  <path d="M740 80 L780 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+  <!-- Final: Product -->
+  <g transform="translate(790, 40)">
+    <rect x="10" y="15" width="60" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
+    <text x="40" y="48" text-anchor="middle" font-size="18" fill="white">🍗</text>
+    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Product</text>
+  </g>
+
+  <!-- Arrowhead marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#bdc3c7"/>
+    </marker>
+  </defs>
+</svg>
 ```
 
 ---
@@ -32,11 +113,11 @@ Several factors make chicken an attractive first target for cultured meat:
 
 | Factor | Advantage | Source |
 |--------|-----------|--------|
-| **Cell biology** | Chicken satellite cells show higher yields than bovine | [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
-| **Spontaneous immortalization** | Some avian cells can divide indefinitely without genetic modification | [Nature Food 2022](https://www.nature.com/articles/s43016-022-00658-w) |
-| **Market size** | Chicken is the most consumed meat globally | FAO data |
-| **Animal welfare** | Higher welfare stakes per kg (more birds affected than cattle) | ACE analysis |
-| **Growth factors** | Similar FGF-2/IGF-1 requirements to bovine (~100 ng/mL) | [PMC 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Cell biology** | Chicken satellite cells can be cultured effectively and show robust viability | [Kim et al. 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
+| **Spontaneous immortalization** | Some avian cells can divide indefinitely without genetic modification | [Stout et al. 2022, Nature Food](https://www.nature.com/articles/s43016-022-00658-w) |
+| **Market size** | Chicken is the most consumed meat globally (~130 million tonnes/year) | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
+| **Animal welfare** | ~70 billion chickens slaughtered annually vs ~300 million cattle | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
+| **Growth factors** | Similar FGF-2/IGF-1 requirements to bovine (~10-100 ng/mL optimal) | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
 
 ---
 
@@ -46,20 +127,84 @@ Several factors make chicken an attractive first target for cultured meat:
 
 A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via biopsy) or from cell lines that have been immortalized for continuous growth.
 
+```{=html}
+<svg viewBox="0 0 600 200" style="width: 100%; max-width: 600px; margin: 1.5rem auto; display: block;">
+  <rect width="600" height="200" fill="#f0f4f8" rx="8"/>
+
+  <!-- Biopsy -->
+  <g transform="translate(30, 30)">
+    <text x="50" y="0" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">1. Biopsy</text>
+    <ellipse cx="50" cy="50" rx="40" ry="30" fill="#f5deb3" stroke="#8b4513" stroke-width="2"/>
+    <circle cx="50" cy="50" r="10" fill="#e74c3c" opacity="0.7"/>
+    <text x="50" y="100" text-anchor="middle" font-size="9" fill="#7f8c8d">Small tissue</text>
+    <text x="50" y="112" text-anchor="middle" font-size="9" fill="#7f8c8d">sample from</text>
+    <text x="50" y="124" text-anchor="middle" font-size="9" fill="#7f8c8d">live animal</text>
+  </g>
+
+  <path d="M130 70 L170 70" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Isolation -->
+  <g transform="translate(180, 30)">
+    <text x="50" y="0" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">2. Isolate Cells</text>
+    <rect x="20" y="20" width="60" height="60" rx="5" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
+    <circle cx="35" cy="45" r="6" fill="#e74c3c"/>
+    <circle cx="50" cy="55" r="6" fill="#e74c3c"/>
+    <circle cx="65" cy="42" r="6" fill="#e74c3c"/>
+    <text x="50" y="100" text-anchor="middle" font-size="9" fill="#7f8c8d">Enzymatic</text>
+    <text x="50" y="112" text-anchor="middle" font-size="9" fill="#7f8c8d">digestion</text>
+  </g>
+
+  <path d="M280 70 L320 70" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Expansion -->
+  <g transform="translate(330, 30)">
+    <text x="50" y="0" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">3. Expand</text>
+    <rect x="10" y="20" width="80" height="60" rx="5" fill="#ecf0f1" stroke="#27ae60" stroke-width="2"/>
+    <circle cx="25" cy="40" r="5" fill="#e74c3c"/>
+    <circle cx="40" cy="50" r="5" fill="#e74c3c"/>
+    <circle cx="55" cy="38" r="5" fill="#e74c3c"/>
+    <circle cx="70" cy="55" r="5" fill="#e74c3c"/>
+    <circle cx="35" cy="65" r="5" fill="#e74c3c"/>
+    <circle cx="60" cy="68" r="5" fill="#e74c3c"/>
+    <text x="50" y="100" text-anchor="middle" font-size="9" fill="#7f8c8d">Grow to</text>
+    <text x="50" y="112" text-anchor="middle" font-size="9" fill="#7f8c8d">billions</text>
+  </g>
+
+  <path d="M430 70 L470 70" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <!-- Freeze -->
+  <g transform="translate(480, 30)">
+    <text x="50" y="0" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">4. Freeze</text>
+    <rect x="25" y="20" width="50" height="70" rx="3" fill="#3498db" opacity="0.3" stroke="#2980b9" stroke-width="2"/>
+    <rect x="32" y="30" width="36" height="12" rx="2" fill="#ecf0f1" stroke="#7f8c8d"/>
+    <rect x="32" y="48" width="36" height="12" rx="2" fill="#ecf0f1" stroke="#7f8c8d"/>
+    <rect x="32" y="66" width="36" height="12" rx="2" fill="#ecf0f1" stroke="#7f8c8d"/>
+    <text x="50" y="110" text-anchor="middle" font-size="9" fill="#7f8c8d">-196°C in</text>
+    <text x="50" y="122" text-anchor="middle" font-size="9" fill="#7f8c8d">liquid nitrogen</text>
+  </g>
+
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#bdc3c7"/>
+    </marker>
+  </defs>
+</svg>
+```
+
 ### Cell Types Used
 
-| Cell Type | Description | Pros | Cons |
-|-----------|-------------|------|------|
-| **Satellite cells** (myoblasts) | Muscle stem cells that differentiate into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80) |
-| **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable | Regulatory complexity, consumer perception |
-| **iPSCs** | Induced pluripotent stem cells | Can become any cell type | Complex, expensive |
+| Cell Type | Description | Pros | Cons | Source |
+|-----------|-------------|------|------|--------|
+| **Satellite cells** (myoblasts) | Muscle stem cells that differentiate into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80 before senescence) | [Ding et al. 2018](https://www.sciencedirect.com/science/article/pii/S0309174018300494) |
+| **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable, no senescence | Regulatory complexity, GMO perception | [Stout et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
+| **iPSCs** | Induced pluripotent stem cells | Can become any cell type | Complex differentiation protocols | [Guan et al. 2022](https://www.sciencedirect.com/science/article/pii/S2405844022001505) |
 
 ### Cost Impact
 
-Cell banking is a **one-time setup cost** that's amortized over many production runs. A well-characterized cell bank can support years of production.
+Cell banking is a **one-time setup cost** that's amortized over many production runs. A well-characterized cell bank can support years of production ([GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/)).
 
 ::: {.callout-note}
-**Key insight:** The "doubling limit" of cells matters enormously. If cells can only double 50 times before senescing, you need to maintain master cell banks and regularly restart from frozen stocks. Immortalized lines eliminate this constraint.
+**Key insight:** The "Hayflick limit" (doubling limit) of cells matters enormously. Primary satellite cells can only double ~50-80 times before senescing ([Hayflick 1965](https://pubmed.ncbi.nlm.nih.gov/14315085/)). Immortalized lines eliminate this constraint but require regulatory approval.
 :::
 
 ---
@@ -68,28 +213,107 @@ Cell banking is a **one-time setup cost** that's amortized over many production 
 
 ### What Happens
 
-Cells are progressively expanded from small flasks to larger and larger bioreactors:
+Cells are progressively expanded from small flasks to larger and larger bioreactors, typically increasing volume by ~10× at each step:
 
+```{=html}
+<svg viewBox="0 0 700 220" style="width: 100%; max-width: 700px; margin: 1.5rem auto; display: block;">
+  <rect width="700" height="220" fill="#f8f9fa" rx="8"/>
+
+  <!-- Title -->
+  <text x="350" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Seed Train: Progressive Scale-Up</text>
+
+  <!-- Vial -->
+  <g transform="translate(30, 50)">
+    <rect x="25" y="20" width="20" height="50" rx="3" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
+    <rect x="28" y="45" width="14" height="20" fill="#e74c3c" opacity="0.6"/>
+    <text x="35" y="90" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Vial</text>
+    <text x="35" y="105" text-anchor="middle" font-size="9" fill="#7f8c8d">1 mL</text>
+    <text x="35" y="118" text-anchor="middle" font-size="9" fill="#3498db">10⁶ cells</text>
+  </g>
+
+  <path d="M85 85 L110 85" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <!-- T-Flask -->
+  <g transform="translate(115, 50)">
+    <rect x="10" y="30" width="50" height="35" rx="2" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
+    <rect x="25" y="10" width="20" height="25" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
+    <rect x="12" y="45" width="46" height="15" fill="#e74c3c" opacity="0.6"/>
+    <text x="35" y="90" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">T-Flask</text>
+    <text x="35" y="105" text-anchor="middle" font-size="9" fill="#7f8c8d">100 mL</text>
+    <text x="35" y="118" text-anchor="middle" font-size="9" fill="#3498db">10⁷ cells</text>
+  </g>
+
+  <path d="M180 85 L210 85" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <!-- Spinner -->
+  <g transform="translate(215, 45)">
+    <ellipse cx="45" cy="55" rx="35" ry="30" fill="#ecf0f1" stroke="#9b59b6" stroke-width="2"/>
+    <rect x="40" y="15" width="10" height="25" fill="#9b59b6"/>
+    <ellipse cx="45" cy="60" rx="25" ry="18" fill="#e74c3c" opacity="0.5"/>
+    <text x="45" y="100" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Spinner</text>
+    <text x="45" y="115" text-anchor="middle" font-size="9" fill="#7f8c8d">1 L</text>
+    <text x="45" y="128" text-anchor="middle" font-size="9" fill="#9b59b6">10⁸ cells</text>
+  </g>
+
+  <path d="M305 85 L335 85" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <!-- 10L Reactor -->
+  <g transform="translate(340, 35)">
+    <rect x="15" y="20" width="60" height="70" rx="8" fill="#ecf0f1" stroke="#27ae60" stroke-width="2"/>
+    <rect x="35" y="5" width="20" height="20" fill="#27ae60"/>
+    <rect x="20" y="55" width="50" height="30" fill="#e74c3c" opacity="0.5"/>
+    <text x="45" y="115" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Small Reactor</text>
+    <text x="45" y="130" text-anchor="middle" font-size="9" fill="#7f8c8d">10 L</text>
+    <text x="45" y="143" text-anchor="middle" font-size="9" fill="#27ae60">10⁹ cells</text>
+  </g>
+
+  <path d="M430 85 L460 85" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <!-- 100L Reactor -->
+  <g transform="translate(465, 25)">
+    <rect x="10" y="15" width="80" height="90" rx="10" fill="#ecf0f1" stroke="#f39c12" stroke-width="2"/>
+    <rect x="40" y="0" width="20" height="20" fill="#f39c12"/>
+    <rect x="15" y="60" width="70" height="40" fill="#e74c3c" opacity="0.5"/>
+    <text x="50" y="125" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Medium Reactor</text>
+    <text x="50" y="140" text-anchor="middle" font-size="9" fill="#7f8c8d">100 L</text>
+    <text x="50" y="153" text-anchor="middle" font-size="9" fill="#f39c12">10¹⁰ cells</text>
+  </g>
+
+  <path d="M560 85 L590 85" stroke="#bdc3c7" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <!-- Production Reactor -->
+  <g transform="translate(595, 15)">
+    <rect x="5" y="10" width="90" height="110" rx="12" fill="#ecf0f1" stroke="#e74c3c" stroke-width="3"/>
+    <rect x="40" y="0" width="25" height="15" fill="#e74c3c"/>
+    <rect x="12" y="60" width="76" height="55" fill="#e74c3c" opacity="0.5"/>
+    <text x="50" y="140" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Production</text>
+    <text x="50" y="155" text-anchor="middle" font-size="9" fill="#7f8c8d">1,000+ L</text>
+    <text x="50" y="168" text-anchor="middle" font-size="9" fill="#e74c3c">10¹¹+ cells</text>
+  </g>
+
+  <!-- Timeline -->
+  <text x="35" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 0</text>
+  <text x="150" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 3</text>
+  <text x="260" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 6</text>
+  <text x="385" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 9</text>
+  <text x="510" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 12</text>
+  <text x="640" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 15+</text>
+
+  <defs>
+    <marker id="arr3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#bdc3c7"/>
+    </marker>
+  </defs>
+</svg>
 ```
-Thaw vial    →    T-flask    →    Spinner flask    →    Small reactor    →    Production reactor
-(~1 million)     (~10 million)    (~100 million)        (~1 billion)          (~100 billion+)
-```
-
-Each step increases volume by ~10×. A typical seed train might be:
-
-- Day 0: Thaw 1 mL vial (10⁶ cells)
-- Day 3: Transfer to 100 mL flask
-- Day 6: Transfer to 1 L spinner
-- Day 9: Transfer to 10 L reactor
-- Day 12: Transfer to 100 L reactor
-- Day 15: Transfer to 1,000 L production reactor
 
 ### Cost Impact
 
-The seed train phase:
-- Uses **expensive, small-scale equipment** (research-grade)
-- Requires **manual handling** and skilled labor
-- Consumes **high-quality media** (often pharma-grade)
+The seed train phase ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)):
+
+- Uses **expensive, small-scale equipment** (research-grade, often single-use)
+- Requires **manual handling** and skilled labor ($50-150/hour fully loaded)
+- Consumes **high-quality media** (often pharma-grade at $5-20/L)
 
 This is why **achieving high cell densities** is critical — if you can grow cells to 200 g/L instead of 30 g/L, you need far fewer reactor transfers and less total media.
 
@@ -101,41 +325,168 @@ This is why **achieving high cell densities** is critical — if you can grow ce
 
 Production-scale bioreactors are the heart of cultured meat manufacturing. They must:
 
-1. **Maintain sterility** — Any contamination means losing the entire batch
+1. **Maintain sterility** — Any contamination means losing the entire batch ([$100K-$1M loss](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6918872/))
 2. **Supply oxygen** — Cells need O₂ but are shear-sensitive
 3. **Remove CO₂** — Metabolic waste that acidifies media
-4. **Control temperature** — Typically 37°C for mammalian cells
+4. **Control temperature** — Typically 37°C ± 0.5°C for mammalian cells
 5. **Provide nutrients** — Via media perfusion or batch feeding
+
+```{=html}
+<svg viewBox="0 0 500 350" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
+  <rect width="500" height="350" fill="#f8f9fa" rx="8"/>
+
+  <!-- Title -->
+  <text x="250" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Stirred-Tank Bioreactor</text>
+
+  <!-- Main vessel -->
+  <ellipse cx="250" cy="280" rx="100" ry="30" fill="#bdc3c7"/>
+  <rect x="150" y="80" width="200" height="200" fill="#ecf0f1" stroke="#7f8c8d" stroke-width="3"/>
+  <ellipse cx="250" cy="80" rx="100" ry="30" fill="#ecf0f1" stroke="#7f8c8d" stroke-width="3"/>
+
+  <!-- Media (liquid) -->
+  <rect x="153" y="140" width="194" height="137" fill="#3498db" opacity="0.3"/>
+  <ellipse cx="250" cy="277" rx="97" ry="27" fill="#3498db" opacity="0.3"/>
+
+  <!-- Cells -->
+  <circle cx="180" cy="200" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="220" cy="180" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="260" cy="220" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="300" cy="190" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="200" cy="240" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="280" cy="250" r="4" fill="#e74c3c" opacity="0.8"/>
+  <circle cx="240" cy="210" r="4" fill="#e74c3c" opacity="0.8"/>
+
+  <!-- Impeller shaft -->
+  <rect x="245" y="50" width="10" height="180" fill="#7f8c8d"/>
+
+  <!-- Impeller blades -->
+  <rect x="200" y="200" width="100" height="8" rx="2" fill="#95a5a6"/>
+  <rect x="200" y="160" width="100" height="8" rx="2" fill="#95a5a6"/>
+
+  <!-- Motor -->
+  <rect x="225" y="35" width="50" height="30" rx="5" fill="#2c3e50"/>
+  <text x="250" y="55" text-anchor="middle" font-size="10" fill="white">Motor</text>
+
+  <!-- Sparger (air inlet) -->
+  <circle cx="180" cy="260" r="15" fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="3,2"/>
+  <circle cx="180" cy="260" r="3" fill="#27ae60"/>
+  <line x1="150" y1="260" x2="167" y2="260" stroke="#27ae60" stroke-width="2"/>
+
+  <!-- Labels -->
+  <g transform="translate(370, 80)">
+    <rect x="0" y="0" width="120" height="160" fill="white" opacity="0.9" rx="5"/>
+    <text x="60" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#2c3e50">Key Components</text>
+    <circle cx="15" cy="40" r="5" fill="#7f8c8d"/>
+    <text x="25" y="44" font-size="10" fill="#2c3e50">Impeller (mixing)</text>
+    <circle cx="15" cy="65" r="5" fill="#27ae60"/>
+    <text x="25" y="69" font-size="10" fill="#2c3e50">Sparger (O₂ in)</text>
+    <circle cx="15" cy="90" r="5" fill="#3498db" opacity="0.5"/>
+    <text x="25" y="94" font-size="10" fill="#2c3e50">Media</text>
+    <circle cx="15" cy="115" r="5" fill="#e74c3c"/>
+    <text x="25" y="119" font-size="10" fill="#2c3e50">Cells</text>
+    <text x="60" y="145" text-anchor="middle" font-size="9" fill="#7f8c8d">37°C, pH 7.2-7.4</text>
+  </g>
+
+  <!-- Ports -->
+  <rect x="135" y="100" width="20" height="10" fill="#f39c12"/>
+  <text x="90" y="108" font-size="9" fill="#7f8c8d">Media in →</text>
+
+  <rect x="135" y="240" width="20" height="10" fill="#9b59b6"/>
+  <text x="80" y="248" font-size="9" fill="#7f8c8d">Harvest →</text>
+</svg>
+```
 
 ### Bioreactor Types
 
-| Type | Description | Scale | Cost Range |
-|------|-------------|-------|------------|
-| **Stirred-tank** | Traditional design with impeller mixing | 1-20,000 L | $50-500/L (pharma) |
-| **Air-lift** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L |
-| **Packed-bed** | Cells grow on scaffolds, media flows through | 10-1,000 L | $100-300/L |
-| **Hollow-fiber** | Cells grow in porous tubes | 1-100 L | $200-1,000/L |
-| **Custom food-grade** | Simplified designs for food production | 1,000-100,000 L | $10-50/L (target) |
+| Type | Description | Scale | Cost Range | Source |
+|------|-------------|-------|------------|--------|
+| **Stirred-tank** | Traditional design with impeller mixing | 1-20,000 L | $50-500/L (pharma) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
+| **Air-lift** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| **Packed-bed** | Cells grow on scaffolds, media flows through | 10-1,000 L | $100-300/L | [Allan et al. 2019](https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2019.00044/full) |
+| **Custom food-grade** | Simplified designs for food production | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
 
 ::: {.callout-important}
-**This is a pivotal cost driver.** Pharma-grade stainless steel bioreactors cost $50-500/L. If cultured meat can use simplified food-grade designs (similar to beer brewing), costs could drop to $10-50/L — a 10× reduction.
+**This is a pivotal cost driver.** Pharma-grade stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)). If cultured meat can use simplified food-grade designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)), costs could drop by 10×.
 :::
 
 ### Batch vs. Perfusion
 
-**Batch mode:** Fill reactor, grow cells, harvest everything, clean, repeat.
-- Simpler operation
-- Lower yields (cells exhaust nutrients)
-- 5-10 day cycles
+```{=html}
+<svg viewBox="0 0 650 200" style="width: 100%; max-width: 650px; margin: 1.5rem auto; display: block;">
+  <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
 
-**Perfusion mode:** Continuously add fresh media and remove spent media while cells grow.
-- Higher cell densities (100-200+ g/L possible)
-- More complex operation
-- Continuous production possible
+  <!-- Batch Mode -->
+  <g transform="translate(20, 20)">
+    <text x="130" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Batch Mode</text>
+
+    <!-- Reactor stages -->
+    <rect x="20" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
+    <rect x="22" y="70" width="46" height="22" fill="#3498db" opacity="0.4"/>
+    <text x="45" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Fill</text>
+
+    <text x="85" y="65" font-size="14" fill="#bdc3c7">→</text>
+
+    <rect x="100" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#27ae60" stroke-width="2"/>
+    <rect x="102" y="55" width="46" height="37" fill="#e74c3c" opacity="0.4"/>
+    <text x="125" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Grow</text>
+
+    <text x="165" y="65" font-size="14" fill="#bdc3c7">→</text>
+
+    <rect x="180" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#f39c12" stroke-width="2"/>
+    <rect x="182" y="40" width="46" height="52" fill="#e74c3c" opacity="0.6"/>
+    <text x="205" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Harvest all</text>
+
+    <!-- Stats -->
+    <text x="130" y="145" text-anchor="middle" font-size="9" fill="#27ae60">✓ Simple operation</text>
+    <text x="130" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ 30-50 g/L max density</text>
+    <text x="130" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">5-10 day cycles</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="325" y1="30" x2="325" y2="180" stroke="#ddd" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <!-- Perfusion Mode -->
+  <g transform="translate(340, 20)">
+    <text x="140" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Perfusion Mode</text>
+
+    <!-- Continuous reactor -->
+    <rect x="70" y="35" width="140" height="70" rx="8" fill="#ecf0f1" stroke="#9b59b6" stroke-width="2"/>
+    <rect x="75" y="45" width="130" height="55" fill="#e74c3c" opacity="0.5"/>
+
+    <!-- Flow arrows -->
+    <path d="M50 70 L70 70" stroke="#3498db" stroke-width="3" marker-end="url(#arr4)"/>
+    <text x="35" y="60" font-size="8" fill="#3498db">Fresh</text>
+    <text x="35" y="72" font-size="8" fill="#3498db">media</text>
+
+    <path d="M210 55 L235 55" stroke="#f39c12" stroke-width="3" marker-end="url(#arr4)"/>
+    <text x="245" y="50" font-size="8" fill="#f39c12">Spent</text>
+    <text x="245" y="62" font-size="8" fill="#f39c12">media</text>
+
+    <path d="M210 85 L235 85" stroke="#e74c3c" stroke-width="3" marker-end="url(#arr4)"/>
+    <text x="245" y="80" font-size="8" fill="#e74c3c">Harvest</text>
+    <text x="245" y="92" font-size="8" fill="#e74c3c">cells</text>
+
+    <!-- Stats -->
+    <text x="140" y="130" text-anchor="middle" font-size="9" fill="#27ae60">✓ 100-200+ g/L density</text>
+    <text x="140" y="145" text-anchor="middle" font-size="9" fill="#27ae60">✓ Continuous production</text>
+    <text x="140" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ Complex operation</text>
+    <text x="140" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">Higher media usage</text>
+  </g>
+
+  <defs>
+    <marker id="arr4" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="currentColor"/>
+    </marker>
+  </defs>
+</svg>
+```
 
 The **media turnover** parameter in our model captures this:
-- Turnover = 1: Batch mode (use same media throughout)
+
+- Turnover = 1: Batch mode (same media throughout)
 - Turnover = 5-10: Perfusion (replace media multiple times)
+
+Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/)).
 
 ---
 
@@ -145,43 +496,37 @@ The **media turnover** parameter in our model captures this:
 
 Cell culture media contains everything cells need to grow:
 
-| Component | Function | Cost Driver |
-|-----------|----------|-------------|
-| **Amino acids** | Building blocks for proteins | Hydrolysates vs. pure amino acids |
-| **Glucose** | Energy source | Commodity, cheap |
-| **Vitamins** | Metabolic cofactors | B-complex, etc. |
-| **Minerals/salts** | Osmotic balance, enzyme function | Cheap |
-| **Lipids** | Cell membrane building | Moderate |
-| **Growth factors** | Signaling proteins (FGF, IGF, TGF-β) | **MAJOR COST DRIVER** |
-| **Serum** (if used) | Complex supplement | Very expensive, ethical issues |
+| Component | Function | Cost Driver | Source |
+|-----------|----------|-------------|--------|
+| **Amino acids** | Building blocks for proteins | Hydrolysates vs. pure amino acids | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
+| **Glucose** | Energy source | Commodity (~$0.50/kg) | Market data |
+| **Vitamins** | Metabolic cofactors | B-complex, etc. | |
+| **Minerals/salts** | Osmotic balance, enzyme function | Cheap (<$0.10/L) | |
+| **Lipids** | Cell membrane building | Moderate | |
+| **Growth factors** | Signaling proteins (FGF, IGF, TGF-β) | **55-95% of media cost at research scale** | [Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/) |
 
 ### The Serum-Free Challenge
 
 Traditional cell culture uses **fetal bovine serum (FBS)** — a complex mixture that provides growth factors, hormones, and attachment proteins. Problems:
-- **Expensive**: $200-600/L
-- **Variable**: Batch-to-batch inconsistency
-- **Ethical**: Defeats purpose of avoiding animal slaughter
-- **Limited supply**: Cannot scale with industry
 
-The cultured meat industry **must** use serum-free media. This requires:
-- Identifying which growth factors are essential
-- Producing those factors at scale
-- Optimizing formulations for each cell type
+- **Expensive**: $200-1,000/L depending on grade ([Sigma-Aldrich pricing](https://www.sigmaaldrich.com/))
+- **Variable**: Batch-to-batch inconsistency
+- **Ethical**: Derived from fetal calves — defeats purpose of avoiding animal slaughter
+- **Limited supply**: ~500,000 L/year globally ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/))
+
+The cultured meat industry **must** use serum-free media. All approved cultured meat products to date use serum-free formulations ([UPSIDE Foods](https://www.upsidefoods.com/), [GOOD Meat](https://www.goodmeat.co/)).
 
 ### Hydrolysates: The Big Win for Amino Acids
 
-**Hydrolysates** are enzymatically digested proteins from plants (soy, wheat) or yeast. They provide:
-- Complete amino acid profiles
-- Some peptides and growth-promoting factors
-- Food-grade status
+**Hydrolysates** are enzymatically digested proteins from plants (soy, wheat) or yeast. They provide complete amino acid profiles at food-grade prices:
 
-| Media Type | Cost ($/L) | Status |
+| Media Type | Cost ($/L) | Source |
 |------------|-----------|--------|
-| Pharma-grade amino acids | $1.00 - $4.00 | Current standard |
-| Hydrolysate-based | $0.20 - $1.20 | Validated for many cell types |
+| Pharma-grade amino acids | $1.00 - $4.00 | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
+| Hydrolysate-based | $0.20 - $1.20 | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
 
 ::: {.callout-tip}
-**Key insight:** Hydrolysates can reduce amino acid costs by 70-90%. This is why the "P(Hydrolysates)" parameter in our model has such a large impact.
+**Key insight:** Hydrolysates can reduce amino acid costs by 70-90%. Multiple studies have validated their use for muscle cell culture ([Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)).
 :::
 
 ---
@@ -190,44 +535,84 @@ The cultured meat industry **must** use serum-free media. This requires:
 
 ### What Are Growth Factors?
 
-**Growth factors** are signaling proteins that tell cells to:
-- **Proliferate** (divide and multiply)
-- **Differentiate** (become muscle, fat, etc.)
-- **Survive** (avoid programmed cell death)
+**Growth factors** are signaling proteins that tell cells to proliferate and differentiate. They bind to cell surface receptors and trigger intracellular cascades:
 
-Key growth factors for cultured meat:
+```{=html}
+<svg viewBox="0 0 500 180" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
+  <rect width="500" height="180" fill="#f8f9fa" rx="8"/>
 
-| Factor | Function | Current Price | Target Price |
-|--------|----------|---------------|--------------|
-| **FGF-2** (bFGF) | Proliferation, maintain stemness | ~$50,000/g | $1-10/g |
-| **IGF-1** | Proliferation, differentiation | ~$10,000/g | $1-10/g |
-| **TGF-β** | Differentiation, ECM production | ~$1,000,000/g | $10-100/g |
-| **EGF** | Proliferation | ~$5,000/g | $1-10/g |
+  <!-- Cell membrane -->
+  <rect x="50" y="80" width="400" height="20" fill="#f39c12" opacity="0.3" rx="10"/>
+  <text x="250" y="94" text-anchor="middle" font-size="10" fill="#7f8c8d">Cell Membrane</text>
+
+  <!-- Outside label -->
+  <text x="250" y="30" text-anchor="middle" font-size="11" fill="#2c3e50">Outside Cell (media)</text>
+
+  <!-- Inside label -->
+  <text x="250" y="140" text-anchor="middle" font-size="11" fill="#2c3e50">Inside Cell (cytoplasm)</text>
+
+  <!-- Growth factor -->
+  <circle cx="100" cy="50" r="15" fill="#9b59b6"/>
+  <text x="100" y="55" text-anchor="middle" font-size="9" fill="white">GF</text>
+
+  <!-- Receptor -->
+  <rect x="90" y="65" width="20" height="50" fill="#e74c3c" rx="3"/>
+  <text x="100" y="160" text-anchor="middle" font-size="9" fill="#7f8c8d">Receptor</text>
+
+  <!-- Arrow to signal -->
+  <path d="M120 110 L160 130" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+
+  <!-- Signal cascade -->
+  <circle cx="180" cy="140" r="10" fill="#27ae60"/>
+  <text x="180" y="144" text-anchor="middle" font-size="8" fill="white">1</text>
+  <path d="M195 140 L220 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <circle cx="240" cy="140" r="10" fill="#27ae60"/>
+  <text x="240" y="144" text-anchor="middle" font-size="8" fill="white">2</text>
+  <path d="M255 140 L280 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <circle cx="300" cy="140" r="10" fill="#27ae60"/>
+  <text x="300" y="144" text-anchor="middle" font-size="8" fill="white">3</text>
+
+  <!-- Result -->
+  <path d="M315 140 L360 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <rect x="365" y="125" width="80" height="30" fill="#3498db" rx="5"/>
+  <text x="405" y="145" text-anchor="middle" font-size="10" fill="white">PROLIFERATE</text>
+
+  <!-- Label -->
+  <text x="240" y="170" text-anchor="middle" font-size="9" fill="#7f8c8d">Signal cascade → Gene expression</text>
+
+  <defs>
+    <marker id="arr5" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#27ae60"/>
+    </marker>
+  </defs>
+</svg>
+```
+
+### Key Growth Factors for Cultured Meat
+
+| Factor | Function | Current Price | Target Price | Source |
+|--------|----------|---------------|--------------|--------|
+| **FGF-2** (bFGF) | Proliferation, maintain stemness | ~$50,000/g | $1-10/g | [CEN 2023](https://cen.acs.org/food/food-science/Inside-effort-cut-cost-cultivated/101/i33) |
+| **IGF-1** | Proliferation, differentiation | ~$10,000/g | $1-10/g | [Sigma pricing](https://www.sigmaaldrich.com/) |
+| **TGF-β** | Differentiation, ECM production | ~$1,000,000/g | $10-100/g | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| **EGF** | Proliferation | ~$5,000/g | $1-10/g | Market data |
 
 ### Why Are They So Expensive?
 
-Current growth factors are produced for **medical research** markets where:
-- Volumes are tiny (milligrams)
-- Purity requirements are extreme
-- Customers pay premium prices
-
-The cultured meat industry needs:
-- **Tonnes** per year (not milligrams)
-- **Food-grade** purity (not medical-grade)
-- **$1-10/g** prices (not $10,000-1,000,000/g)
+Current growth factors are produced for **medical research** markets where volumes are tiny (milligrams), purity requirements are extreme, and customers pay premium prices. The cultured meat industry needs **tonnes** per year at food-grade purity ([Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/)).
 
 ### Solutions Being Developed
 
-| Approach | Mechanism | Status | Target Price |
-|----------|-----------|--------|--------------|
-| **Precision fermentation** | E. coli/yeast produce GFs at scale | Scaling up | $10-100/g |
-| **Plant molecular farming** | Transgenic plants express GFs | Pilots (BioBetter) | $1-10/g |
-| **Autocrine cell lines** | Engineer cells to make their own GFs | [Proof of concept](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) | ~$0/g |
-| **Small molecule substitutes** | Chemicals that activate GF receptors | Research | <$1/g |
-| **Thermostable variants** | FGF2-G3 with 20-day half-life | [Commercial](https://www.enantis.com/) | Reduces usage |
+| Approach | Mechanism | Status | Target Price | Source |
+|----------|-----------|--------|--------------|--------|
+| **Precision fermentation** | E. coli/yeast produce GFs at scale | Scaling up | $10-100/g | [GFI 2024](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| **Plant molecular farming** | Transgenic plants express GFs | Pilots | $1-10/g | [BioBetter](https://www.foodnavigator.com/Article/2022/09/12/biobetter-s-growth-factor-innovation-cuts-cost-of-cultured-meat/) |
+| **Autocrine cell lines** | Engineer cells to make their own GFs | Proof of concept | ~$0/g | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/) |
+| **Small molecule substitutes** | Chemicals that activate GF receptors | Research | <$1/g | [Stout et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Thermostable variants** | FGF2-G3 with 20-day half-life | Commercial | Reduces usage | [Enantis](https://www.enantis.com/) |
 
 ::: {.callout-important}
-**This is THE pivotal uncertainty.** If any of these approaches succeeds at scale, growth factors become negligible (<$1/kg chicken). If none succeed, growth factors could be >$100/kg — making cultured meat uneconomic.
+**This is THE pivotal uncertainty.** If any of these approaches succeeds at scale, growth factors become negligible (<$1/kg chicken). If none succeed, growth factors could be >$100/kg — making cultured meat uneconomic at scale. See [GFI's analysis](https://gfi.org/science/the-science-of-cultivated-meat/) for detailed technical roadmaps.
 :::
 
 ---
@@ -236,26 +621,27 @@ The cultured meat industry needs:
 
 ### Cell Harvest
 
-After cells reach target density, they're separated from the media:
-- **Centrifugation**: Spin to separate cells
-- **Filtration**: Filter through membranes
-- **Settling**: Allow cells to settle naturally
+After cells reach target density, they're separated from the media using standard bioprocessing techniques ([Rathore et al. 2020](https://pubmed.ncbi.nlm.nih.gov/32115323/)):
 
-The harvested cells form a **cell paste** — essentially a slurry of muscle cells.
+- **Centrifugation**: Spin to separate cells (~$0.10-0.50/kg)
+- **Filtration**: Tangential flow filtration through membranes
+- **Settling**: Allow cells to settle naturally (slowest but cheapest)
 
 ### Forming Product (Downstream Processing)
 
 For **unstructured products** (ground meat, nuggets):
+
 - Mix cell paste with binders, fats, flavors
-- Form into shapes
+- Form into shapes using standard food equipment
 - Minimal processing needed
-- **Cost: ~$0-5/kg**
+- **Cost: ~$2-5/kg** ([Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3))
 
 For **structured products** (chicken breast, steak):
-- Requires scaffolds or 3D printing
-- Cells must organize into aligned fibers
+
+- Requires scaffolds or 3D printing to organize fibers
+- Cells must align into muscle-like structures
 - Much more complex
-- **Cost: ~$5-20/kg additional**
+- **Cost: ~$5-20/kg additional** ([GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/))
 
 ::: {.callout-note}
 Our model includes an optional "downstream processing" toggle that adds $2-15/kg for structured products.
@@ -265,54 +651,77 @@ Our model includes an optional "downstream processing" toggle that adds $2-15/kg
 
 ## Cost Breakdown Summary
 
-Putting it all together, here's how costs typically break down:
+```{=html}
+<svg viewBox="0 0 600 300" style="width: 100%; max-width: 600px; margin: 1.5rem auto; display: block;">
+  <rect width="600" height="300" fill="#f8f9fa" rx="8"/>
 
+  <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
+
+  <!-- Stacked bar -->
+  <rect x="50" y="50" width="400" height="50" fill="#27ae60"/>
+  <text x="250" y="82" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Variable Costs (Media, GFs, etc.): 40-70%</text>
+
+  <rect x="50" y="100" width="400" height="35" fill="#e74c3c"/>
+  <text x="250" y="123" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Capital Costs (Bioreactors): 15-35%</text>
+
+  <rect x="50" y="135" width="400" height="30" fill="#f39c12"/>
+  <text x="250" y="155" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Fixed OPEX (Labor, etc.): 10-25%</text>
+
+  <!-- Breakdown detail -->
+  <g transform="translate(480, 50)">
+    <rect x="0" y="0" width="110" height="120" fill="white" stroke="#ddd" rx="5"/>
+    <text x="55" y="18" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Variable Cost Split</text>
+    <rect x="10" y="28" width="90" height="12" fill="#27ae60"/>
+    <text x="55" y="38" text-anchor="middle" font-size="8" fill="white">Media 30-50%</text>
+    <rect x="10" y="42" width="90" height="12" fill="#9b59b6"/>
+    <text x="55" y="52" text-anchor="middle" font-size="8" fill="white">Growth Factors*</text>
+    <rect x="10" y="56" width="90" height="12" fill="#3498db"/>
+    <text x="55" y="66" text-anchor="middle" font-size="8" fill="white">Micros 5-15%</text>
+    <rect x="10" y="70" width="90" height="12" fill="#7f8c8d"/>
+    <text x="55" y="80" text-anchor="middle" font-size="8" fill="white">Other 5-10%</text>
+    <text x="55" y="100" text-anchor="middle" font-size="8" fill="#9b59b6">*0-60% depending</text>
+    <text x="55" y="112" text-anchor="middle" font-size="8" fill="#9b59b6">on technology</text>
+  </g>
+
+  <!-- Key levers -->
+  <text x="50" y="195" font-size="12" font-weight="bold" fill="#2c3e50">Key Cost Reduction Levers:</text>
+
+  <circle cx="65" cy="220" r="8" fill="#27ae60"/>
+  <text x="80" y="224" font-size="10" fill="#2c3e50">Hydrolysates → -30-50% media cost</text>
+
+  <circle cx="65" cy="245" r="8" fill="#9b59b6"/>
+  <text x="80" y="249" font-size="10" fill="#2c3e50">Cheap GFs → -50-90% of GF cost (PIVOTAL)</text>
+
+  <circle cx="65" cy="270" r="8" fill="#3498db"/>
+  <text x="80" y="274" font-size="10" fill="#2c3e50">High cell density → -50-80% media volume</text>
+
+  <circle cx="350" cy="220" r="8" fill="#e74c3c"/>
+  <text x="365" y="224" font-size="10" fill="#2c3e50">Food-grade reactors → -50-80% CAPEX</text>
+
+  <circle cx="350" cy="245" r="8" fill="#f39c12"/>
+  <text x="365" y="249" font-size="10" fill="#2c3e50">Scale (larger plants) → -30-50% fixed costs</text>
+</svg>
 ```
-                    ┌─────────────────────────────────────────────┐
-                    │          TOTAL UNIT COST ($/kg)             │
-                    ├─────────────────────────────────────────────┤
-                    │                                             │
-  Variable ────────►│  Media + Growth Factors + Micros + Other   │◄── 40-70%
-  Costs             │  (scales with production volume)            │
-                    │                                             │
-                    ├─────────────────────────────────────────────┤
-                    │                                             │
-  Capital ─────────►│  Bioreactors + Facility (annualized)       │◄── 15-35%
-  Costs             │  (fixed, spread over annual output)         │
-                    │                                             │
-                    ├─────────────────────────────────────────────┤
-                    │                                             │
-  Fixed ───────────►│  Labor + Maintenance + Overhead            │◄── 10-25%
-  OPEX              │  (scales with plant size, not production)   │
-                    │                                             │
-                    └─────────────────────────────────────────────┘
-```
 
-### Key Levers for Cost Reduction
-
-| Lever | Impact | Feasibility |
-|-------|--------|-------------|
-| **Hydrolysates for amino acids** | -30-50% of media cost | High (validated) |
-| **Cheap growth factors** | -50-90% of GF cost | Uncertain (pivotal) |
-| **High cell density** | -50-80% of media volume | Medium (research needed) |
-| **Food-grade reactors** | -50-80% of CAPEX | Medium (engineering) |
-| **Scale (larger plants)** | -30-50% of fixed costs | High (capital dependent) |
+Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3), [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/).
 
 ---
 
 ## Further Resources
 
-### Video Explainers
+### Video & Process Explainers
 
-- [Good Food Institute: How Cultivated Meat is Made](https://www.youtube.com/watch?v=8jVy-QF7VqE) (5 min overview)
-- [UPSIDE Foods factory tour](https://www.youtube.com/watch?v=HuVudZvOz0o) (inside a real facility)
-- [Mosa Meat production process](https://www.youtube.com/watch?v=1H_R-y-QYZE) (detailed technical)
+- [Good Food Institute: What is Cultivated Meat?](https://gfi.org/cultivated/) — Interactive overview with visuals
+- [UPSIDE Foods: Our Process](https://upsidefoods.com/innovation) — How their EPIC facility works
+- [Mosa Meat: How We Make Real Meat](https://mosameat.com/growing-beef) — Cell-to-burger process explained
+- [PBS News Hour: How 'Lab-Grown' Meat is Made](https://www.pbs.org/video/lab-meat-1703711827/) — Independent documentary
 
-### Academic Papers
+### Academic Papers (Key Sources)
 
-- [Risner et al. (2021) - Preliminary TEA of Cultured Meat](https://www.mdpi.com/2304-8158/10/1/3) — UC Davis cost model
-- [Humbird (2021) - Scale-Up Economics of Cultured Meat](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent analysis
-- [GFI State of the Industry Report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) — Annual industry overview
+- [Risner et al. (2021) - "Preliminary Techno-Economic Assessment of Animal Cell-Based Meat"](https://www.mdpi.com/2304-8158/10/1/3) — UC Davis cost model
+- [Humbird (2021) - "Scale-Up Economics of Cultured Meat"](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent TEA analysis
+- [Stout et al. (2022) - "Immortalized Chicken Cells"](https://www.nature.com/articles/s43016-022-00658-w) — Spontaneous immortalization in avian cells
+- [GFI State of the Industry Report 2024](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) — Annual industry overview
 
 ### Interactive Tools
 
