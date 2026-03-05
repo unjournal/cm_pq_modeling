@@ -82,6 +82,20 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 
 Hydrolysates cost less because they're produced from commodity feedstocks via enzymatic digestion, rather than synthetic chemistry or purification.
 
+<details>
+<summary>Is $/L meaningful if density varies?</summary>
+
+Yes. **Media cost ($/L)** refers to the cost of preparing one liter of complete growth medium — the liquid that fills the bioreactor. This cost is relatively fixed for a given formulation, regardless of how many cells you eventually grow in it.
+
+**What varies is $/kg meat**, which depends on:
+
+- How dense the cells grow (cell density, g/L)
+- How many times you replace the media (turnover)
+
+A $1/L medium costs **$60/kg meat** at 50 g/L density × 3 turnover, but only **$15/kg meat** at 200 g/L × 1 turnover. The $/L is the input; $/kg is the output.
+
+</details>
+
 #### Media Cost per kg at Different Cell Densities
 
 Since both $/L and cell density matter, here's how they combine (assuming turnover = 3):
@@ -100,7 +114,17 @@ Since both $/L and cell density matter, here's how they combine (assuming turnov
 <details>
 <summary>2b. Growth Factor Cost</summary>
 
-Growth factors (FGF-2, IGF-1, TGF-β) are signaling proteins that tell cells to proliferate. They are the most price-volatile component:
+Growth factors are signaling proteins that tell cells to proliferate. They are the most price-volatile component.
+
+**Key growth factors used in cultured meat:**
+
+| Abbreviation | Full name | Function | Why it's needed |
+|--------------|-----------|----------|-----------------|
+| **FGF-2** | Fibroblast Growth Factor 2 | Promotes cell proliferation | Keeps cells dividing; prevents differentiation |
+| **IGF-1** | Insulin-like Growth Factor 1 | Cell growth and survival | Supports metabolism and prevents cell death |
+| **TGF-β** | Transforming Growth Factor β | Differentiation control | Triggers muscle fiber formation at end of culture |
+
+**Growth factor cost equation:**
 
 $$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg meat}} \times \underbrace{P_{\text{GF}}}_{\text{\$/gram}}$$
 
@@ -125,9 +149,17 @@ The dashboard provides **two controls** for growth factor prices that work toget
 
 #### The Progress Slider Formula
 
+The slider interpolates between current prices (0%) and target prices (100%):
+
 $$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
 
-**Why 0.01?** This base was chosen so that at 100% progress, prices are 1/100th of current prices — roughly the gap between today's research prices and [industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/):
+**How to read this formula:**
+
+- $P_{\text{current}}$ = today's growth factor prices (the starting point)
+- $\text{progress}$ = a value from 0 to 1 (the slider position, where 0 = 0% and 1 = 100%)
+- $(0.01)^{\text{progress}}$ = the **price multiplier**, which shrinks as progress increases
+
+**Why the base 0.01?** We chose 0.01 because industry targets are roughly **100× cheaper** than current prices. Since $0.01^1 = 0.01 = 1/100$, setting progress to 100% gives a 100× price reduction — matching [GFI's target estimates](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/):
 
 - Current FGF-2: ~$50,000/g → Target: ~$500/g (100× reduction)
 - Current TGF-β: ~$1,000,000/g → Target: ~$10,000/g (100× reduction)
@@ -227,12 +259,16 @@ Each technology's adoption probability is adjusted based on the maturity draw:
 
 $$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
 
-Where:
+**Variable definitions:**
 
-- $P_{\text{base}}$ = base adoption probability for that technology (e.g., 0.75 for hydrolysates)
-- $k$ = sensitivity coefficient (how much maturity affects this technology; typically 0.20–0.30)
-- $m$ = maturity factor drawn for this simulation (0–1)
-- $\text{bound}(\cdot, 0, 1)$ = clips result to valid probability range [0, 1]
+| Variable | Meaning | Typical values |
+|----------|---------|----------------|
+| $P_{\text{base}}$ | Base adoption probability set by the user via slider | 0.50–0.75 |
+| $k$ | **Sensitivity coefficient** — how strongly maturity affects this technology's adoption | 0.20–0.30 |
+| $m$ | **Maturity factor** — overall industry development level, drawn from Beta distribution | 0–1 (mean ~0.5) |
+| $\text{bound}(\cdot, 0, 1)$ | Clips the result to valid probability range [0, 1] | — |
+
+**Intuition for $k$:** When $k = 0.25$, a one-standard-deviation shift in maturity ($\Delta m = 0.2$) changes the adoption probability by $0.25 \times 0.2 = 0.05$ (5 percentage points).
 
 **Example:** If hydrolysates have $P_{\text{base}} = 0.75$ and $k = 0.25$:
 
@@ -497,13 +533,13 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 | Recommendation | What it means | Why |
 |----------------|---------------|-----|
-| Use for **relative comparisons** | Compare scenarios: "How much does cheap GF technology reduce costs?" rather than "Costs will be $X/kg" | Parameter uncertainty is wide; the *difference* between scenarios is more robust than absolute values |
+| Use for **relative comparisons** | Compare scenarios (e.g., "Cheap GF tech reduces costs by 40%") rather than absolute predictions ("Costs will be $8.50/kg") | When parameters are uncertain, the *difference* between scenarios is more stable than the absolute baseline — see [example below](#what-relative-comparisons-means-in-practice) |
 | Focus on **probability thresholds** | Ask "What's P(cost < $10/kg)?" not "What's the expected cost?" | Probabilities integrate over uncertainty and map to decisions ("Is this worth pursuing?") |
 | **Validate parameters** with experts | Before publishing, check that ranges match current industry knowledge | Published literature lags industry by 1–3 years; some parameters (GF costs) change rapidly |
 | **Report uncertainty ranges** | Always show 90% CI, not just median | Wide intervals reflect genuine uncertainty; suppressing them gives false confidence |
 | **Explore correlated scenarios** | Use the [maturity slider](#maturity-factor) to see "good world" vs "bad world" bundles | Technologies, financing, and supply chains develop together — independent draws miss this |
 
-**What "relative comparisons" means in practice:**
+#### What "relative comparisons" means in practice {#what-relative-comparisons-means-in-practice}
 
 ✅ **Good use:** "Achieving 150 g/L cell density instead of 50 g/L would reduce costs by 40–60%"
 
