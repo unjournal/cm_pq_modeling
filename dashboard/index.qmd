@@ -32,50 +32,118 @@ This model is under active development. We welcome your comments and suggestions
 
 <script>
 function toggleHypothesis() {
-  const frame = document.querySelector('.annotator-frame');
   const btn = document.getElementById('toggle-hypothesis');
+  // Hypothesis creates a sidebar with class 'hypothesis-sidebar' or as an annotator frame
+  // Try multiple selectors to find the sidebar
+  const selectors = [
+    '.hypothesis-sidebar',
+    '.annotator-frame',
+    'hypothesis-sidebar',
+    '[class*="hypothesis"][class*="sidebar"]',
+    'iframe[src*="hypothes.is"]'
+  ];
+
+  let frame = null;
+  for (const sel of selectors) {
+    frame = document.querySelector(sel);
+    if (frame) break;
+  }
+
   if (frame) {
-    if (frame.style.display === 'none') {
+    if (frame.style.display === 'none' || frame.classList.contains('hypothesis-hidden')) {
       frame.style.display = '';
+      frame.classList.remove('hypothesis-hidden');
       btn.textContent = 'Hide Annotations Sidebar';
     } else {
       frame.style.display = 'none';
+      frame.classList.add('hypothesis-hidden');
       btn.textContent = 'Show Annotations Sidebar';
     }
+  } else {
+    // If we can't find the sidebar, it may not be loaded yet
+    // Try using Hypothesis API if available
+    if (window.hypothesisConfig) {
+      console.log('Hypothesis config found but sidebar element not located');
+    }
+    btn.textContent = 'Sidebar not found';
+    setTimeout(() => { btn.textContent = 'Hide Annotations Sidebar'; }, 2000);
   }
 }
 
 function toggleFullWidth() {
   const body = document.body;
   const btn = document.getElementById('toggle-fullwidth');
-  const main = document.querySelector('main.content');
+  // Quarto uses different selectors - try multiple
+  const contentSelectors = ['main.content', 'main', '.page-columns', '#quarto-content'];
 
   if (body.classList.contains('fullwidth-mode')) {
     body.classList.remove('fullwidth-mode');
-    if (main) main.style.maxWidth = '';
+    for (const sel of contentSelectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        el.style.maxWidth = '';
+        el.style.width = '';
+      }
+    }
     btn.textContent = 'Expand Content';
   } else {
     body.classList.add('fullwidth-mode');
-    if (main) main.style.maxWidth = '100%';
+    for (const sel of contentSelectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        el.style.maxWidth = '100%';
+        el.style.width = '100%';
+      }
+    }
     btn.textContent = 'Normal Width';
     // Also hide hypothesis when going fullwidth
-    const frame = document.querySelector('.annotator-frame');
-    if (frame) frame.style.display = 'none';
-    document.getElementById('toggle-hypothesis').textContent = 'Show Annotations Sidebar';
+    hideHypothesis();
+  }
+}
+
+function hideHypothesis() {
+  const btn = document.getElementById('toggle-hypothesis');
+  const selectors = [
+    '.hypothesis-sidebar',
+    '.annotator-frame',
+    'hypothesis-sidebar',
+    '[class*="hypothesis"][class*="sidebar"]'
+  ];
+  for (const sel of selectors) {
+    const frame = document.querySelector(sel);
+    if (frame) {
+      frame.style.display = 'none';
+      frame.classList.add('hypothesis-hidden');
+      btn.textContent = 'Show Annotations Sidebar';
+      break;
+    }
   }
 }
 </script>
 
 <style>
-.fullwidth-mode .page-columns {
-  max-width: 100% !important;
-}
-.fullwidth-mode main.content {
+.fullwidth-mode .page-columns,
+.fullwidth-mode #quarto-content,
+.fullwidth-mode main.content,
+.fullwidth-mode main,
+.fullwidth-mode .column-page,
+.fullwidth-mode .column-body,
+.fullwidth-mode .panel-fill,
+.fullwidth-mode .panel-sidebar {
   max-width: 100% !important;
   width: 100% !important;
 }
-.fullwidth-mode .column-page {
+.fullwidth-mode .content {
   max-width: 100% !important;
+}
+/* Hide hypothesis sidebar when in fullwidth mode */
+.fullwidth-mode .hypothesis-sidebar,
+.fullwidth-mode .annotator-frame,
+.fullwidth-mode hypothesis-sidebar {
+  display: none !important;
+}
+.hypothesis-hidden {
+  display: none !important;
 }
 </style>
 ```
@@ -802,7 +870,7 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of cultured chicken</strong> (wet weight, unprocessed) in <strong>${targetYear}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce meat in a bioreactor — not retail price, which would include processing, distribution, and margins.
+<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of cultured chicken</strong> (wet weight, unprocessed) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce meat in a bioreactor — not retail price, which would include processing, distribution, and margins.
 <br><br>
 <strong>Why it matters:</strong> If production costs reach <strong>~$10/kg</strong> (comparable to conventional chicken), cultured meat could compete at scale. If costs remain <strong>>$50/kg</strong>, the technology may remain niche. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
 </div>`
