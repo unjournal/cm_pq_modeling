@@ -198,6 +198,25 @@ In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by d
 
 If **any one** succeeds, the industry shifts to the cheap regime. We're asking "will at least one breakthrough work?" — a yes/no question.
 
+<details>
+<summary>Why not model each technology separately?</summary>
+
+**The objection:** "Each breakthrough technology has independent effects on GF cost. Why collapse them into a single binary switch?"
+
+**Our reasoning:**
+
+1. **Substitutes, not complements**: You only need *one* cheap GF source. If autocrine lines work, you don't also need plant farming. Multiple successes don't stack — the first success captures most of the value.
+
+2. **Correlated outcomes**: The technologies share underlying capabilities (protein engineering, regulatory approval for novel food ingredients, scale-up expertise). If one succeeds, others are more likely to succeed too. Treating them as independent would *understate* the probability of at least one working.
+
+3. **Parsimony**: Modeling 4+ independent technologies with separate probabilities, partial success states, and interactions would add many parameters without clear empirical grounding. The binary approach captures the key decision-relevant question: "Will GF costs be a dealbreaker or not?"
+
+**What we lose:** The binary model can't represent "partial success" scenarios where, say, precision fermentation reaches $50/g (10× improvement but not full breakthrough). The progress slider partially addresses this for scenario analysis.
+
+**Alternative approach (not implemented):** A continuous model could sample GF price from a mixture distribution — e.g., 50% chance of $1-100/g, 50% chance of $500-50,000/g. This would be mathematically equivalent but less interpretable.
+
+</details>
+
 </details>
 
 ### 3. Annualized Capital Costs
@@ -335,6 +354,35 @@ The maturity factor captures this "worlds come in bundles" intuition without req
 
 **Limitation:** This approach assumes all technologies develop together. In reality, some might succeed while others fail (e.g., cheap GFs but slow bioreactor scale-up). A more sophisticated model could specify different correlation structures, but this adds complexity without clear empirical grounding.
 
+<details>
+<summary>Could technologies develop independently? (Addressing correlation assumptions)</summary>
+
+**The objection:** "Some forms of technical development might go together, and others less so. For example, growth factor breakthroughs might happen via biotech R&D that has nothing to do with bioreactor manufacturing."
+
+**Valid scenarios this model doesn't capture well:**
+
+| Scenario | What happens | Model behavior |
+|----------|--------------|----------------|
+| GF breakthrough, slow scale-up | Precision fermentation works, but bioreactor suppliers don't materialize | Model assumes correlated — if GFs are cheap, custom reactors are likely |
+| Scale-up success, expensive GFs | Large bioreactors get built, but GF tech stalls | Model assumes correlated — large scale implies cheap GFs |
+| Regional divergence | US gets cheap GFs, EU gets cheap reactors | Model assumes global correlation |
+
+**Why we use a single maturity factor anyway:**
+
+1. **Empirical correlation is plausible**: Companies that solve GF problems often also have bioreactor expertise (vertical integration is common in this industry).
+
+2. **Shared enabling conditions**: Both GF tech and bioreactor scale-up benefit from investor confidence, regulatory clarity, and talent availability — all of which move together.
+
+3. **Parsimony**: Specifying a full correlation matrix (hydrolysates × GFs × reactors × WACC) would require ~10 pairwise correlations with no empirical data to calibrate them.
+
+**Sensitivity check:** Users can explore partially-correlated scenarios by:
+- Setting maturity high but technology probabilities low (tests "scale-up succeeds, tech fails")
+- Setting maturity low but one technology probability high (tests "isolated breakthrough")
+
+This manual exploration partially compensates for the model's correlation structure.
+
+</details>
+
 ### 5. Monte Carlo Simulation
 
 The model runs **30,000 simulations**, each time:
@@ -421,13 +469,21 @@ The model uses two discrete price scenarios, selected by a Bernoulli draw (see [
 
 ### Capital Cost Parameters {#capex-parameters}
 
+This section explains how capital costs (bioreactors, facilities) are calculated. The key equation is:
+
+$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output}}$$
+
+Where Total CAPEX depends on plant size and equipment type, and CRF converts a lump sum to annual payments (see [Section 3](#annualized-capital-costs) for the CRF formula).
+
 #### Reference Scale: Why 20 kTA?
 
 The model defines CAPEX at a **reference scale of 20 kTA** (20,000 metric tons/year), then adjusts for actual plant size using economies of scale. We use 20 kTA because:
 
 1. It matches the scale in [Risner et al. (2021)](https://www.mdpi.com/2304-8158/10/1/3), enabling direct comparison
-2. It represents a plausible first commercial-scale facility
-3. Published cost estimates are most reliable around this scale
+2. It represents a plausible first commercial-scale facility (current pilots are <1 kTA)
+3. Published cost estimates are most reliable around this scale — extrapolating far beyond it introduces large uncertainty
+
+**How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the [economies of scale formula below](#economies-of-scale-the-k-sim-qs-relationship). This is standard practice in chemical engineering cost estimation.
 
 #### Economies of Scale: The $K \sim Q^s$ Relationship
 
@@ -452,6 +508,10 @@ Where:
 The range 0.6–0.9 reflects uncertainty about whether cultured meat will achieve chemical-industry economies (0.6) or remain more modular (0.9).
 
 #### Pharma-Grade vs. Food-Grade Equipment
+
+**Why this matters for CAPEX:** The cultured meat industry emerged from pharmaceutical cell culture, which uses expensive equipment designed for injectable drugs. A key cost question is whether the industry can transition to simpler, cheaper food-grade equipment.
+
+This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation — pharma-grade equipment costs 2–10× more than food-grade, and the **custom reactor ratio** parameter captures this uncertainty.
 
 **Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:
 
