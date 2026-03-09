@@ -140,9 +140,34 @@ This prevents unrealistic scenarios where technology succeeds but financing rema
 - Generating summaries for evaluators
 - Updating dashboard visualizations
 
+## Review & Feedback Workflow
+
+### Hypothesis Integration
+The dashboard includes [Hypothesis](https://hypothes.is/) for inline annotations. Reviewers can comment directly on specific text, and comments are fetched via:
+```bash
+curl "https://api.hypothes.is/api/search?wildcard_uri=https://unjournal.github.io/cm_pq_modeling/*"
+```
+
+### Model Review Report
+A detailed technical review report is maintained at `.private/model_review_report.md` (gitignored). This report:
+- Summarizes the model architecture and equations
+- Tracks Hypothesis comment resolution status
+- Lists areas for external review (prioritized)
+- Provides parameter summary table
+
+Use this report when seeking external feedback or preparing for evaluator review.
+
+### Documentation Structure
+- **index.qmd**: Interactive sliders with inline `<details>` explanations
+- **docs.qmd**: Technical reference with equations, parameter definitions, and methodology
+- **learn.qmd**: Educational content for non-technical readers
+
+When updating the model, ensure docs.qmd stays synchronized with code changes.
+
 ## Sensitivity Considerations
 
 - Private meeting transcripts stored in `.private/` (gitignored)
+- Model review reports stored in `.private/` (gitignored)
 - Some working documents may reference specific evaluator feedback — apply standard Unjournal confidentiality rules
 - Draft Metaculus questions should be reviewed before public posting
 - The repo is PUBLIC - do not commit sensitive content

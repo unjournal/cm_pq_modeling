@@ -10,7 +10,7 @@ format:
 ---
 
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd)
+**Return to:** [Interactive Cost Model](index.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Join Discussion (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)**
 :::
 
 ## Overview
@@ -731,5 +731,5 @@ Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/
 ---
 
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd)
+**Return to:** [Interactive Cost Model](index.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Join Discussion (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)**
 :::

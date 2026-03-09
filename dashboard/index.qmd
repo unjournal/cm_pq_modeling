@@ -10,15 +10,20 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip collapse="true"}
-## Share Your Feedback (click to expand)
+::: {.callout-tip}
+## Join the Discussion
 
-This model is under active development. We welcome your comments and suggestions!
+**[Open Discussion Document (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)** — Comment, suggest edits, and collaborate on model development
+:::
 
-- **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge to open/close)
-- **General feedback**: [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
-- **Questions**: Email [contact@unjournal.org](mailto:contact@unjournal.org)
-- **Audio overview**: [Listen to the Technical Review Report (MP3)](model_review_report.mp3) — 22 min comprehensive walkthrough of model architecture, parameters, and areas for review
+::: {.callout-note collapse="true"}
+## More Ways to Engage (click to expand)
+
+- **Discussion doc**: [Google Doc](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69) — main collaboration space
+- **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge)
+- **GitHub issues**: [Open an issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
+- **Email**: [contact@unjournal.org](mailto:contact@unjournal.org)
+- **Audio overview**: [Technical Review Report (MP3)](model_review_report.mp3) — 22 min walkthrough
 :::
 
 ```{=html}

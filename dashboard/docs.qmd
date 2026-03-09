@@ -10,7 +10,9 @@ format:
 ---
 
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **Prefer audio?** [Listen to Technical Review (MP3)](model_review_report.mp3)
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **Prefer audio?** [Technical Review (MP3)](model_review_report.mp3)
+
+**[Join the Discussion (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)** — Comment on parameters, suggest improvements, collaborate on model development
 :::
 
 ## Overview
@@ -27,6 +29,23 @@ This document provides complete technical documentation for the cultured chicken
 ## Model Formulas {#model-formulas}
 
 This section presents the model structure **top-down**: starting with the final output and unpacking each component.
+
+::: {.callout-note collapse="true"}
+## Quick Reference: All Equations at a Glance
+
+| # | Component | Equation | Key variables |
+|---|-----------|----------|---------------|
+| 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
+| 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + Micros + GFs + Other | — |
+| 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × turnover × $/L | density (g/L), turnover, $/L |
+| 2b | **[Growth Factors](#growth-factor-cost)** | g_GF × P_GF | quantity (g/kg), price ($/g) |
+| 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
+| 3a | **[CRF](#annualized-capital-costs)** | r(1+r)^n / ((1+r)^n - 1) | r=WACC, n=years |
+| 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX_ref × (Q/Q_ref)^s | s=0.6-0.9 |
+| 4 | **[Adoption](#how-maturity-adjusts-adoption-probabilities)** | bound(P_base + k(m-0.5), 0, 1) | k, m (maturity) |
+
+Click any link to jump to the detailed explanation.
+:::
 
 ### 1. Total Unit Cost
 
@@ -246,13 +265,26 @@ $$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
 
 CRF is always higher than just "1/asset_life" because you're also paying interest, not just depreciation.
 
+**Why does the formula look so complicated?**
+
+The formula $\text{CRF} = \frac{r(1+r)^n}{(1+r)^n - 1}$ comes from the math of constant payments over time. Here's the intuition:
+
+1. If you borrowed $100 at 10% interest for 1 year, you'd owe $110 at the end → CRF = 110% (or 1.10)
+2. If you could pay over 2 years with equal payments, each payment is smaller, but you pay more total interest → CRF ≈ 58%
+3. As the loan period gets longer, each payment shrinks, but the total interest paid grows
+4. The formula balances these two effects to give you the constant annual payment
+
+**Numerical example:** At r=10%, n=15 years:
+- CRF = 0.10 × (1.10)^15 / ((1.10)^15 - 1) = 0.10 × 4.18 / 3.18 = **13.1%**
+- A $100M facility costs $13.1M/year to finance
+
 **Why does CRF matter?** It converts a one-time construction cost into an annual charge that gets divided across all kg produced. Higher CRF = higher $/kg.
 
-| WACC ($r$) | Asset Life ($n$) | CRF | Annual payment on $100M |
-|------------|------------------|-----|------------------------|
-| 10% | 15 years | 13.1% | $13.1M/year |
-| 15% | 10 years | 19.9% | $19.9M/year |
-| 20% | 8 years | 26.1% | $26.1M/year |
+| WACC ($r$) | Asset Life ($n$) | CRF | Annual payment on $100M | Source context |
+|------------|------------------|-----|------------------------|----------------|
+| 10% | 15 years | 13.1% | $13.1M/year | Established food company financing |
+| 15% | 10 years | 19.9% | $19.9M/year | Growth-stage company |
+| 20% | 8 years | 26.1% | $26.1M/year | Early-stage / high-risk ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)) |
 
 Higher WACC or shorter asset life → higher annual capital charge → higher $/kg.
 
@@ -426,7 +458,7 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Food-grade micronutrients](learn.qmd#media-composition) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | Commodity vitamins/minerals vs. pharma-grade |
+| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | Commodity vitamins/minerals vs. pharma-grade |
 | [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices | Any breakthrough: autocrine, plant farming, precision fermentation |
 
 ### Process Intensities
@@ -441,16 +473,32 @@ These parameters determine how much media is needed per kg of meat. See [Media C
 
 **Media turnover explained:** In **batch mode** (turnover = 1), the reactor is filled once and cells grow until nutrients deplete. In **perfusion mode** (turnover > 1), fresh media continuously flows in while spent media exits. Perfusion uses more media but achieves higher cell densities.
 
+### Micronutrient Costs {#micronutrient-costs}
+
+Micronutrients (vitamins, minerals, trace elements) are a smaller but still meaningful cost component. The technology switch P(food-grade) determines which price regime applies.
+
+| Grade | Usage (g/kg meat) | Price ($/g) | Cost range ($/kg) | Source |
+|-------|------------------|-------------|-------------------|--------|
+| Pharma-grade | 1.0 – 10.0 | $0.50 – $20 | $0.50 – $200 | [Sigma-Aldrich catalog pricing](https://www.sigmaaldrich.com/) |
+| Food-grade | 0.1 – 2.0 | $0.02 – $2 | $0.002 – $4 | Commodity vitamin suppliers |
+
+**Why the 90% cost reduction?** Pharma-grade micronutrients require:
+- Ultra-high purity (>99.9%) with certificates of analysis
+- Controlled manufacturing environments (GMP)
+- Extensive documentation and traceability
+
+Food-grade uses the same compounds at lower purity standards acceptable for human consumption, often sourced from feed or supplement supply chains.
+
 ### Growth Factor Price Scenarios {#gf-scenarios}
 
 These parameters feed into the [GF Cost equation](#how-gf-cost-feeds-into-total-cost): GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).
 
 The model uses two discrete price scenarios, selected by a Bernoulli draw (see [why binary](#the-binary-cheap-vs-expensive-toggle) above):
 
-| Scenario | Quantity (g/kg) | Price ($/g) | What it represents |
-|----------|----------------|-------------|-------------------|
-| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | At least one breakthrough reaches commercial scale |
-| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Incremental improvements only; no step-change |
+| Scenario | Quantity (g/kg) | Price ($/g) | What it represents | Source |
+|----------|----------------|-------------|-------------------|--------|
+| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | At least one breakthrough reaches commercial scale | [GFI 2024 targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) |
+| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Incremental improvements only; no step-change | [Current research prices](https://cen.acs.org/food/Inside-effort-cut-cost-cultivated/101/i33) |
 
 **Why different quantities too?** Breakthrough technologies often reduce both price and required amount:
 
