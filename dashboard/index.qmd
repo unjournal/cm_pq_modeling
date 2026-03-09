@@ -18,6 +18,7 @@ This model is under active development. We welcome your comments and suggestions
 - **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge to open/close)
 - **General feedback**: [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
 - **Questions**: Email [contact@unjournal.org](mailto:contact@unjournal.org)
+- **Audio overview**: [Listen to the Technical Review Report (MP3)](model_review_report.mp3) — 22 min comprehensive walkthrough of model architecture, parameters, and areas for review
 :::
 
 ```{=html}

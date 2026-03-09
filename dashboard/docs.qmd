@@ -10,7 +10,7 @@ format:
 ---
 
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd)
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **Prefer audio?** [Listen to Technical Review (MP3)](model_review_report.mp3)
 :::
 
 ## Overview
