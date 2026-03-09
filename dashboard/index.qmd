@@ -14,6 +14,8 @@ format:
 ## Join the Discussion
 
 **[Open Discussion Document (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)** — Comment, suggest edits, and collaborate on model development
+
+**[Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture, parameters, and areas for review
 :::
 
 ::: {.callout-note collapse="true"}
