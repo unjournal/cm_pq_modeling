@@ -49,9 +49,20 @@ The model synthesizes insights from:
 - Rethink Priorities forecasts
 - Good Food Institute market reports
 
+## Workshop & Events
+
+::: {.callout-note}
+## Upcoming Workshop
+
+We're organizing a **Cultivated Meat Pivotal Questions Workshop** (April 2026) bringing together TEA researchers, evaluators, and animal welfare funders to discuss cost trajectories and funding implications.
+
+**[Learn more & submit your availability →](https://uj-cm-workshop.netlify.app/)**
+:::
+
 ## Contact
 
 - [The Unjournal](https://unjournal.org)
+- [CM Workshop](https://uj-cm-workshop.netlify.app/) — Upcoming expert workshop (April 2026)
 - [GitHub Repository](https://github.com/unjournal/cm_pq_modeling)
 - [Pivotal Questions Documentation](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
 
