@@ -61,7 +61,7 @@ abbr[title]:hover, .tooltip-term:hover {
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. This page explains the production process in detail and how each step affects production costs.
 
 ```{=html}
-<svg viewBox="0 0 900 180" style="width: 100%; max-width: 900px; margin: 2rem auto; display: block;">
+<svg viewBox="0 0 900 180" style="width: 100%; max-width: 950px; min-height: 200px; margin: 2rem auto; display: block;">
   <!-- Background -->
   <rect width="900" height="180" fill="#f8f9fa" rx="8"/>
 
@@ -135,7 +135,7 @@ abbr[title]:hover, .tooltip-term:hover {
   <!-- Final: Product -->
   <g transform="translate(790, 40)">
     <rect x="10" y="15" width="60" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
-    <text x="40" y="48" text-anchor="middle" font-size="18" fill="white">🍗</text>
+    <text x="40" y="48" text-anchor="middle" font-size="18" fill="white">🥩</text>
     <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Product</text>
   </g>
 
@@ -244,7 +244,24 @@ A **cell bank** is a frozen inventory of starter cells that can be thawed and ex
 
 ### Cost Impact
 
-Cell banking is a **one-time setup cost** that's amortized over many production runs. A well-characterized cell bank can support years of production ([GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/)).
+Cell banking is a **one-time setup cost** that's <abbr title="Spread out over all the production runs that use cells from that bank — like spreading the cost of building a factory over all products made in it">amortized</abbr> over many production runs.
+
+::: {.callout-tip collapse="true"}
+## How Cell Banking Costs Work (click to expand)
+
+Think of it like this:
+- **Initial cost**: $50K-$500K to establish and characterize a cell bank
+- **Cells produced**: Billions of cells per vial, hundreds of vials per bank
+- **Production supported**: Each bank can support **thousands of production batches**
+
+If a bank costs $200K and supports 10,000 batches of 1,000 kg each, the per-kg cost is: $200K ÷ 10M kg = **$0.02/kg**
+
+**This is negligible** compared to media costs ($5-50/kg) and CAPEX ($2-10/kg). Cell banking typically represents **<1% of total production cost** at scale.
+
+The cells aren't "used up" in the traditional sense — each frozen vial is thawed and expanded by ~10 billion-fold before production. The bank only needs replacement when vials run out or cells lose performance.
+:::
+
+A well-characterized cell bank can support years of production ([GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/)).
 
 ::: {.callout-note collapse="true"}
 ## Why the Hayflick Limit Matters (click to expand)
@@ -361,11 +378,23 @@ Cells are progressively expanded from small flasks to larger and larger bioreact
 
 ### Cost Impact
 
-The <abbr title="The sequence of progressively larger vessels used to expand cells from a small vial to production scale">seed train</abbr> phase ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)):
+The <abbr title="The sequence of progressively larger vessels used to expand cells from a small vial to production scale">seed train</abbr> phase typically represents **5-15% of total production cost** at scale ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)):
 
 - Uses **expensive, small-scale equipment** (research-grade, often <abbr title="Disposable plastic bioreactor bags/vessels — avoid cleaning validation but add consumable costs">single-use</abbr>)
 - Requires **manual handling** and skilled labor ($50-150/hour <abbr title="Total cost including salary, benefits, overhead, and facilities — typically 1.5-2× base salary">fully loaded</abbr>)
-- Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing">pharma-grade</abbr> at $5-20/L)
+- Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives">pharma-grade</abbr> at $5-20/L, though many companies now use food-grade)
+
+::: {.callout-note collapse="true"}
+## Are Companies Still Using Pharma-Grade? (click to expand)
+
+**Increasingly, no.** While early R&D relied heavily on pharma-grade media and equipment, most companies scaling up have transitioned to food-grade alternatives:
+
+- **Media**: Food-grade hydrolysates replacing pharma-grade amino acids
+- **Equipment**: Modified food/beverage industry vessels
+- **Growth factors**: Precision fermentation replacing pharma-grade recombinant proteins
+
+This transition is critical for cost reduction. The "pharma-grade" prices often cited in older TEAs ($5-20/L media) are increasingly outdated for companies at scale.
+:::
 
 ::: {.callout-tip collapse="true"}
 ## Why Cell Density is So Important (click to expand)
@@ -393,13 +422,13 @@ Current research densities: 30-50 g/L (batch), 100-200 g/L (perfusion)
 
 ### The Core Technology
 
-Production-scale bioreactors are the heart of cultured meat manufacturing. They must:
+<abbr title="Large enough for commercial production — typically 1,000+ liters, producing tonnes of meat per year">Production-scale</abbr> bioreactors are the heart of cultured meat manufacturing. They must:
 
-1. **Maintain sterility** — Any contamination means losing the entire batch ([$100K-$1M loss](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6918872/))
-2. **Supply oxygen** — Cells need O₂ but are <abbr title="Cells can be damaged by mechanical forces from mixing — a key engineering challenge">shear-sensitive</abbr>
+1. **Maintain sterility** — Any contamination means losing the entire batch (<abbr title="Based on pharma batch failure costs; Kelley 2009 estimates $100K-$1M per failed bioreactor batch depending on scale">$100K-$1M loss</abbr>; see [Kelley 2009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6918872/))
+2. **Supply oxygen** — Cells need O₂ but are <abbr title="The vigorous mixing needed to distribute oxygen can physically tear apart cells. Imagine being inside a blender — that's what aggressive mixing feels like to cells. This creates a trade-off: mix enough to deliver oxygen, but not so much you kill the cells.">shear-sensitive</abbr>
 3. **Remove CO₂** — <abbr title="Byproducts of cellular respiration that must be removed">Metabolic waste</abbr> that acidifies media
-4. **Control temperature** — Typically 37°C ± 0.5°C for <abbr title="Cells from mammals like cows, pigs, or mice — chicken cells (avian) can tolerate slightly different conditions">mammalian cells</abbr>
-5. **Provide nutrients** — Via <abbr title="Continuous flow of fresh media through the reactor while retaining cells">media perfusion</abbr> or batch feeding
+4. **Control temperature** — Typically 37°C ± 0.5°C for <abbr title="Cells from mammals like cows, pigs, or mice — chicken cells (avian) can often tolerate slightly different conditions, sometimes up to 39°C">mammalian cells</abbr> (avian cells similar)
+5. **Provide nutrients** — Via <abbr title="Continuous flow of fresh media through the reactor while retaining cells — like constantly refreshing water in a fish tank">media perfusion</abbr> or <abbr title="Adding all nutrients at the start, letting cells grow until depleted, then harvesting — simpler but lower density">batch feeding</abbr>
 
 ```{=html}
 <svg viewBox="0 0 500 350" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
@@ -468,12 +497,27 @@ Production-scale bioreactors are the heart of cultured meat manufacturing. They 
 
 ### Bioreactor Types
 
+Different bioreactor designs make different trade-offs between cost, scale, and cell type compatibility. **Most cultured meat R&D currently uses stirred-tank reactors** (the pharmaceutical industry standard), but companies are actively developing custom food-grade designs to reduce costs.
+
+::: {.callout-note collapse="true"}
+## Which Type Will Win? (click to expand)
+
+The industry hasn't converged on a single design yet. Key factors:
+
+- **Stirred-tank**: Proven, well-understood, but expensive. Used by most companies today.
+- **Air-lift**: Gentler on cells, potentially cheaper, but less established.
+- **Packed-bed**: Required for structured products (steaks), but harder to scale.
+- **Custom food-grade**: The cost reduction opportunity — if sterility can be maintained.
+
+Companies like UPSIDE Foods and Believer Meats are building large-scale facilities using modified pharma equipment, while others bet on novel designs.
+:::
+
 | Type | Description | Scale | Cost Range | Source |
 |------|-------------|-------|------------|--------|
 | **<abbr title="Most common design — a motor-driven impeller stirs the culture like a kitchen mixer">Stirred-tank</abbr>** | Traditional design with <abbr title="A rotating blade or paddle that mixes the culture">impeller</abbr> mixing | 1-20,000 L | $50-500/L (pharma) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
 | **<abbr title="Rising air bubbles create circulation without mechanical mixing — gentler on cells">Air-lift</abbr>** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
 | **<abbr title="Cells attach to a 3D scaffold while media flows past — good for structured products">Packed-bed</abbr>** | Cells grow on <abbr title="A 3D structure (like a sponge) that cells can attach to and grow on">scaffolds</abbr>, media flows through | 10-1,000 L | $100-300/L | [Allan et al. 2019](https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2019.00044/full) |
-| **Custom food-grade** | Simplified designs for food production | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
+| **<abbr title="Not yet commercial — designs inspired by beer/dairy fermentation equipment, adapted for cell culture">Custom food-grade</abbr>** | Simplified designs <abbr title="Similar to beer brewing or dairy fermentation — large, simple, cheap — but adapted to maintain sterility for cell culture">inspired by food/beverage industry</abbr> | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
 
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
@@ -494,10 +538,15 @@ Production-scale bioreactors are the heart of cultured meat manufacturing. They 
 - Lower-grade materials (304 vs 316L stainless)
 :::
 
-### Batch vs. Perfusion
+### Batch vs. Perfusion: Two Operating Modes
+
+Bioreactors can operate in two fundamentally different modes. This choice significantly affects achievable cell density and economics:
+
+- **<abbr title="Fill the reactor with media, grow cells until nutrients depleted, harvest everything at once">Batch mode</abbr>**: Fill → Grow → Harvest all. Simple but limited density.
+- **<abbr title="Continuously pump fresh media in while removing spent media, keeping cells at optimal conditions indefinitely">Perfusion mode</abbr>**: Continuous flow of fresh media, removing waste while retaining cells. Complex but much higher density.
 
 ```{=html}
-<svg viewBox="0 0 650 200" style="width: 100%; max-width: 650px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 650 200" style="width: 100%; max-width: 700px; min-height: 220px; margin: 1.5rem auto; display: block;">
   <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
 
   <!-- Batch Mode -->
@@ -566,12 +615,12 @@ Production-scale bioreactors are the heart of cultured meat manufacturing. They 
 </svg>
 ```
 
-The **<abbr title="How many times the media volume is replaced during a production cycle — higher turnover = more media used but higher cell densities possible">media turnover</abbr>** parameter in our model captures this:
+The **<abbr title="How many times the media volume is replaced during a production cycle — higher turnover = more media used but higher cell densities possible">media turnover</abbr>** parameter in [our interactive model](index.qmd) captures this:
 
-- Turnover = 1: Batch mode (same media throughout)
-- Turnover = 5-10: Perfusion (replace media multiple times)
+- **Turnover = 1**: Batch mode (same media throughout)
+- **Turnover = 5-10**: Perfusion (replace media multiple times)
 
-Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/)).
+Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004)). More recent work has achieved even higher densities in specialized systems.
 
 ::: {.callout-note collapse="true"}
 ## Batch vs Perfusion Trade-offs (click to expand)
@@ -589,20 +638,40 @@ Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clin
 
 ---
 
-## Step 4: Media Composition
+## Media Composition: The "Food" for Cells
 
-### The "Food" for Cells
+::: {.callout-note collapse="true"}
+## Why This Isn't a "Step" (click to expand)
+Media composition isn't sequential — it's used **throughout** the production process (in seed train and production bioreactors). We cover it separately because understanding media costs is essential for understanding overall economics.
+:::
 
-Cell culture media contains everything cells need to grow:
+Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components **ordered by approximate share of total media cost** at production scale:
 
-| Component | Function | Cost Driver | Source |
-|-----------|----------|-------------|--------|
-| **Amino acids** | Building blocks for proteins | Hydrolysates vs. pure amino acids | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
-| **Glucose** | Energy source | Commodity (~$0.50/kg) | Market data |
-| **Vitamins** | Metabolic cofactors | B-complex, etc. | |
-| **Minerals/salts** | Osmotic balance, enzyme function | Cheap (<$0.10/L) | |
-| **Lipids** | Cell membrane building | Moderate | |
-| **Growth factors** | Signaling proteins (FGF, IGF, TGF-β) | **55-95% of media cost at research scale** | [Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| Component | % of Media Cost | Function | Key Cost Driver |
+|-----------|----------------|----------|-----------------|
+| **<abbr title="The 20 building blocks of proteins — cells need all of them to grow">Amino acids</abbr>** | 30-50% | Building blocks for proteins | <abbr title="Cheap plant/yeast protein digests vs expensive purified amino acids">Hydrolysates vs. pharma-grade</abbr> |
+| **<abbr title="Signaling proteins that tell cells to grow and divide">Growth factors</abbr>** | 5-60%* | Signaling proteins (FGF, IGF, TGF-β) | Technology breakthrough? |
+| **Glucose** | 5-15% | Energy source | Commodity (~$0.50/kg) |
+| **Vitamins** | 3-8% | <abbr title="Helper molecules that enzymes need to function">Metabolic cofactors</abbr> | B-complex, etc. |
+| **Lipids** | 2-5% | Cell membrane building | Moderate |
+| **Minerals/salts** | 1-3% | Osmotic balance, enzyme function | Cheap (<$0.10/L) |
+
+*Growth factor share varies enormously: 55-95% at research scale ([Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/)), but potentially <5% if breakthrough technologies succeed. This is **the key uncertainty**.
+
+::: {.callout-tip collapse="true"}
+## What Share of Total Cost is Media? (click to expand)
+
+At production scale, media (including growth factors) typically represents **40-70% of total production cost** ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3)).
+
+| Cost Component | Share of Total |
+|---------------|----------------|
+| **Media (all components)** | 40-70% |
+| Capital costs (bioreactors) | 15-35% |
+| Fixed OPEX (labor, overhead) | 10-25% |
+| Downstream processing | 2-15% |
+
+This is why media cost reduction (hydrolysates, cheap growth factors, high cell density) is so critical.
+:::
 
 ### The Serum-Free Challenge
 
