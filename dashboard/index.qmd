@@ -11,9 +11,7 @@ format:
 ---
 
 ::: {.callout-tip}
-## Join the Discussion
-
-**[Open Discussion Document (Google Doc)](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69)** — Comment, suggest edits, and collaborate on model development
+## Share Feedback
 
 **[Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture, parameters, and areas for review
 :::
@@ -21,7 +19,6 @@ format:
 ::: {.callout-note collapse="true"}
 ## More Ways to Engage (click to expand)
 
-- **Discussion doc**: [Google Doc](https://docs.google.com/document/d/1NMtWjoKU52tJQwUV99Bf8XXYdLoFLviTQq6AslzKQQU/edit?tab=t.z3dgew4k1a4e#heading=h.s76njj7fk69) — main collaboration space
 - **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge)
 - **GitHub issues**: [Open an issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
 - **Email**: [contact@unjournal.org](mailto:contact@unjournal.org)
