@@ -10,19 +10,18 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip}
-## Share Feedback
+::: {.callout-note}
+## 💬 We Want Your Feedback!
+**Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.
 
-**[Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture, parameters, and areas for review
+**[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
 :::
 
-::: {.callout-note collapse="true"}
+::: {.callout-tip collapse="true"}
 ## More Ways to Engage (click to expand)
 
-- **Inline comments**: Use the [Hypothesis](https://hypothes.is/) sidebar (click `<` on the right edge)
 - **GitHub issues**: [Open an issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
 - **Email**: [contact@unjournal.org](mailto:contact@unjournal.org)
-- **Audio overview**: [Technical Review Report (MP3)](model_review_report.mp3) — 22 min walkthrough
 :::
 
 ```{=html}

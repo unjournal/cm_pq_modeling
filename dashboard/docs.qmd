@@ -9,8 +9,13 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-note}
+## 💬 We Want Your Feedback!
+**Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the documentation based on your feedback.
+:::
+
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Listen: Technical Review (22 min MP3)](model_review_report.mp3)**
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[🎧 Audio Review (22 min MP3)](model_review_report.mp3)**
 :::
 
 ## Overview
