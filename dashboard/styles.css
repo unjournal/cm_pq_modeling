@@ -141,6 +141,65 @@ body.hypothesis-sidebar-open {
     margin-right: 290px;
 }
 
+/* CSS-based instant tooltips for technical terms */
+abbr[title] {
+  text-decoration: underline dotted #0d6efd;
+  text-underline-offset: 3px;
+  cursor: help;
+  position: relative;
+  font-style: normal;
+}
+abbr[title]:hover {
+  text-decoration: underline solid #0d6efd;
+  background-color: #e7f1ff;
+}
+/* Instant tooltip that appears on hover */
+abbr[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2c3e50;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 300px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-bottom: 8px;
+  text-align: left;
+  font-weight: normal;
+}
+/* Arrow pointing down */
+abbr[title]::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #2c3e50;
+  margin-bottom: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  z-index: 1001;
+}
+abbr[title]:hover::after,
+abbr[title]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* Make sidebar explainers wider when expanded */
 .panel-sidebar details {
     position: relative;
