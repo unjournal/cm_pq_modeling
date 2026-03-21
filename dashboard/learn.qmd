@@ -569,6 +569,8 @@ Companies like UPSIDE Foods and Believer Meats are building large-scale faciliti
 - Less precise temperature control
 - Simpler cleaning validation
 - Lower-grade materials (304 vs 316L stainless)
+
+**Contamination is a real risk:** Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This underscores why most cultured meat companies currently use pharma-grade equipment despite the cost premium.
 :::
 
 ### Batch vs. Perfusion: Two Operating Modes
@@ -655,7 +657,11 @@ The **<abbr title="How many times the media volume is replaced during a producti
 - **Turnover = 1**: Batch mode (same media throughout)
 - **Turnover = 5-10**: Perfusion (replace media multiple times)
 
-Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004)). Per [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/), one optimized system achieved cost reduction "from $437,000 to $1.95/kg." A [2024 Believer Meats study](https://www.greenqueen.com.hk/believer-meats-cultivated-chicken-lab-grown-meat-cost-study/) demonstrated "130 billion cells per litre, with a yield of 43% weight per volume" using $0.63/L media, achieving **$6.20/lb** cultivated chicken in a modeled 50,000L facility.
+Cell densities have improved dramatically:
+
+- **100-200 g/L**: Demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004))
+- **360 g/L**: Per [PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/): "harvested...cultured fat at 360 g/L" with "1.5 years of continuous culture and over 600 cell divisions"
+- **1.3 × 10¹¹ cells/L**: Believer Meats [2024 study](https://www.nature.com/articles/s43016-024-01022-w) using $0.63/L media, achieving **$6.20/lb** (~$13.67/kg) cultivated chicken
 
 ::: {.callout-note collapse="true"}
 ## Batch vs Perfusion Trade-offs (click to expand)
@@ -749,8 +755,9 @@ For these reasons, the cultured meat industry has converged on <abbr title="Medi
 
 | Media Type | Cost ($/L) | Source |
 |------------|-----------|--------|
-| <abbr title="GFI reports companies targeting media costs 'below $0.20 per liter' with some achieving $0.63/L">Pharma-grade amino acids</abbr> | $1.00 - $4.00 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
-| <abbr title="Per 2024 Believer study: 'animal-free culture medium that cost only $0.63 per litre' supporting 130B cells/L density">Hydrolysate-based</abbr> | $0.20 - $1.20 | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678), [Believer 2024](https://www.greenqueen.com.hk/believer-meats-cultivated-chicken-lab-grown-meat-cost-study/) |
+| <abbr title="Traditional pharmaceutical-grade media with purified amino acids">Pharma-grade amino acids</abbr> | $1.00 - $4.00 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
+| <abbr title="Per PMC 2025: Beefy-9 costs ~$36/L; Beefy-R achieves '14-fold cost reduction' to ~$2.57/L">Optimized serum-free (Beefy-R)</abbr> | $2.00 - $4.00 | [PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/) |
+| <abbr title="Per 2024 Believer study: 'animal-free culture medium that cost only $0.63 per litre' supporting 1.3×10¹¹ cells/L density">Hydrolysate-based (optimized)</abbr> | $0.20 - $1.00 | [Believer 2024](https://www.nature.com/articles/s43016-024-01022-w) |
 
 ::: {.callout-note collapse="true"}
 ## How Does $/L Convert to $/kg Meat? (click to expand)
@@ -889,6 +896,8 @@ Based on our analysis, growth factor costs appear to be one of the largest uncer
 This reasoning underlies our model's **binary switch** approach — though we acknowledge this is a simplification. Reality may involve partial successes or combinations of approaches.
 
 See [GFI's analysis](https://gfi.org/science/the-science-of-cultivated-meat/) for detailed technical roadmaps on each approach.
+
+**Important caveat:** A [2024 Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3) of TEAs concluded: "TEAs published to date demonstrate that, under the current technological paradigm, CM is unlikely to be competitive with conventional meat." However, the review notes that "scale-up feasibility may hinge on cost-saving areas such as use of plant-based media components, food-grade aseptic conditions and extensive scaling of related supply chains."
 :::
 
 ---
