@@ -196,7 +196,7 @@ Several factors make chicken an attractive first target for cultured meat:
 A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via <abbr title="A small tissue sample taken from a living animal — typically just a few milligrams, causing minimal harm">biopsy</abbr>) or from <abbr title="A population of cells derived from a single cell that can grow indefinitely in culture">cell lines</abbr> that have been <abbr title="Modified (naturally or artificially) to divide indefinitely, bypassing normal cell aging limits">immortalized</abbr> for continuous growth.
 
 ```{=html}
-<svg viewBox="0 0 600 200" style="width: 100%; max-width: 600px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 600 200" style="width: 100%; max-width: 800px; min-height: 280px; margin: 1.5rem auto; display: block;">
   <rect width="600" height="200" fill="#f0f4f8" rx="8"/>
 
   <!-- Biopsy -->
@@ -310,7 +310,7 @@ The **<abbr title="Named after Leonard Hayflick who discovered it in 1961 — no
 Cells are progressively expanded from small flasks to larger and larger bioreactors, typically increasing volume by ~10× at each step:
 
 ```{=html}
-<svg viewBox="0 0 700 220" style="width: 100%; max-width: 700px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 700 220" style="width: 100%; max-width: 900px; min-height: 300px; margin: 1.5rem auto; display: block;">
   <rect width="700" height="220" fill="#f8f9fa" rx="8"/>
 
   <!-- Title -->
@@ -456,7 +456,7 @@ Current research densities: 30-50 g/L (batch), 100-200 g/L (perfusion)
 5. **Provide nutrients** — Via <abbr title="Continuous flow of fresh media through the reactor while retaining cells — like constantly refreshing water in a fish tank">media perfusion</abbr> or <abbr title="Adding all nutrients at the start, letting cells grow until depleted, then harvesting — simpler but lower density">batch feeding</abbr>
 
 ```{=html}
-<svg viewBox="0 0 500 350" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 500 350" style="width: 100%; max-width: 650px; min-height: 450px; margin: 1.5rem auto; display: block;">
   <rect width="500" height="350" fill="#f8f9fa" rx="8"/>
 
   <!-- Title -->
@@ -571,7 +571,7 @@ Bioreactors can operate in two fundamentally different modes. This choice signif
 - **<abbr title="Continuously pump fresh media in while removing spent media, keeping cells at optimal conditions indefinitely">Perfusion mode</abbr>**: Continuous flow of fresh media, removing waste while retaining cells. Complex but much higher density.
 
 ```{=html}
-<svg viewBox="0 0 650 200" style="width: 100%; max-width: 700px; min-height: 220px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 300px; margin: 1.5rem auto; display: block;">
   <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
 
   <!-- Batch Mode -->
@@ -773,7 +773,7 @@ Note: Both media types (pharma-grade and hydrolysate) can achieve similar cell d
 **Growth factors** are signaling proteins that tell cells to proliferate and differentiate. They bind to cell surface receptors and trigger intracellular cascades:
 
 ```{=html}
-<svg viewBox="0 0 500 210" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 500 210" style="width: 100%; max-width: 700px; min-height: 300px; margin: 1.5rem auto; display: block;">
   <rect width="500" height="210" fill="#f8f9fa" rx="8"/>
 
   <!-- Outside label -->
@@ -916,7 +916,7 @@ Our model includes an optional "downstream processing" toggle that adds $2-15/kg
 ## Cost Breakdown Summary
 
 ```{=html}
-<svg viewBox="0 0 600 300" style="width: 100%; max-width: 600px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 600 300" style="width: 100%; max-width: 800px; min-height: 400px; margin: 1.5rem auto; display: block;">
   <rect width="600" height="300" fill="#f8f9fa" rx="8"/>
 
   <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
