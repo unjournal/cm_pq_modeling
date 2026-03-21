@@ -412,19 +412,19 @@ Cells are progressively expanded from small flasks to larger and larger bioreact
 The <abbr title="The sequence of progressively larger vessels used to expand cells from a small vial to production scale">seed train</abbr> phase typically represents **5-15% of total production cost** at scale. Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): at 100 kTA scale, labor costs are "$1/kg wet cell mass" and consumables another "$1/kg":
 
 - Uses **expensive, small-scale equipment** (research-grade, often <abbr title="Disposable plastic bioreactor bags/vessels — avoid cleaning validation but add consumable costs">single-use</abbr>)
-- Requires **manual handling** and skilled labor ($50-150/hour <abbr title="Total cost including salary, benefits, overhead, and facilities — typically 1.5-2× base salary">fully loaded</abbr>)
+- Requires **manual handling** and skilled labor ($50-150/hour <abbr title="Per Humbird 2021: '$50,000/y for regular FTEs' with '100% labor burden' = $100k total. Fed-batch needs '95 total FTE'; perfusion needs '132 FTE'.">fully loaded</abbr>)
 - Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives">pharma-grade</abbr> at $5-20/L, though many companies now use food-grade)
 
 ::: {.callout-note collapse="true"}
 ## Are Companies Still Using Pharma-Grade? (click to expand)
 
-**Increasingly, no.** While early R&D relied heavily on pharma-grade media and equipment, most companies scaling up have transitioned to food-grade alternatives:
+**Increasingly, no.** While early R&D relied heavily on pharma-grade media and equipment, most companies scaling up have transitioned to food-grade alternatives. Per a [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive):
 
-- **Media**: Food-grade hydrolysates replacing pharma-grade amino acids
-- **Equipment**: Modified food/beverage industry vessels
-- **Growth factors**: Precision fermentation replacing pharma-grade recombinant proteins
+- **Media**: "costs $1 per liter or less and several are under $0.50 per liter" — "10-30× cheaper than [Humbird 2021] thought possible"
+- **Equipment**: Vow built a 20,000L bioreactor "well under $1 million" (80% below off-the-shelf costs)
+- **Cell density**: Companies achieving "60-90 g/L" vs Humbird's 60 g/L maximum projection
 
-This transition is critical for cost reduction. The "pharma-grade" prices often cited in older TEAs ($5-20/L media) are increasingly outdated for companies at scale.
+Production COGS for cell mass now "$10-15/kg, with some leading-edge companies achieving costs below $10/kg" — up to 50% lower than the 2021 projections.
 :::
 
 ::: {.callout-tip collapse="true"}
@@ -655,7 +655,7 @@ The **<abbr title="How many times the media volume is replaced during a producti
 - **Turnover = 1**: Batch mode (same media throughout)
 - **Turnover = 5-10**: Perfusion (replace media multiple times)
 
-Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004)). Per [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/), one optimized system achieved cost reduction "from $437,000 to $1.95/kg" through breakthroughs in cell density and bioreactor efficiency.
+Cell densities of 100-200 g/L have been demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004)). Per [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/), one optimized system achieved cost reduction "from $437,000 to $1.95/kg." A [2024 Believer Meats study](https://www.greenqueen.com.hk/believer-meats-cultivated-chicken-lab-grown-meat-cost-study/) demonstrated "130 billion cells per litre, with a yield of 43% weight per volume" using $0.63/L media, achieving **$6.20/lb** cultivated chicken in a modeled 50,000L facility.
 
 ::: {.callout-note collapse="true"}
 ## Batch vs Perfusion Trade-offs (click to expand)
@@ -749,8 +749,8 @@ For these reasons, the cultured meat industry has converged on <abbr title="Medi
 
 | Media Type | Cost ($/L) | Source |
 |------------|-----------|--------|
-| Pharma-grade amino acids | $1.00 - $4.00 | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
-| Hydrolysate-based | $0.20 - $1.20 | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
+| <abbr title="GFI reports companies targeting media costs 'below $0.20 per liter' with some achieving $0.63/L">Pharma-grade amino acids</abbr> | $1.00 - $4.00 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
+| <abbr title="Per 2024 Believer study: 'animal-free culture medium that cost only $0.63 per litre' supporting 130B cells/L density">Hydrolysate-based</abbr> | $0.20 - $1.20 | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678), [Believer 2024](https://www.greenqueen.com.hk/believer-meats-cultivated-chicken-lab-grown-meat-cost-study/) |
 
 ::: {.callout-note collapse="true"}
 ## How Does $/L Convert to $/kg Meat? (click to expand)
