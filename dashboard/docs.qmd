@@ -448,7 +448,7 @@ This section defines all model inputs. Each parameter links back to where it app
 - **Lognormal** for plant capacity: Capacity is positive and right-skewed (most plants are medium-sized, few are very large). Lognormal naturally captures this. The p5/p95 parameterization lets us specify "90% of plants are between 5 and 50 kTA."
 - **Beta** for utilization and maturity: Both are bounded between 0 and 1. Beta distributions are flexible for modeling proportions and can be parameterized with mean/stdev.
 
-These choices follow standard practice in techno-economic assessments ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3)).
+These choices follow standard practice in techno-economic assessments ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3)). Humbird 2021 uses lognormal distributions for cost inputs and triangular distributions for some parameters; we use lognormal throughout for positive-valued quantities because it avoids the sharp bounds of triangular distributions. The **Bernoulli** draws for technology adoption (hydrolysates, food-grade, cheap GFs) reflect discrete yes/no events rather than continuous uncertainty — see [Section 4](#maturity-factor) for details.
 
 ### Technology Adoption
 
@@ -583,7 +583,7 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 | Parameter | Range | Definition | Equation |
 |-----------|-------|------------|----------|
 | WACC | 8–20% | Weighted average cost of capital | $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
-| Asset life | 8–20 years | Depreciation period for bioreactors and facilities | $n$ in CRF formula — see [Section 3](#annualized-capital-costs) |
+| Asset life | 8–20 years | Equipment depreciation period for bioreactors, buildings, and support facilities | $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Scale exponent | 0.6–0.9 | Economies of scale power | $s$ in CAPEX = CAPEX$_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [above](#economies-of-scale-the-k-sim-qs-relationship) |
 | Pharma-grade CAPEX | $5–25/kg capacity | Base capital cost at 20 kTA | CAPEX$_{\text{ref}}$ in scaling equation |
 | Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on CAPEX$_{\text{ref}}$ when using food-grade |

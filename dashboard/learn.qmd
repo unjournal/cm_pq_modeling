@@ -96,7 +96,7 @@ abbr[title]:hover::before {
   <g transform="translate(50, 40)">
     <circle cx="40" cy="40" r="35" fill="#3498db" opacity="0.2" stroke="#3498db" stroke-width="2"/>
     <circle cx="40" cy="40" r="8" fill="#3498db"/>
-    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Cell Bank</text>
+    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Cell Banking</text>
     <text x="40" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">Frozen starter</text>
     <text x="40" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">cells</text>
   </g>
@@ -197,7 +197,7 @@ Several factors make chicken an attractive first target for cultured meat:
 
 ### What Happens
 
-A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via <abbr title="A small tissue sample taken from a living animal — typically just a few milligrams, causing minimal harm">biopsy</abbr>) or from <abbr title="A population of cells derived from a single cell that can grow indefinitely in culture">cell lines</abbr> that have been <abbr title="Modified (naturally or artificially) to divide indefinitely, bypassing normal cell aging limits">immortalized</abbr> for continuous growth.
+A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via <abbr title="A small tissue sample taken from a living animal — typically just a few milligrams, causing minimal harm">biopsy</abbr>) or from <abbr title="A population of cells derived from a single cell that can grow indefinitely in culture">cell lines</abbr> that have been <abbr title="Modified (naturally or artificially) to divide indefinitely, bypassing normal cell aging limits">immortalized</abbr> for continuous growth. Cell banking follows <abbr title="Per Baust et al. 2016 (Biopreservation and Biobanking): 'A well-characterized cell bank provides a consistent, reproducible starting material... master and working cell bank systems are standard practice in biopharmaceutical manufacturing.'">standard biopharmaceutical protocols</abbr> for master and working cell banks ([Baust et al. 2016](https://doi.org/10.1089/bio.2015.0104), [GFI Technical Overview](https://gfi.org/science/the-science-of-cultivated-meat/)).
 
 *The diagram below shows the four steps of cell banking: (1) take a small biopsy from a living animal; (2) **isolate cells** — a tissue sample contains many cell types tangled together, so we use <abbr title="Enzymatic digestion uses enzymes (like trypsin or collagenase) to break down the connective tissue holding cells together, releasing individual cells into a liquid suspension. Think of it like dissolving the glue between bricks to free each brick separately.">enzymatic digestion</abbr> to separate individual cells from the tissue matrix; (3) expand the isolated cells by growing them in culture; (4) freeze them via <abbr title="Cryopreservation = freezing cells at -196°C in liquid nitrogen with a cryoprotectant (like DMSO) that prevents ice crystals from damaging cells. Properly frozen cells can remain viable for decades.">cryopreservation</abbr> (-196°C) for long-term storage.*
 
@@ -582,7 +582,7 @@ Companies like UPSIDE Foods and Believer Meats are building large-scale faciliti
 
 ### Batch vs. Perfusion: Two Operating Modes
 
-Bioreactors can operate in two fundamentally different modes. This choice significantly affects achievable cell density and economics:
+The choice of operating mode is not about different bioreactor *types* — it is about how nutrients are delivered and waste removed within the same basic stirred-tank reactor described above. This choice significantly affects achievable cell density and economics, and maps directly into the **media turnover** parameter in [our cost model](index.qmd): batch mode corresponds to turnover = 1, while perfusion corresponds to turnover = 3-10.
 
 - **<abbr title="Fill the reactor with media, grow cells until nutrients depleted, harvest everything at once">Batch mode</abbr>**: Fill → Grow → Harvest all. Simple but limited density.
 - **<abbr title="Continuously pump fresh media in while removing spent media, keeping cells at optimal conditions indefinitely">Perfusion mode</abbr>**: Continuous flow of fresh media, removing waste while retaining cells. Complex but much higher density.
