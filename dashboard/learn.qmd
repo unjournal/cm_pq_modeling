@@ -83,7 +83,7 @@ abbr[title]:hover::before {
 
 ## Overview
 
-**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — from $2.3 million/kg for the first cultured beef burger in 2013 to an optimistic projection of ~$63/kg today ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)). This page explains the production process in detail and how each step affects costs.
+**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with leading companies achieving <$10/kg cell mass. This page explains the production process in detail and how each step affects costs.
 
 *The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [Seed Train](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
@@ -295,9 +295,9 @@ A well-characterized cell bank can support years of production ([GFI 2021](https
 ::: {.callout-note collapse="true"}
 ## Why the Hayflick Limit Matters (click to expand)
 
-The **<abbr title="Named after Leonard Hayflick who discovered it in 1961 — normal human cells can only divide 40-60 times before stopping">Hayflick limit</abbr>** (doubling limit) of cells matters enormously for cost:
+The **<abbr title="Per Hayflick 1961: 'normal human fetal cell population will divide between 40 and 60 times in cell culture before entering a senescence phase.' Primary fibroblasts undergo 'PD 50 ± 10' before stopping.">Hayflick limit</abbr>** (doubling limit) of cells matters enormously for cost:
 
-- **Primary satellite cells** can only double ~50-80 times before <abbr title="Cellular aging where cells stop dividing but don't die — they become metabolically inactive">senescing</abbr> ([Hayflick 1965](https://pubmed.ncbi.nlm.nih.gov/14315085/))
+- **Primary satellite cells** can only double ~50-80 times before <abbr title="Per Nature 2025: 'reduction of differentiation capacity in myoblasts, unfortunately, precedes replicative senescence' — cells lose function before hitting the doubling limit">senescing</abbr> ([Hayflick 1965](https://pubmed.ncbi.nlm.nih.gov/14315085/), [Nature 2025](https://www.nature.com/articles/s42003-025-09180-8))
 - This means you need **frequent cell bank renewals** (new biopsies, characterization, validation)
 - **Immortalized lines** eliminate this constraint — one cell bank can theoretically last forever
 - Trade-off: Immortalized cells may require GMO labeling and face regulatory scrutiny
@@ -455,7 +455,7 @@ Current research densities: 30-50 g/L (batch), 100-200 g/L (perfusion)
 
 <abbr title="Large enough for commercial production — typically 1,000+ liters, producing tonnes of meat per year">Production-scale</abbr> bioreactors are the heart of cultured meat manufacturing. They must:
 
-1. **Maintain sterility** — Any contamination means losing the entire batch (<abbr title="Based on pharma batch failure costs; Kelley 2009 estimates $100K-$1M per failed bioreactor batch depending on scale">$100K-$1M loss</abbr>; see [Kelley 2009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6918872/))
+1. **Maintain sterility** — Any contamination means losing the entire batch (<abbr title="Per Cytiva/Kelley: 'lost batches and production time, cost of investigations, cost of decontamination' — at $100/g mAb production cost in 2000L reactor at 5g/L, a failed batch = $1M in product alone, plus investigation costs">$100K-$1M+ loss</abbr>; see [Kelley 2009](https://pubmed.ncbi.nlm.nih.gov/20073004/), [Cytiva](https://www.cytivalifesciences.com/en/us/news-center/cost-and-impact-of-a-bioburden-incident-10001))
 2. **Supply oxygen** — Cells need O₂ but are <abbr title="The vigorous mixing needed to distribute oxygen can physically tear apart cells. Imagine being inside a blender — that's what aggressive mixing feels like to cells. This creates a trade-off: mix enough to deliver oxygen, but not so much you kill the cells.">shear-sensitive</abbr>
 3. **Remove CO₂** — <abbr title="Byproducts of cellular respiration that must be removed">Metabolic waste</abbr> that acidifies media
 4. **Control temperature** — Typically 37°C ± 0.5°C for <abbr title="Cells from mammals like cows, pigs, or mice — chicken cells (avian) can often tolerate slightly different conditions, sometimes up to 39°C">mammalian cells</abbr> (avian cells similar)
