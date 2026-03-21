@@ -85,7 +85,7 @@ abbr[title]:hover::before {
 
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with leading companies achieving <$10/kg cell mass. This page explains the production process in detail and how each step affects costs.
 
-*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [Seed Train](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
+*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
 ```{=html}
 <svg viewBox="0 0 900 180" style="width: 100%; max-width: 950px; min-height: 200px; margin: 2rem auto; display: block;">
@@ -183,21 +183,23 @@ Several factors make chicken an attractive first target for cultured meat:
 
 | Factor | Advantage | Source |
 |--------|-----------|--------|
-| **Cell biology** | Chicken <abbr title="Muscle stem cells that can differentiate into mature muscle fibers; named for their position adjacent to muscle fibers">satellite cells</abbr> can be cultured effectively and show <abbr title="Cells remain healthy, continue growing well, and maintain their function under culture conditions">robust viability</abbr> | [Kim et al. 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
-| **Spontaneous immortalization** | <abbr title="Per Pasitka et al. 2022: 'HUN-CF-2 cell line exhibited stable cell growth for over 300 population doublings' without genetic modification. Cells reached 'densities of 108 × 10⁶ cells per ml' in serum-free suspension culture.">Some avian cells can divide indefinitely without genetic modification</abbr> — a rare natural trait that avoids <abbr title="Genetically Modified Organism — cells or organisms whose DNA has been altered using genetic engineering">GMO</abbr> concerns | [Pasitka et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
+| **Cell biology** | Chicken <abbr title="Muscle stem cells that can differentiate into mature muscle fibers; named for their position adjacent to muscle fibers">satellite cells</abbr> can be cultured effectively and show <abbr title="Cells remain healthy, continue growing well, and maintain their function under culture conditions">robust viability</abbr> | [<abbr title="'Efficient production of chicken satellite cell-based meat: Optimized culture medium, cell seeding density, and harvest time' — demonstrates optimized culture conditions for chicken satellite cells including serum-free proliferation and differentiation.">Kim et al. 2024</abbr>](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
+| **Spontaneous immortalization** | <abbr title="Per Pasitka et al. 2022: 'HUN-CF-2 cell line exhibited stable cell growth for over 300 population doublings' without genetic modification. Cells reached 'densities of 108 × 10⁶ cells per ml' in serum-free suspension culture.">Some avian cells can divide indefinitely without genetic modification</abbr> — a rare natural trait that avoids <abbr title="Genetically Modified Organism — cells or organisms whose DNA has been altered using genetic engineering">GMO</abbr> concerns | [<abbr title="'Spontaneously immortalized chicken fibroblasts generate an osteochondral-like tissue' (Nature Food, 2022). Key finding: chicken fibroblast cell line HUN-CF-2 grew for 300+ population doublings without genetic modification, in serum-free suspension culture at densities of 108 million cells/mL. Supports the claim that avian cells can naturally immortalize.">Pasitka et al. 2022</abbr>](https://www.nature.com/articles/s43016-022-00658-w) |
 | **Market size** | Chicken is the most consumed meat globally (~130 million tonnes/year) | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
-| **Animal welfare** | ~70 billion chickens slaughtered annually vs ~300 million cattle | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
-| **Growth factors** | Similar <abbr title="Fibroblast Growth Factor 2 — stimulates cell proliferation and maintains stem cell properties">FGF-2</abbr>/<abbr title="Insulin-like Growth Factor 1 — promotes cell growth and differentiation">IGF-1</abbr> requirements to bovine (~10-100 <abbr title="nanograms per milliliter — a very small concentration (billionths of a gram)">ng/mL</abbr> optimal) | [Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
+| **Animal welfare** | <abbr title="Because chickens are much smaller than cattle, far more individual animals are killed for the same amount of meat. From an animal welfare perspective, replacing chicken production could reduce the largest number of individual animal lives affected. See Rethink Priorities and Open Philanthropy analyses of farmed animal suffering.">~70 billion chickens slaughtered annually</abbr> vs ~300 million cattle | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL), [Rethink Priorities](https://rethinkpriorities.org/research-area/animal-welfare/) |
+| **Growth factors** | <abbr title="Why this matters: since chicken cells need similar growth factors at similar concentrations as bovine cells, the same cost-reduction technologies (precision fermentation, plant molecular farming) being developed for beef will also work for chicken. This means chicken benefits from all the R&amp;D investment targeting bovine cultured meat.">Similar</abbr> <abbr title="Fibroblast Growth Factor 2 — stimulates cell proliferation and maintains stem cell properties">FGF-2</abbr>/<abbr title="Insulin-like Growth Factor 1 — promotes cell growth and differentiation">IGF-1</abbr> requirements to bovine (~10-100 <abbr title="nanograms per milliliter — a very small concentration. One nanogram = one billionth of a gram. At these tiny concentrations, even expensive growth factors contribute modest cost per liter of media.">ng/mL</abbr> optimal) | [Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
 
 ---
 
 ## Step 1: Cell Banking
 
+<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: cell banking is a one-time setup cost amortized over many production runs. At 20 kTA scale, the per-kg contribution is negligible — well under $0.10/kg vs. $37/kg total. Risner et al. 2021 do not itemize it separately, treating it as part of overhead.">&lt;1% of total production cost at scale</abbr>**</span>
+
 ### What Happens
 
 A **cell bank** is a frozen inventory of starter cells that can be thawed and expanded for production. These cells are taken from a living animal (via <abbr title="A small tissue sample taken from a living animal — typically just a few milligrams, causing minimal harm">biopsy</abbr>) or from <abbr title="A population of cells derived from a single cell that can grow indefinitely in culture">cell lines</abbr> that have been <abbr title="Modified (naturally or artificially) to divide indefinitely, bypassing normal cell aging limits">immortalized</abbr> for continuous growth.
 
-*The diagram below shows the four steps of cell banking. Terms like "enzymatic digestion" (breaking tissue into individual cells) and cryopreservation (freezing at -196°C) are standard biotechnology techniques.*
+*The diagram below shows the four steps of cell banking: (1) take a small biopsy from a living animal; (2) **isolate cells** — a tissue sample contains many cell types tangled together, so we use <abbr title="Enzymatic digestion uses enzymes (like trypsin or collagenase) to break down the connective tissue holding cells together, releasing individual cells into a liquid suspension. Think of it like dissolving the glue between bricks to free each brick separately.">enzymatic digestion</abbr> to separate individual cells from the tissue matrix; (3) expand the isolated cells by growing them in culture; (4) freeze them via <abbr title="Cryopreservation = freezing cells at -196°C in liquid nitrogen with a cryoprotectant (like DMSO) that prevents ice crystals from damaging cells. Properly frozen cells can remain viable for decades.">cryopreservation</abbr> (-196°C) for long-term storage.*
 
 ```{=html}
 <svg viewBox="0 0 600 200" style="width: 100%; max-width: 800px; min-height: 280px; margin: 1.5rem auto; display: block;">
@@ -269,7 +271,7 @@ A **cell bank** is a frozen inventory of starter cells that can be thawed and ex
 |-----------|-------------|------|------|--------|
 | **Satellite cells** (<abbr title="Precursor cells that will become muscle cells (myocytes)">myoblasts</abbr>) | Muscle stem cells that <abbr title="The process of a stem cell becoming a specialized cell type (e.g., muscle fiber)">differentiate</abbr> into muscle fibers | Natural muscle tissue, good texture | Limited doublings (~50-80 before <abbr title="Cellular aging — cells lose the ability to divide and eventually die">senescence</abbr>) | [Ding et al. 2018](https://www.nature.com/articles/s41598-018-28746-7) |
 | **Immortalized lines** | Cells modified to divide indefinitely | Consistent, scalable, no senescence | Regulatory complexity, <abbr title="Genetically Modified Organism — may require special labeling and regulatory approval">GMO</abbr> perception | [Pasitka et al. 2022](https://www.nature.com/articles/s43016-022-00658-w) |
-| **<abbr title="Induced Pluripotent Stem Cells — adult cells reprogrammed to behave like embryonic stem cells">iPSCs</abbr>** | Induced pluripotent stem cells | Can become any cell type | Complex differentiation protocols | [Choi et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9686897/) |
+| **<abbr title="Induced Pluripotent Stem Cells — adult cells reprogrammed to behave like embryonic stem cells">iPSCs</abbr>** | Induced <abbr title="Pluripotent = able to become many different cell types (muscle, fat, bone, etc.). These are adult cells reprogrammed back to an embryonic-like state so they can differentiate into whatever cell type is needed.">pluripotent</abbr> stem cells | Can become any cell type | <abbr title="Differentiation protocols are the specific sequences of growth factors, timing, and culture conditions needed to guide pluripotent cells into becoming a desired cell type (e.g., muscle). These are complex because they must precisely mimic natural developmental signals.">Complex differentiation protocols</abbr> | [Choi et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9686897/) |
 
 ### Cost Impact
 
@@ -309,6 +311,8 @@ The **<abbr title="Per Hayflick 1961: 'normal human fetal cell population will d
 
 ## Step 2: Seed Train (Scale-Up)
 
+<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Seed train costs are primarily labor and media for the small-volume expansion steps. Per Humbird 2021: seed train bioreactors are a small fraction of total CAPEX (~$2M of $34M production bioreactor cost), and media volumes are orders of magnitude smaller than production. Typically estimated at 5-10% of total cost, mostly from labor time.">~5-10% of total production cost</abbr>** (mostly labor)</span>
+
 ### What Happens
 
 Cells are progressively expanded from small flasks to larger and larger bioreactors, typically increasing volume by ~10× at each step:
@@ -316,8 +320,8 @@ Cells are progressively expanded from small flasks to larger and larger bioreact
 *The diagram shows the typical progression: vial → T-flask (flat bottle for early culture) → spinner flask (small stirred vessel) → progressively larger bioreactors. Cell counts grow from millions (10⁶) to hundreds of billions (10¹¹+). Timeline shows typical days in culture.*
 
 ```{=html}
-<svg viewBox="0 0 700 220" style="width: 100%; max-width: 900px; min-height: 300px; margin: 1.5rem auto; display: block;">
-  <rect width="700" height="220" fill="#f8f9fa" rx="8"/>
+<svg viewBox="0 0 700 240" style="width: 100%; max-width: 900px; min-height: 320px; margin: 1.5rem auto; display: block;">
+  <rect width="700" height="240" fill="#f8f9fa" rx="8"/>
 
   <!-- Title -->
   <text x="350" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Seed Train: Progressive Scale-Up</text>
@@ -392,12 +396,12 @@ Cells are progressively expanded from small flasks to larger and larger bioreact
   </g>
 
   <!-- Timeline -->
-  <text x="35" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 0</text>
-  <text x="150" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 3</text>
-  <text x="260" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 6</text>
-  <text x="385" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 9</text>
-  <text x="510" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 12</text>
-  <text x="640" y="185" text-anchor="middle" font-size="9" fill="#95a5a6">Day 15+</text>
+  <text x="35" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 0</text>
+  <text x="150" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 3</text>
+  <text x="260" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 6</text>
+  <text x="385" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 9</text>
+  <text x="510" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 12</text>
+  <text x="640" y="205" text-anchor="middle" font-size="9" fill="#95a5a6">Day 15+</text>
 
   <defs>
     <marker id="arr3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -439,6 +443,7 @@ Production COGS for cell mass now "$10-15/kg, with some leading-edge companies a
 | 200 g/L | 5 liters | 15% |
 
 Higher density means:
+
 - **Less media** per kg of meat (biggest savings)
 - **Fewer reactor transfers** in seed train
 - **Smaller bioreactors** needed for same output
@@ -450,6 +455,8 @@ Current research densities: 30-50 g/L (batch), 100-200 g/L (perfusion)
 ---
 
 ## Step 3: Production Bioreactors
+
+<span style="background: #fff3e0; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg out of ~$37/kg total. CE Delft (2021) estimates CAPEX at 20-30% for a 10 kTA facility. The range depends heavily on whether pharma-grade ($50-500/L) or food-grade ($5-15/L) equipment is used.">15-35% of total production cost</abbr>** (bioreactor CAPEX + buildings)</span>
 
 ### The Core Technology
 
@@ -555,7 +562,7 @@ Companies like UPSIDE Foods and Believer Meats are building large-scale faciliti
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
 
-**This is a pivotal cost driver.** <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
+**Bioreactor CAPEX accounts for <abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of total production cost at scale</abbr>**, making it a pivotal cost driver. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
 
 **The opportunity:** If cultured meat can use simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)), costs could drop by **10×**.
 
@@ -583,7 +590,7 @@ Bioreactors can operate in two fundamentally different modes. This choice signif
 *The diagram compares these two operating modes side-by-side. Batch mode (left) harvests everything at once; perfusion (right) continuously adds fresh media and removes spent media while retaining cells.*
 
 ```{=html}
-<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 300px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 380px; margin: 1.5rem auto; display: block;">
   <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
 
   <!-- Batch Mode -->
@@ -681,6 +688,8 @@ Cell densities have improved dramatically:
 
 ## Media Composition: The "Food" for Cells
 
+<span style="background: #fce4ec; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: media components total $22/kg (or ~$6/kg with hydrolysates) out of ~$37/kg total. PMC 2024: 'The culture medium represents the most significant cost in CM production, accounting for 55%–95% of total expenses' at current scales, dropping to 40-70% at optimized production scale. Risner et al. 2021 and GFI 2024 report similar ranges.">40-70% of total production cost</abbr>** — the single largest cost component</span>
+
 ::: {.callout-note collapse="true"}
 ## Why This Isn't a "Step" (click to expand)
 Media composition isn't sequential — it's used **throughout** the production process (in seed train and production bioreactors). We cover it separately because understanding media costs is essential for understanding overall economics.
@@ -691,7 +700,7 @@ Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analog
 | Component | % of Media Cost | Function | Key Cost Driver |
 |-----------|----------------|----------|-----------------|
 | **<abbr title="The 20 building blocks of proteins — cells need all of them to grow. Per Humbird 2021: individual amino acids cost '$19/kg' at scale, but 'plant hydrolysate' alternatives reduce this 'by almost $16/kg' to ~$3/kg.">Amino acids</abbr>** | 30-50% | Building blocks for proteins | <abbr title="Per Humbird 2021: individual amino acids = $19/kg; plant hydrolysates = ~$3/kg — a reduction of almost $16/kg">Hydrolysates vs. pharma-grade</abbr> |
-| **<abbr title="Signaling proteins that tell cells to grow and divide. Per Humbird 2021: 'Growth factors only contribute $3–4/kg of wet cell mass at 100 kTA' — but this assumes bulk pricing breakthroughs.">Growth factors</abbr>** | 5-60%* | Signaling proteins (FGF, IGF, TGF-β) | Technology breakthrough? |
+| **<abbr title="Signaling proteins that tell cells to grow and divide. Per Humbird 2021: 'Growth factors only contribute $3–4/kg of wet cell mass at 100 kTA' — but this assumes bulk pricing breakthroughs.">Growth factors</abbr>** | 5-60%* | Signaling proteins (<abbr title="Fibroblast Growth Factor — stimulates cell proliferation. The most expensive single component at research scale (~$50,000/g catalog price).">FGF</abbr>, <abbr title="Insulin-like Growth Factor — promotes cell growth and differentiation into muscle fibers.">IGF</abbr>, <abbr title="Transforming Growth Factor beta — triggers cells to stop dividing and mature into muscle fibers. Among the most expensive growth factors (~$1,000,000/g catalog).">TGF-β</abbr>) | Technology breakthrough? |
 | **Glucose** | 5-15% | Energy source | Commodity (~$0.50/kg) |
 | **Vitamins** | 3-8% | <abbr title="Helper molecules that enzymes need to function">Metabolic cofactors</abbr> | B-complex, etc. |
 | **Lipids** | 2-5% | Cell membrane building | ~$0.10-0.50/L |
@@ -784,6 +793,8 @@ Note: Both media types (pharma-grade and hydrolysate) can achieve similar cell d
 ---
 
 ## Step 5: Growth Factors — A Key Cost Driver
+
+<span style="background: #fce4ec; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Growth factors are a subset of media costs. At research scale, GFs can be 55-95% of media cost (Specht 2020/GFI). At production scale with current technology, GFs are roughly 5-60% of media cost — translating to ~2-40% of total production cost. Per Humbird 2021: 'Growth factors only contribute $3–4/kg of wet cell mass at 100 kTA' (~8-10% of total), but this assumes bulk pricing breakthroughs. Without those breakthroughs, GFs could be the dominant cost.">~2-40% of total production cost</abbr>** (wide range — depends heavily on technology breakthroughs)</span>
 
 ### What Are Growth Factors?
 
@@ -903,6 +914,8 @@ See [GFI's analysis](https://gfi.org/science/the-science-of-cultivated-meat/) fo
 ---
 
 ## Step 6: Harvest & Processing
+
+<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Downstream processing is typically a small share at scale. Per Humbird 2021, centrifugation and processing add ~$0.10-0.50/kg. CE Delft (2021) estimates downstream at 2-15% of total, depending on product complexity — unstructured products (nuggets) are at the low end, structured products (steaks with scaffolding) could be higher.">2-15% of total production cost</abbr>** (lower for unstructured products like nuggets)</span>
 
 ### Cell Harvest
 
