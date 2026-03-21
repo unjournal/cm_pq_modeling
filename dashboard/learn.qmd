@@ -681,12 +681,12 @@ Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analog
 | **Lipids** | 2-5% | Cell membrane building | ~$0.10-0.50/L |
 | **Minerals/salts** | 1-3% | Osmotic balance, enzyme function | Cheap (<$0.10/L) |
 
-*Growth factor share varies enormously: 55-95% at research scale ([Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/)), but potentially <5% if <abbr title="Precision fermentation, plant molecular farming, or autocrine cell lines — any of these could dramatically reduce growth factor costs">breakthrough technologies</abbr> succeed. This is **a key uncertainty**.
+*Growth factor share varies enormously: at <abbr title="Small-scale R&D using pharma-grade reagents at catalog prices — not representative of commercial production costs">research scale</abbr> GFs can be 55-95% of media cost ([Specht 2020](https://gfi.org/science/the-science-of-cultivated-meat/)). At <abbr title="Large-scale manufacturing with bulk purchasing, optimized formulations, and potential technology breakthroughs">production scale</abbr>, projections range from 5-60% depending on technology assumptions — potentially <5% if <abbr title="Precision fermentation, plant molecular farming, or autocrine cell lines — any of these could dramatically reduce growth factor costs">breakthrough technologies</abbr> succeed. This is **a key uncertainty**.
 
 ::: {.callout-tip collapse="true"}
-## What Share of Total Cost is Media? (click to expand)
+## Media = 40-70% of Total Production Cost (click for breakdown)
 
-At production scale, media (including growth factors) typically represents **40-70% of total production cost** ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3)).
+At production scale, media (including growth factors) typically represents **40-70% of total production cost** ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3), [GFI 2024](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/)).
 
 | Cost Component | Share of Total |
 |---------------|----------------|
@@ -712,7 +712,7 @@ FBS is collected from bovine fetuses when pregnant cows are slaughtered for meat
 
 Problems with FBS:
 
-- **Expensive**: $200-1,000/L depending on grade (see <abbr title="Major lab supply company; FBS prices range from ~$200/L for heat-inactivated to $1000+/L for specialty grades">Sigma-Aldrich catalog</abbr>)
+- **Expensive**: <abbr title="Heat-inactivated FBS ~$200-400/L; specialty/embryonic grades $500-1,000+/L; premium certified grades even higher (2024 supplier pricing)">$200-1,000/L</abbr> depending on grade and certification level
 - **Variable**: Batch-to-batch inconsistency makes reproducibility difficult
 - **Ethical**: Derived from fetal calves — defeats purpose of avoiding animal slaughter
 - **Limited supply**: ~500,000 L/year globally ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/))
@@ -773,47 +773,47 @@ Note: Both media types (pharma-grade and hydrolysate) can achieve similar cell d
 **Growth factors** are signaling proteins that tell cells to proliferate and differentiate. They bind to cell surface receptors and trigger intracellular cascades:
 
 ```{=html}
-<svg viewBox="0 0 500 180" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
-  <rect width="500" height="180" fill="#f8f9fa" rx="8"/>
-
-  <!-- Cell membrane -->
-  <rect x="50" y="80" width="400" height="20" fill="#f39c12" opacity="0.3" rx="10"/>
-  <text x="250" y="94" text-anchor="middle" font-size="10" fill="#7f8c8d">Cell Membrane</text>
+<svg viewBox="0 0 500 210" style="width: 100%; max-width: 500px; margin: 1.5rem auto; display: block;">
+  <rect width="500" height="210" fill="#f8f9fa" rx="8"/>
 
   <!-- Outside label -->
-  <text x="250" y="30" text-anchor="middle" font-size="11" fill="#2c3e50">Outside Cell (media)</text>
-
-  <!-- Inside label -->
-  <text x="250" y="140" text-anchor="middle" font-size="11" fill="#2c3e50">Inside Cell (cytoplasm)</text>
+  <text x="250" y="25" text-anchor="middle" font-size="11" fill="#2c3e50">Outside Cell (media)</text>
 
   <!-- Growth factor -->
-  <circle cx="100" cy="50" r="15" fill="#9b59b6"/>
-  <text x="100" y="55" text-anchor="middle" font-size="9" fill="white">GF</text>
+  <circle cx="100" cy="55" r="15" fill="#9b59b6"/>
+  <text x="100" y="60" text-anchor="middle" font-size="9" fill="white">GF</text>
+
+  <!-- Cell membrane -->
+  <rect x="50" y="85" width="400" height="20" fill="#f39c12" opacity="0.3" rx="10"/>
+  <text x="250" y="99" text-anchor="middle" font-size="10" fill="#7f8c8d">Cell Membrane</text>
 
   <!-- Receptor -->
-  <rect x="90" y="65" width="20" height="50" fill="#e74c3c" rx="3"/>
-  <text x="100" y="160" text-anchor="middle" font-size="9" fill="#7f8c8d">Receptor</text>
+  <rect x="90" y="70" width="20" height="50" fill="#e74c3c" rx="3"/>
+
+  <!-- Inside label -->
+  <text x="60" y="135" text-anchor="start" font-size="10" fill="#2c3e50">Inside Cell</text>
 
   <!-- Arrow to signal -->
-  <path d="M120 110 L160 130" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <path d="M120 115 L155 145" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
 
   <!-- Signal cascade -->
-  <circle cx="180" cy="140" r="10" fill="#27ae60"/>
-  <text x="180" y="144" text-anchor="middle" font-size="8" fill="white">1</text>
-  <path d="M195 140 L220 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <circle cx="240" cy="140" r="10" fill="#27ae60"/>
-  <text x="240" y="144" text-anchor="middle" font-size="8" fill="white">2</text>
-  <path d="M255 140 L280 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <circle cx="300" cy="140" r="10" fill="#27ae60"/>
-  <text x="300" y="144" text-anchor="middle" font-size="8" fill="white">3</text>
+  <circle cx="170" cy="155" r="10" fill="#27ae60"/>
+  <text x="170" y="159" text-anchor="middle" font-size="8" fill="white">1</text>
+  <path d="M185 155 L210 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <circle cx="225" cy="155" r="10" fill="#27ae60"/>
+  <text x="225" y="159" text-anchor="middle" font-size="8" fill="white">2</text>
+  <path d="M240 155 L265 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <circle cx="280" cy="155" r="10" fill="#27ae60"/>
+  <text x="280" y="159" text-anchor="middle" font-size="8" fill="white">3</text>
 
   <!-- Result -->
-  <path d="M315 140 L360 140" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <rect x="365" y="125" width="80" height="30" fill="#3498db" rx="5"/>
-  <text x="405" y="145" text-anchor="middle" font-size="10" fill="white">PROLIFERATE</text>
+  <path d="M295 155 L340 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
+  <rect x="345" y="140" width="90" height="30" fill="#3498db" rx="5"/>
+  <text x="390" y="160" text-anchor="middle" font-size="10" fill="white">PROLIFERATE</text>
 
-  <!-- Label -->
-  <text x="240" y="170" text-anchor="middle" font-size="9" fill="#7f8c8d">Signal cascade → Gene expression</text>
+  <!-- Labels -->
+  <text x="100" y="185" text-anchor="middle" font-size="9" fill="#7f8c8d">Receptor</text>
+  <text x="280" y="195" text-anchor="middle" font-size="9" fill="#7f8c8d">Signal cascade → Gene expression</text>
 
   <defs>
     <marker id="arr5" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">

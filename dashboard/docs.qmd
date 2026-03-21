@@ -461,7 +461,7 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | Commodity vitamins/minerals vs. pharma-grade |
+| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | <abbr title="Food-safe vitamins, minerals, and trace elements sourced from supplement/feed supply chains rather than pharmaceutical suppliers">Commodity vitamins/minerals</abbr> vs. pharma-grade |
 | [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices | Any breakthrough: autocrine, plant farming, precision fermentation |
 
 ### Process Intensities
