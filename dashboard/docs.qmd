@@ -389,6 +389,7 @@ The maturity factor captures this "worlds come in bundles" intuition without req
 
 **Limitation:** This approach assumes all technologies develop together. In reality, some might succeed while others fail (e.g., cheap GFs but slow bioreactor scale-up). A more sophisticated model could specify different correlation structures, but this adds complexity without clear empirical grounding.
 
+<div id="could-technologies-develop-independently"></div>
 <details>
 <summary>Could technologies develop independently? (Addressing correlation assumptions)</summary>
 
@@ -462,17 +463,19 @@ $$
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
 | [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | <abbr title="Food-safe vitamins, minerals, and trace elements sourced from supplement/feed supply chains rather than pharmaceutical suppliers">Commodity vitamins/minerals</abbr> vs. pharma-grade |
-| [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices | Any breakthrough: autocrine, plant farming, precision fermentation |
+| [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
 
 ### Process Intensities
 
-These parameters determine how much media is needed per kg of meat. See [Media Cost equation](#variable-operating-costs-voc).
+These parameters determine how much media is needed per kg of meat. They feed directly into the [Media Cost equation](#variable-operating-costs-voc):
 
-| Parameter | Range (p5–p95) | Unit | Definition | Cost impact |
-|-----------|----------------|------|------------|-------------|
-| Cell density | 30–200 | g/L | Final biomass concentration at harvest | Higher → less media per kg |
-| Cycle time | 0.5–5 | days | Duration of one production batch | Affects throughput, not directly in cost equation |
-| Media turnover | 1–10 | × | Times media is replaced per batch | Higher → more media cost, but enables higher density |
+$$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{turnover} \times \text{price per L}$$
+
+| Parameter | Range (p5–p95) | Unit | Definition | Where in cost equation |
+|-----------|----------------|------|------------|----------------------|
+| Cell density | 30–200 | g/L | Final biomass concentration at harvest | Denominator of $\frac{1000}{\text{density}}$ — higher density → fewer liters per kg |
+| Cycle time | 0.5–5 | days | Duration of one production batch | Affects annual throughput (and thus CAPEX/kg via $/kg = CAPEX × CRF / output), not media cost directly |
+| Media turnover | 1–10 | × | Times media is replaced per batch | Multiplier on liters/kg — perfusion (>1) uses more media but enables higher density |
 
 **Media turnover explained:** In **batch mode** (turnover = 1), the reactor is filled once and cells grow until nutrients deplete. In **perfusion mode** (turnover > 1), fresh media continuously flows in while spent media exits. Perfusion uses more media but achieves higher cell densities.
 
@@ -534,7 +537,9 @@ The model defines CAPEX at a **reference scale of 20 kTA** (20,000 metric tons/y
 2. It represents a plausible first commercial-scale facility (current pilots are <1 kTA)
 3. Published cost estimates are most reliable around this scale — extrapolating far beyond it introduces large uncertainty
 
-**How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the [economies of scale formula below](#economies-of-scale-the-k-sim-qs-relationship). This is standard practice in chemical engineering cost estimation.
+**How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the [economies of scale formula below](#economies-of-scale-the-k-sim-qs-relationship). This is standard practice in chemical engineering cost estimation ("factored estimation" or "Lang factor" method).
+
+**Why pharma-grade appears here:** The baseline CAPEX parameter ($5-25/kg capacity) is anchored to published estimates that assume pharmaceutical-grade equipment (316L stainless steel, full cleaning validation). Most TEAs use pharma-grade as the starting point because that is what current facilities use. The model then applies a **custom reactor ratio** (0.35-0.85) to simulate the cost reduction if food-grade equipment is adopted instead — so pharma-grade is the pessimistic baseline, not an assumption about the future.
 
 #### Economies of Scale: The $K \sim Q^s$ Relationship
 
@@ -584,7 +589,7 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 |-----------|-------|------------|----------|
 | WACC | 8–20% | Weighted average cost of capital | $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Asset life | 8–20 years | Equipment depreciation period for bioreactors, buildings, and support facilities | $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
-| Scale exponent | 0.6–0.9 | Economies of scale power | $s$ in CAPEX = CAPEX$_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [above](#economies-of-scale-the-k-sim-qs-relationship) |
+| Scale exponent | 0.6–0.9 | Economies of scale power (how much CAPEX grows as plant capacity increases) | $s$ in CAPEX = CAPEX$_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [above](#economies-of-scale-the-k-sim-qs-relationship). This is the exponent $r$ referenced in the "CAPEX scaling" section header. |
 | Pharma-grade CAPEX | $5–25/kg capacity | Base capital cost at 20 kTA | CAPEX$_{\text{ref}}$ in scaling equation |
 | Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on CAPEX$_{\text{ref}}$ when using food-grade |
 
@@ -648,7 +653,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 | Focus on **probability thresholds** | Ask "What's P(cost < $10/kg)?" not "What's the expected cost?" | Probabilities integrate over uncertainty and map to decisions ("Is this worth pursuing?") |
 | **Validate parameters** with experts | Before publishing, check that ranges match current industry knowledge | Published literature lags industry by 1–3 years; some parameters (GF costs) change rapidly |
 | **Report uncertainty ranges** | Always show 90% CI, not just median | Wide intervals reflect genuine uncertainty; suppressing them gives false confidence |
-| **Explore correlated scenarios** | Use the [maturity slider](#maturity-factor) to see "good world" vs "bad world" bundles | Technologies, financing, and supply chains develop together — independent draws miss this |
+| **Explore correlated scenarios** | Use the [maturity slider](#maturity-factor) to see "good world" vs "bad world" bundles | Technologies, financing, and supply chains often develop together — though some breakthroughs (e.g., GF biotech) may be partially independent of others (e.g., bioreactor manufacturing). See [correlation assumptions](#could-technologies-develop-independently) for discussion |
 
 #### What "relative comparisons" means in practice {#what-relative-comparisons-means-in-practice}
 
