@@ -125,6 +125,15 @@ This prevents unrealistic scenarios where technology succeeds but financing rema
 - **UC Davis ACBM Calculator**: https://acbmcostcalculator.ucdavis.edu/
 - **The Unjournal**: https://unjournal.org
 
+## Related Repositories (PQ Ecosystem)
+
+This repo is part of a multi-repo Pivotal Questions ecosystem:
+
+- **PQ Workshops** (`~/githubs/unjournal-gitbook-knowledge-comms/pivotal-questions/`) — Workshop sites for beliefs elicitation across wellbeing, CM, and plant-based topics. The CM workshop (`cm-workshop/`) uses this model's outputs and links to this dashboard. Live at [uj-cm-workshop.netlify.app](https://uj-cm-workshop.netlify.app).
+- **UJ Metaculus Automation** (`~/githubs/UJ_metaculus_automation/`) — API client for Metaculus forecasting data; PQ codes (CM_01, CM_03, CM_10, CM_11) map to Metaculus questions.
+- **Coda Org** (`~/githubs/coda_org_unjournal/`) — Source of truth for PQ operationalizations and research tables. CM-specific data in `coda_content/hub_internal/cell_cultured_meat_cost_price_pq_canvas-*.md` and related CSVs.
+- **PQ Landing Page**: https://info.unjournal.org/pivotal-questions.html (in `unjournal-gitbook-knowledge-comms/landing-pages/`)
+
 ## Data Sources
 
 - Published TEA papers (Risner et al. 2021, Humbird 2021, CE Delft)

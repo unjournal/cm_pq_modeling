@@ -635,7 +635,7 @@ The model adjusts maturity expectations based on years from 2024.
 
 **Technology Adoption by ${target_year}**
 
-Probability that each cost-reducing technology is widely adopted by the target year.
+Probability that each cost-reducing technology is widely adopted by the projection year.
 
 ```{ojs}
 //| echo: false
@@ -733,7 +733,7 @@ viewof gf_progress = Inputs.range([0, 100], {
 
 **What triggers the "cheap" scenario? (Key breakthroughs)**
 
-The probability slider represents whether **at least one** of these technology approaches succeeds at commercial scale by the target year:
+The probability slider represents whether **at least one** of these technology approaches succeeds at commercial scale by the projection year:
 
 | Technology | Mechanism | Target price | Status (2025) |
 |------------|-----------|--------------|---------------|
@@ -1473,7 +1473,7 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 **The cultured chicken pivotal question asks:**
 
-> What will be the production cost of cultured chicken by [target year], and what does this imply for animal welfare interventions?
+> What will be the production cost of cultured chicken by the projection year, and what does this imply for animal welfare interventions?
 
 **Key links:**
 
@@ -1522,7 +1522,7 @@ The model reveals several important patterns:
 
 ## Limitations
 
-1. **Static snapshot model** — Projects costs for a single target year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
+1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
 2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
 

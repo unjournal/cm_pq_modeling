@@ -99,7 +99,7 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 
 | Scenario | Price range ($/L) | What it means | Source |
 |----------|-------------------|---------------|--------|
-| With hydrolysates | $0.20 – $1.20 | Amino acids from digested plant/yeast proteins | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
+| With hydrolysates | <abbr title="Source: O'Neill et al. 2021 review of serum-free media costs; corroborated by Believer Meats (Nature Food 2024) reporting $0.63/L media at scale, and a 2025 industry report noting companies achieving '$1 per liter or less'">$0.20 – $1.20</abbr> | Amino acids from digested plant/yeast proteins | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678), [Believer 2024](https://www.nature.com/articles/s43016-024-01022-w) |
 | Pharma-grade amino acids | $1.00 – $4.00 | Individual purified amino acids | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
 
 Hydrolysates cost less because they're produced from commodity feedstocks via enzymatic digestion, rather than synthetic chemistry or purification.
@@ -174,6 +174,8 @@ The dashboard provides **two controls** for growth factor prices that work toget
 The slider interpolates between current prices (0%) and target prices (100%):
 
 $$P_{\text{GF}} = P_{\text{current}} \times (0.01)^{\text{progress}}$$
+
+In plain text: **GF Price = Current Price x (0.01)^progress**, where the exponent "progress" ranges from 0 (no progress) to 1 (full breakthrough).
 
 **How to read this formula:**
 
@@ -297,6 +299,8 @@ Higher WACC or shorter asset life → higher annual capital charge → higher $/
 
 The model uses a **maturity factor** to create realistic correlations between different aspects of industry development. Without this, the Monte Carlo simulation would generate unrealistic scenarios (e.g., breakthrough growth factor technology but prohibitively expensive financing).
 
+**Why should these be correlated?** The underlying logic is not that technology *causes* cheaper financing or vice versa. Rather, both are driven by a common set of enabling conditions -- investor confidence, regulatory clarity, talent availability, and demonstrated unit economics. In a world where the cultured meat industry develops well by the projection year, we would expect *both* technological breakthroughs *and* improved financing terms, because both flow from the same underlying industry momentum. See the [detailed explanation below](#why-should-technology-success-correlate-with-cheaper-financing) for the full causal story.
+
 #### The Maturity Factor ($m$)
 
 The maturity factor is a single number between 0 and 1 representing overall industry development:
@@ -309,11 +313,11 @@ Each simulation draws $m$ from a Beta distribution (default: mean 0.5, stdev 0.2
 
 #### How Maturity Adjusts Adoption Probabilities
 
-Each technology's adoption probability is adjusted based on the maturity draw:
+Each technology's adoption probability is adjusted based on the maturity draw. The key variables are **$k$** (sensitivity coefficient -- how strongly maturity affects this technology) and **$m$** (the maturity factor -- overall industry development level):
 
 $$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
 
-**Variable definitions:**
+**Variable definitions (all terms in the equation above):**
 
 | Variable | Meaning | Typical values |
 |----------|---------|----------------|
@@ -342,18 +346,18 @@ This prevents impossible probabilities like -0.2 or 1.3.
 
 </details>
 
-#### What Gets Correlated
+#### What Gets Correlated — And How It Maps to Equations
 
-The maturity factor simultaneously adjusts:
+The maturity factor simultaneously adjusts multiple components. Here is how each connects to the equations above:
 
-| Component | Effect when $m$ is high | Justification |
-|-----------|------------------------|---------------|
-| Technology adoption rates | Higher probability of hydrolysates, cheap GFs | More R&D investment, proven pilots |
-| Custom reactor share | More facilities use food-grade equipment | Supply chain development |
-| WACC (financing cost) | Lower interest rates | Reduced investor risk perception |
+| Component | Effect when $m$ is high | Equation affected | Justification |
+|-----------|------------------------|-------------------|---------------|
+| Technology adoption rates | Higher $P_{\text{adopted}}$ for hydrolysates, cheap GFs, food-grade | $P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k(m-0.5), 0, 1)$ — [Section 4](#maturity-factor) | More R&D investment, proven pilots |
+| Custom reactor share | More facilities use food-grade equipment | Affects CAPEX$_{\text{ref}}$ via the custom reactor ratio — [CAPEX section](#capex-parameters) | Supply chain development |
+| WACC (financing cost) | Lower $r$ in the CRF formula | $\text{CRF} = \frac{r(1+r)^n}{(1+r)^n - 1}$ — [Section 3](#annualized-capital-costs) | Reduced investor risk perception |
 
 <details>
-<summary>Why should technology success correlate with cheaper financing?</summary>
+<summary id="why-should-technology-success-correlate-with-cheaper-financing">Why should technology success correlate with cheaper financing?</summary>
 
 This is not an assumption that technology *causes* cheaper financing. Rather, both are symptoms of the same underlying cause: **industry development**.
 
@@ -462,8 +466,8 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | <abbr title="Food-safe vitamins, minerals, and trace elements sourced from supplement/feed supply chains rather than pharmaceutical suppliers">Commodity vitamins/minerals</abbr> vs. pharma-grade |
-| [Scalable GF technology](learn.qmd#growth-factors-the-pivotal-challenge) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
+| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | <abbr title="Food-grade micronutrients include: vitamins (B12, biotin, folic acid, etc.), minerals (iron, zinc, selenium, copper), and trace elements — sourced from supplement/feed supply chains at ~$0.02-2/g rather than pharma-grade at ~$0.50-20/g. See Sigma-Aldrich catalog vs. commodity vitamin suppliers.">Food-grade vitamins, minerals, and trace elements</abbr> vs. <abbr title="Pharma-grade micronutrients are ultra-pure (>99.9%) with certificates of analysis, manufactured under GMP conditions. Examples: pharma-grade transferrin (~$100/g), pharma-grade B12 (~$5/g) vs. food-grade B12 (~$0.05/g).">pharma-grade</abbr> |
+| [Scalable GF technology](learn.qmd#step-5-growth-factors--a-key-cost-driver) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
 
 ### Process Intensities
 
@@ -529,9 +533,11 @@ $$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{
 
 Where Total CAPEX depends on plant size and equipment type, and CRF converts a lump sum to annual payments (see [Section 3](#annualized-capital-costs) for the CRF formula).
 
-#### Reference Scale: Why 20 kTA?
+#### Reference Scale: Why 20 kTA? {#reference-scale}
 
-The model defines CAPEX at a **reference scale of 20 kTA** (20,000 metric tons/year), then adjusts for actual plant size using economies of scale. We use 20 kTA because:
+**kTA = kilo-tonnes per annum (thousands of metric tons per year).** So 20 kTA = 20,000 tonnes/year of cultured meat output. For context, a single large conventional chicken processing plant handles ~200 kTA, so 20 kTA is a modest commercial facility.
+
+The model defines CAPEX at a **reference scale of 20 kTA**, then adjusts for actual plant size using economies of scale. We use 20 kTA because:
 
 1. It matches the scale in [Risner et al. (2021)](https://www.mdpi.com/2304-8158/10/1/3), enabling direct comparison
 2. It represents a plausible first commercial-scale facility (current pilots are <1 kTA)
@@ -589,7 +595,7 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 |-----------|-------|------------|----------|
 | WACC | 8–20% | Weighted average cost of capital | $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Asset life | 8–20 years | Equipment depreciation period for bioreactors, buildings, and support facilities | $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
-| Scale exponent | 0.6–0.9 | Economies of scale power (how much CAPEX grows as plant capacity increases) | $s$ in CAPEX = CAPEX$_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [above](#economies-of-scale-the-k-sim-qs-relationship). This is the exponent $r$ referenced in the "CAPEX scaling" section header. |
+| Scale exponent | 0.6–0.9 | Economies of scale power (how much CAPEX grows as plant capacity increases) | $s$ in $\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [economies of scale section](#economies-of-scale-the-k-sim-qs-relationship). Note: $s$ (scale exponent) is distinct from $r$ (WACC) used in the CRF formula. |
 | Pharma-grade CAPEX | $5–25/kg capacity | Base capital cost at 20 kTA | CAPEX$_{\text{ref}}$ in scaling equation |
 | Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on CAPEX$_{\text{ref}}$ when using food-grade |
 
@@ -599,11 +605,11 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 
 | Benchmark | Typical WACC | Source |
 |-----------|--------------|--------|
-| Established food companies | 6–10% | Industry averages |
-| Biotech startups (pre-revenue) | 15–25% | VC expected returns |
-| Cultured meat companies | 12–20% | [Humbird (2021)](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) assumption |
+| Established food companies (Tyson, JBS) | 6–10% | <abbr title="Per Damodaran (NYU Stern): food processing industry average WACC ~7-9% as of 2024. Large food companies benefit from stable cash flows and low risk premiums.">Industry averages (Damodaran)</abbr> |
+| Biotech startups (pre-revenue) | 15–25% | <abbr title="Venture capital typically targets 20-30% IRR. For pre-revenue biotech, discount rates of 15-25% are standard in DCF valuations. See Metrick & Yasuda (2021), Venture Capital and the Finance of Innovation.">VC expected returns</abbr> |
+| Cultured meat companies | 12–20% | <abbr title="Humbird (2021) uses 10% WACC as baseline for his TEA analysis but notes this is 'optimistic for a startup company.' CE Delft (2021) uses 7-12% for mature scenarios. Our range of 8-20% spans from optimistic mature-industry to realistic early-stage.">Humbird (2021)</abbr>, [CE Delft (2021)](https://cedelft.eu/publications/tea-of-cultivated-meat/) |
 
-The high end (20%) reflects that most cultured meat companies are venture-backed with no revenue. As the industry matures ([higher $m$](#maturity-factor)), WACC should decline toward food-industry norms.
+**Why the range is wide:** The low end (8%) assumes the industry matures to food-company norms -- stable revenue, proven unit economics, low technology risk. The high end (20%) reflects today's reality: most cultured meat companies are venture-backed with no revenue, unproven at scale, and facing regulatory uncertainty. As the industry matures ([higher $m$](#maturity-factor)), WACC should decline toward food-industry norms. Our 8-20% range brackets both [Humbird's 10% baseline](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) and [CE Delft's 7-12% range](https://cedelft.eu/publications/tea-of-cultivated-meat/).
 
 ---
 
@@ -635,7 +641,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 ### Known Limitations
 
-1. **Static snapshot model** — Projects costs for a single target year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
+1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
 2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
 
