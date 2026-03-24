@@ -10,6 +10,13 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-important}
+## 🔬 Upcoming Workshop: Cultivated Meat Cost Trajectories
+We're organizing an online expert workshop (late April / early May 2026) to dig into the key cost cruxes — media costs, bioreactor scale-up, and the gap between TEA projections and commercial reality. This model is one of the tools we'll use.
+
+**[Workshop details & signup →](https://uj-cm-workshop.netlify.app/)** · **[State your cost beliefs →](https://uj-cm-workshop.netlify.app/beliefs.html)**
+:::
+
 ::: {.callout-note}
 ## 💬 We Want Your Feedback!
 **Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.

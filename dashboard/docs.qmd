@@ -9,6 +9,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-important}
+## 🔬 Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
+This model feeds into [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. **[Workshop details & signup →](https://uj-cm-workshop.netlify.app/schedule.html)**
+:::
+
 ::: {.callout-note}
 ## 💬 We Want Your Feedback!
 **Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the documentation based on your feedback.

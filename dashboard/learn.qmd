@@ -9,6 +9,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-important}
+## 🔬 Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
+This page provides background for [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. We're bringing together TEA researchers, evaluators, and stakeholders to assess cost trajectories and identify key uncertainties. **[Join us →](https://uj-cm-workshop.netlify.app/schedule.html)**
+:::
+
 ```{=html}
 <style>
 /* CSS-based instant tooltips for technical terms */
