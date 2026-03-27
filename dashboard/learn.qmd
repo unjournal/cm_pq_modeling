@@ -93,7 +93,7 @@ abbr[title]:hover::before {
 *The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
 ```{=html}
-<svg viewBox="0 0 900 180" style="width: 100%; max-width: 950px; min-height: 200px; margin: 2rem auto; display: block;">
+<svg viewBox="0 0 900 180" style="width: 100%; max-width: 1100px; min-height: 300px; margin: 2rem auto; display: block;">
   <!-- Background -->
   <rect width="900" height="180" fill="#f8f9fa" rx="8"/>
 
@@ -552,9 +552,9 @@ The industry hasn't converged on a single design yet. Key factors:
 - **Stirred-tank**: Proven, well-understood, but expensive. Used by most companies today.
 - **Air-lift**: Gentler on cells, potentially cheaper, but less established.
 - **Packed-bed**: Required for structured products (steaks), but harder to scale.
-- **Custom food-grade**: The cost reduction opportunity — if sterility can be maintained.
+- **Custom food-grade**: Already in use by some companies (e.g., Vow) — the key question is whether sterility can be maintained at scale.
 
-Companies like UPSIDE Foods and Believer Meats are building large-scale facilities using modified pharma equipment, while others bet on novel designs.
+Companies like UPSIDE Foods and Believer Meats have built large-scale facilities using modified pharma equipment, while others (Vow, etc.) are now operating custom food-grade bioreactors at substantially lower cost.
 :::
 
 | Type | Description | Scale | Cost Range | Source |
@@ -562,14 +562,14 @@ Companies like UPSIDE Foods and Believer Meats are building large-scale faciliti
 | **<abbr title="Most common design — a motor-driven impeller stirs the culture. Per Humbird 2021: a 20m³ vessel with agitator costs '$330k' bare, '$1.5M' installed (direct cost factor 3.5).">Stirred-tank</abbr>** | Traditional design with <abbr title="A rotating blade or paddle that mixes the culture">impeller</abbr> mixing | 1-20,000 L | $50-500/L (pharma) | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
 | **<abbr title="Rising air bubbles create circulation without mechanical mixing — gentler on cells">Air-lift</abbr>** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
 | **<abbr title="Cells attach to a 3D scaffold while media flows past — good for structured products">Packed-bed</abbr>** | Cells grow on <abbr title="A 3D structure (like a sponge) that cells can attach to and grow on">scaffolds</abbr>, media flows through | 10-1,000 L | $100-300/L | [Allan et al. 2019](https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2019.00044/full) |
-| **<abbr title="Not yet commercial — designs inspired by beer/dairy fermentation equipment, adapted for cell culture">Custom food-grade</abbr>** | <abbr title="'Designed for food production' means built to food safety standards (like brewing or dairy equipment) rather than pharmaceutical GMP standards. The key difference: pharma equipment requires extensive validation documentation, ultra-precise controls, and 316L stainless steel. Food-grade uses simpler materials and cleaning procedures. The cost savings come from removing pharma-specific requirements, not from the equipment being used for a different food product.">Simplified designs</abbr> <abbr title="Similar to beer brewing or dairy fermentation — large, simple, cheap — but adapted to maintain sterility for cell culture">inspired by food/beverage industry</abbr> | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
+| **<abbr title="Emerging commercial use — designs inspired by beer/dairy fermentation equipment, adapted for cell culture. Vow (Australia) and others now operating custom food-grade bioreactors.">Custom food-grade</abbr>** | <abbr title="'Designed for food production' means built to food safety standards (like brewing or dairy equipment) rather than pharmaceutical GMP standards. The key difference: pharma equipment requires extensive validation documentation, ultra-precise controls, and 316L stainless steel. Food-grade uses simpler materials and cleaning procedures. The cost savings come from removing pharma-specific requirements, not from the equipment being used for a different food product.">Simplified designs</abbr> <abbr title="Similar to beer brewing or dairy fermentation — large, simple, cheap — but adapted to maintain sterility for cell culture">inspired by food/beverage industry</abbr> | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
 
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
 
 **Bioreactor CAPEX accounts for <abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of total production cost at scale</abbr>**, making it a pivotal cost driver. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
 
-**The opportunity:** If cultured meat can use simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)), costs could drop by **10×**.
+**The opportunity — already being realized:** Several companies are now using simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)). Vow (Australia) has built custom food-grade bioreactors at ~80% below pharma costs, and other companies are following suit. If this approach scales successfully, equipment costs could drop by **10x** industry-wide.
 
 | Equipment Type | Cost per Liter | Example Industry |
 |---------------|----------------|------------------|
@@ -582,12 +582,17 @@ Companies like UPSIDE Foods and Believer Meats are building large-scale faciliti
 - Simpler cleaning validation
 - Lower-grade materials (304 vs 316L stainless)
 
-**Contamination is a real risk:** Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This underscores why most cultured meat companies currently use pharma-grade equipment despite the cost premium.
+**Contamination is a real risk:** Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This helps explain why many cultured meat companies have historically relied on pharma-grade equipment, though the trend is shifting: companies like Vow and others are now building custom food-grade bioreactors at substantially lower cost (per a [2025 Lever VC report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive), Vow built a 20,000L bioreactor "well under $1 million," 80% below off-the-shelf costs).
 :::
 
 ### Batch vs. Perfusion: Two Operating Modes
 
-The choice of operating mode is not about different bioreactor *types* — it is about how nutrients are delivered and waste removed within the same basic stirred-tank reactor described above. This choice significantly affects achievable cell density and economics, and maps directly into the **media turnover** parameter in [our cost model](index.qmd): batch mode corresponds to turnover = 1, while perfusion corresponds to turnover = 3-10.
+**TL;DR:** Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the **media turnover** parameter in [our cost model](index.qmd): batch = turnover 1, perfusion = turnover 3-10.
+
+::: {.callout-note collapse="true"}
+## Details: How batch vs. perfusion works (click to expand)
+
+The choice of operating mode is not about different bioreactor *types* — it is about how nutrients are delivered and waste removed within the same basic stirred-tank reactor described above. This choice significantly affects achievable cell density and economics.
 
 - **<abbr title="Fill the reactor with media, grow cells until nutrients depleted, harvest everything at once">Batch mode</abbr>**: Fill → Grow → Harvest all. Simple but limited density.
 - **<abbr title="Continuously pump fresh media in while removing spent media, keeping cells at optimal conditions indefinitely">Perfusion mode</abbr>**: Continuous flow of fresh media, removing waste while retaining cells. Complex but much higher density.
@@ -595,7 +600,7 @@ The choice of operating mode is not about different bioreactor *types* — it is
 *The diagram compares these two operating modes side-by-side. Batch mode (left) harvests everything at once; perfusion (right) continuously adds fresh media and removes spent media while retaining cells.*
 
 ```{=html}
-<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 380px; margin: 1.5rem auto; display: block;">
+<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 280px; margin: 0.5rem auto; display: block;">
   <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
 
   <!-- Batch Mode -->
@@ -668,12 +673,15 @@ The **<abbr title="How many times the media volume is replaced during a producti
 
 - **Turnover = 1**: Batch mode (same media throughout)
 - **Turnover = 5-10**: Perfusion (replace media multiple times)
+:::
 
-Cell densities have improved dramatically:
+::: {.callout-tip}
+## Cell densities have improved dramatically
 
 - **100-200 g/L**: Demonstrated in perfusion systems ([Clincke et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23417786/), [Xu et al. 2023](https://doi.org/10.1016/j.tibtech.2022.08.004))
 - **360 g/L**: Per [PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/): "harvested...cultured fat at 360 g/L" with "1.5 years of continuous culture and over 600 cell divisions"
-- **1.3 × 10¹¹ cells/L**: Believer Meats [2024 study](https://www.nature.com/articles/s43016-024-01022-w) using $0.63/L media, achieving **$6.20/lb** (~$13.67/kg) cultivated chicken
+- **1.3 x 10^11^ cells/L**: Believer Meats [2024 study](https://www.nature.com/articles/s43016-024-01022-w) using $0.63/L media, achieving **$6.20/lb** (~$13.67/kg) cultivated chicken
+:::
 
 ::: {.callout-note collapse="true"}
 ## Batch vs Perfusion Trade-offs (click to expand)
@@ -882,20 +890,22 @@ Different growth factors serve different purposes in the cell lifecycle:
 **Usage:** Typically 10-100 <abbr title="nanograms per milliliter — billionths of a gram per mL">ng/mL</abbr> of each factor, refreshed as media is changed.
 :::
 
-| Factor | Function | <abbr title="Catalog/research-grade prices from suppliers like Sigma-Aldrich, PeproTech, R&D Systems (2024). Bulk production-scale pricing is substantially lower but not publicly available. These catalog prices represent the starting point that must be reduced.">Research Price</abbr> | <abbr title="Target prices needed for cultured meat to reach cost-competitiveness (~$10-25/kg). Per GFI: 'albumin at $10/kg, insulin and transferrin at $1,000/kg, and growth factors at $100,000/kg.' Some companies report approaching these targets via precision fermentation.">Production Target</abbr> | Source |
-|--------|----------|---------------|--------------|--------|
-| **<abbr title="Fibroblast Growth Factor 2, also called basic FGF. At catalog prices ~$2M/g, FGF2 alone can drive production costs to $400K/kg meat (PMC 2024). Halving GF costs could reduce total expenses by up to 10-fold.">FGF-2</abbr>** (bFGF) | <abbr title="Cell division while maintaining stem-like properties">Proliferation, maintain stemness</abbr> | ~$50,000/g | $1-10/g | [CEN 2023](https://cen.acs.org/food/food-science/Inside-effort-cut-cost-cultivated/101/i33) |
-| **<abbr title="Insulin-like Growth Factor 1">IGF-1</abbr>** | <abbr title="Cell division and maturation into muscle">Proliferation, differentiation</abbr> | ~$10,000/g | $1-10/g | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech, R&D Systems) as of 2024. Research-grade pricing; bulk pricing is substantially lower but not publicly available.">Market data</abbr> |
-| **<abbr title="Transforming Growth Factor beta">TGF-β</abbr>** | <abbr title="Maturation into muscle fibers and structural protein production">Differentiation, ECM production</abbr> | ~$1,000,000/g | $10-100/g | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
-| **<abbr title="Epidermal Growth Factor">EGF</abbr>** | <abbr title="General cell division signal">Proliferation</abbr> | ~$5,000/g | $1-10/g | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech) as of 2024. Research-grade pricing.">Market data</abbr> |
+| Factor | Function | <abbr title="Catalog/research-grade prices from suppliers like Sigma-Aldrich, PeproTech, R&D Systems (2024). Bulk production-scale pricing is substantially lower but not publicly available. These catalog prices represent the starting point that must be reduced.">Research Price</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at research-grade prices. Assumes ~50 ng/mL usage and ~20 L media per kg meat (at 50 g/L cell density). Actual values vary with formulation and density.">Cost/kg meat (research)</abbr> | <abbr title="Target prices needed for cultured meat to reach cost-competitiveness (~$10-25/kg). Per GFI: 'albumin at $10/kg, insulin and transferrin at $1,000/kg, and growth factors at $100,000/kg.' Some companies report approaching these targets via precision fermentation.">Production Target</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at target production prices. Same usage assumptions as research column.">Cost/kg meat (target)</abbr> | Source |
+|--------|----------|---------------|--------------|--------------|--------------|--------|
+| **<abbr title="Fibroblast Growth Factor 2, also called basic FGF. At catalog prices ~$2M/g, FGF2 alone can drive production costs to $400K/kg meat (PMC 2024). Halving GF costs could reduce total expenses by up to 10-fold.">FGF-2</abbr>** (bFGF) | <abbr title="Cell division while maintaining stem-like properties">Proliferation, maintain stemness</abbr> | ~$50,000/g | ~$50/kg | $1-10/g | ~$0.001-0.01/kg | [CEN 2023](https://cen.acs.org/food/food-science/Inside-effort-cut-cost-cultivated/101/i33) |
+| **<abbr title="Insulin-like Growth Factor 1">IGF-1</abbr>** | <abbr title="Cell division and maturation into muscle">Proliferation, differentiation</abbr> | ~$10,000/g | ~$10/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech, R&D Systems) as of 2024. Research-grade pricing; bulk pricing is substantially lower but not publicly available.">Market data</abbr> |
+| **<abbr title="Transforming Growth Factor beta">TGF-β</abbr>** | <abbr title="Maturation into muscle fibers and structural protein production">Differentiation, ECM production</abbr> | ~$1,000,000/g | ~$1,000/kg | $10-100/g | ~$0.01-0.10/kg | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
+| **<abbr title="Epidermal Growth Factor">EGF</abbr>** | <abbr title="General cell division signal">Proliferation</abbr> | ~$5,000/g | ~$5/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech) as of 2024. Research-grade pricing.">Market data</abbr> |
+
+*Cost/kg meat estimates assume ~50 ng/mL usage concentration and ~20 L media per kg of output (at 50 g/L cell density). At higher densities (100+ g/L), media usage and GF costs per kg drop proportionally.*
 
 ### Why Are They So Expensive?
 
-Current growth factors are produced for **medical research** markets where volumes are tiny (milligrams), purity requirements are extreme, and customers pay premium prices. Per [GFI](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/): "99% cost reduction may be required for some recombinant proteins compared to how they are currently produced for the biopharmaceutical industry." To hit $10/kg meat with GFs at 10% of cost, "<abbr title="Albumin is a carrier protein — the most abundant protein in blood serum. It is not a growth factor itself but is used in media to stabilize growth factors, transport lipids, and buffer pH. It is needed in much larger quantities than GFs (grams/L vs nanograms/mL).">albumin</abbr> would need to be produced at $10/kg, <abbr title="Insulin and transferrin are supplementary proteins added to serum-free media. Insulin mimics IGF-1 signaling at higher concentrations; transferrin delivers iron to cells. Both are needed at microgram/mL levels — intermediate between bulk nutrients and trace growth factors.">insulin and transferrin</abbr> at $1,000/kg, and growth factors at $100,000/kg."
+Current growth factors are produced for medical research markets where volumes are tiny (milligrams), purity requirements are extreme, and customers pay premium prices. Per [GFI](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/): "99% cost reduction may be required for some recombinant proteins compared to how they are currently produced for the biopharmaceutical industry." To hit $10/kg meat with GFs at 10% of cost, "<abbr title="Albumin is a carrier protein — the most abundant protein in blood serum. It is not a growth factor itself but is used in media to stabilize growth factors, transport lipids, and buffer pH. It is needed in much larger quantities than GFs (grams/L vs nanograms/mL).">albumin</abbr> would need to be produced at $10/kg, <abbr title="Insulin and transferrin are supplementary proteins added to serum-free media. Insulin mimics IGF-1 signaling at higher concentrations; transferrin delivers iron to cells. Both are needed at microgram/mL levels — intermediate between bulk nutrients and trace growth factors.">insulin and transferrin</abbr> at $1,000/kg, and growth factors at $100,000/kg."
 
 ### Solutions Being Developed for All Expensive Growth Factors
 
-The approaches below aim to reduce costs for **all** the expensive recombinant proteins above (FGF-2, IGF-1, TGF-β, EGF), not just one specific factor. Each approach could in principle produce any protein cheaply at scale.
+The approaches below aim to reduce costs for all the expensive recombinant proteins above (FGF-2, IGF-1, TGF-β, EGF), not just one specific factor. Each approach could in principle produce any protein cheaply at scale.
 
 | Approach | Mechanism | Status | Target Price | Source |
 |----------|-----------|--------|--------------|--------|
@@ -1024,8 +1034,8 @@ Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/
 
 Many foundational TEA analyses in this field date from 2021 (Humbird, Risner et al., CE Delft, GFI). These remain widely cited because they established the analytical frameworks still in use. Where possible, we supplement with more recent data:
 
-- **2024**: [PMC meta-analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/) (Garrison et al.), [Believer Meats Nature Food study](https://www.nature.com/articles/s43016-024-01022-w), [Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3)
-- **2025**: [Industry cost survey](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive), [PMC 2025 media analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)
+- **2024**: [Garrison et al. (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/) — referenced throughout for cost projections (~$63/kg), cell density records (360 g/L), bioreactor CAPEX estimates, and media cost data; [Believer Meats Nature Food study](https://www.nature.com/articles/s43016-024-01022-w), [Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3)
+- **2025**: [Industry cost survey](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive) (Lever VC)
 
 The field is evolving rapidly. If you know of newer sources we should cite, please add a Hypothesis comment!
 :::
