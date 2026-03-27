@@ -22,13 +22,10 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 **Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.
 
 **[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
+
+**Other ways to reach us:** [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new) · [Email contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 
-::: {.callout-tip collapse="true"}
-## More Ways to Engage (click to expand)
-
-- **GitHub issues**: [Open an issue](https://github.com/unjournal/cm_pq_modeling/issues/new)
-- **Email**: [contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 
 ```{=html}
@@ -593,12 +590,30 @@ function spearmanCorr(x, y) {
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
 viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
 viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
+viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: false})
+```
+
+```{ojs}
+//| echo: false
+viewof blending_share = include_blending
+  ? Inputs.range([0.05, 1.0], {
+      value: 0.25, step: 0.05,
+      label: "CM inclusion rate"
+    })
+  : 0.25
+viewof filler_cost = include_blending
+  ? Inputs.range([1, 10], {
+      value: 3, step: 0.5,
+      label: "Filler cost ($/kg)"
+    })
+  : 3
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - **CAPEX**: Bioreactor and facility capital costs, annualized. **On by default** because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
 - **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size). **On by default** for the same reason. Toggle off to focus on marginal costs only.
 - **Downstream**: Scaffolding, texturization, and forming for structured products. **Off by default** because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2-15/kg.
+- **Blended product cost**: Most cultivated meat products in development are hybrids — e.g., 10-30% cultured cells blended with plant-based filler. Toggle on to see estimated blended ingredient cost alongside pure cell cost. Default: 25% CM inclusion, $3/kg filler (plant protein / mycoprotein).
 
 **Note:** Most published TEAs report costs with CAPEX and Fixed OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
@@ -680,6 +695,23 @@ Probability that each cost-reducing technology is widely adopted by the projecti
 
 ```{ojs}
 //| echo: false
+viewof reset_adoption = Inputs.button("Reset adoption defaults", {
+  reduce: () => {
+    // Set viewof values back to defaults
+    viewof p_hydro.value = 0.75;
+    viewof p_hydro.dispatchEvent(new Event("input", {bubbles: true}));
+    viewof p_foodgrade.value = 0.65;
+    viewof p_foodgrade.dispatchEvent(new Event("input", {bubbles: true}));
+    viewof p_recfactors.value = 0.5;
+    viewof p_recfactors.dispatchEvent(new Event("input", {bubbles: true}));
+    viewof gf_progress.value = 50;
+    viewof gf_progress.dispatchEvent(new Event("input", {bubbles: true}));
+  }
+})
+```
+
+```{ojs}
+//| echo: false
 viewof p_hydro = Inputs.range([0.3, 0.95], {
   value: 0.75, step: 0.05,
   label: "P(Hydrolysates for basal media)"
@@ -744,19 +776,12 @@ viewof p_recfactors = Inputs.range([0.1, 0.9], {
 //| echo: false
 viewof gf_progress = Inputs.range([0, 100], {
   value: 50, step: 5,
-  label: "GF cost reduction progress (%)"
+  label: html`GF cost reduction by ${target_year} (%)`
 })
 ```
 <details><summary>What do these sliders control? (click to expand)</summary>
 
-**Two controls for growth factors:**
-
-1. **P(Scalable GF technology)** — Probability that *at least one* breakthrough production method reaches commercial scale. This switches between "expensive" and "cheap" price distributions.
-
-2. **GF cost reduction progress** — How far along the price reduction curve we are within each regime:
-   - **0%** = Current prices ($5,000-500,000/g expensive; $100-10,000/g cheap)
-   - **50%** = Midway
-   - **100%** = Industry target achieved ($1-100/g cheap; $50-5,000/g expensive)
+**Two controls for growth factors:** (1) **P(Scalable GF technology)** sets the probability of a breakthrough reaching commercial scale (switches between "expensive" and "cheap" price regimes). (2) **GF cost reduction progress** sets how far prices have fallen within each regime by the projection year — 0% = current prices, 100% = industry targets achieved.
 
 **Growth factors** are signaling proteins (FGF-2, IGF-1, TGF-β, etc.) that tell cells to proliferate. Currently **the most expensive media component** — often 55-95% of media cost at research scale.
 
@@ -905,6 +930,9 @@ results = {
 // Calculate statistics
 stats = {
   const uc = results.unit_cost;
+  const bs = typeof blending_share === "number" ? blending_share : 0.25;
+  const fc = typeof filler_cost === "number" ? filler_cost : 3;
+  const blended = uc.map(c => c * bs + fc * (1 - bs));
   return {
     n: uc.length,
     p5: quantile(uc, 0.05),
@@ -913,7 +941,10 @@ stats = {
     prob_10: uc.filter(x => x < 10).length / uc.length * 100,
     prob_25: uc.filter(x => x < 25).length / uc.length * 100,
     prob_50: uc.filter(x => x < 50).length / uc.length * 100,
-    prob_100: uc.filter(x => x < 100).length / uc.length * 100
+    prob_100: uc.filter(x => x < 100).length / uc.length * 100,
+    blended_p50: quantile(blended, 0.50),
+    blended_p5: quantile(blended, 0.05),
+    blended_p95: quantile(blended, 0.95)
   };
 }
 ```
@@ -925,7 +956,7 @@ stats = {
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
 <strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of pure cultured chicken cells</strong> (wet weight, unprocessed) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce cell mass in a bioreactor — not the cost of a consumer product, and not retail price.
 <br><br>
-<strong>Pure cells vs. consumer products:</strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
+<strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix.">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
 <strong>Why it matters:</strong> If production costs for pure cells reach <strong>~$10/kg</strong>, even 100% cultured products could compete with conventional chicken. At <strong>$25-50/kg</strong>, hybrid products with moderate cell inclusion rates may still reach price parity. If costs remain <strong>>$100/kg</strong>, even hybrid products face significant price premiums. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
 </div>`
@@ -938,7 +969,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Median Cost (p50)</h4>
 <h2 style="margin: 0.5rem 0;">$${stats.p50.toFixed(1)}/kg</h2>
-<small>Half of simulations above, half below</small>
+<small>Pure cell mass — half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
@@ -955,9 +986,12 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 </div>
 
-<div style="background: #fef9e7; border-left: 4px solid #f39c12; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
-<strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$$${(stats.p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median). See the note above on pure cells vs. consumer products.
-</div>
+${include_blending ? html`<div style="background: #eaf7ea; border-left: 4px solid #27ae60; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
+<strong>Blended product estimate (${Math.round(blending_share * 100)}% CM, ${Math.round((1-blending_share)*100)}% filler at $${filler_cost}/kg):</strong>
+Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.blended_p5.toFixed(1)} – $${stats.blended_p95.toFixed(1)}/kg
+</div>` : html`<div style="background: #fef9e7; border-left: 4px solid #f39c12; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
+<strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$${(stats.p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median). Enable "Show blended product cost" in the sidebar to adjust these assumptions.
+</div>`}
 
 </div>`
 ```
@@ -982,7 +1016,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
     marginLeft: 60,
     marginBottom: 50,
     x: {
-      label: "Unit Production Cost ($/kg)",
+      label: "Unit Production Cost ($/kg pure cell mass)",
       domain: [0, clipVal * 1.05]
     },
     y: {
@@ -1079,10 +1113,10 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
   const total = components.reduce((s, c) => s + c.value, 0);
 
   return Plot.plot({
-    width: 900,
-    height: 420,
-    marginLeft: 160,
-    marginRight: 110,
+    width: 1000,
+    height: 520,
+    marginLeft: 180,
+    marginRight: 120,
     x: {
       label: "Average Cost ($/kg)",
       grid: true
@@ -1105,7 +1139,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
         fontSize: 12
       })
     ],
-    title: `Cost Breakdown by Component (Total: $${total.toFixed(2)}/kg)`
+    title: `Cost Breakdown by Component (Total: $${Math.round(total)}/kg)`
   })
 }
 ```
@@ -1115,9 +1149,9 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 
 **Variable Operating Costs (VOC):**
 
-- **Media**: Nutrient broth for cell growth (amino acids, glucose, vitamins)
-- **Comm. Micros**: Commercial micronutrients (minerals, trace elements)
-- **Recombinant**: Growth factors (proteins signaling cell division)
+- **[Media](learn.html#media-composition-40-70-of-total-cost)**: Nutrient broth for cell growth (amino acids, glucose, vitamins)
+- **[Comm. Micros](learn.html#hydrolysates-the-big-win-for-amino-acids)**: Commercial micronutrients (minerals, trace elements)
+- **[Recombinant](learn.html#step-5-growth-factors-a-key-cost-driver)**: Growth factors (proteins signaling cell division)
 - **Other VOC**: Utilities, consumables, waste disposal
 
 **Fixed Costs:**
