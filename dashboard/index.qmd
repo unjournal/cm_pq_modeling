@@ -1326,7 +1326,7 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
 
 ### Industry Maturity Deep Dive
 
-The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that correlates multiple model inputs. Higher maturity means:
+The **maturity factor** is a continuous variable ranging from 0 (nascent industry) to 1 (fully mature) that correlates multiple model inputs. It is not binary — intermediate values represent partial industry development. Higher maturity means:
 
 - Higher technology adoption rates
 - Lower reactor costs (more custom/food-grade)
@@ -1482,7 +1482,7 @@ This correlation structure prevents unrealistic scenarios where technology succe
 
 2. **Adjust parameters** in the left sidebar. Each parameter has an expandable explanation.
 
-3. **Results update automatically** as you change parameters - no need to click a button.
+3. **Results update automatically** as you change the Basic Parameters sliders — the summary cards, cost distribution, and probability thresholds all recalculate. (The Component Distributions section shows the underlying distributions and updates when you change the relevant sliders.)
 
 4. **Navigate the results** to see:
    - **Cost Distribution**: Full probability distribution with key percentiles
@@ -1556,7 +1556,10 @@ The table below summarizes typical outcomes from this interactive model at diffe
 
 ---
 
-## Limitations
+::: {.callout-warning collapse="true"}
+## Limitations & Caveats
+
+**Model status (March 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we're interested in, and present a framework for discussion and comparison — not a definitive cost estimate. We welcome scrutiny and suggestions via [Hypothesis annotations](https://hypothes.is/) or [email](mailto:contact@unjournal.org).
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
@@ -1565,6 +1568,7 @@ The table below summarizes typical outcomes from this interactive model at diffe
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
 4. **Limited contamination modeling** — No batch failure or contamination event distributions.
+:::
 
 ---
 

@@ -9,7 +9,7 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-important}
+::: {.callout-note collapse="true"}
 ## 🔬 Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
 This page provides background for [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. We're bringing together TEA researchers, evaluators, and stakeholders to assess cost trajectories and identify key uncertainties. **[Join us →](https://uj-cm-workshop.netlify.app/schedule.html)**
 :::
@@ -88,7 +88,7 @@ abbr[title]:hover::before {
 
 ## Overview
 
-**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with leading companies achieving <$10/kg cell mass. This page explains the production process in detail and how each step affects costs. **To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).**
+**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for **pure cultured cells**, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. **To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).**
 
 *The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
@@ -198,7 +198,7 @@ Several factors make chicken an attractive first target for cultured meat:
 
 ## Step 1: Cell Banking
 
-<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: cell banking is a one-time setup cost amortized over many production runs. At 20 kTA scale, the per-kg contribution is negligible — well under $0.10/kg vs. $37/kg total. Risner et al. 2021 do not itemize it separately, treating it as part of overhead.">&lt;1% of total production cost at scale</abbr>**</span>
+<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: cell banking is a one-time setup cost amortized over many production runs. At 20 kTA scale, the per-kg contribution is negligible — well under $0.10/kg vs. $37/kg total. Risner et al. 2021 and GFI (2020) do not itemize it separately, treating it as part of overhead.">&lt;1% of total production cost at scale</abbr>**</span>
 
 ### What Happens
 
@@ -302,7 +302,7 @@ A well-characterized cell bank can support years of production ([GFI 2021](https
 ::: {.callout-note collapse="true"}
 ## Why the Hayflick Limit Matters (click to expand)
 
-The **<abbr title="Per Hayflick 1961: 'normal human fetal cell population will divide between 40 and 60 times in cell culture before entering a senescence phase.' Primary fibroblasts undergo 'PD 50 ± 10' before stopping.">Hayflick limit</abbr>** (doubling limit) of cells matters enormously for cost:
+The **<abbr title="Per Hayflick 1961: 'normal human fetal cell population will divide between 40 and 60 times in cell culture before entering a senescence phase.' Primary fibroblasts undergo 'PD 50 ± 10' before stopping.">Hayflick limit</abbr>** (doubling limit) of cells matters for cell banking logistics and cost, though the per-kg impact at scale is small (<1% of total):
 
 - **Primary satellite cells** can only double ~50-80 times before <abbr title="Per Nature 2025: 'reduction of differentiation capacity in myoblasts, unfortunately, precedes replicative senescence' — cells lose function before hitting the doubling limit">senescing</abbr> ([Hayflick 1965](https://pubmed.ncbi.nlm.nih.gov/14315085/), [Nature 2025](https://www.nature.com/articles/s42003-025-09180-8))
 - This means you need **frequent cell bank renewals** (new biopsies, characterization, validation)
@@ -422,7 +422,7 @@ The <abbr title="The sequence of progressively larger vessels used to expand cel
 
 - Uses **expensive, small-scale equipment** (research-grade, often <abbr title="Disposable plastic bioreactor bags/vessels — avoid cleaning validation but add consumable costs">single-use</abbr>)
 - Requires **manual handling** and skilled labor ($50-150/hour <abbr title="'Fully loaded' = total employer cost including salary plus benefits, payroll taxes, insurance, training, and overhead. Per Humbird 2021: '$50,000/y for regular FTEs' with '100% labor burden' = $100k total. Fed-batch needs '95 total FTE'; perfusion needs '132 FTE'.">fully loaded</abbr>)
-- Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives">pharma-grade</abbr> at $5-20/L, though many companies now use food-grade)
+- Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives. Per Humbird 2021: pharma-grade media at $5-20/L; food-grade alternatives at $0.50-2/L (per Lever VC 2025 claims).">pharma-grade</abbr> at $5-20/L, though many companies now use food-grade at $0.50-2/L)
 
 ::: {.callout-note collapse="true"}
 ## Are Companies Still Using Pharma-Grade? (click to expand)
@@ -433,7 +433,7 @@ The <abbr title="The sequence of progressively larger vessels used to expand cel
 - **Equipment**: Vow built a 20,000L bioreactor "well under $1 million" (80% below off-the-shelf costs)
 - **Cell density**: Companies achieving "60-90 g/L" vs Humbird's 60 g/L maximum projection
 
-Production COGS for cell mass now "$10-15/kg, with some leading-edge companies achieving costs below $10/kg" — up to 50% lower than the 2021 projections.
+Per the same report, production COGS for cell mass are claimed to be "$10-15/kg, with some leading-edge companies claiming costs below $10/kg" — up to 50% lower than the 2021 projections. *Note: these claims come from a [Lever VC report](https://www.levervc.com/) authored by CM investors and have not been independently verified.*
 :::
 
 ::: {.callout-tip collapse="true"}
@@ -441,11 +441,11 @@ Production COGS for cell mass now "$10-15/kg, with some leading-edge companies a
 
 **<abbr title="Grams of cells per liter of media — higher is better for cost efficiency">Cell density</abbr>** is one of the most important parameters for cost:
 
-| Density | Media needed for 1 kg meat | Relative cost |
-|---------|---------------------------|---------------|
-| 30 g/L | 33 liters | 100% (baseline) |
-| 100 g/L | 10 liters | 30% |
-| 200 g/L | 5 liters | 15% |
+| Density | Media needed for 1 kg meat | Relative media cost | Est. media cost/kg (at $1/L) |
+|---------|---------------------------|---------------|------|
+| 30 g/L | 33 liters | 100% (baseline) | ~$33/kg |
+| 100 g/L | 10 liters | 30% | ~$10/kg |
+| 200 g/L | 5 liters | 15% | ~$5/kg |
 
 Higher density means:
 

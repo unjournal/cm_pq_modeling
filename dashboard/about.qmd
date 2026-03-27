@@ -23,12 +23,16 @@ The cultured chicken pivotal question asks:
 
 > What will be the production cost of cultured chicken by [target year], and what are the implications for animal welfare?
 
-This model helps evaluators and forecasters:
+::: {.callout-warning}
+**Model status (March 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we want, and surface doubts and disagreements — a framework for discussion and comparison, not a definitive cost estimate. We welcome scrutiny and suggestions.
+:::
+
+This model aims to help evaluators and forecasters:
 
 1. **Quantify uncertainty** in cost projections
 2. **Identify key drivers** of cost reduction
 3. **Compare scenarios** based on technology adoption
-4. **Inform funding decisions** for animal welfare organizations
+4. **Provide a framework** for structured discussion and collaborative refinement
 
 ## Model Development
 
