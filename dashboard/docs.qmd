@@ -41,11 +41,11 @@ This section presents the model structure **top-down**: starting with the final 
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
 | 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + Micros + GFs + Other | — |
 | 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × turnover × $/L | density (g/L), turnover, $/L |
-| 2b | **[Growth Factors](#growth-factor-cost)** | g_GF × P_GF | quantity (g/kg), price ($/g) |
+| 2b | **[Growth Factors](#growth-factor-cost)** | g<sub>GF</sub> &times; P<sub>GF</sub> | quantity (g/kg), price ($/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
-| 3a | **[CRF](#annualized-capital-costs)** | r(1+r)^n / ((1+r)^n - 1) | r=WACC, n=years |
-| 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX_ref × (Q/Q_ref)^s | s=0.6-0.9 |
-| 4 | **[Adoption](#how-maturity-adjusts-adoption-probabilities)** | bound(P_base + k(m-0.5), 0, 1) | k, m (maturity) |
+| 3a | **[CRF](#annualized-capital-costs)** | r(1+r)<sup>n</sup> / ((1+r)<sup>n</sup> &minus; 1) | r=WACC, n=years |
+| 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX<sub>ref</sub> &times; (Q/Q<sub>ref</sub>)<sup>s</sup> | s=0.6-0.9 |
+| 4 | **[Adoption](#how-maturity-adjusts-adoption-probabilities)** | bound(P<sub>base</sub> + k(m&minus;0.5), 0, 1) | k, m (maturity) |
 
 Click any link to jump to the detailed explanation.
 :::
