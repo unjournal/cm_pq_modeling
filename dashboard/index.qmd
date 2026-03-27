@@ -26,8 +26,6 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 **Other ways to reach us:** [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new) · [Email contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 
-:::
-
 ```{=html}
 <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem 0;">
   <button id="toggle-hypothesis" onclick="toggleHypothesis()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa;">
@@ -583,6 +581,32 @@ function spearmanCorr(x, y) {
 
 ::: {.panel-sidebar}
 
+```{ojs}
+//| echo: false
+viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value: true})
+```
+
+```{ojs}
+//| echo: false
+html`<div id="simplified-note" style="display: ${simpleMode ? 'block' : 'none'}; background: #f0f4e8; border-left: 4px solid #5a7a5a; padding: 0.7rem 0.9rem; margin-bottom: 1rem; font-size: 0.82em; line-height: 1.5; border-radius: 0 4px 4px 0;">
+<strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, food-grade micronutrients, media turnover) are set to reasonable defaults.
+In our sensitivity analysis, these contribute less than 10% of the variance in cost estimates.
+<em>Switch off to adjust all parameters.</em>
+</div>`
+```
+
+```{ojs}
+//| echo: false
+// Reactive style block to hide/show full-mode-only inputs
+html`<style>
+  .full-mode-only { display: ${simpleMode ? 'none' : 'block'}; }
+</style>`
+```
+
+```{=html}
+<div class="full-mode-only">
+```
+
 **Model Structure**
 
 ```{ojs}
@@ -595,18 +619,16 @@ viewof include_blending = Inputs.toggle({label: "Show blended product cost", val
 
 ```{ojs}
 //| echo: false
-viewof blending_share = include_blending
-  ? Inputs.range([0.05, 1.0], {
-      value: 0.25, step: 0.05,
-      label: "CM inclusion rate"
-    })
-  : 0.25
-viewof filler_cost = include_blending
-  ? Inputs.range([1, 10], {
-      value: 3, step: 0.5,
-      label: "Filler cost ($/kg)"
-    })
-  : 3
+viewof blending_share = Inputs.range([0.05, 1.0], {
+    value: 0.25, step: 0.05,
+    label: "CM inclusion rate",
+    disabled: !include_blending
+  })
+viewof filler_cost = Inputs.range([1, 10], {
+    value: 3, step: 0.5,
+    label: "Filler cost ($/kg)",
+    disabled: !include_blending
+  })
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
@@ -618,9 +640,17 @@ viewof filler_cost = include_blending
 **Note:** Most published TEAs report costs with CAPEX and Fixed OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
 
+```{=html}
+</div>
+```
+
 ---
 
-**Basic Parameters**
+**Key Parameters**
+
+```{=html}
+<div class="full-mode-only">
+```
 
 These sliders set the **center** of each parameter's distribution used in the Monte Carlo simulation. They are not simple point estimates -- the simulation samples around these values. For example, setting Plant Capacity to 20 kTA means the simulation draws plant sizes from a lognormal distribution centered near 20 kTA (specifically, p5=10 and p95=40). All charts and results below update dynamically as you adjust these sliders.
 
@@ -658,6 +688,10 @@ viewof uptime = Inputs.range([0.6, 0.99], {
 <details><summary>What is this?</summary>
 Fraction of capacity actually used. Accounts for downtime, cleaning, maintenance. 90% is optimistic for new industry.
 </details>
+
+```{=html}
+</div>
+```
 
 ```{ojs}
 //| echo: false
@@ -740,6 +774,10 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
+```{=html}
+<div class="full-mode-only">
+```
+
 ```{ojs}
 //| echo: false
 viewof p_foodgrade = Inputs.range([0.1, 0.9], {
@@ -762,6 +800,10 @@ Pharma-grade uses ultra-pure compounds at precise concentrations. Food-grade use
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
+
+```{=html}
+</div>
+```
 
 <a id="growth-factors-explanation"></a>
 ```{ojs}
@@ -828,6 +870,10 @@ The probability slider represents whether **at least one** of these technology a
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
+```{=html}
+<div class="full-mode-only">
+```
+
 ---
 
 **Financing**
@@ -860,12 +906,13 @@ viewof asset_life_hi = Inputs.range([10, 30], {
 These two parameters together determine the **Capital Recovery Factor**: CRF = r(1+r)^n / ((1+r)^n - 1), where r = WACC and n = asset life in years.
 </details>
 
+```{=html}
+</div>
+```
+
 ---
 
-**Advanced: Process Intensities**
-
-<details>
-<summary>Show advanced parameters</summary>
+**Cell Density Range**
 
 ```{ojs}
 //| echo: false
@@ -877,6 +924,22 @@ viewof density_hi = Inputs.range([50, 300], {
   value: 200, step: 10,
   label: "Cell Density High (g/L)"
 })
+```
+<details><summary>What is cell density? (click to expand)</summary>
+Cell density (g/L) determines how much meat you get per liter of media. Higher density = less media per kg of product = lower cost. Current lab scale: 10-50 g/L. TEA projections: 50-200 g/L. This is a key driver of media efficiency.
+</details>
+
+```{=html}
+<div class="full-mode-only">
+```
+
+**Advanced: Media Turnover**
+
+<details>
+<summary>Show media turnover parameters</summary>
+
+```{ojs}
+//| echo: false
 viewof media_turnover_lo = Inputs.range([1, 5], {
   value: 1, step: 1,
   label: "Media Turnover Low"
@@ -887,6 +950,10 @@ viewof media_turnover_hi = Inputs.range([2, 20], {
 })
 ```
 </details>
+
+```{=html}
+</div>
+```
 
 :::
 
@@ -903,24 +970,24 @@ results = {
   const adjustedMaturity = maturity * (0.5 + 0.5 * yearFactor);
 
   const params = {
-    plant_kta_p5: plant_capacity * 0.5,
-    plant_kta_p95: plant_capacity * 2.0,
-    uptime_mean: uptime,
+    plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
+    plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,
+    uptime_mean: simpleMode ? 0.90 : uptime,
     maturity_mean: adjustedMaturity,
     p_hydro_mean: p_hydro,
-    p_foodgrade_mean: p_foodgrade,
+    p_foodgrade_mean: simpleMode ? 0.65 : p_foodgrade,
     p_recfactors_mean: p_recfactors,
-    wacc_p5: wacc_lo / 100,
-    wacc_p95: wacc_hi / 100,
-    asset_life_lo: asset_life_lo,
-    asset_life_hi: asset_life_hi,
+    wacc_p5: simpleMode ? 0.08 : wacc_lo / 100,
+    wacc_p95: simpleMode ? 0.20 : wacc_hi / 100,
+    asset_life_lo: simpleMode ? 8 : asset_life_lo,
+    asset_life_hi: simpleMode ? 20 : asset_life_hi,
     density_gL_p5: density_lo,
     density_gL_p95: density_hi,
-    media_turnover_p5: media_turnover_lo,
-    media_turnover_p95: media_turnover_hi,
-    include_capex: include_capex,
-    include_fixed_opex: include_fixed_opex,
-    include_downstream: include_downstream,
+    media_turnover_p5: simpleMode ? 1 : media_turnover_lo,
+    media_turnover_p95: simpleMode ? 10 : media_turnover_hi,
+    include_capex: simpleMode ? true : include_capex,
+    include_fixed_opex: simpleMode ? true : include_fixed_opex,
+    include_downstream: simpleMode ? false : include_downstream,
     gf_progress: gf_progress
   };
 
