@@ -84,27 +84,48 @@ function toggleHypothesis() {
 function toggleFullWidth() {
   const body = document.body;
   const btn = document.getElementById('toggle-fullwidth');
-  // Quarto uses different selectors - try multiple
-  const contentSelectors = ['main.content', 'main', '.page-columns', '#quarto-content'];
+  // Quarto full-page layout uses column classes and sidebar
+  const contentSelectors = [
+    'main.content', 'main', '.page-columns', '#quarto-content',
+    '.column-page', '.column-body', '.column-body-outset',
+    '.panel-fill', '.panel-sidebar', '#quarto-sidebar',
+    '.page-layout-full .content'
+  ];
 
   if (body.classList.contains('fullwidth-mode')) {
     body.classList.remove('fullwidth-mode');
-    for (const sel of contentSelectors) {
-      const el = document.querySelector(sel);
-      if (el) {
-        el.style.maxWidth = '';
-        el.style.width = '';
-      }
-    }
+    // Remove injected style
+    const injected = document.getElementById('fullwidth-style');
+    if (injected) injected.remove();
     btn.textContent = 'Expand Content';
   } else {
     body.classList.add('fullwidth-mode');
-    for (const sel of contentSelectors) {
-      const el = document.querySelector(sel);
-      if (el) {
-        el.style.maxWidth = '100%';
-        el.style.width = '100%';
-      }
+    // Inject a style tag to override Quarto's layout constraints
+    if (!document.getElementById('fullwidth-style')) {
+      const style = document.createElement('style');
+      style.id = 'fullwidth-style';
+      style.textContent = `
+        body.fullwidth-mode #quarto-content,
+        body.fullwidth-mode main.content,
+        body.fullwidth-mode main,
+        body.fullwidth-mode .page-columns,
+        body.fullwidth-mode .column-body,
+        body.fullwidth-mode .column-page {
+          max-width: 100% !important;
+          width: 100% !important;
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+        body.fullwidth-mode #quarto-sidebar,
+        body.fullwidth-mode #quarto-margin-sidebar,
+        body.fullwidth-mode .sidebar {
+          display: none !important;
+        }
+        body.fullwidth-mode .page-columns {
+          grid-template-columns: 1fr !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
     btn.textContent = 'Normal Width';
     // Also hide hypothesis when going fullwidth
