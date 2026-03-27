@@ -9,18 +9,13 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-important}
-## 🔬 Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
-This model feeds into [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. **[Workshop details & signup →](https://uj-cm-workshop.netlify.app/schedule.html)**
-:::
-
-::: {.callout-note}
-## 💬 We Want Your Feedback!
-**Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the documentation based on your feedback.
-:::
-
 ::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[🎧 Audio Review (22 min MP3)](model_review_report.mp3)**
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[🎧 Audio Review (22 min MP3)](model_review_report.mp3)** | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**
+:::
+
+::: {.callout-note collapse="true"}
+## 💬 Feedback & Annotations
+Comment directly on this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We aim to respond to all comments.
 :::
 
 ## Overview

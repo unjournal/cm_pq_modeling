@@ -10,15 +10,15 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-important}
-## 🔬 Upcoming Workshop: Cultivated Meat Cost Trajectories
+::: {.callout-note collapse="true"}
+## Upcoming Workshop: Cultivated Meat Cost Trajectories
 We're organizing an online expert workshop (late April / early May 2026) to dig into the key cost cruxes — media costs, bioreactor scale-up, and the gap between TEA projections and commercial reality. This model is one of the tools we'll use.
 
 **[Workshop details & signup →](https://uj-cm-workshop.netlify.app/)** · **[State your cost beliefs →](https://uj-cm-workshop.netlify.app/beliefs.html)**
 :::
 
-::: {.callout-note}
-## 💬 We Want Your Feedback!
+::: {.callout-note collapse="true"}
+## We Want Your Feedback!
 **Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.
 
 **[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
@@ -179,11 +179,13 @@ This model uses **Monte Carlo simulation**: we sample thousands of possible futu
 
 **Distribution Types Used:**
 
-| Parameter Type | Distribution | Why |
-|---------------|--------------|-----|
-| Costs, intensities | **Lognormal** | Always positive, right-skewed (some very high values possible) |
-| Probabilities, fractions | **Beta** | Bounded between 0 and 1, flexible shape |
-| Bounded ranges | **Uniform** | Equal probability within bounds |
+| Parameter Type | Distribution | Why | Examples in model |
+|---------------|--------------|-----|-------------------|
+| Costs, intensities | **Lognormal** | Always positive, right-skewed (some very high values possible) | Media cost per liter, GF price per gram, cell density |
+| Probabilities, fractions | **Beta** | Bounded between 0 and 1, flexible shape | Maturity factor, adoption probabilities, uptime. For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption *probability* from a Beta distribution, then uses a Bernoulli draw to determine whether each simulation run uses the "adopted" or "non-adopted" cost regime. |
+| Bounded ranges | **Uniform** | Equal probability within bounds, used when we have only a plausible range and no reason to favor values within it | Asset life (years), CAPEX scale exponent, fixed OPEX scaling factor |
+
+We are open to considering alternative distributional forms (e.g., triangular, PERT, or mixture distributions) and to making the modeling flexible enough for users to select or compare different distributional assumptions. Suggestions are welcome via Hypothesis annotations.
 
 **Reading the Results:**
 
@@ -200,6 +202,13 @@ A key feature is the **latent maturity factor** that links:
 - Financing costs (WACC)
 
 In "good worlds" for cultured chicken (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
+
+This approach draws on the concept of **copula-based correlation** in Monte Carlo simulation, where a shared latent variable induces dependence among otherwise independent marginal distributions. See [Vose (2008), *Risk Analysis*](https://www.wiley.com/en-us/Risk+Analysis%3A+A+Quantitative+Guide-p-9780470512845) for a textbook treatment of correlated sampling in cost models, and [Morgan & Henrion (1990), *Uncertainty*](https://doi.org/10.1017/CBO9780511840609) for foundational discussion of dependent uncertainties.
+
+<details><summary>More detail on the maturity factor implementation</summary>
+
+The maturity factor is sampled once per simulation from a Beta distribution (mean set by the "Industry Maturity" slider, standard deviation 0.20). It then **shifts** the adoption probabilities (hydrolysates, food-grade, recombinant GFs) and **adjusts** WACC downward in high-maturity draws. This creates positive correlation among "good news" variables without imposing a rigid structure. The strength of the correlation is moderate by design -- maturity explains some but not all of the variation in each parameter.
+</details>
 :::
 
 ---
@@ -564,18 +573,20 @@ viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", va
 viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
 viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
 ```
-<details><summary>What are these options?</summary>
+<details><summary>What are these options? Why would you toggle them?</summary>
 
-- **CAPEX**: Bioreactor and facility capital costs, annualized
-- **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size)
-- **Downstream**: Scaffolding, texturization, and forming for structured products
+- **CAPEX**: Bioreactor and facility capital costs, annualized. **On by default** because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
+- **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size). **On by default** for the same reason. Toggle off to focus on marginal costs only.
+- **Downstream**: Scaffolding, texturization, and forming for structured products. **Off by default** because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2-15/kg.
 
-**Note:** Downstream processing adds $2-15/kg for structured products (steaks, chicken breast). Not needed for ground meat applications.
+**Note:** Most published TEAs report costs with CAPEX and Fixed OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
 
 ---
 
 **Basic Parameters**
+
+These sliders set the **center** of each parameter's distribution used in the Monte Carlo simulation. They are not simple point estimates -- the simulation samples around these values. For example, setting Plant Capacity to 20 kTA means the simulation draws plant sizes from a lognormal distribution centered near 20 kTA (specifically, p5=10 and p95=40). All charts and results below update dynamically as you adjust these sliders.
 
 ```{ojs}
 //| echo: false
@@ -584,9 +595,11 @@ viewof plant_capacity = Inputs.range([5, 100], {
   label: "Plant Capacity (kTA/yr)"
 })
 ```
-<details><summary>What is this? (click to expand)</summary>
+<details><summary>What is this? Where do these ranges come from? (click to expand)</summary>
 
 **Annual production capacity** in thousand metric tons (kTA). Current pilots: <1 kTA. Commercial target: 10-50 kTA.
+
+**Slider range (5-100 kTA):** The lower bound (5 kTA) represents a modest first-generation commercial facility. The upper bound (100 kTA) represents an optimistic large-scale facility. The default (20 kTA) matches the reference scale in [Risner et al. (2021)](https://www.mdpi.com/2304-8158/10/1/3) and is a commonly used benchmark in TEA literature.
 
 **What plant size affects:**
 
@@ -792,6 +805,14 @@ viewof asset_life_hi = Inputs.range([10, 30], {
   label: "Asset Life High (years)"
 })
 ```
+<details><summary>What are WACC and Asset Life? (click to expand)</summary>
+
+**WACC (Weighted Average Cost of Capital):** The blended rate of return required by debt and equity investors, used to annualize capital costs via the Capital Recovery Factor (CRF). A WACC of 8% is typical for established food manufacturing; 20%+ reflects the high risk premium investors demand for an unproven technology. The simulation samples WACC from a lognormal distribution between these bounds, further adjusted by the maturity factor.
+
+**Asset Life:** How many years bioreactor and facility equipment is depreciated over. Shorter life (8 years) means higher annual capital charges; longer life (20 years) spreads costs but assumes equipment remains productive. The range reflects uncertainty about equipment durability in a novel industry.
+
+These two parameters together determine the **Capital Recovery Factor**: CRF = r(1+r)^n / ((1+r)^n - 1), where r = WACC and n = asset life in years.
+</details>
 
 ---
 
@@ -881,9 +902,11 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of cultured chicken</strong> (wet weight, unprocessed) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce meat in a bioreactor — not retail price, which would include processing, distribution, and margins.
+<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of pure cultured chicken cells</strong> (wet weight, unprocessed) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce cell mass in a bioreactor — not the cost of a consumer product, and not retail price.
 <br><br>
-<strong>Why it matters:</strong> If production costs reach <strong>~$10/kg</strong> (comparable to conventional chicken), cultured meat could compete at scale. If costs remain <strong>>$50/kg</strong>, the technology may remain niche. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
+<strong>Pure cells vs. consumer products:</strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
+<br><br>
+<strong>Why it matters:</strong> If production costs for pure cells reach <strong>~$10/kg</strong>, even 100% cultured products could compete with conventional chicken. At <strong>$25-50/kg</strong>, hybrid products with moderate cell inclusion rates may still reach price parity. If costs remain <strong>>$100/kg</strong>, even hybrid products face significant price premiums. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
 </div>`
 ```
 
@@ -907,6 +930,12 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 <h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
 <h2 style="margin: 0.5rem 0;">$${stats.p95.toFixed(1)}/kg</h2>
 <small>95% of simulations cheaper</small>
+</div>
+
+</div>
+
+<div style="background: #fef9e7; border-left: 4px solid #f39c12; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
+<strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$$${(stats.p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median). See the note above on pure cells vs. consumer products.
 </div>
 
 </div>`
@@ -983,7 +1012,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 <div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>P(Cost < $10/kg)</h5>
 <h2 style="color: #27ae60;">${stats.prob_10.toFixed(1)}%</h2>
-<small>Price-competitive with conventional chicken</small>
+<small>Pure cells competitive with conventional chicken (~$5-10/kg)</small>
 </div>
 
 <div class="card" style="border: 2px solid ${stats.prob_25 > 50 ? '#3498db' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
@@ -1029,10 +1058,10 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
   const total = components.reduce((s, c) => s + c.value, 0);
 
   return Plot.plot({
-    width: 800,
-    height: 350,
-    marginLeft: 150,
-    marginRight: 100,
+    width: 900,
+    height: 420,
+    marginLeft: 160,
+    marginRight: 110,
     x: {
       label: "Average Cost ($/kg)",
       grid: true
@@ -1080,7 +1109,7 @@ The relative sizes shift dramatically based on technology adoption assumptions.
 
 ### Component Distributions
 
-Individual distributions for each cost driver:
+Individual distributions for each cost driver. **These charts update dynamically** when you change the sidebar parameters. If you adjust plant capacity, the CAPEX and Fixed OPEX distributions will shift; if you change technology adoption probabilities, the media and growth factor distributions will change. (Note: some parameters, like plant capacity, primarily affect CAPEX and fixed costs rather than variable costs like media.)
 
 ```{ojs}
 //| echo: false
@@ -1158,7 +1187,7 @@ Each mini-histogram shows the distribution for one cost component across 30,000 
 - **Dashed black lines**: 5th and 95th percentiles (90% confidence interval)
 - **Width of distribution**: Uncertainty - wider means more uncertain
 
-These are like Squiggle/Guesstimate visualizations - they show the full range of possible values, not just a point estimate.
+These distributions are generated from the simulation using the parameters you set in the sidebar above. When you adjust the sliders, these distributions update accordingly. They are analogous to Squiggle/Guesstimate visualizations -- showing the full range of possible values, not just a point estimate.
 </details>
 
 ### Technology Adoption (Realized)
@@ -1297,7 +1326,7 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
 
 ### Industry Maturity Deep Dive
 
-The **maturity factor** is a latent variable (0 = nascent, 1 = mature) that correlates multiple model inputs. Higher maturity means:
+The **maturity factor** is a continuous variable ranging from 0 (nascent industry) to 1 (fully mature) that correlates multiple model inputs. It is not binary — intermediate values represent partial industry development. Higher maturity means:
 
 - Higher technology adoption rates
 - Lower reactor costs (more custom/food-grade)
@@ -1453,7 +1482,7 @@ This correlation structure prevents unrealistic scenarios where technology succe
 
 2. **Adjust parameters** in the left sidebar. Each parameter has an expandable explanation.
 
-3. **Results update automatically** as you change parameters - no need to click a button.
+3. **Results update automatically** as you change the Basic Parameters sliders — the summary cards, cost distribution, and probability thresholds all recalculate. (The Component Distributions section shows the underlying distributions and updates when you change the relevant sliders.)
 
 4. **Navigate the results** to see:
    - **Cost Distribution**: Full probability distribution with key percentiles
@@ -1511,7 +1540,7 @@ The model runs **30,000 Monte Carlo simulations**, sampling from parameter distr
 
 ## Key Insights
 
-The model reveals several important patterns:
+The table below summarizes typical outcomes from this interactive model at different maturity settings. These are illustrative ranges -- the actual results shown in the charts above update dynamically as you adjust the sidebar parameters.
 
 | Scenario | Typical Median Cost | Key Drivers |
 |----------|---------------------|-------------|
@@ -1527,7 +1556,10 @@ The model reveals several important patterns:
 
 ---
 
-## Limitations
+::: {.callout-warning collapse="true"}
+## Limitations & Caveats
+
+**Model status (March 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we're interested in, and present a framework for discussion and comparison — not a definitive cost estimate. We welcome scrutiny and suggestions via [Hypothesis annotations](https://hypothes.is/) or [email](mailto:contact@unjournal.org).
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
@@ -1536,11 +1568,20 @@ The model reveals several important patterns:
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
 4. **Limited contamination modeling** — No batch failure or contamination event distributions.
+:::
 
 ---
 
 ## Sources
 
-- [Risner et al. (2021) - UC Davis ACBM Calculator](https://www.mdpi.com/2304-8158/10/1/3)
-- [The Unjournal - Cultured Meat Evaluations](https://unjournal.org)
-- [Good Food Institute - State of the Industry Reports](https://gfi.org)
+The model draws on parameter ranges and structural assumptions from the following published techno-economic analyses and industry reports, among others:
+
+- [Risner et al. (2021) - UC Davis ACBM Calculator](https://www.mdpi.com/2304-8158/10/1/3) -- primary reference for plant scale, reactor costs, and media cost structure
+- [Humbird (2021) - Scale-Up Economics for Cultured Meat](https://doi.org/10.1002/bit.27848) -- CAPEX estimates, scale exponents, and plant cost factors
+- [CE Delft (2021) - TEA of Cultivated Meat](https://cedelft.eu/publications/tea-of-cultivated-meat/) -- European cost benchmarks and energy analysis
+- [GFI (2024) - State of the Industry Reports](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) -- industry cost targets and technology status
+- [PMC Meta-analysis (2024)](https://pmc.ncbi.nlm.nih.gov/articles/PMC11663224/) -- cross-study comparison of cost projections
+- [Nature Food Scoping Review (2024)](https://www.nature.com/articles/s41538-024-00352-0) -- media cost reduction approaches
+- [The Unjournal - Cultivated Meat Evaluations](https://unjournal.org) -- independent peer evaluations of relevant research
+
+Additional parameter-specific sources are cited in the expandable details under each slider and in the [Technical Documentation](docs.qmd).
