@@ -771,6 +771,8 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 
 **Why 75% baseline?** [Recent research (2024-2025)](https://www.nature.com/articles/s41538-024-00352-0) shows hydrolysates are already validated across plant, yeast, insect, and fish sources. Companies like IntegriCulture have reduced media components by replacing amino acids with yeast extract. The main uncertainty is regulatory approval for food products, not technical feasibility.
 
+**How pivotal is this parameter?** Arguably less pivotal than growth factors or cell density. The technical problem appears largely solved — hydrolysate-based media is already used in industry R&D. The remaining uncertainty is mostly regulatory: will food safety agencies in key markets (US, EU, Singapore) accept hydrolysate-based media for commercial products? Some jurisdictions may require pharmaceutical-grade ingredients regardless of technical equivalence. For a 2036 projection, 75% adoption is plausible but could be conservative. If you think regulatory barriers are minimal, push this above 85%. If you think regulatory caution will dominate, keep it at 50-65%.
+
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
@@ -925,8 +927,41 @@ viewof density_hi = Inputs.range([50, 300], {
   label: "Cell Density High (g/L)"
 })
 ```
-<details><summary>What is cell density? (click to expand)</summary>
-Cell density (g/L) determines how much meat you get per liter of media. Higher density = less media per kg of product = lower cost. Current lab scale: 10-50 g/L. TEA projections: 50-200 g/L. This is a key driver of media efficiency.
+<details><summary>What is cell density and why does it matter so much? (click to expand)</summary>
+
+**Cell density** (g/L at harvest) determines how much meat you get per liter of bioreactor volume. Higher density means less media per kilogram of product, which directly reduces the largest variable cost.
+
+| Density | Media per kg | Typical context |
+|---------|-------------|-----------------|
+| 10 g/L | ~100 L/kg | Current lab scale |
+| 50 g/L | ~20 L/kg | Near-term commercial target |
+| 200 g/L | ~5 L/kg | Optimistic TEA projection |
+
+**This is multiplicative.** If media costs $1/L, going from 10 to 50 g/L cuts media cost from $100/kg to $20/kg. Going to 200 g/L cuts it to $5/kg. Cell density is arguably the single most important technical parameter for cost reduction.
+
+**Current state:** Most published data shows 10-50 g/L. Some companies claim higher, but these claims are difficult to verify independently. Lever VC's 2025 report claims 60-90 g/L has been achieved by "second generation" companies. Whether 200 g/L is achievable by 2036 is a genuine open question.
+
+</details>
+
+<details><summary>What about bioreactor volume / tank size? (click to expand)</summary>
+
+**Bioreactor volume** is another major uncertainty that is currently *implicit* in this model rather than a direct parameter.
+
+The model computes total working volume as: `total_volume = annual_output / (density × productivity × 365)`. It then applies a power-law scaling for CAPEX. But individual bioreactor tank size matters for several reasons:
+
+| Factor | Small tanks (2,000-5,000L) | Large tanks (20,000-50,000L) |
+|--------|--------------------------|------------------------------|
+| Cost per liter | Higher | Lower (economies of scale) |
+| Contamination risk | Lower | Higher (single failure = large loss) |
+| Mixing/O2 transfer | Easier | Harder at scale |
+| Flexibility | More modular | Less redundancy |
+| Industry precedent | Pharma standard | Requires new engineering |
+
+**Key debate:** Some companies (e.g., Vow) claim to have built 20,000L bioreactors for under $1M in 14 weeks using custom food-grade designs. If true, this dramatically changes the CAPEX picture. Humbird's analysis assumed pharma-grade bioreactors at $50-500/L.
+
+**Why it's not a direct slider (yet):** Adding individual tank size would require modeling the number of tanks, contamination batch-failure rates, and the trade-off between scale and reliability. This is a planned enhancement. For now, the **Plant Capacity** and **Cell Density** parameters together determine total working volume, and the **custom reactor ratio** (in full view) captures the pharma-vs-food-grade cost difference.
+
+**Workshop discussion:** This is one of the key cruxes for the [upcoming CM workshop](https://uj-cm-workshop.netlify.app/) — what bioreactor scale is realistic, and what does it cost?
 </details>
 
 ```{=html}
