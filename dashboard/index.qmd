@@ -1734,16 +1734,39 @@ The table below summarizes typical outcomes from this interactive model at diffe
 
 ---
 
-## Sources
+## Sources & How They Inform the Model
 
-The model draws on parameter ranges and structural assumptions from the following published techno-economic analyses and industry reports, among others:
+::: {.callout-warning collapse="true"}
+## Honesty note on sourcing
+This model was largely AI-generated. While we aimed to ground parameter ranges in published TEAs, **we have not yet systematically verified that every hardcoded range in the simulation code traces to a specific source.** Some ranges (particularly for micronutrients, media turnover, and growth factor quantities) may reflect AI-synthesized estimates rather than direct citations. This is one reason we are seeking expert review. The parameter-specific source claims in the expandable details under each slider should be treated as "intended sources" pending verification.
+:::
 
-- [Risner et al. (2021) - UC Davis ACBM Calculator](https://www.mdpi.com/2304-8158/10/1/3) -- primary reference for plant scale, reactor costs, and media cost structure
-- [Humbird (2021) - Scale-Up Economics for Cultured Meat](https://doi.org/10.1002/bit.27848) -- CAPEX estimates, scale exponents, and plant cost factors
-- [CE Delft (2021) - TEA of Cultivated Meat](https://cedelft.eu/publications/tea-of-cultivated-meat/) -- European cost benchmarks and energy analysis
-- [GFI (2024) - State of the Industry Reports](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) -- industry cost targets and technology status
-- [PMC Meta-analysis (2024)](https://pmc.ncbi.nlm.nih.gov/articles/PMC11663224/) -- cross-study comparison of cost projections
-- [Nature Food Scoping Review (2024)](https://www.nature.com/articles/s41538-024-00352-0) -- media cost reduction approaches
-- [The Unjournal - Cultivated Meat Evaluations](https://unjournal.org) -- independent peer evaluations of relevant research
+**Sources that directly informed model structure and parameter ranges:**
 
-Additional parameter-specific sources are cited in the expandable details under each slider and in the [Technical Documentation](docs.qmd).
+| Source | What it informed in the model | How |
+|--------|------|-----|
+| [Risner et al. (2021)](https://www.mdpi.com/2304-8158/10/1/3) | Reference plant scale (20 kTA), reactor cost structure | Default plant capacity; CAPEX scaling reference |
+| [Humbird (2021)](https://doi.org/10.1002/bit.27848) | Pharma-grade media costs ($1-4/L), reactor costs ($50-500/L), scale exponents (0.6-0.9) | Directly used for pharma-grade parameter ranges in simulate() |
+| [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) | Serum-free media cost benchmarks | Informed hydrolysate media cost range ($0.20-1.20/L) |
+| [GFI amino acid report (2025)](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/) | Evidence that Humbird AA prices overestimated 2-10x | Context for parameter ranges; not yet directly incorporated into model values |
+| [GFI State of Industry (2024)](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Growth factor cost targets, technology status | Informed GF price regime bounds and adoption probability defaults |
+
+**Sources cited for context but NOT directly integrated into parameter values:**
+
+| Source | Relevance |
+|--------|-----------|
+| [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) | Optimistic TEA ($6/lb) — useful comparison but model does not replicate their specific assumptions |
+| [Goodwin et al. (2024)](https://www.nature.com/articles/s43016-024-01061-3) | Scoping review comparing TEAs — informed our understanding of where TEAs disagree |
+| [CE Delft (2021)](https://cedelft.eu/publications/tea-of-cultivated-meat/) | European cost benchmarks — cited in documentation but not directly used for parameter ranges |
+| [Lever VC (2025)](https://www.levervc.com/) | Industry claims on cell density (60-90 g/L) — cited as context for density range upper bound |
+| [The Unjournal evaluations](https://unjournal.pubpub.org/pub/evalsumlimitedmeadprod/) | Independent evaluation of RP forecasting paper — informed our project framing |
+
+**Parameters where source grounding is weakest** (review priority):
+
+- Micronutrient quantities and prices (food-grade: 0.1-2 g/kg at $0.02-2/g; pharma: 1-10 g/kg at $0.5-20/g) — ranges are plausible but not traced to specific citations
+- Growth factor quantities (0.0001-0.02 g/kg) — derived from concentration × volume calculations, not direct empirical measurement
+- Media turnover (1-10×) — acknowledged in model as lacking strong empirical grounding
+- Cycle days (0.5-5.0 days) — hardcoded without source attribution
+- Plant factor (1.5-3.5×) — standard engineering multiplier range, not CM-specific
+
+See the [Technical Documentation](docs.qmd) for detailed parameter definitions and the expandable details under each slider for parameter-specific discussion.
