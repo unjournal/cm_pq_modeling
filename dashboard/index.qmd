@@ -10,6 +10,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-warning}
+## Important: Model Status
+This model is **largely AI-generated** and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. **Do not treat the outputs as authoritative cost estimates.** We welcome feedback to improve it — see below.
+:::
+
 ::: {.callout-note collapse="true"}
 ## Upcoming Workshop: Cultivated Meat Cost Trajectories
 We're organizing an online expert workshop (late April / early May 2026) to dig into the key cost cruxes — media costs, bioreactor scale-up, and the gap between TEA projections and commercial reality. This model is one of the tools we'll use.
