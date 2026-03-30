@@ -614,6 +614,31 @@ html`<style>
 </style>`
 ```
 
+**Blended / Hybrid Product**
+
+```{ojs}
+//| echo: false
+viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: false})
+```
+
+```{ojs}
+//| echo: false
+viewof blending_share = Inputs.range([0.05, 1.0], {
+    value: 0.25, step: 0.05,
+    label: "CM inclusion rate (%)",
+    disabled: !include_blending
+  })
+viewof filler_cost = Inputs.range([1, 10], {
+    value: 3, step: 0.5,
+    label: "Filler cost ($/kg)",
+    disabled: !include_blending
+  })
+```
+
+<details><summary>What is blended product cost?</summary>
+Most cultivated meat products in development are hybrids — e.g., 10-30% cultured cells blended with plant-based filler. Toggle on to see estimated blended ingredient cost alongside pure cell cost. Default: 25% CM inclusion, $3/kg filler (plant protein / mycoprotein).
+</details>
+
 ```{=html}
 <div class="full-mode-only">
 ```
@@ -625,28 +650,12 @@ html`<style>
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
 viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
 viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
-viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: false})
-```
-
-```{ojs}
-//| echo: false
-viewof blending_share = Inputs.range([0.05, 1.0], {
-    value: 0.25, step: 0.05,
-    label: "CM inclusion rate",
-    disabled: !include_blending
-  })
-viewof filler_cost = Inputs.range([1, 10], {
-    value: 3, step: 0.5,
-    label: "Filler cost ($/kg)",
-    disabled: !include_blending
-  })
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - **CAPEX**: Bioreactor and facility capital costs, annualized. **On by default** because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
 - **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size). **On by default** for the same reason. Toggle off to focus on marginal costs only.
 - **Downstream**: Scaffolding, texturization, and forming for structured products. **Off by default** because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2-15/kg.
-- **Blended product cost**: Most cultivated meat products in development are hybrids — e.g., 10-30% cultured cells blended with plant-based filler. Toggle on to see estimated blended ingredient cost alongside pure cell cost. Default: 25% CM inclusion, $3/kg filler (plant protein / mycoprotein).
 
 **Note:** Most published TEAs report costs with CAPEX and Fixed OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
@@ -1080,20 +1089,20 @@ html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px so
 html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
-<h4 style="margin: 0; opacity: 0.9;">Median Cost (p50)</h4>
-<h2 style="margin: 0.5rem 0;">$${stats.p50.toFixed(1)}/kg</h2>
-<small>Pure cell mass — half of simulations above, half below</small>
+<h4 style="margin: 0; opacity: 0.9;">Median Pure Cell Mass Cost (p50)</h4>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p50)}/kg</h2>
+<small>$/kg pure cell mass (wet weight) — half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Optimistic (p5)</h4>
-<h2 style="margin: 0.5rem 0;">$${stats.p5.toFixed(1)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p5)}/kg</h2>
 <small>Only 5% of simulations cheaper</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
-<h2 style="margin: 0.5rem 0;">$${stats.p95.toFixed(1)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p95)}/kg</h2>
 <small>95% of simulations cheaper</small>
 </div>
 
@@ -1129,7 +1138,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
     marginLeft: 60,
     marginBottom: 50,
     x: {
-      label: "Unit Production Cost ($/kg pure cell mass)",
+      label: "Pure Cell Mass Cost ($/kg, wet weight)",
       domain: [0, clipVal * 1.05]
     },
     y: {
@@ -1225,35 +1234,62 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 
   const total = components.reduce((s, c) => s + c.value, 0);
 
-  return Plot.plot({
-    width: 1000,
-    height: 520,
-    marginLeft: 180,
-    marginRight: 120,
-    x: {
-      label: "Average Cost ($/kg)",
-      grid: true
-    },
-    y: {
-      label: null
-    },
-    marks: [
-      Plot.barX(components, {
-        y: "name",
-        x: "value",
-        fill: "color",
-        sort: {y: "-x"}
-      }),
-      Plot.text(components, {
-        y: "name",
-        x: d => d.value + 0.5,
-        text: d => `$${d.value.toFixed(2)} (${(d.value/total*100).toFixed(0)}%)`,
-        textAnchor: "start",
-        fontSize: 12
-      })
-    ],
-    title: `Cost Breakdown by Component (Total: $${Math.round(total)}/kg)`
-  })
+  const chartContainer = document.createElement("div");
+  chartContainer.style.position = "relative";
+
+  // Expand/collapse button
+  const expandBtn = document.createElement("button");
+  expandBtn.textContent = "Expand Chart";
+  expandBtn.style.cssText = "padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; margin-bottom: 0.5rem;";
+  let expanded = false;
+  expandBtn.onclick = () => {
+    expanded = !expanded;
+    expandBtn.textContent = expanded ? "Collapse Chart" : "Expand Chart";
+    chartEl.replaceWith(makeChart(expanded));
+    chartEl = chartContainer.querySelector(".cost-breakdown-plot");
+  };
+  chartContainer.appendChild(expandBtn);
+
+  function makeChart(large) {
+    const w = large ? 1200 : 1000;
+    const h = large ? 700 : 580;
+    const fontSize = large ? 14 : 13;
+    const p = Plot.plot({
+      width: w,
+      height: h,
+      marginLeft: 200,
+      marginRight: 140,
+      x: {
+        label: "Average Cost ($/kg)",
+        grid: true
+      },
+      y: {
+        label: null
+      },
+      marks: [
+        Plot.barX(components, {
+          y: "name",
+          x: "value",
+          fill: "color",
+          sort: {y: "-x"}
+        }),
+        Plot.text(components, {
+          y: "name",
+          x: d => d.value + 0.5,
+          text: d => `$${d.value.toFixed(2)} (${(d.value/total*100).toFixed(0)}%)`,
+          textAnchor: "start",
+          fontSize: fontSize
+        })
+      ],
+      title: `Cost Breakdown by Component (Total: $${Math.round(total)}/kg)`
+    });
+    p.classList.add("cost-breakdown-plot");
+    return p;
+  }
+
+  let chartEl = makeChart(false);
+  chartContainer.appendChild(chartEl);
+  return chartContainer;
 }
 ```
 
@@ -1699,7 +1735,7 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 Quick reference:
 
-$$\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{/\text{kg}} + \text{Fixed OPEX}_{/\text{kg}} + \text{Downstream}_{/\text{kg}}$$
+$\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{/\text{kg}} + \text{Fixed OPEX}_{/\text{kg}} + \text{Downstream}_{/\text{kg}}$
 
 The model runs **30,000 Monte Carlo simulations**, sampling from parameter distributions and technology adoption switches to produce cost distributions and probability thresholds.
 :::

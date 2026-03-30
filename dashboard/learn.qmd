@@ -10,8 +10,8 @@ format:
 ---
 
 ::: {.callout-note collapse="true"}
-## 🔬 Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
-This page provides background for [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. We're bringing together TEA researchers, evaluators, and stakeholders to assess cost trajectories and identify key uncertainties. **[Join us →](https://uj-cm-workshop.netlify.app/schedule.html)**
+## Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
+This page provides background for [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. We're bringing together TEA researchers, evaluators, and stakeholders to assess cost trajectories and identify key uncertainties. [Join us](https://uj-cm-workshop.netlify.app/schedule.html)
 :::
 
 ```{=html}
@@ -77,9 +77,9 @@ abbr[title]:hover::before {
 </style>
 ```
 
-::: {.callout-note}
-## 💬 We Want Your Feedback!
-**Add comments directly to this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge of your screen. Highlight any text to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and update the content based on your feedback.
+::: {.callout-note collapse="true"}
+## We Want Your Feedback
+Add comments directly to this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge of your screen. Highlight any text to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and update the content based on your feedback.
 :::
 
 ::: {.callout-tip}
@@ -90,7 +90,7 @@ abbr[title]:hover::before {
 
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for **pure cultured cells**, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. **To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).**
 
-*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
+*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [**<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>**](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
 ```{=html}
 <svg viewBox="0 0 900 180" style="width: 100%; max-width: 1100px; min-height: 300px; margin: 2rem auto; display: block;">
@@ -280,7 +280,7 @@ A **cell bank** is a frozen inventory of starter cells that can be thawed and ex
 
 ### Cost Impact
 
-Cell banking is a **one-time setup cost** that's <abbr title="Spread out over all the production runs that use cells from that bank — like spreading the cost of building a factory over all products made in it">amortized</abbr> over many production runs.
+Cell banking is a one-time setup cost that's <abbr title="Spread out over all the production runs that use cells from that bank — like spreading the cost of building a factory over all products made in it">amortized</abbr> over many production runs.
 
 ::: {.callout-tip collapse="true"}
 ## How Cell Banking Costs Work (click to expand)
@@ -705,10 +705,10 @@ The **<abbr title="How many times the media volume is replaced during a producti
 
 ::: {.callout-note collapse="true"}
 ## Why This Isn't a "Step" (click to expand)
-Media composition isn't sequential — it's used **throughout** the production process (in seed train and production bioreactors). We cover it separately because understanding media costs is essential for understanding overall economics.
+Media composition isn't sequential — it's used throughout the production process (in seed train and production bioreactors). We cover it separately because understanding media costs is essential for understanding overall economics.
 :::
 
-Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components **ordered by approximate share of total media cost** at production scale:
+Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components ordered by approximate share of total media cost at production scale:
 
 | Component | % of Media Cost | Function | Key Cost Driver |
 |-----------|----------------|----------|-----------------|
@@ -761,7 +761,7 @@ Problems with FBS:
 ::: {.callout-warning collapse="true"}
 ## Why FBS Cannot Scale (click to expand)
 
-Even if ethics weren't a concern, FBS fundamentally **cannot scale** for cultured meat:
+Even if ethics weren't a concern, FBS fundamentally cannot scale for cultured meat:
 
 - **Global FBS supply**: ~500,000 L/year
 - **FBS needed for 1 kg meat** (at 10% media supplementation): ~100 mL
@@ -797,7 +797,7 @@ $$\text{Media cost per kg} = \frac{\text{Media cost per L} \times 1000}{\text{Ce
 | 100 g/L | $10/kg meat | $5/kg meat |
 | 200 g/L | $5/kg meat | $2.50/kg meat |
 
-This is why **cell density is so important** — it's the denominator that determines how much media you need per kg of output.
+This is why cell density is so important — it's the denominator that determines how much media you need per kg of output.
 
 Note: Both media types (pharma-grade and hydrolysate) can achieve similar cell densities. The difference is purely in media cost, not in cell performance.
 :::
@@ -935,6 +935,29 @@ See [GFI's analysis](https://gfi.org/science/the-science-of-cultivated-meat/) fo
 **Important caveat:** A [2024 Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3) of TEAs concluded: "TEAs published to date demonstrate that, under the current technological paradigm, CM is unlikely to be competitive with conventional meat." However, the review notes that "scale-up feasibility may hinge on cost-saving areas such as use of plant-based media components, food-grade aseptic conditions and extensive scaling of related supply chains."
 :::
 
+::: {.callout-tip collapse="true"}
+## Discussion: Does gene editing regulation affect growth factor costs?
+
+Several of the most promising approaches to cheap growth factors involve genetic modification:
+
+- **Autocrine cell lines**: Engineering cells to produce their own growth factors (FGF-2, IGF-1). This could eliminate external GF costs entirely but requires genetic modification of the production cell lines.
+- **Plant molecular farming**: Expressing growth factors in transgenic plants (tobacco, lettuce). Companies like BioBetter and ORF Genetics are pursuing this.
+- **Precision fermentation**: Using engineered E. coli or yeast to produce GFs at scale (similar to insulin production).
+
+**Jurisdiction matters.** Markets that restrict gene editing or GMO-derived inputs may not allow these approaches:
+
+| Market | GM cell lines | GM-derived GFs | Implications |
+|--------|:---:|:---:|---|
+| Singapore | Allowed | Allowed | Most permissive; first CM regulatory approvals |
+| US (FDA/USDA) | Case-by-case | Generally allowed | Regulatory pathway exists but untested at scale |
+| EU (EFSA) | Restricted | Novel food rules apply | May require non-GM alternatives, raising costs |
+| Israel | Relatively permissive | Allowed | Active CM industry |
+
+This creates a potential fork in cost trajectories: **markets allowing gene editing may achieve dramatically lower growth factor costs**, while restrictive markets may be stuck with expensive non-GM alternatives. This is relevant to how we specify CM_01 — should we ask about cost "in markets where gene editing is allowed" vs "globally averaged"?
+
+See the [workshop discussion](https://uj-cm-workshop.netlify.app/) on whether to fork CM_01 by regulatory environment.
+:::
+
 ---
 
 ## Step 6: Harvest & Processing
@@ -969,6 +992,18 @@ For **structured products** (chicken breast, steak):
 Our model includes an optional "downstream processing" toggle that adds $2-15/kg for structured products.
 :::
 
+::: {.callout-warning collapse="true"}
+## Reality check: Scaffolding in 2026
+
+Industry sources suggest most companies have moved away from scaffolding for first-generation products:
+
+- Cannot achieve required cell densities with scaffolds
+- Most companies targeting unstructured products (mince, nuggets) first
+- Academic papers continue publishing scaffolding research, but this may not reflect current industry direction
+
+The model's downstream processing toggle ($2-15/kg for structured products) should be treated as speculative for near-term projections. First commercial products are more likely to be unstructured or blended with plant-based ingredients.
+:::
+
 ---
 
 ## Cost Breakdown Summary
@@ -976,56 +1011,58 @@ Our model includes an optional "downstream processing" toggle that adds $2-15/kg
 *This diagram summarizes the <abbr title="Based on central estimates from multiple TEA models (Humbird 2021, Risner et al. 2021, CE Delft 2021, GFI 2024). Ranges reflect scenario variation across studies.">typical</abbr> cost structure and key levers for reduction, drawing on the components explained above: [media](#media-composition-the-food-for-cells), [growth factors](#step-5-growth-factors--a-key-cost-driver), [bioreactors](#step-3-production-bioreactors), and [cell density](#why-cell-density-is-so-important).*
 
 ```{=html}
-<svg viewBox="0 0 600 300" style="width: 100%; max-width: 800px; min-height: 400px; margin: 1.5rem auto; display: block;">
-  <rect width="600" height="300" fill="#f8f9fa" rx="8"/>
+<svg viewBox="0 0 800 380" style="width: 100%; max-width: 1000px; min-height: 480px; margin: 1.5rem auto; display: block;">
+  <rect width="800" height="380" fill="#f8f9fa" rx="8"/>
 
-  <text x="300" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
+  <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
 
   <!-- Stacked bar -->
-  <rect x="50" y="50" width="400" height="50" fill="#27ae60"/>
-  <text x="250" y="82" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Variable Costs (Media, GFs, etc.): 40-70%</text>
+  <rect x="50" y="55" width="480" height="60" fill="#27ae60"/>
+  <text x="290" y="92" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Variable Costs (Media, GFs, etc.): 40-70%</text>
 
-  <rect x="50" y="100" width="400" height="35" fill="#e74c3c"/>
-  <text x="250" y="123" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Capital Costs (Bioreactors): 15-35%</text>
+  <rect x="50" y="115" width="480" height="45" fill="#e74c3c"/>
+  <text x="290" y="144" text-anchor="middle" font-size="13" fill="white" font-weight="bold">Capital Costs (Bioreactors): 15-35%</text>
 
-  <rect x="50" y="135" width="400" height="30" fill="#f39c12"/>
-  <text x="250" y="155" text-anchor="middle" font-size="11" fill="white" font-weight="bold">OPEX (Labor, Overhead, etc.): 10-25%</text>
+  <rect x="50" y="160" width="480" height="38" fill="#f39c12"/>
+  <text x="290" y="185" text-anchor="middle" font-size="13" fill="white" font-weight="bold">OPEX (Labor, Overhead, etc.): 10-25%</text>
 
   <!-- Breakdown detail -->
-  <g transform="translate(480, 50)">
-    <rect x="0" y="0" width="110" height="120" fill="white" stroke="#ddd" rx="5"/>
-    <text x="55" y="18" text-anchor="middle" font-size="10" font-weight="bold" fill="#2c3e50">Variable Cost Split</text>
-    <rect x="10" y="28" width="90" height="12" fill="#27ae60"/>
-    <text x="55" y="38" text-anchor="middle" font-size="8" fill="white">Media 30-50%</text>
-    <rect x="10" y="42" width="90" height="12" fill="#9b59b6"/>
-    <text x="55" y="52" text-anchor="middle" font-size="8" fill="white">Growth Factors*</text>
-    <rect x="10" y="56" width="90" height="12" fill="#3498db"/>
-    <text x="55" y="66" text-anchor="middle" font-size="8" fill="white">Micros 5-15%</text>
-    <rect x="10" y="70" width="90" height="12" fill="#7f8c8d"/>
-    <text x="55" y="80" text-anchor="middle" font-size="8" fill="white">Other 5-10%</text>
-    <text x="55" y="100" text-anchor="middle" font-size="8" fill="#9b59b6">*0-60% depending</text>
-    <text x="55" y="112" text-anchor="middle" font-size="8" fill="#9b59b6">on technology</text>
+  <g transform="translate(560, 55)">
+    <rect x="0" y="0" width="220" height="145" fill="white" stroke="#ddd" rx="5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Variable Cost Split</text>
+    <rect x="10" y="34" width="200" height="18" fill="#27ae60"/>
+    <text x="110" y="48" text-anchor="middle" font-size="10" fill="white">Media 30-50%</text>
+    <rect x="10" y="54" width="200" height="18" fill="#9b59b6"/>
+    <text x="110" y="68" text-anchor="middle" font-size="10" fill="white">Growth Factors*</text>
+    <rect x="10" y="74" width="200" height="18" fill="#1abc9c"/>
+    <text x="110" y="88" text-anchor="middle" font-size="10" fill="white">Micros 5-15%</text>
+    <rect x="10" y="94" width="200" height="18" fill="#7f8c8d"/>
+    <text x="110" y="108" text-anchor="middle" font-size="10" fill="white">Other 5-10%</text>
+    <text x="110" y="128" text-anchor="middle" font-size="10" fill="#9b59b6">*0-60% depending</text>
+    <text x="110" y="141" text-anchor="middle" font-size="10" fill="#9b59b6">on technology</text>
   </g>
 
   <!-- Key levers -->
-  <text x="50" y="195" font-size="12" font-weight="bold" fill="#2c3e50">Key Cost Reduction Levers:</text>
+  <text x="50" y="230" font-size="14" font-weight="bold" fill="#2c3e50">Key Cost Reduction Levers:</text>
 
-  <circle cx="65" cy="220" r="8" fill="#27ae60"/>
-  <text x="80" y="224" font-size="10" fill="#2c3e50">Hydrolysates → -30-50% media cost</text>
+  <circle cx="65" cy="258" r="9" fill="#27ae60"/>
+  <text x="82" y="263" font-size="12" fill="#2c3e50">Hydrolysates: lowers 30-50% of media cost</text>
 
-  <circle cx="65" cy="245" r="8" fill="#9b59b6"/>
-  <text x="80" y="249" font-size="10" fill="#2c3e50">Cheap GFs → -50-90% of GF cost (PIVOTAL)</text>
+  <circle cx="65" cy="288" r="9" fill="#9b59b6"/>
+  <text x="82" y="293" font-size="12" fill="#2c3e50">Cheap GFs: lowers 50-90% of GF cost (PIVOTAL)</text>
 
-  <circle cx="65" cy="270" r="8" fill="#3498db"/>
-  <text x="80" y="274" font-size="10" fill="#2c3e50">High cell density → -50-80% media volume</text>
+  <circle cx="65" cy="318" r="9" fill="#2c3e50"/>
+  <text x="82" y="323" font-size="12" fill="#2c3e50">High cell density: lowers 50-80% of media volume</text>
 
-  <circle cx="350" cy="220" r="8" fill="#e74c3c"/>
-  <text x="365" y="224" font-size="10" fill="#2c3e50">Food-grade reactors → -50-80% CAPEX</text>
+  <circle cx="440" cy="258" r="9" fill="#e74c3c"/>
+  <text x="457" y="263" font-size="12" fill="#2c3e50">Food-grade reactors: lowers 50-80% of CAPEX</text>
 
-  <circle cx="350" cy="245" r="8" fill="#f39c12"/>
-  <text x="365" y="249" font-size="10" fill="#2c3e50">Scale (larger plants) → -30-50% fixed costs</text>
+  <circle cx="440" cy="288" r="9" fill="#f39c12"/>
+  <text x="457" y="293" font-size="12" fill="#2c3e50">Scale (larger plants): lowers 30-50% of fixed costs</text>
 </svg>
 ```
+
+*Note: Cell density reduces media volume needed per kg, affecting the green (media) cost component. It does not directly relate to micronutrients (teal).*
 
 Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3), [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/), updated with data from [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/), [Believer Meats 2024](https://www.nature.com/articles/s43016-024-01022-w), and a [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive).
 
@@ -1038,6 +1075,27 @@ Many foundational TEA analyses in this field date from 2021 (Humbird, Risner et 
 - **2025**: [Industry cost survey](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive) (Lever VC)
 
 The field is evolving rapidly. If you know of newer sources we should cite, please add a Hypothesis comment!
+:::
+
+::: {.callout-tip collapse="true"}
+## Discussion: Which market? Jurisdiction and cost trajectories
+
+A key question for the workshop: should CM_01 specify a particular market, or ask about a global average?
+
+**Why it matters:**
+
+- Regulatory requirements (especially on gene editing) directly affect which cost-reduction technologies are available
+- "Average across all large-scale plants in the world" (the current CM_01 wording) implicitly asks a second question about each market's share of production
+- A market that restricts GM inputs may have structurally higher costs than one that doesn't
+
+**Options under discussion:**
+
+- Specify a single large market (e.g., "for the US market" or "for markets where gene editing is allowed")
+- Fork into two questions: one for GM-permissive markets, one for GM-restrictive
+- Choose a "representative country" — not the most restrictive, not the least
+- Keep the current global wording but acknowledge it bundles multiple uncertainties
+
+This will be discussed at the [workshop](https://uj-cm-workshop.netlify.app/). Your input via [Hypothesis annotations](https://hypothes.is) is welcome.
 :::
 
 ---

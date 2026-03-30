@@ -9,12 +9,10 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip}
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[🎧 Audio Review (22 min MP3)](model_review_report.mp3)** | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**
-:::
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Audio Review (MP3)](model_review_report.mp3)** | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**
 
 ::: {.callout-note collapse="true"}
-## 💬 Feedback & Annotations
+## Feedback & Annotations
 Comment directly on this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We aim to respond to all comments.
 :::
 
@@ -41,7 +39,7 @@ This section presents the model structure **top-down**: starting with the final 
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
 | 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + Micros + GFs + Other | — |
 | 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × turnover × $/L | density (g/L), turnover, $/L |
-| 2b | **[Growth Factors](#growth-factor-cost)** | g<sub>GF</sub> &times; P<sub>GF</sub> | quantity (g/kg), price ($/g) |
+| 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price ($/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
 | 3a | **[CRF](#annualized-capital-costs)** | r(1+r)<sup>n</sup> / ((1+r)<sup>n</sup> &minus; 1) | r=WACC, n=years |
 | 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX<sub>ref</sub> &times; (Q/Q<sub>ref</sub>)<sup>s</sup> | s=0.6-0.9 |
