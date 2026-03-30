@@ -32,15 +32,6 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 :::
 
 ```{=html}
-<div style="display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem 0;">
-  <button id="toggle-hypothesis" onclick="toggleHypothesis()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa;">
-    Hide Annotations Sidebar
-  </button>
-  <button id="toggle-fullwidth" onclick="toggleFullWidth()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa;">
-    Expand Content
-  </button>
-</div>
-
 <script>
 function toggleHypothesis() {
   const btn = document.getElementById('toggle-hypothesis');
@@ -133,6 +124,54 @@ function toggleFullWidth() {
   }
 }
 
+function toggleParams() {
+  const btn = document.getElementById('toggle-params');
+  const vcBtn = document.getElementById('vc-params');
+  const sidebar = document.querySelector('.panel-sidebar');
+  const fill = document.querySelector('.panel-fill');
+  if (!sidebar) return;
+
+  if (sidebar.classList.contains('params-hidden')) {
+    sidebar.classList.remove('params-hidden');
+    sidebar.style.display = '';
+    if (fill) fill.style.gridColumn = '';
+    if (btn) btn.textContent = '◀ Hide Parameters (expand charts)';
+    if (vcBtn) { vcBtn.textContent = '◀ Parameters'; vcBtn.style.background = '#e8f4e8'; vcBtn.style.borderColor = '#5a7a5a'; }
+  } else {
+    sidebar.classList.add('params-hidden');
+    sidebar.style.display = 'none';
+    if (fill) fill.style.gridColumn = '1 / -1';
+    if (btn) btn.textContent = '▶ Show Parameters';
+    if (vcBtn) { vcBtn.textContent = '▶ Parameters'; vcBtn.style.background = '#f8f9fa'; vcBtn.style.borderColor = '#ccc'; }
+  }
+}
+
+function toggleToc() {
+  const btn = document.getElementById('toggle-toc');
+  // Quarto TOC can be in several locations
+  const selectors = [
+    '#quarto-margin-sidebar',
+    '#TOC',
+    '.sidebar.toc-left',
+    'nav.toc',
+    '#quarto-sidebar'
+  ];
+  let toc = null;
+  for (const sel of selectors) {
+    toc = document.querySelector(sel);
+    if (toc) break;
+  }
+  if (!toc) { btn.textContent = 'TOC not found'; return; }
+
+  if (toc.style.display === 'none') {
+    toc.style.display = '';
+    btn.textContent = 'Hide Table of Contents';
+  } else {
+    toc.style.display = 'none';
+    btn.textContent = 'Show Table of Contents';
+  }
+}
+
 function hideHypothesis() {
   const btn = document.getElementById('toggle-hypothesis');
   const selectors = [
@@ -153,6 +192,15 @@ function hideHypothesis() {
 }
 </script>
 
+<!-- Fixed floating view controls — lower right -->
+<div id="view-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 160px;">
+  <div style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">View</div>
+  <button onclick="toggleParams()" id="vc-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; text-align: left;">◀ Parameters</button>
+  <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
+  <button onclick="toggleHypothesis()" id="vc-hyp" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Annotations</button>
+  <button onclick="toggleFullWidth()" id="vc-wide" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">↔ Expand</button>
+</div>
+
 <style>
 .fullwidth-mode .page-columns,
 .fullwidth-mode #quarto-content,
@@ -172,6 +220,22 @@ function hideHypothesis() {
 .fullwidth-mode .hypothesis-sidebar,
 .fullwidth-mode .annotator-frame,
 .fullwidth-mode hypothesis-sidebar {
+  display: none !important;
+}
+/* Sidebar overflow fix — prevent details from bleeding into main content */
+.panel-sidebar {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: 90vh;
+  position: sticky;
+  top: 0;
+}
+.panel-sidebar details[open] {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+/* When params sidebar is hidden, let charts take full width */
+.params-hidden {
   display: none !important;
 }
 .hypothesis-hidden {
@@ -200,11 +264,44 @@ This model uses **Monte Carlo simulation**: we sample thousands of possible futu
 
 **Distribution Types Used:**
 
-| Parameter Type | Distribution | Why | Examples in model |
-|---------------|--------------|-----|-------------------|
-| Costs, intensities | **Lognormal** | Always positive, right-skewed (some very high values possible) | Media cost per liter, GF price per gram, cell density |
-| Probabilities, fractions | **Beta** | Bounded between 0 and 1, flexible shape | Maturity factor, adoption probabilities, uptime. For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption *probability* from a Beta distribution, then uses a Bernoulli draw to determine whether each simulation run uses the "adopted" or "non-adopted" cost regime. |
-| Bounded ranges | **Uniform** | Equal probability within bounds, used when we have only a plausible range and no reason to favor values within it | Asset life (years), CAPEX scale exponent, fixed OPEX scaling factor |
+```{=html}
+<table style="width: 100%; table-layout: fixed; font-size: 14px; border-collapse: collapse;">
+<colgroup>
+  <col style="width: 18%;">
+  <col style="width: 12%;">
+  <col style="width: 30%;">
+  <col style="width: 40%;">
+</colgroup>
+<thead>
+<tr style="border-bottom: 2px solid #ddd; text-align: left;">
+  <th style="padding: 8px;">Parameter Type</th>
+  <th style="padding: 8px;">Distribution</th>
+  <th style="padding: 8px;">Why</th>
+  <th style="padding: 8px;">Examples in model</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid #eee; vertical-align: top;">
+  <td style="padding: 8px;">Costs, intensities</td>
+  <td style="padding: 8px;"><strong>Lognormal</strong></td>
+  <td style="padding: 8px;">Always positive, right-skewed (some very high values possible)</td>
+  <td style="padding: 8px;">Media cost per liter, GF price per gram, cell density</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee; vertical-align: top;">
+  <td style="padding: 8px;">Probabilities, fractions</td>
+  <td style="padding: 8px;"><strong>Beta</strong></td>
+  <td style="padding: 8px;">Bounded between 0 and 1, flexible shape</td>
+  <td style="padding: 8px;">Maturity factor, adoption probabilities, uptime. For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption <em>probability</em> from a Beta distribution, then uses a Bernoulli draw to determine whether each run uses the "adopted" or "non-adopted" cost regime.</td>
+</tr>
+<tr style="vertical-align: top;">
+  <td style="padding: 8px;">Bounded ranges</td>
+  <td style="padding: 8px;"><strong>Uniform</strong></td>
+  <td style="padding: 8px;">Equal probability within bounds; used when we have only a plausible range and no reason to favor values within it</td>
+  <td style="padding: 8px;">Asset life (years), CAPEX scale exponent, fixed OPEX scaling factor</td>
+</tr>
+</tbody>
+</table>
+```
 
 We are open to considering alternative distributional forms (e.g., triangular, PERT, or mixture distributions) and to making the modeling flexible enough for users to select or compare different distributional assumptions. Suggestions are welcome via Hypothesis annotations.
 
@@ -591,6 +688,12 @@ function spearmanCorr(x, y) {
 ### Model Parameters
 
 ::: {.panel-sidebar}
+
+```{=html}
+<button id="toggle-params" onclick="toggleParams()" style="width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 6px; background: #e8f4e8; color: #2d4a2d; font-weight: 500;">
+  ◀ Hide Parameters (expand charts)
+</button>
+```
 
 ```{ojs}
 //| echo: false
