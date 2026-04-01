@@ -18,12 +18,13 @@ Comment directly on this page using [Hypothesis](https://hypothes.is/) — click
 
 ## Overview
 
-This document provides complete technical documentation for the cultured chicken cost model:
+This document provides complete technical documentation for the cultured chicken cost model. If you want to understand exactly what the [interactive dashboard](index.qmd) is computing — every equation, parameter range, distribution choice, and source — this is the reference.
 
-- [Model Formulas](#model-formulas) — Mathematical structure and equations
-- [Parameter Definitions](#parameter-definitions) — All inputs with distributions and sources
-- [Code Reference](#code-reference) — Implementation details
-- [Limitations](#limitations) — Known caveats and recommendations
+- [Model Formulas](#model-formulas) — Mathematical structure and equations (top-down: total cost → components)
+- [Parameter Definitions](#parameter-definitions) — All inputs with distributions, ranges, and source citations
+- [Code Reference](#code-reference) — Implementation details and links to source code ([JavaScript in index.qmd](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd), [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py), [Squiggle version](https://github.com/unjournal/cm_pq_modeling/blob/main/models/cm_cost_v0.2.squiggle))
+- [Limitations](#limitations) — Known caveats, simplifications, and recommendations for use
+- **New:** [TEA Comparison](compare.qmd) — Side-by-side breakdown of published cost analyses
 
 ---
 
@@ -54,6 +55,10 @@ The model estimates **unit production cost** ($/kg) by summing four components:
 
 $$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
 
+::: {.callout-note}
+**Output basis:** All costs in this model are expressed as **$/kg of pure cultured cell mass (wet weight)**, not hybrid products, retail products, or dry biomass. This matters when comparing to published TEA figures, some of which report costs for blended/hybrid products. See our [TEA comparison page](compare.qmd) for a systematic breakdown of how published estimates differ in output basis.
+:::
+
 <details>
 <summary>What does each term mean?</summary>
 
@@ -83,7 +88,7 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 
 - **Cell density (g/L)**: Final concentration of cells at harvest. Higher density = less media needed per kg. The 1000 converts g/L to L/kg (since 1 kg = 1000 g).
 - **Media turnover**: How many times the media volume is replaced during a production run. Batch systems (turnover = 1) use one fill; perfusion systems (turnover = 3–10) continuously flow fresh media through.
-- **Price ($/L)**: Cost per liter of complete media formulation.
+- **Price ($/L)**: Cost per liter of basal media (amino acids, glucose, vitamins, minerals — excludes growth factors, which are modeled as a [separate cost component](#growth-factor-cost)). Some literature sources report "complete medium" costs that include growth factors; our model separates these to allow independent uncertainty analysis.
 
 **Example calculation:**
 

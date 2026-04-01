@@ -1,0 +1,416 @@
+---
+title: "TEA Comparison: What Do the Studies Actually Say?"
+subtitle: "Systematic breakdown of published cultivated meat cost analyses"
+toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+::: {.callout-warning}
+## Work in Progress — Feedback Welcome
+This comparison is **largely AI-generated** based on our reading of the cited sources. We are not the domain experts — this is a framework for structured discussion, not a definitive assessment. We welcome corrections and additional data points via [Hypothesis annotations](https://hypothes.is/) (click the `<` tab on the right) or at our [upcoming workshop](https://uj-cm-workshop.netlify.app/). All contributions will be acknowledged.
+:::
+
+**Return to:** [Interactive Cost Model](index.qmd) | **Background:** [How Cultured Chicken is Made](learn.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**
+
+## Why Comparison Is Hard
+
+Cultivated meat cost estimates from different studies are often not directly comparable. They differ in:
+
+- **Species**: Chicken (Pasitka 2024) vs. generic mammalian/CHO-like cells (Humbird 2021) vs. unspecified (CE Delft 2021)
+- **Output basis**: <abbr title="Pasitka 2024: pure cell mass (supplement) or 50/50 hybrid (headline). Humbird 2021: wet cell mass. CE Delft 2021: non-specific slurry/paste (~70-77% water). GFI reports: component costs only.">Pure wet cell mass vs. cultivated ingredient vs. hybrid product vs. retail-equivalent</abbr> — see [definitions in our explainer](learn.qmd#cost-basis-matters-read-carefully)
+- **Scale assumptions**: 2m³ reactors (Pasitka) vs. 50m³ (Humbird sensitivity) vs. future industrial scenarios (CE Delft)
+- **Media assumptions**: <abbr title="Pasitka 2024: animal-component-free (ACF) hydrolysate-based medium at $0.63/L. Humbird 2021: pharma-grade amino acids baseline ($1-4/L), with hydrolysate sensitivity (~$0.50-1.50/L). CE Delft 2021: varies by scenario. GFI 2025: supplier-quoted prices for purified amino acids.">Hydrolysate-based vs. pharma-grade vs. animal-component-free</abbr>
+- **Time horizon**: <abbr title="Pasitka 2024: modeled scale-up from current lab data. Humbird 2021: current technology with sensitivity analysis. CE Delft 2021: future 2030-style industrial projections. Our dashboard: adjustable target year (2026-2050) via maturity slider.">Current technology vs. 2030 projections vs. steady-state</abbr>
+
+The tables below attempt to put these studies on a comparable footing. Where a direct comparison isn't possible, we note the gap.
+
+---
+
+## Presentation 1: Study Overview
+
+```{=html}
+<table style="width: 100%; border-collapse: collapse; font-size: 0.88em; margin: 1rem 0;">
+<thead>
+<tr style="background: #2c3e50; color: white;">
+  <th style="padding: 10px; width: 16%;">Study</th>
+  <th style="padding: 10px; width: 16%;">Species / Output Basis</th>
+  <th style="padding: 10px; width: 28%;">Headline Figures</th>
+  <th style="padding: 10px; width: 22%;">Scale / Process</th>
+  <th style="padding: 10px; width: 18%;">Key Context</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid #dee2e6;">
+  <td style="padding: 8px;"><strong>Pasitka et al. 2024</strong> (Nature Food + supplement)</td>
+  <td style="padding: 8px;">Chicken; pure cell mass (ACF medium)</td>
+  <td style="padding: 8px;">$13.75/kg (large perfusion), $15.03/kg (TFF), $22.27/kg (ATF) — Supplement Table S10. The widely-cited ~$6/lb figure is a 50/50 hybrid product (per GFI State of Industry 2024); pure cell mass costs are higher.</td>
+  <td style="padding: 8px;">2×25m³ (perfusion), 10×5m³ (TFF), 25×2m³ (ATF); 14.6% annual capital charge</td>
+  <td style="padding: 8px;">Believer Meats shut down Dec 2025. Only chicken-specific TEA in the literature.</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
+  <td style="padding: 8px;"><strong>Humbird 2021</strong> (Open Philanthropy)</td>
+  <td style="padding: 8px;">Generic mammalian (CHO-like); wet cell mass</td>
+  <td style="padding: 8px;">$37/kg (fed-batch), $51/kg (perfusion), ~$22/kg (with hydrolysates), ~$16/kg (asymptotic extreme scale)</td>
+  <td style="padding: 8px;">Fed-batch ~110 g/L; perfusion up to 195 g/L in 2m³; sensitivity to 50m³</td>
+  <td style="padding: 8px;">Not chicken-specific; amino acid costs likely overestimated 2-10× per GFI 2025</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6;">
+  <td style="padding: 8px;"><strong>CE Delft 2021</strong> (corrigendum)</td>
+  <td style="padding: 8px;">Non-specific CM slurry/paste (~70-77% water)</td>
+  <td style="padding: 8px;">$6.43/kg (best-case) to ~$25/kg (mid-scenarios)</td>
+  <td style="padding: 8px;">Future 2030-style industrial scenarios; one scenario removed as physically inconsistent</td>
+  <td style="padding: 8px;">Not species-specific; product is undefined slurry; best-case combines multiple optimistic assumptions</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
+  <td style="padding: 8px;"><strong>GFI component reports</strong> (2020-2025)</td>
+  <td style="padding: 8px;">Component studies, not full TEAs</td>
+  <td style="padding: 8px;">Amino acids: $0.02-$0.17/L, could fall below $5/kg CM (<a href="https://gfi.org/wp-content/uploads/2025/12/Amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat.pdf">2025 report</a>). Growth factors: competitive target ~$1/kg CM with 8-13 L/kg media use (<a href="https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/">GF analysis</a>). Scale-up trends: media recycling increasingly common; 316L stainless ~40% more expensive than 304 (<a href="https://gfi.org/wp-content/uploads/2024/04/Trends-in-cultivated-meat-scale-up-and-bioprocessing.pdf">2024 survey</a>).</td>
+  <td style="padding: 8px;">Based on supplier quotes, industry surveys, and techno-economic modeling</td>
+  <td style="padding: 8px;">Not full TEAs; use to update individual parameter priors rather than total cost estimates</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6;">
+  <td style="padding: 8px;"><strong>Goodwin et al. 2024</strong> (Nature Food)</td>
+  <td style="padding: 8px;">Scoping review — no cost estimate</td>
+  <td style="padding: 8px;">—</td>
+  <td style="padding: 8px;">Reviews methodology of published TEAs</td>
+  <td style="padding: 8px;">Finds many TEAs rely on assumptions inconsistent with CM bench literature</td>
+</tr>
+</tbody>
+</table>
+```
+
+---
+
+## Presentation 2: Component-by-Component Breakdown
+
+This is where the differences become clearest. Each study makes different assumptions about the key cost drivers.
+
+### Media & Amino Acid Costs
+
+| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 | GFI 2025 (amino acids only) |
+|-----------|-------------|--------------|---------------|---------------------------|
+| **Media type** | Animal-component-free (ACF), hydrolysate-based | Pharma-grade baseline; hydrolysate sensitivity | Varies by scenario | N/A (component study) |
+| **Media cost ($/L)** | $0.63/L (reported) | $1-4/L (pharma); ~$0.50-1.50/L (hydrolysate) | Varies; not always explicit | Amino acid contribution only: $0.02-$0.17/L |
+| **Amino acid source** | Plant hydrolysates | Purified amino acids (baseline); soy hydrolysate (sensitivity) | Varies | Supplier-quoted prices for purified AAs |
+| **Hydrolysate assumption** | Validated in lab at scale | "Requires further study" for suitability | Scenario-dependent | Notes deficiencies in key AAs; supplementation needed |
+
+### Growth Factors
+
+| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+|-----------|-------------|--------------|---------------|
+| **GF approach** | ACF medium (proprietary formulation) | Recombinant FGF-2 + TGF-β at bulk pricing | Scenario-dependent |
+| **GF cost contribution** | Included in $0.63/L media cost (not separately reported) | $3-4/kg at 100 kTA (assumes bulk pricing breakthroughs) | Not separately broken out in most scenarios |
+| **Key assumption** | Proprietary low-cost formulation achieved | Bulk pricing at $4/g FGF-2 (vs. ~$50,000/g current research) | Varies |
+
+### Cell Density & Process Mode
+
+| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+|-----------|-------------|--------------|---------------|
+| **Achieved density** | 130×10⁶ cells/mL (~43% w/v) | Fed-batch: ~110 g/L; Perfusion: up to 195 g/L | Varies (10-100+ g/L across scenarios) |
+| **Process mode** | Continuous perfusion | Fed-batch (primary); perfusion (sensitivity) | Multiple scenarios |
+| **Media turnover** | Continuous (high turnover) | Fed-batch: ~1×; Perfusion: higher | Varies |
+
+### Capital Costs & Financing
+
+| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+|-----------|-------------|--------------|---------------|
+| **Reactor type** | Modeled: 2m³ (ATF), 5m³ (TFF), 25m³ (perfusion) | 2m³ (perfusion), up to 50m³ (fed-batch sensitivity) | Large STRs (future scenarios) |
+| **Equipment grade** | Not specified (modeled cost) | Pharma-grade 316L stainless steel | Varies; includes food-grade scenarios |
+| **Annual capital charge** | 14.6% | ~20% (high-risk early stage) | Varies by scenario; notes lower ROI requirements needed |
+| **WACC / financing** | Implicit in 14.6% charge | High (early-stage biotech) | Explicitly notes cost reduction requires lower-than-standard ROI |
+
+### Scale
+
+| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+|-----------|-------------|--------------|---------------|
+| **Plant capacity** | 50,000 L working volume | ~20 kTA reference; sensitivity to larger | Future industrial (>10 kTA) |
+| **Utilization** | Continuous operation assumed | 90% utilization | Varies |
+
+---
+
+## Presentation 3: Cost Waterfall Comparison
+
+```{=html}
+<style>
+.waterfall-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 2rem 0;
+}
+.waterfall-study {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 250px;
+  max-width: 320px;
+  flex: 1;
+}
+.waterfall-study h4 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 0.95em;
+}
+.cost-bar {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+  font-size: 0.82em;
+}
+.cost-bar .label {
+  width: 100px;
+  text-align: right;
+  padding-right: 8px;
+  font-size: 0.82em;
+}
+.cost-bar .bar {
+  height: 22px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.78em;
+  min-width: 30px;
+}
+.cost-bar .bar.media { background: #27ae60; }
+.cost-bar .bar.gf { background: #e74c3c; }
+.cost-bar .bar.capex { background: #3498db; }
+.cost-bar .bar.opex { background: #f39c12; }
+.cost-bar .bar.other { background: #95a5a6; }
+.study-total {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px solid #dee2e6;
+  font-size: 1.1em;
+}
+.study-note {
+  font-size: 0.78em;
+  color: #6c757d;
+  text-align: center;
+  margin-top: 4px;
+}
+</style>
+
+<div class="waterfall-container">
+
+<div class="waterfall-study">
+<h4>Pasitka 2024<br><small>(Chicken, large perfusion)</small></h4>
+<div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 120px;">~$6-8/kg</div></div>
+<div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 30px;">incl.</div></div>
+<div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 70px;">~$3-4/kg</div></div>
+<div class="cost-bar"><span class="label">Fixed OPEX</span><div class="bar opex" style="width: 40px;">~$2/kg</div></div>
+<div class="study-total">$13.75/kg</div>
+<div class="study-note">Pure cell mass, ACF medium<br>Believer Meats (shut down Dec 2025)</div>
+</div>
+
+<div class="waterfall-study">
+<h4>Humbird 2021<br><small>(Generic mammalian, fed-batch)</small></h4>
+<div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 160px;">~$19/kg (AAs)</div></div>
+<div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 40px;">~$3/kg</div></div>
+<div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 100px;">~$12/kg</div></div>
+<div class="cost-bar"><span class="label">Fixed OPEX</span><div class="bar opex" style="width: 35px;">~$3/kg</div></div>
+<div class="study-total">$37/kg</div>
+<div class="study-note">Wet cell mass, pharma-grade inputs<br>Not chicken-specific</div>
+</div>
+
+<div class="waterfall-study">
+<h4>Humbird 2021<br><small>(With hydrolysates)</small></h4>
+<div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 50px;">~$3/kg</div></div>
+<div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 40px;">~$3/kg</div></div>
+<div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 100px;">~$12/kg</div></div>
+<div class="cost-bar"><span class="label">Fixed OPEX</span><div class="bar opex" style="width: 35px;">~$3/kg</div></div>
+<div class="study-total">~$22/kg</div>
+<div class="study-note">Wet cell mass, hydrolysate scenario<br>Hydrolysate suitability "requires further study"</div>
+</div>
+
+</div>
+```
+
+*Note: Growth factor costs in Pasitka are included in the media cost figure ($0.63/L ACF medium) and not separately broken out. Humbird reports GFs at $3-4/kg assuming bulk pricing breakthroughs. Component breakdown for CE Delft is omitted as they do not report comparable per-kg component costs across most scenarios.*
+
+---
+
+## Presentation 4: Key Assumption Divergences
+
+Rather than showing all numbers, this highlights where the studies **most disagree** — the parameters where your prior most affects your conclusion.
+
+```{=html}
+<style>
+.divergence-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.88em;
+}
+.divergence-table th {
+  background: #2c3e50;
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+}
+.divergence-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+.divergence-table tr:hover {
+  background: #f8f9fa;
+}
+.high-diverge { background: #fce4ec !important; }
+.med-diverge { background: #fff3e0 !important; }
+.low-diverge { background: #e8f5e9 !important; }
+.divergence-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+.divergence-tag.high { background: #e74c3c; color: white; }
+.divergence-tag.med { background: #f39c12; color: white; }
+.divergence-tag.low { background: #27ae60; color: white; }
+</style>
+
+<table class="divergence-table">
+<thead>
+<tr>
+  <th style="width: 14%;">Parameter</th>
+  <th style="width: 8%;">Divergence</th>
+  <th style="width: 26%;">Optimistic end</th>
+  <th style="width: 26%;">Pessimistic end</th>
+  <th style="width: 26%;">Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr class="high-diverge">
+  <td><strong>Amino acid / media cost</strong></td>
+  <td><span class="divergence-tag high">HIGH</span></td>
+  <td>$0.63/L (Pasitka ACF medium) — with GFs included</td>
+  <td>$1-4/L (Humbird pharma-grade) — excluding GFs</td>
+  <td>GFI 2025 suggests Humbird's AA prices were 2-10× too high. But Pasitka's $0.63/L includes proprietary GF formulation — not apples-to-apples.</td>
+</tr>
+<tr class="high-diverge">
+  <td><strong>Growth factor cost</strong></td>
+  <td><span class="divergence-tag high">HIGH</span></td>
+  <td>Included in $0.63/L (Pasitka); ~$0/kg if autocrine lines work</td>
+  <td>$3-4/kg (Humbird, assumes bulk breakthroughs); potentially $100+/kg without breakthroughs</td>
+  <td>The single most pivotal uncertainty. Multiple breakthrough technologies in development but none proven at commercial scale.</td>
+</tr>
+<tr class="high-diverge">
+  <td><strong>Output basis</strong></td>
+  <td><span class="divergence-tag high">HIGH</span></td>
+  <td>50/50 hybrid (~$6/lb headline) or pure cell mass ($13.75/kg)</td>
+  <td>Pure wet cell mass ($37-51/kg, Humbird)</td>
+  <td>Comparing hybrid product cost to pure cell mass cost is an apples-to-oranges error that inflates apparent agreement between studies.</td>
+</tr>
+<tr class="med-diverge">
+  <td><strong>Cell density</strong></td>
+  <td><span class="divergence-tag med">MEDIUM</span></td>
+  <td>130×10⁶ cells/mL / ~43% w/v (Pasitka, demonstrated)</td>
+  <td>110 g/L fed-batch / 195 g/L perfusion limit (Humbird, modeled)</td>
+  <td>Higher density = less media per kg. Studies roughly agree on achievable ranges but differ on whether high density comes with offsetting costs (filters, contamination).</td>
+</tr>
+<tr class="med-diverge">
+  <td><strong>Species</strong></td>
+  <td><span class="divergence-tag med">MEDIUM</span></td>
+  <td>Chicken cells (Pasitka — spontaneous immortalization, robust growth)</td>
+  <td>Generic mammalian / CHO-like (Humbird — conservative, well-characterized)</td>
+  <td>Chicken cells may have genuine biological advantages (immortalization without genetic modification), but most TEAs don't use chicken-specific parameters.</td>
+</tr>
+<tr class="med-diverge">
+  <td><strong>Capital charge / WACC</strong></td>
+  <td><span class="divergence-tag med">MEDIUM</span></td>
+  <td>14.6% annual (Pasitka)</td>
+  <td>~20%+ (Humbird, early-stage risk); CE Delft notes lower ROI needed for cost targets</td>
+  <td>Financing cost reflects perceived industry risk. Mature food = 8-12%; early biotech = 15-25%.</td>
+</tr>
+<tr class="low-diverge">
+  <td><strong>Reactor scale</strong></td>
+  <td><span class="divergence-tag low">LOW</span></td>
+  <td>25m³ (Pasitka large perfusion); larger in CE Delft futures</td>
+  <td>2m³ (Pasitka ATF, Humbird perfusion); 50m³ (Humbird sensitivity)</td>
+  <td>Reactor size affects CAPEX/kg through economies of scale but is less pivotal than media/GF costs.</td>
+</tr>
+</tbody>
+</table>
+```
+
+---
+
+## Cautious Synthesis
+
+::: {.callout-important collapse="true"}
+## Caveat
+The synthesis below is not a conclusion we are confident in or standing behind. It is a largely AI-generated interpretation of the evidence we are currently examining. We do not want to prejudge the questions our [workshop](https://uj-cm-workshop.netlify.app/) is designed to explore, and we are not the domain experts. This is presented as a starting point for structured discussion. Please push back on it.
+:::
+
+Based on the studies above, here is a rough bracketing for **pure cultivated chicken cell mass cost** in a steady-state scenario (~2036):
+
+```{=html}
+<table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin: 1rem 0;">
+<thead>
+<tr style="background: #2c3e50; color: white;">
+  <th style="padding: 10px; width: 12%;">Band</th>
+  <th style="padding: 10px; width: 15%;">Range ($/kg)</th>
+  <th style="padding: 10px; width: 73%;">Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-bottom: 1px solid #dee2e6; background: #e8f5e9;">
+  <td style="padding: 8px;">Optimistic</td>
+  <td style="padding: 8px;">~$14-18/kg</td>
+  <td style="padding: 8px;">Anchored by Pasitka supplement's chicken-specific large-scale perfusion ($13.75/kg) and TFF ($15.03/kg). Modeled, not demonstrated at commercial scale. Believer Meats' shutdown adds uncertainty about near-term achievability.</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6; background: #fff3e0;">
+  <td style="padding: 8px;">Central</td>
+  <td style="padding: 8px;">~$18-35/kg</td>
+  <td style="padding: 8px;">Bracketing chicken-specific Pasitka against Humbird's more pessimistic generic TEA, adjusted for GFI 2025 evidence that Humbird's amino acid costs were substantially overestimated.</td>
+</tr>
+<tr style="border-bottom: 1px solid #dee2e6; background: #fce4ec;">
+  <td style="padding: 8px;">Pessimistic</td>
+  <td style="padding: 8px;">>$35-60+/kg</td>
+  <td style="padding: 8px;">Humbird-style outcomes ($37-51/kg) if food-grade media, hydrolysate, and growth factor improvements are slower than projected.</td>
+</tr>
+</tbody>
+</table>
+```
+
+Key reasons the optimistic end may be too low: the Pasitka results come from a company that subsequently shut down; the widely-cited $6/lb headline is a hybrid product figure; and hydrolysate performance at commercial scale is still unproven.
+
+Key reasons the pessimistic end may be too high: GFI 2025 evidence materially weakens Humbird's amino acid cost assumptions; chicken cells may have genuine advantages over the generic mammalian model Humbird uses; and multiple growth factor cost-reduction approaches are in active development.
+
+::: {.callout-note collapse="true"}
+## What About Hybrid Products?
+If the pure cell mass costs above are correct, hybrid products could be cheaper:
+
+- At 50% CM inclusion: ~$7-18/kg blended cost (with plant filler at ~$3/kg)
+- At 25% CM inclusion: ~$5-12/kg blended cost
+- At 3% CM inclusion (like GOOD Meat's retail product): close to plant-based cost
+
+The "right" CM inclusion rate for a marketable product is itself uncertain and depends on consumer acceptance, regulatory requirements, and what functionality the cultivated cells provide (taste, texture, nutrition). GFI notes more research is needed to identify optimal ratios.
+:::
+
+---
+
+## How Our Dashboard Relates to These Studies
+
+Our [interactive cost model](index.qmd) is **not a replication of any single study**. It is a Monte Carlo framework that lets you explore the parameter space these studies occupy. Some key relationships:
+
+- **Default parameter ranges** are informed by Humbird 2021 (pessimistic baseline) and GFI component reports (media cost revision), with Pasitka 2024 providing chicken-specific anchoring
+- **The hydrolysate toggle** (75% base probability) explores the Humbird pharma-grade → hydrolysate cost shift
+- **The growth factor toggle** (50% base probability) captures the binary uncertainty about breakthrough technologies
+- **The maturity slider** creates correlated "good world" / "bad world" scenarios similar to the spread between optimistic and pessimistic TEAs
+
+**A planned future enhancement** is "reproduce a paper" preset buttons that lock parameters to match specific published TEA assumptions (Humbird, CE Delft, Pasitka). This would make it easier to see exactly which parameter differences drive the cost gap between studies.
+
+---
+
+*This page is part of [The Unjournal's Pivotal Questions initiative](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions). Feedback via [Hypothesis](https://hypothes.is/), [GitHub issues](https://github.com/unjournal/cm_pq_modeling/issues), or at our [workshop](https://uj-cm-workshop.netlify.app/).*

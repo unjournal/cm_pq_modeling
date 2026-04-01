@@ -90,6 +90,18 @@ Add comments directly to this page using [Hypothesis](https://hypothes.is/) — 
 
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for **pure cultured cells**, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. **To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).**
 
+::: {.callout-warning}
+## Cost Basis Matters: Read Carefully
+Cost figures in the cultivated meat literature refer to different things depending on the study. Throughout this page, we label costs by their **output basis** where known:
+
+- **Pure cell mass (wet weight)**: Cost to produce unprocessed cells in a bioreactor — this is what our [dashboard model](index.qmd) estimates
+- **Cultivated ingredient**: Cell mass after downstream processing (washing, concentration)
+- **Hybrid product**: A blend of cultivated cells with plant-based or other ingredients (e.g., 50/50 cultivated/plant-based)
+- **Retail-equivalent product**: Final consumer product including packaging, distribution, margins
+
+A $14/kg figure for pure cell mass and a $14/kg figure for a 50/50 hybrid imply very different costs for the cultivated component. We try to flag the basis for every number cited below. See our [TEA comparison page](compare.qmd) for a systematic breakdown.
+:::
+
 *The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [**<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>**](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
 
 ```{=html}
@@ -694,7 +706,9 @@ The **<abbr title="How many times the media volume is replaced during a producti
 | **Contamination risk** | Lower (closed system) | Higher (more connections) |
 | **Cycle time** | 5-10 days | Continuous |
 
-**Bottom line:** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg** (or $22/kg with hydrolysates), while perfusion costs **$51/kg** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales.
+*The batch/perfusion distinction is a simplification. In practice, cell density, media turnover, and recycle fraction are interdependent — higher perfusion density may require additional retention devices (e.g., ATF filters), and media recycling can partially decouple turnover from fresh media cost. Our [dashboard model](index.qmd) treats density and turnover as separate parameters for simplicity; see [Technical Reference](docs.qmd#process-intensities) for details on how these interact in the cost equations.*
+
+**Bottom line:** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg wet cell mass** (or $22/kg with hydrolysates), while perfusion costs **$51/kg wet cell mass** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales. Note: Humbird models generic mammalian cells, not chicken specifically.
 :::
 
 ---
@@ -785,6 +799,11 @@ For these reasons, the cultured meat industry has converged on <abbr title="Medi
 | <abbr title="Per 2024 Believer study: 'animal-free culture medium that cost only $0.63 per litre' supporting 1.3×10¹¹ cells/L density">Hydrolysate-based (optimized)</abbr> | $0.20 - $1.00 | [Believer 2024](https://www.nature.com/articles/s43016-024-01022-w) |
 
 ::: {.callout-note collapse="true"}
+## Note on Believer Meats (Pasitka et al. 2024)
+Believer Meats, the company behind the Pasitka et al. 2024 chicken-specific TEA, shut down operations in late 2025. This is worth noting because their study provides some of the most optimistic (and the only chicken-specific) cost estimates in the literature. The shutdown likely reflects a combination of factors — capital constraints during the 2023-2025 VC pullback from alt-protein, timeline/investor mismatch, and possibly scale-up challenges — rather than a direct falsification of their published engineering estimates. We treat their technical results as still informative but factor the shutdown into our uncertainty about near-term achievability of their projected costs. See the [TEA comparison page](compare.qmd) for more context.
+:::
+
+::: {.callout-note collapse="true"}
 ## How Does $/L Convert to $/kg Meat? (click to expand)
 
 To convert media cost per liter to cost per kg of meat, you need to know the **cell density**:
@@ -799,11 +818,11 @@ $$\text{Media cost per kg} = \frac{\text{Media cost per L} \times 1000}{\text{Ce
 
 This is why cell density is so important — it's the denominator that determines how much media you need per kg of output.
 
-Note: Both media types (pharma-grade and hydrolysate) can achieve similar cell densities. The difference is purely in media cost, not in cell performance.
+Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densities in published studies, though hydrolysate performance can vary depending on source, lot, and formulation. The cost difference is substantial, but performance equivalence should not be assumed across all cell types and conditions without validation.
 :::
 
 ::: {.callout-tip}
-**This is largely a solved problem.** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)). <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media. Ahmad et al. 2023 and Ng &amp; Zheng 2024 validated hydrolysate use for muscle cell culture.">Most companies scaling up have already adopted hydrolysate-based media.</abbr>
+**Hydrolysates are a promising and widely-pursued cost reduction pathway.** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)), and <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media.">several companies report achieving hydrolysate-based media at $1/L or less</abbr>.^[There is some disagreement here. GFI's 2025 amino acid report notes that hydrolysates can be deficient in key amino acids and typically require supplementation or blending. Humbird (2021) describes hydrolysate suitability as requiring "further study." We are investigating the latest evidence on this point and welcome feedback.]
 :::
 
 ---

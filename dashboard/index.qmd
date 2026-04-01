@@ -23,7 +23,7 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 :::
 
 ::: {.callout-note collapse="true"}
-## We Want Your Feedback!
+## We Want Your Feedback
 **Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.
 
 **[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
@@ -34,7 +34,7 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 ```{=html}
 <script>
 function toggleHypothesis() {
-  const btn = document.getElementById('toggle-hypothesis');
+  const btn = document.getElementById('toggle-hypothesis') || document.getElementById('vc-hyp');
   // Hypothesis creates a sidebar with class 'hypothesis-sidebar' or as an annotator frame
   // Try multiple selectors to find the sidebar
   const selectors = [
@@ -74,7 +74,7 @@ function toggleHypothesis() {
 
 function toggleFullWidth() {
   const body = document.body;
-  const btn = document.getElementById('toggle-fullwidth');
+  const btn = document.getElementById('toggle-fullwidth') || document.getElementById('vc-wide');
   // Quarto full-page layout uses column classes and sidebar
   const contentSelectors = [
     'main.content', 'main', '.page-columns', '#quarto-content',
@@ -147,7 +147,7 @@ function toggleParams() {
 }
 
 function toggleToc() {
-  const btn = document.getElementById('toggle-toc');
+  const btn = document.getElementById('toggle-toc') || document.getElementById('vc-toc');
   // Quarto TOC can be in several locations
   const selectors = [
     '#quarto-margin-sidebar',
@@ -173,7 +173,7 @@ function toggleToc() {
 }
 
 function hideHypothesis() {
-  const btn = document.getElementById('toggle-hypothesis');
+  const btn = document.getElementById('toggle-hypothesis') || document.getElementById('vc-hyp');
   const selectors = [
     '.hypothesis-sidebar',
     '.annotator-frame',
@@ -249,7 +249,7 @@ function hideHypothesis() {
 
 **[Read our deep dive: How Cultured Chicken is Made](learn.qmd)** — a detailed guide covering cell banking, bioreactors, media composition, growth factors, and why each step affects costs.
 
-Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**.
+Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**. For a side-by-side comparison of how published TEAs differ in their assumptions and estimates, see our **[TEA Comparison page](compare.qmd)**.
 
 ```
    CELL BANK  →  SEED TRAIN  →  PRODUCTION  →  HARVEST  →  PRODUCT
@@ -1179,7 +1179,7 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of pure cultured chicken cells</strong> (wet weight, unprocessed) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce cell mass in a bioreactor — not the cost of a consumer product, and not retail price.
+<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of pure cultured chicken cells</strong> (<span title="Wet weight = the mass of cells as harvested from the bioreactor, including water content (~70-80%). This is the standard output basis used in most TEAs (Humbird 2021, Pasitka 2024). It does NOT include downstream processing into structured products, blending with plant-based ingredients, or retail margins. For comparison: Humbird reports $37/kg wet cell mass; Pasitka reports $13.75/kg wet cell mass (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product, not pure cell mass. See our TEA Comparison page for details." style="text-decoration: underline dotted; cursor: help;">wet weight, unprocessed &#9432;</span>) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce cell mass in a bioreactor — not the cost of a consumer product, and not retail price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix.">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
@@ -1283,7 +1283,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-These percentages answer: **"What's the chance that production costs fall below key price points?"** — based on the parameter distributions you've set above. These are the decision-relevant outputs for evaluating whether cultured meat can compete with conventional chicken.
+These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. These are the decision-relevant outputs for evaluating whether cultured meat can compete with conventional chicken.
 
 ```{ojs}
 //| echo: false

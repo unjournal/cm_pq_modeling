@@ -11,6 +11,8 @@ website:
         href: index.qmd
       - text: "Learn"
         href: learn.qmd
+      - text: "TEA Comparison"
+        href: compare.qmd
       - text: "Technical Reference"
         href: docs.qmd
       - text: "About"
