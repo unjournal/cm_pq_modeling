@@ -1,0 +1,82 @@
+---
+title: "Discussion Map"
+subtitle: "Where to ask, debate, and contribute — layered by topic"
+format:
+  html:
+    include-in-header:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+This page is a curated map of **where to go** to discuss different parts of this project. GitHub Discussions is a flat list of threads per category; the structure you see below is maintained by hand and updated as new threads emerge.
+
+## How to contribute — quick decision tree
+
+| I want to... | Use... |
+|---|---|
+| Comment on a specific line, paragraph, parameter, or equation | [**Hypothesis**](https://hypothes.is/) — click the `<` tab on the right edge of any dashboard page |
+| Ask a longer question or propose a correction | The relevant **GitHub Discussion** thread below |
+| Report a bug or code-level issue | [**GitHub Issues**](https://github.com/unjournal/cm_pq_modeling/issues) |
+| Discuss workshop sessions or cross-PQ structure | The **Workshop** or **Pivotal Questions** categories below |
+
+Reading GitHub Discussions is open to everyone; posting requires a free GitHub account.
+
+---
+
+## 💬 Workshop {#workshop}
+
+**Hub:** [Workshop discussion hub (#2)](https://github.com/unjournal/cm_pq_modeling/discussions/2) · category: **General**
+
+Session prep, agenda, follow-ups, and broader workshop-level discussion tied to the [April 2026 Cultivated Meat PQ Workshop](https://uj-cm-workshop.netlify.app/).
+
+**Active sub-threads:** *(None yet. Open a new thread in the General category and it will be linked here.)*
+
+---
+
+## 🔬 Model {#model}
+
+**Hub:** [Model discussion hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) · category: **Q&A** (supports "marked answer")
+
+Parameters, equations, methodology, alternative data sources, and comparison with other TEAs. Model-level discussion of sub-questions **CM_12–CM_20** (hydrolysates, growth factors, media, cell density, food-grade vs pharma, bioreactors) lives here too.
+
+| # | Thread | Scope |
+|---|---|---|
+| [**#9**](https://github.com/unjournal/cm_pq_modeling/discussions/9) | Is pharma-grade media at $0.50–2.50/L defensible for 2036? | Media cost; CM_14 / CM_15 / CM_17 |
+| [**#10**](https://github.com/unjournal/cm_pq_modeling/discussions/10) | Is the maturity-factor correlation too strong? | Correlation structure; WACC / CAPEX / tech coupling |
+
+*Open a new Q&A thread for any additional model topic.*
+
+---
+
+## 🎯 Pivotal Questions {#pivotal-questions}
+
+**Hub:** [PQ category hub (#4)](https://github.com/unjournal/cm_pq_modeling/discussions/4) · category: **Ideas**
+
+One anchor thread per Pivotal Question. The [PQ landing page](https://info.unjournal.org/pivotal-questions.html) and [PQ GitBook](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) host the formal operationalizations; the threads below are for discussion.
+
+| PQ | Thread | Metaculus |
+|---|---|---|
+| **CM_01** — Focal: CM cost per kg (2026 / 2031 / 2036 / 2051) | [**#5**](https://github.com/unjournal/cm_pq_modeling/discussions/5) | [link](https://www.metaculus.com/c/unjournal/38815/) |
+| **CM_03** — Predict-experts: beliefs about CM cost by 2051 | [**#6**](https://github.com/unjournal/cm_pq_modeling/discussions/6) | [link](https://www.metaculus.com/c/unjournal/39317/) |
+| **CM_10** — Predict-experts: CM vs corporate campaigns (welfare) | [**#7**](https://github.com/unjournal/cm_pq_modeling/discussions/7) | [link](https://www.metaculus.com/c/unjournal/40617/) |
+| **CM_11** — Direct: welfare benefit of CM vs campaigns | [**#8**](https://github.com/unjournal/cm_pq_modeling/discussions/8) | [link](https://www.metaculus.com/c/unjournal/40925/) |
+
+**Model-parameter-level sub-questions (CM_12–CM_20)** — post these under [🔬 Model](#model) above rather than here.
+
+---
+
+## External resources
+
+- 📊 [Interactive model dashboard](https://unjournal.github.io/cm_pq_modeling/)
+- 📖 [Technical docs](https://unjournal.github.io/cm_pq_modeling/docs.html)
+- 🔬 [Learn: how cultured chicken is made](https://unjournal.github.io/cm_pq_modeling/learn.html)
+- 🆚 [TEA comparison](https://unjournal.github.io/cm_pq_modeling/compare.html)
+- 🎲 [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
+- 🧑‍🏫 [Workshop site](https://uj-cm-workshop.netlify.app)
+- 🎯 [Pivotal Questions landing](https://info.unjournal.org/pivotal-questions.html)
+- 📘 [PQ background (GitBook)](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
+- 💻 [GitHub repo](https://github.com/unjournal/cm_pq_modeling)
+
+---
+
+*This map is maintained by hand. If a thread is missing or the map feels stale, ping us via any of the channels above and we'll update it.*

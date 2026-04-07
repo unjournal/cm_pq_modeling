@@ -15,6 +15,8 @@ website:
         href: compare.qmd
       - text: "Technical Reference"
         href: docs.qmd
+      - text: "Discuss"
+        href: discuss.qmd
       - text: "About"
         href: about.qmd
   page-footer:
