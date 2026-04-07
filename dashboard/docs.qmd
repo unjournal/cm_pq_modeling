@@ -13,9 +13,10 @@ format:
 
 ::: {.callout-note collapse="true"}
 ## Feedback & Annotations
-Comment directly on this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We aim to respond to all comments.
 
-For longer-form questions, corrections, methodology debates, or alternative-source suggestions, post in the **[🧠 Substantive discussion hub →](https://github.com/unjournal/cm_pq_modeling/discussions/3)** — the unified home for bio / econ / stats / engineering / welfare debate. See the [📖 full Discussion Map](discuss.html) for domain-organized sub-threads.
+**For substantive questions, corrections, methodology debates, or alternative-source suggestions — please post in the [🧠 Substantive discussion hub →](https://github.com/unjournal/cm_pq_modeling/discussions/3).** That's where technical debate can get involved, with threaded replies others can build on. See the [📖 Discussion Map](discuss.html) for domain-organized sub-threads (media, growth factors, bioreactors, correlations, welfare).
+
+For **quick inline notes** on a specific equation or parameter, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer the Substantive hub so the conversation stays organized and discoverable.
 :::
 
 ## Overview

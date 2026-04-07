@@ -24,11 +24,15 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
-**Comment directly on this page** using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any text, parameter, or result to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and improve the model based on your feedback.
+
+**For substantive or longer-form discussion — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions).** That's where the conversation can get involved, where others can reply and build on each other, and where everything stays threaded and organized. See the [📖 Discussion Map](discuss.html) for where to post what, or jump to a hub:
+
+- 🧠 [**Substantive hub**](https://github.com/unjournal/cm_pq_modeling/discussions/3) — bio / econ / stats / engineering / welfare (**the main event**)
+- 🎯 [PQ framing](https://github.com/unjournal/cm_pq_modeling/discussions/4) · 💬 [Workshop logistics](https://github.com/unjournal/cm_pq_modeling/discussions/2) · 🖥️ [Platform & UX](https://github.com/unjournal/cm_pq_modeling/discussions/16)
+
+**For quick inline notes** on specific text or a parameter, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer GitHub Discussions so the conversation stays organized and discoverable.
 
 **[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
-
-**Longer-form discussion** ([see all](https://github.com/unjournal/cm_pq_modeling/discussions) · [📖 Discussion Map](discuss.html)) — 🧠 [**Substantive debate**](https://github.com/unjournal/cm_pq_modeling/discussions/3) (bio / econ / stats / engineering / welfare — the main event) · 🎯 [PQ framing](https://github.com/unjournal/cm_pq_modeling/discussions/4) · 💬 [Workshop logistics](https://github.com/unjournal/cm_pq_modeling/discussions/2) · 🖥️ [Platform & UX](https://github.com/unjournal/cm_pq_modeling/discussions/16)
 
 **Other ways to reach us:** [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new) · [Email contact@unjournal.org](mailto:contact@unjournal.org)
 :::

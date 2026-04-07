@@ -79,9 +79,15 @@ abbr[title]:hover::before {
 
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
-Add comments directly to this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge of your screen. Highlight any text to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and update the content based on your feedback.
 
-For substantive debate on biology, costs, or welfare, post in the **[🧠 Substantive discussion hub →](https://github.com/unjournal/cm_pq_modeling/discussions/3)**. For Pivotal Question *framing* (e.g. jurisdiction forks, resolution criteria), see the **[🎯 PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4)**. For workshop logistics, see the **[💬 Workshop hub](https://github.com/unjournal/cm_pq_modeling/discussions/2)**. Full [📖 Discussion Map](discuss.html).
+**For substantive debate on biology, costs, or welfare — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions).** That's where threaded conversation can get involved, with replies others can reply to and build on. Direct links:
+
+- 🧠 [**Substantive hub**](https://github.com/unjournal/cm_pq_modeling/discussions/3) — for biology, economics, engineering, and welfare debate (**the main event**)
+- 🎯 [PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4) — for how we *define* the questions (jurisdiction forks, resolution criteria)
+- 💬 [Workshop hub](https://github.com/unjournal/cm_pq_modeling/discussions/2) — for session prep, agenda, and logistics
+- 📖 [Full Discussion Map](discuss.html) — the curated index
+
+For **quick inline notes** on specific text, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer GitHub Discussions so the conversation stays organized.
 :::
 
 ::: {.callout-tip}
