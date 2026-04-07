@@ -1819,7 +1819,6 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 | [Pivotal Questions overview](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions) | Full documentation on the PQ framework |
 | [Cultured meat on Metaculus](https://www.metaculus.com/questions/?search=cultured%20meat) | Forecasting questions with community predictions |
 | [The Unjournal](https://unjournal.org) | Independent evaluations of impactful research |
-| [Squiggle reference model](../models/cm_cost_v0.2.squiggle) | Local reference implementation (parameters synced with this dashboard) |
 | [UC Davis ACBM Calculator](https://acbmcostcalculator.ucdavis.edu/) | Original academic cost model (Risner et al.) |
 | [Good Food Institute](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Industry reports and data |
 

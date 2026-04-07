@@ -103,7 +103,6 @@ Dashboard UX, visualization design, page organization, documentation clarity, co
 - 📖 [Technical docs](https://unjournal.github.io/cm_pq_modeling/docs.html)
 - 🔬 [Learn: how cultured chicken is made](https://unjournal.github.io/cm_pq_modeling/learn.html)
 - 🆚 [TEA comparison](https://unjournal.github.io/cm_pq_modeling/compare.html)
-- 🎲 [Squiggle model](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)
 - 🧑‍🏫 [Workshop site](https://uj-cm-workshop.netlify.app)
 - 🎯 [Pivotal Questions landing](https://info.unjournal.org/pivotal-questions.html)
 - 📘 [PQ background (GitBook)](https://globalimpact.gitbook.io/the-unjournal-project-and-communication-space/pivotal-questions)
