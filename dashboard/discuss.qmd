@@ -8,92 +8,100 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-📋 **Quick links:** [All GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions) · [🧠 Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) · [🎯 PQ framing hub (#4)](https://github.com/unjournal/cm_pq_modeling/discussions/4) · [💬 Workshop hub (#2)](https://github.com/unjournal/cm_pq_modeling/discussions/2) · [🖥️ Platform & UX hub (#16)](https://github.com/unjournal/cm_pq_modeling/discussions/16)
+**Quick links:** [All GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions) · [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) · [PQ framing hub (#4)](https://github.com/unjournal/cm_pq_modeling/discussions/4) · [Workshop hub (#2)](https://github.com/unjournal/cm_pq_modeling/discussions/2) · [Platform & UX hub (#16)](https://github.com/unjournal/cm_pq_modeling/discussions/16)
 
 ---
 
 ## The structure
 
-**Substantive discussion is unified.** Biology, economics, statistics, engineering, and welfare debates happen in **one coherent place** — the [🧠 Substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) — rather than fragmenting across Workshop / Model / PQ silos. Sub-threads are organized by **domain**, not by origin.
+**Substantive discussion is unified.** Biology, economics, statistics, engineering, and welfare debates happen in one place — the [Substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) — rather than fragmenting across Workshop / Model / PQ silos.
 
 **Process discussion is split by activity** — three separate hubs for three distinct coordination tasks: workshop logistics, PQ framing, and platform/UX.
 
-GitHub Discussions is a flat stack of threads per category; the structure below is maintained by hand and updated as new threads emerge.
+GitHub Discussions is a flat stack of threads per category; the structure below is maintained by hand.
 
 ## Quick decision tree
 
 | I want to... | Use... |
 |---|---|
 | Comment on a specific line, paragraph, parameter, or equation | [**Hypothesis**](https://hypothes.is/) — click the `<` tab on the right edge of any dashboard page |
-| Debate actual cost values, biology, engineering, welfare, or methodology | [**🧠 Substantive hub (#3)**](https://github.com/unjournal/cm_pq_modeling/discussions/3) |
-| Discuss how to *frame* a Pivotal Question (resolution, jurisdiction fork, retiring/splitting) | [**🎯 PQ framing hub (#4)**](https://github.com/unjournal/cm_pq_modeling/discussions/4) |
-| Discuss workshop logistics, scheduling, session format | [**💬 Workshop hub (#2)**](https://github.com/unjournal/cm_pq_modeling/discussions/2) |
-| Suggest UX, visual, page-layout, or commenting-tool improvements | [**🖥️ Platform & UX hub (#16)**](https://github.com/unjournal/cm_pq_modeling/discussions/16) |
+| Debate actual cost values, biology, engineering, welfare, or methodology | [**Substantive hub (#3)**](https://github.com/unjournal/cm_pq_modeling/discussions/3) |
+| Discuss how to *frame* a Pivotal Question (resolution, jurisdiction fork, retiring/splitting) | [**PQ framing hub (#4)**](https://github.com/unjournal/cm_pq_modeling/discussions/4) |
+| Discuss workshop logistics, scheduling, session format | [**Workshop hub (#2)**](https://github.com/unjournal/cm_pq_modeling/discussions/2) |
+| Suggest UX, visual, page-layout, or commenting-tool improvements | [**Platform & UX hub (#16)**](https://github.com/unjournal/cm_pq_modeling/discussions/16) |
 | Report a code bug | [**GitHub Issues**](https://github.com/unjournal/cm_pq_modeling/issues) |
 
 Reading GitHub Discussions is open to everyone; posting requires a free GitHub account.
 
 ---
 
-# 🧠 Substantive discussion (unified)
+# Substantive discussion (unified)
 
-**Hub:** [Substantive discussion hub #3](https://github.com/unjournal/cm_pq_modeling/discussions/3) · category: **Q&A** (supports "marked answer")
-**See all:** [All Q&A threads →](https://github.com/unjournal/cm_pq_modeling/discussions/categories/q-a)
+**Hub:** [#3 Substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) · category: **Q&A** · [all Q&A threads](https://github.com/unjournal/cm_pq_modeling/discussions/categories/q-a)
 
-Unified home for biology, economics, statistics/methodology, engineering, and welfare discussion. Organized by **domain**, not by origin.
+Unified home for biology, economics, statistics/methodology, engineering, and welfare discussion. Organized by domain.
+
+### Currently seeking bio / engineering expert input
+
+- [**#12** Hydrolysates: how confident are we they'll replace amino acids in basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/12) — 🧑 *human-drafted*
+- [**#17** Is cell density correlated with the cost/L of basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/17) — 🤝 *human-drafted, verifying a Claude take*
+
+[See all via the `bio_engineering_expert` label →](https://github.com/unjournal/cm_pq_modeling/discussions?discussions_q=is%3Aopen+label%3Abio_engineering_expert)
+
+### Seed topics (reply below or start a new thread)
 
 | Domain | Thread | Scope |
 |---|---|---|
-| 💊 **Media, amino acids & nutrients** | [**#9** Pharma-grade media at $0.50–2.50/L?](https://github.com/unjournal/cm_pq_modeling/discussions/9) | Media cost range; CM_14 / CM_15 / CM_17 |
-| 🧬 **Growth factors & biotech** | [**#13** Growth factors & hydrolysates to 2036](https://github.com/unjournal/cm_pq_modeling/discussions/13) | CM_12 / CM_13 / CM_18 / CM_19 |
-| 🏭 **Bioreactors, cell density & scale-up** | [**#14** Bioreactors, cell density & scale-up](https://github.com/unjournal/cm_pq_modeling/discussions/14) | CM_16 / CM_17 / CM_20; CAPEX |
-| 📊 **Statistics & methodology** | [**#10** Maturity-factor correlation](https://github.com/unjournal/cm_pq_modeling/discussions/10) | Latent factor; WACC / reactor / tech coupling |
-| 🐔 **Welfare & impact** | [**#15** Welfare comparison & counterfactuals](https://github.com/unjournal/cm_pq_modeling/discussions/15) | CM_02 / CM_10 / CM_11 (substance) |
+| Media, amino acids & nutrients | [**#9** Pharma-grade media at $0.50–2.50/L?](https://github.com/unjournal/cm_pq_modeling/discussions/9) | Media cost range; CM_14 / CM_15 / CM_17 |
+| Growth factors & biotech | [**#13** Growth factors & hydrolysates to 2036](https://github.com/unjournal/cm_pq_modeling/discussions/13) | CM_12 / CM_13 / CM_18 / CM_19 |
+| Bioreactors, cell density & scale-up | [**#14** Bioreactors, cell density & scale-up](https://github.com/unjournal/cm_pq_modeling/discussions/14) | CM_16 / CM_17 / CM_20; CAPEX |
+| Statistics & methodology | [**#10** Maturity-factor correlation](https://github.com/unjournal/cm_pq_modeling/discussions/10) | Latent factor; WACC / reactor / tech coupling |
+| Welfare & impact | [**#15** Welfare comparison & counterfactuals](https://github.com/unjournal/cm_pq_modeling/discussions/15) | CM_02 / CM_10 / CM_11 (substance) |
 
-**[➕ Start a new substantive thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=q-a)**
+**[Start a new substantive thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=q-a)**
+
+*Provenance tags: 🧑 human-drafted · 🤖 AI-generated · 🤝 human-refined from AI / verifying an AI take.*
 
 ---
 
-# 🛠️ Process / Meta (split by activity)
+# Process / Meta (split by activity)
 
 Three separate hubs for three distinct coordination tasks. Substantive content does **not** live here — it lives in the Substantive hub above.
 
-## 💬 Workshop logistics {#workshop}
+## Workshop logistics {#workshop}
 
-**Hub:** [#2 Workshop logistics & process hub](https://github.com/unjournal/cm_pq_modeling/discussions/2) · category: **General**
-**See all:** [All General threads →](https://github.com/unjournal/cm_pq_modeling/discussions/categories/general)
+**Hub:** [#2 Workshop logistics & process hub](https://github.com/unjournal/cm_pq_modeling/discussions/2) · category: **General** · [all General threads](https://github.com/unjournal/cm_pq_modeling/discussions/categories/general)
 
 Session prep, scheduling, agenda, format, follow-ups for the [April 2026 workshop](https://uj-cm-workshop.netlify.app/).
 
-**Active sub-threads:** *(None yet.)*
+**Seed topics:** *(None yet.)*
 
-**[➕ Start a new workshop-logistics thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=general)**
+**[Start a new workshop-logistics thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=general)**
 
-## 🎯 PQ framing & operationalization {#pq-framing}
+## PQ framing & operationalization {#pq-framing}
 
-**Hub:** [#4 PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4) · category: **Ideas**
-**See all:** [All Ideas threads →](https://github.com/unjournal/cm_pq_modeling/discussions/categories/ideas)
+**Hub:** [#4 PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4) · category: **Ideas** · [all Ideas threads](https://github.com/unjournal/cm_pq_modeling/discussions/categories/ideas)
 
 *How* we frame the Pivotal Questions — resolution criteria, jurisdiction forks, retiring/splitting PQs, operationalization of sub-questions CM_12–CM_20.
 
-| PQ | Framing thread | Metaculus |
+| PQ | Framing seed | Metaculus |
 |---|---|---|
 | **CM_01** — Focal cost | [#5](https://github.com/unjournal/cm_pq_modeling/discussions/5) | [link](https://www.metaculus.com/c/unjournal/38815/) |
 | **CM_03** — Predict-experts (cost) | [#6](https://github.com/unjournal/cm_pq_modeling/discussions/6) | [link](https://www.metaculus.com/c/unjournal/39317/) |
 | **CM_10** — Predict-experts (welfare) | [#7](https://github.com/unjournal/cm_pq_modeling/discussions/7) | [link](https://www.metaculus.com/c/unjournal/40617/) |
 | **CM_11** — Direct welfare | [#8](https://github.com/unjournal/cm_pq_modeling/discussions/8) | [link](https://www.metaculus.com/c/unjournal/40925/) |
 
-**Substantive** discussion of these PQs (actual estimates, counterfactual reasoning) lives in the [🧠 Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3), not in the per-PQ framing threads.
+**Substantive** discussion of these PQs (actual estimates, counterfactual reasoning) lives in the [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3), not in the per-PQ framing seeds.
 
-**[➕ Start a new PQ framing thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=ideas)**
+**[Start a new PQ framing thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=ideas)**
 
-## 🖥️ Platform, UX & commenting process {#platform}
+## Platform, UX & commenting process {#platform}
 
 **Hub:** [#16 Platform, UX, page formatting & commenting](https://github.com/unjournal/cm_pq_modeling/discussions/16) · category: **Ideas**
 
 Dashboard UX, visualization design, page organization, documentation clarity, commenting tools (Hypothesis vs Discussions vs giscus), and the structure of this discussion space itself.
 
-**[➕ Start a new platform / UX / process thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=ideas)**
+**[Start a new platform / UX / process thread →](https://github.com/unjournal/cm_pq_modeling/discussions/new?category=ideas)**
 
 ---
 
