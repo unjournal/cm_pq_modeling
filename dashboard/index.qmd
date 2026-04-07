@@ -651,7 +651,24 @@ function mean(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-// Spearman rank correlation coefficient
+// Conditional-mean dollar swing.
+// Signed $/kg difference between mean(uc) among samples where `paramArr`
+// is in its top tail and mean(uc) among samples where it is in its bottom tail.
+// Sign: positive → parameter increases cost; negative → decreases cost.
+// This is a TOTAL-EFFECT statistic under the joint sampling distribution —
+// it honors latent-variable propagation (e.g. maturity → hydrolysate adoption)
+// but can overlap across correlated parameters and should not be summed.
+function conditionalSwing(paramArr, uc, tailFrac = 0.10) {
+  const n = paramArr.length;
+  const paired = paramArr.map((p, i) => [p, uc[i]]).sort((a, b) => a[0] - b[0]);
+  const tailCount = Math.max(1, Math.floor(n * tailFrac));
+  let loSum = 0, hiSum = 0;
+  for (let i = 0; i < tailCount; i++) loSum += paired[i][1];
+  for (let i = n - tailCount; i < n; i++) hiSum += paired[i][1];
+  return (hiSum - loSum) / tailCount; // $/kg, signed
+}
+
+// Spearman rank correlation coefficient (retained for reference; not currently plotted)
 function spearmanCorr(x, y) {
   const n = x.length;
 
@@ -1497,43 +1514,53 @@ html`<div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; 
 
 ### Sensitivity Analysis (Tornado Chart)
 
-Which parameters have the most impact on the final cost? This chart shows **Spearman rank correlations** between each input parameter and the unit cost.
+Which parameters have the most impact on the final cost? Each bar shows the **difference in mean unit cost ($/kg)** between simulations where the parameter is in its **top 10%** and simulations where it is in its **bottom 10%**.
 
 ```{ojs}
 //| echo: false
 {
-  // Calculate correlations between inputs and unit cost
   const uc = results.unit_cost;
 
-  const correlations = [
-    {name: "Cell Density (g/L)", corr: spearmanCorr(results.density_samples, uc), direction: "inverse"},
-    {name: "Media Turnover", corr: spearmanCorr(results.media_turnover_samples, uc), direction: "direct"},
-    {name: "L/kg (volume)", corr: spearmanCorr(results.L_per_kg_samples, uc), direction: "direct"},
-    {name: "Media $/L", corr: spearmanCorr(results.media_cost_L_samples, uc), direction: "direct"},
-    {name: "Uses Hydrolysates", corr: spearmanCorr(results.is_hydro_samples, uc), direction: "inverse"},
-    {name: "Has Cheap GFs", corr: spearmanCorr(results.is_recf_cheap_samples, uc), direction: "inverse"},
-    {name: "GF Quantity (g/kg)", corr: spearmanCorr(results.g_recf_samples, uc), direction: "direct"},
-    {name: "GF Price ($/g)", corr: spearmanCorr(results.price_recf_samples, uc), direction: "direct"},
-    {name: "Industry Maturity", corr: spearmanCorr(results.maturity_samples, uc), direction: "inverse"},
-    {name: "Plant Capacity", corr: spearmanCorr(results.plant_kta_samples, uc), direction: "inverse"},
-    {name: "Utilization Rate", corr: spearmanCorr(results.uptime_samples, uc), direction: "inverse"}
+  // Deduplicated parameter list.
+  // Removed vs. previous version (see explainer below for details):
+  //   • L/kg (volume)     — deterministic function of density × turnover
+  //   • Uses Hydrolysates — regime-switch subsumed into Media $/L
+  //   • Has Cheap GFs     — regime-switch subsumed into GF Price / GF Quantity
+  const params = [
+    {name: "Cell Density (g/L)",                 data: results.density_samples,        kind: "primitive"},
+    {name: "Media Turnover",                     data: results.media_turnover_samples, kind: "primitive"},
+    {name: "Media $/L (incl. hydrolysate regime)", data: results.media_cost_L_samples, kind: "mixture"},
+    {name: "GF Price ($/g, incl. regime)",       data: results.price_recf_samples,     kind: "mixture"},
+    {name: "GF Quantity (g/kg, incl. regime)",   data: results.g_recf_samples,         kind: "mixture"},
+    {name: "Industry Maturity (latent — see note)", data: results.maturity_samples,    kind: "latent"},
+    {name: "Plant Capacity (kTA)",               data: results.plant_kta_samples,      kind: "primitive"},
+    {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
   ];
 
-  // Sort by absolute correlation
-  const sorted = correlations
-    .map(c => ({...c, absCorr: Math.abs(c.corr)}))
-    .sort((a, b) => b.absCorr - a.absCorr);
+  const swings = params.map(p => ({
+    name: p.name,
+    kind: p.kind,
+    swing: conditionalSwing(p.data, uc, 0.10)
+  }));
 
-  const sensitivityPlot = Plot.plot({
-    width: 850,
-    height: 450,
-    marginLeft: 170,
-    marginRight: 70,
+  const sorted = swings
+    .map(s => ({...s, absSwing: Math.abs(s.swing)}))
+    .sort((a, b) => b.absSwing - a.absSwing);
+
+  const maxAbs = Math.max(...sorted.map(s => s.absSwing), 1);
+  const pad = maxAbs * 0.30;
+
+  const tornadoPlot = Plot.plot({
+    width: 900,
+    height: 440,
+    marginLeft: 290,
+    marginRight: 100,
     x: {
-      label: "Spearman Correlation with Unit Cost",
-      domain: [-1, 1],
+      label: "Δ mean unit cost ($/kg): top 10% − bottom 10% of parameter",
+      domain: [-maxAbs - pad, maxAbs + pad],
       grid: true,
-      labelOffset: 40
+      labelOffset: 40,
+      tickFormat: d => (d >= 0 ? "+$" : "−$") + Math.abs(d).toFixed(0)
     },
     y: {
       label: null,
@@ -1545,60 +1572,57 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
       range: ["#e74c3c", "#27ae60"]
     },
     style: {
-      fontSize: "14px"
+      fontSize: "13px"
     },
     marks: [
       Plot.barX(sorted, {
         y: "name",
-        x: "corr",
-        fill: d => d.corr > 0 ? "Increases cost" : "Decreases cost",
+        x: "swing",
+        fill: d => d.swing > 0 ? "Increases cost" : "Decreases cost",
         sort: {y: "-x", reduce: d => Math.abs(d)}
       }),
       Plot.ruleX([0], {stroke: "black", strokeWidth: 1}),
       Plot.text(sorted, {
         y: "name",
-        x: d => d.corr > 0 ? d.corr + 0.04 : d.corr - 0.04,
-        text: d => d.corr.toFixed(2),
-        textAnchor: d => d.corr > 0 ? "start" : "end",
-        fontSize: 13,
+        x: d => d.swing > 0 ? d.swing + maxAbs * 0.025 : d.swing - maxAbs * 0.025,
+        text: d => (d.swing > 0 ? "+$" : "−$") + Math.abs(d.swing).toFixed(1) + "/kg",
+        textAnchor: d => d.swing > 0 ? "start" : "end",
+        fontSize: 12,
         fontWeight: 500
       })
     ]
   });
 
   return html`<div style="font-size: 1em;">
-    <div style="font-weight: normal; font-size: 1.1em; margin-bottom: 0.5rem; color: #333;">Parameter Sensitivity: Correlation with Unit Cost</div>
-    ${sensitivityPlot}
+    <div style="font-weight: normal; font-size: 1.05em; margin-bottom: 0.5rem; color: #333;">Parameter Sensitivity: Dollar Swing in Mean Unit Cost</div>
+    ${tornadoPlot}
   </div>`;
 }
 ```
 
 <details>
-<summary>How to read this chart (click to expand)</summary>
+<summary>How to read this chart — and what changed from the earlier rank-correlation version (click to expand)</summary>
 
-**Tornado chart interpretation:**
+**Scale.** Each bar is the **difference, in $/kg, between the mean unit cost among simulations where the parameter is in its top decile and the mean unit cost among simulations where the parameter is in its bottom decile.** With 30,000 Monte Carlo samples, each tail bin contains ~3,000 simulations. Red (positive) means the parameter increases cost as it increases; green (negative) means it decreases cost.
 
-- **Bars extending right (red)**: Parameters that **increase cost** when they increase
-  - Higher media $/L → higher cost
-  - Higher GF price → higher cost
-  - Higher L/kg volume → higher cost
+This is a real-dollar quantity on the same scale as every other cost figure on the page. It replaces an earlier version of this chart that used **Spearman rank correlation** — a unitless number in [-1, 1] — which could tell you the *direction* of a monotonic relationship but not the *magnitude* in any unit comparable to the rest of the model.
 
-- **Bars extending left (green)**: Parameters that **decrease cost** when they increase
-  - Higher cell density → lower cost (less media needed)
-  - Higher maturity → lower cost (better technology, cheaper inputs)
-  - Using hydrolysates → lower cost (cheaper amino acids)
+**Why three parameters from the old chart were dropped.** The previous chart listed eleven parameters; three of them were double-counting signals that other parameters already carried:
 
-- **Bar length**: How much that parameter affects the output
-  - |correlation| > 0.5 = strong effect
-  - |correlation| 0.3-0.5 = moderate effect
-  - |correlation| < 0.3 = weak effect
+- **L/kg (volume)** was a pure deterministic function of Cell Density × Media Turnover — not an independent driver, just a third lens on the same two variables.
+- **Uses Hydrolysates (binary)** chose which lognormal regime Media $/L was sampled from. The continuous Media $/L bar already captures the regime switch *plus* within-regime noise.
+- **Has Cheap GFs (binary)** chose the regime for both GF Price and GF Quantity. Same issue: subsumed into those continuous bars.
 
-**This is Spearman rank correlation**, which captures monotonic relationships (not just linear). A correlation of -0.7 means "when this parameter is high, costs tend to be low" across the 30,000 simulations.
+**Industry Maturity is a latent driver — do not sum its bar with downstream bars.** Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share. So its bar captures the **total effect** of a shift in maturity propagating through all of those downstream channels, and the samples that sit in its "top decile" are *also* more likely to have cheaper media and cheaper GFs as a consequence. If you add Industry Maturity's bar to Media $/L and GF Price, you will double count.
 
-**Key insight**: The parameters with the longest bars are the ones to focus on when:
-- Forecasting (these drive your uncertainty)
-- Prioritizing R&D (these are the levers to pull)
-- Gathering expert input (these are worth eliciting carefully)
+**What the other bars mean.** The mixture bars (Media $/L, GF Price, GF Quantity) bundle the regime switch with the within-regime lognormal noise — the swing is the combined effect. The primitive bars (Cell Density, Media Turnover, Plant Capacity, Utilization Rate) are sampled close to independently, so their swings are close to honest marginal effects over the joint distribution.
+
+**Technical caveats on the dollar-swing statistic.**
+
+- This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and can overlap across correlated parameters (which is why the latent-variable caveat above matters).
+- The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small.
+- Because the statistic is computed on the joint sampling distribution, changing slider values can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.
+- For a fully decomposed analysis (first-order + total-effect Sobol indices) we would need dedicated re-simulation passes, which is plausible follow-up work but overkill given the model is still pre-review.
 </details>
 
 ### Industry Maturity Deep Dive
