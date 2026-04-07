@@ -11,7 +11,7 @@ format:
 
 ::: {.callout-warning}
 ## Work in Progress — Feedback Welcome
-This comparison is **largely AI-generated** based on our reading of the cited sources. We are not the domain experts — this is a framework for structured discussion, not a definitive assessment. We welcome corrections and additional data points via [Hypothesis annotations](https://hypothes.is/) (click the `<` tab on the right) or at our [upcoming workshop](https://uj-cm-workshop.netlify.app/). All contributions will be acknowledged.
+This comparison is **largely AI-generated** based on our reading of the cited sources. We are not the domain experts — this is a framework for structured discussion, not a definitive assessment. We welcome corrections and additional data points via [Hypothesis annotations](https://hypothes.is/) (click the `<` tab on the right), the **[🔬 Model discussion thread](https://github.com/unjournal/cm_pq_modeling/discussions/3)** (longer threads on TEA comparison and methodology), or at our [upcoming workshop](https://uj-cm-workshop.netlify.app/). All contributions will be acknowledged.
 :::
 
 **Return to:** [Interactive Cost Model](index.qmd) | **Background:** [How Cultured Chicken is Made](learn.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**

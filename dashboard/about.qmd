@@ -11,6 +11,8 @@ format:
 ## Share Your Feedback
 
 Use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge) to annotate this page. Your comments help improve the project!
+
+For longer-form discussion, browse the **[GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions)** — three threads to start: 💬 [Workshop](https://github.com/unjournal/cm_pq_modeling/discussions/2) · 🔬 [Model](https://github.com/unjournal/cm_pq_modeling/discussions/3) · 🎯 [Pivotal Questions](https://github.com/unjournal/cm_pq_modeling/discussions/4).
 :::
 
 ## The Unjournal Pivotal Questions Project

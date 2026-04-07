@@ -28,6 +28,8 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 
 **[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
 
+**Longer threads (GitHub Discussions):** 💬 [Workshop](https://github.com/unjournal/cm_pq_modeling/discussions/2) · 🔬 [Model — parameters & equations](https://github.com/unjournal/cm_pq_modeling/discussions/3) · 🎯 [Pivotal Questions](https://github.com/unjournal/cm_pq_modeling/discussions/4)
+
 **Other ways to reach us:** [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new) · [Email contact@unjournal.org](mailto:contact@unjournal.org)
 :::
 

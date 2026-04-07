@@ -80,6 +80,8 @@ abbr[title]:hover::before {
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
 Add comments directly to this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge of your screen. Highlight any text to annotate it. We actively monitor comments and will respond to questions, incorporate suggestions, and update the content based on your feedback.
+
+For workshop-level discussion (session prep, agenda, follow-ups) join the **[💬 Workshop discussion thread →](https://github.com/unjournal/cm_pq_modeling/discussions/2)**. For specific Pivotal Questions, see the **[🎯 PQ thread](https://github.com/unjournal/cm_pq_modeling/discussions/4)**.
 :::
 
 ::: {.callout-tip}

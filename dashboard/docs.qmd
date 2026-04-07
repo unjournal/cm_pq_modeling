@@ -14,6 +14,8 @@ format:
 ::: {.callout-note collapse="true"}
 ## Feedback & Annotations
 Comment directly on this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We aim to respond to all comments.
+
+For longer-form questions, corrections, methodology debates, or alternative-source suggestions, post in the **[🔬 Model discussion thread →](https://github.com/unjournal/cm_pq_modeling/discussions/3)** (GitHub Discussions Q&A).
 :::
 
 ## Overview
