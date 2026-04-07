@@ -15,7 +15,7 @@ format:
 ## Feedback & Annotations
 Comment directly on this page using [Hypothesis](https://hypothes.is/) — click the `<` tab on the right edge. Highlight any equation, parameter, or explanation to annotate it. We aim to respond to all comments.
 
-For longer-form questions, corrections, methodology debates, or alternative-source suggestions, post in the **[🔬 Model discussion thread →](https://github.com/unjournal/cm_pq_modeling/discussions/3)** (GitHub Discussions Q&A).
+For longer-form questions, corrections, methodology debates, or alternative-source suggestions, post in the **[🧠 Substantive discussion hub →](https://github.com/unjournal/cm_pq_modeling/discussions/3)** — the unified home for bio / econ / stats / engineering / welfare debate. See the [📖 full Discussion Map](discuss.html) for domain-organized sub-threads.
 :::
 
 ## Overview
