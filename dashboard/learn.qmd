@@ -607,7 +607,7 @@ Companies like UPSIDE Foods and Believer Meats have built large-scale facilities
 
 ### Batch vs. Perfusion: Two Operating Modes
 
-**TL;DR:** Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the **media turnover** parameter in [our cost model](index.qmd): batch = turnover 1, perfusion = turnover 3-10.
+**TL;DR:** Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the **<abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">media-use multiplier</abbr>** parameter in [our cost model](index.qmd): batch ≈ 1, perfusion ≈ 2–3, media recycling or fed-batch ≈ 0.5–1. Values below 1 are discussed in [the next section](#media-use-mechanisms).
 
 ::: {.callout-note collapse="true"}
 ## Details: How batch vs. perfusion works (click to expand)
@@ -689,10 +689,46 @@ The choice of operating mode is not about different bioreactor *types* — it is
 </svg>
 ```
 
-The **<abbr title="How many times the media volume is replaced during a production cycle — higher turnover = more media used but higher cell densities possible">media turnover</abbr>** parameter in [our interactive model](index.qmd) captures this:
+The **<abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume">media-use multiplier</abbr>** parameter in [our interactive model](index.qmd) captures this regime, and a few others:
 
-- **Turnover = 1**: Batch mode (same media throughout)
-- **Turnover = 5-10**: Perfusion (replace media multiple times)
+- **Multiplier ≈ 1**: Batch mode (one reactor fill per kg of cells)
+- **Multiplier ≈ 2–3**: Standard perfusion
+- **Multiplier < 1**: Media recycling, fed-batch with concentrated feeds, or harvest-side cell concentration — see [the three mechanisms below](#media-use-mechanisms)
+- **Multiplier 5–10**: Heavily media-intensive perfusion (stress-test region, outside our default)
+:::
+
+### The media-use multiplier: why values below 1 are physically meaningful {#media-use-mechanisms}
+
+::: {.callout-note collapse="true"}
+## Why a value below 1 is not a typo (click to expand)
+
+The cost model computes liters of media per kg of cells as:
+
+$$L_{\text{per kg}} = \underbrace{\frac{1000}{\text{density (g/L)}}}_{\text{nominal reactor-fill volume}} \times \underbrace{\text{multiplier}}_{\text{effective fresh-media factor}}$$
+
+At 50 g/L density the nominal reactor-fill volume is 20 L/kg — "one reactor filling, containing 1 kg of cells at 50 g/L." At 100 g/L it's 10 L/kg. A multiplier of **1** means you consumed exactly that much fresh media. Values **above 1** are straightforward: perfusion systems continuously flow fresh media through, and over a batch you cumulatively use several reactor volumes. Values **below 1** feel surprising at first but correspond to three very real mechanisms.
+
+**1. Media recycling.** Spent media can be filtered (e.g., by tangential flow filtration), depleted nutrients replenished, and fed back into the reactor. If you recover and reuse 50% of your spent media, your net *fresh* media consumption per kg of cells is half the nominal reactor volume — multiplier ≈ **0.5**. Aggressive recycling is cited in GFI's 2025 review as likely necessary for reaching commercially viable cultivated-meat costs.
+
+**2. Fed-batch with concentrated feeds.** Instead of flowing large volumes of dilute fresh media through the reactor, you start at a fraction of the working volume with full-strength media and then add small volumes of *concentrated* glucose / amino-acid / buffer solution as cells consume substrate. The total liquid media consumed over the run can be less than one nominal reactor volume, because most of the added mass is dissolved solute rather than water. Industrial microbial fermentation has been run this way for decades; for cultivated meat it maps to multipliers of ≈ **0.6–0.9**.
+
+**3. Harvest-side cell concentration.** If cells are concentrated *after* they finish growing — via settling, centrifugation, or filtration — you can extract 1 kg of cells from less media than `1000 / (growth density)` suggests. For example, running the reactor at 50 g/L growth density but harvesting a 200 g/L slurry means you're pulling 1 kg of cells out of 5 L of media, not 20 L. The baseline formula doesn't have a separate knob for harvest concentration, so the multiplier absorbs that correction — values around **0.25–0.5** can appear this way without any recycling or fed-batch logic.
+
+### Why the model's default range includes values below 1
+
+The [GFI 2023 recombinant-protein report](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) assumes **8–13 L media per kg of meat** as its cost-competitive scenario. Our dashboard lets you push cell density up to ~90 g/L. At 90 g/L:
+
+$$\text{nominal L/kg} = \frac{1000}{90} \approx 11.1 \text{ L/kg}$$
+
+So to hit the GFI upper bound of 13 L/kg at 90 g/L, you need multiplier ≈ **1.17**. To hit the lower bound of 8 L/kg at 90 g/L, you need multiplier ≈ **0.72**. At a more typical 60 g/L density, the nominal is 16.7 L/kg, and GFI's 8–13 L/kg implies multipliers of **0.48–0.78**. **None of those scenarios are reachable with a floor of 1.0** — no matter how high cell density goes. That's why the model's default sampling range is now **0.5–3.0** rather than the earlier 1–10.
+
+Values above 5× remain plausible for heavily media-intensive processes but are no longer part of the default sampled range; treat them as stress tests for pessimistic scenarios.
+
+### What this does NOT mean
+
+- It does *not* mean less than one reactor-filling's worth of liquid physically entered the vessel. It means less than one nominal reactor-filling-equivalent of fresh media was consumed, once recycling, concentration, and fed-batch feed schedules are all counted as they affect the $/kg cost calculation.
+- It does *not* mean perfusion systems are being misrepresented — a perfusion reactor with aggressive media recycling can legitimately operate at an overall multiplier below 1 even though its instantaneous media-change rate is above 1.
+- The model uses a single bundled parameter rather than separate knobs for turnover, recycle fraction, and harvest concentration. That's a simplification; a future revision may split them.
 :::
 
 ::: {.callout-tip}
@@ -709,12 +745,12 @@ The **<abbr title="How many times the media volume is replaced during a producti
 | Factor | Batch Mode | Perfusion Mode |
 |--------|------------|----------------|
 | **<abbr title="Per Humbird 2021: 'an O₂-limited cell density of 195 g/L can be achieved at a perfusion rate of 1.0/d' under optimized conditions">Cell density</abbr>** | 30-50 g/L max | 100-200+ g/L |
-| **Media usage** | Lower total volume | Higher (5-10× turnover) |
+| **Media usage** | Lower total volume (multiplier ≈ 1, or ≈ 0.5–0.9 with fed-batch/recycling) | Higher (multiplier ≈ 2–3 standard, up to 5–10 stress-test) |
 | **Equipment** | Simpler | More complex (pumps, filters) |
 | **Contamination risk** | Lower (closed system) | Higher (more connections) |
 | **Cycle time** | 5-10 days | Continuous |
 
-*The batch/perfusion distinction is a simplification. In practice, cell density, media turnover, and recycle fraction are interdependent — higher perfusion density may require additional retention devices (e.g., ATF filters), and media recycling can partially decouple turnover from fresh media cost. Our [dashboard model](index.qmd) treats density and turnover as separate parameters for simplicity; see [Technical Reference](docs.qmd#process-intensities) for details on how these interact in the cost equations.*
+*The batch/perfusion distinction is a simplification. In practice, cell density, media-use multiplier, and recycle fraction are interdependent — higher perfusion density may require additional retention devices (e.g., ATF filters), and media recycling can partially decouple the multiplier from fresh media cost. Our [dashboard model](index.qmd) treats density and the media-use multiplier as separate parameters for simplicity, with the multiplier bundling recycling and harvest concentration (see [Media-use mechanisms](#media-use-mechanisms)); see [Technical Reference](docs.qmd#process-intensities) for how these interact in the cost equations.*
 
 **Bottom line:** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg wet cell mass** (or $22/kg with hydrolysates), while perfusion costs **$51/kg wet cell mass** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales. Note: Humbird models generic mammalian cells, not chicken specifically.
 :::

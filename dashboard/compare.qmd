@@ -112,7 +112,7 @@ This is where the differences become clearest. Each study makes different assump
 |-----------|-------------|--------------|---------------|
 | **Achieved density** | 130×10⁶ cells/mL (~43% w/v) | Fed-batch: ~110 g/L; Perfusion: up to 195 g/L | Varies (10-100+ g/L across scenarios) |
 | **Process mode** | Continuous perfusion | Fed-batch (primary); perfusion (sensitivity) | Multiple scenarios |
-| **Media turnover** | Continuous (high turnover) | Fed-batch: ~1×; Perfusion: higher | Varies |
+| **Media-use multiplier** | Continuous perfusion (high media throughput) | Fed-batch: ~1×; Perfusion: higher | Varies |
 
 ### Capital Costs & Financing
 

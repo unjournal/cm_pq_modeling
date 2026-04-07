@@ -490,6 +490,17 @@ function simulate(n, seed, params) {
   // Process intensities
   const density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
   const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+  // "media_turnover" is the LEGACY variable name for what is now user-facing as the
+  // "net media-use multiplier": a dimensionless ratio of fresh media consumed per
+  // kg of cells to the nominal (1000/density) reactor-fill volume.
+  //   = 1    → traditional batch mode (one reactor fill per kg of cells)
+  //   > 1    → perfusion (multiple media volumes flow through during the run)
+  //   < 1    → media recycling, fed-batch with concentrated feeds, or harvest
+  //            concentration (e.g., settling/filtering cells above nominal density).
+  // Default p5/p95 of 0.5–3.0 was chosen so the distribution can represent both the
+  // GFI 2023 cost-competitive target (8–13 L/kg, implying ~0.5–1.2× at 60–90 g/L)
+  // and standard perfusion (2–3×). Earlier default of 1–10× mechanically excluded
+  // recycled / fed-batch scenarios below 1 and was biased high.
   const media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
   const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
@@ -725,7 +736,7 @@ viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value
 ```{ojs}
 //| echo: false
 html`<div id="simplified-note" style="display: ${simpleMode ? 'block' : 'none'}; background: #f0f4e8; border-left: 4px solid #5a7a5a; padding: 0.7rem 0.9rem; margin-bottom: 1rem; font-size: 0.82em; line-height: 1.5; border-radius: 0 4px 4px 0;">
-<strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, media turnover) are set to reasonable defaults.
+<strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, media-use multiplier) are set to reasonable defaults.
 In our sensitivity analysis, these contribute less than 10% of the variance in cost estimates.
 <em>Switch off to adjust all parameters.</em>
 </div>`
@@ -1089,20 +1100,29 @@ The model computes total working volume as: `total_volume = annual_output / (den
 <div class="full-mode-only">
 ```
 
-**Advanced: Media Turnover**
+**Advanced: <span title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">Media-use multiplier (×)</span>**
 
 <details>
-<summary>Show media turnover parameters</summary>
+<summary>What is this — and why can it be below 1? (click to expand)</summary>
+
+The model computes media volume per kg as `(1000 / density) × multiplier`. A value of **1** is traditional batch mode (fill reactor once, harvest); **>1** is perfusion (multiple media-volume equivalents flow through during the run); **<1** represents media recycling, fed-batch with concentrated feeds, or harvest-side cell concentration. The [Learn page](learn.html#media-use-mechanisms) walks through all three mechanisms.
+
+**Why the range changed (April 2026):** the default p5–p95 was tightened from 1–10× to **0.5–3.0×**. The old floor of 1.0 was too restrictive — the GFI 2023 cost-competitive scenarios assume 8–13 L/kg, which at 60–90 g/L density implies a multiplier of roughly **0.5–1.2**. A floor of 1.0 mechanically excluded those scenarios no matter how high you pushed density. The new range covers both recycled/fed-batch (<1) and standard perfusion (up to ~3×); values of 5–10× remain plausible for heavily media-intensive processes but are now a stress-test region rather than the default.
+
+</details>
+
+<details>
+<summary>Show multiplier sliders</summary>
 
 ```{ojs}
 //| echo: false
-viewof media_turnover_lo = Inputs.range([1, 5], {
-  value: 1, step: 1,
-  label: "Media Turnover Low"
+viewof media_turnover_lo = Inputs.range([0.25, 2], {
+  value: 0.5, step: 0.05,
+  label: "Media-use multiplier p5 (low end)"
 })
-viewof media_turnover_hi = Inputs.range([2, 20], {
-  value: 10, step: 1,
-  label: "Media Turnover High"
+viewof media_turnover_hi = Inputs.range([1, 10], {
+  value: 3.0, step: 0.1,
+  label: "Media-use multiplier p95 (high end)"
 })
 ```
 </details>
@@ -1138,8 +1158,8 @@ results = {
     asset_life_hi: simpleMode ? 20 : asset_life_hi,
     density_gL_p5: density_lo,
     density_gL_p95: density_hi,
-    media_turnover_p5: simpleMode ? 1 : media_turnover_lo,
-    media_turnover_p95: simpleMode ? 10 : media_turnover_hi,
+    media_turnover_p5: simpleMode ? 0.5 : media_turnover_lo,
+    media_turnover_p95: simpleMode ? 3.0 : media_turnover_hi,
     include_capex: simpleMode ? true : include_capex,
     include_fixed_opex: simpleMode ? true : include_fixed_opex,
     include_downstream: simpleMode ? false : include_downstream,
@@ -1523,12 +1543,12 @@ Which parameters have the most impact on the final cost? Each bar shows the **di
 
   // Deduplicated parameter list.
   // Removed vs. previous version (see explainer below for details):
-  //   • L/kg (volume)     — deterministic function of density × turnover
+  //   • L/kg (volume)     — deterministic function of density × media-use multiplier
   //   • Uses Hydrolysates — regime-switch subsumed into Media $/L
   //   • Has Cheap GFs     — regime-switch subsumed into GF Price / GF Quantity
   const params = [
     {name: "Cell Density (g/L)",                 data: results.density_samples,        kind: "primitive"},
-    {name: "Media Turnover",                     data: results.media_turnover_samples, kind: "primitive"},
+    {name: "Media-use multiplier (×)",           data: results.media_turnover_samples, kind: "primitive"},
     {name: "Media $/L (incl. hydrolysate regime)", data: results.media_cost_L_samples, kind: "mixture"},
     {name: "GF Price ($/g, incl. regime)",       data: results.price_recf_samples,     kind: "mixture"},
     {name: "GF Quantity (g/kg, incl. regime)",   data: results.g_recf_samples,         kind: "mixture"},
@@ -1609,13 +1629,13 @@ This is a real-dollar quantity on the same scale as every other cost figure on t
 
 **Why three parameters from the old chart were dropped.** The previous chart listed eleven parameters; three of them were double-counting signals that other parameters already carried:
 
-- **L/kg (volume)** was a pure deterministic function of Cell Density × Media Turnover — not an independent driver, just a third lens on the same two variables.
+- **L/kg (volume)** was a pure deterministic function of Cell Density × Media-use multiplier — not an independent driver, just a third lens on the same two variables.
 - **Uses Hydrolysates (binary)** chose which lognormal regime Media $/L was sampled from. The continuous Media $/L bar already captures the regime switch *plus* within-regime noise.
 - **Has Cheap GFs (binary)** chose the regime for both GF Price and GF Quantity. Same issue: subsumed into those continuous bars.
 
 **Industry Maturity is a latent driver — do not sum its bar with downstream bars.** Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share. So its bar captures the **total effect** of a shift in maturity propagating through all of those downstream channels, and the samples that sit in its "top decile" are *also* more likely to have cheaper media and cheaper GFs as a consequence. If you add Industry Maturity's bar to Media $/L and GF Price, you will double count.
 
-**What the other bars mean.** The mixture bars (Media $/L, GF Price, GF Quantity) bundle the regime switch with the within-regime lognormal noise — the swing is the combined effect. The primitive bars (Cell Density, Media Turnover, Plant Capacity, Utilization Rate) are sampled close to independently, so their swings are close to honest marginal effects over the joint distribution.
+**What the other bars mean.** The mixture bars (Media $/L, GF Price, GF Quantity) bundle the regime switch with the within-regime lognormal noise — the swing is the combined effect. The primitive bars (Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate) are sampled close to independently, so their swings are close to honest marginal effects over the joint distribution.
 
 **Technical caveats on the dollar-swing statistic.**
 
@@ -1876,7 +1896,7 @@ The table below summarizes typical outcomes from this interactive model at diffe
 
 ::: {.callout-warning collapse="true"}
 ## Honesty note on sourcing
-This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Some ranges (particularly for growth factor quantities, media turnover, and cycle days) may reflect AI-synthesized estimates rather than direct citations. This is one reason we are seeking expert review.
+This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Cycle days is the main remaining parameter that still lacks a direct citation; growth factor quantities and the media-use multiplier were both tightened in April 2026 based on GFI 2023 / Humbird / Pasitka primary sources. This is one reason we are seeking expert review.
 :::
 
 <a id="micronutrient-change-note"></a>
@@ -1915,7 +1935,7 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 
 - Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
 - Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. The remaining uncertainty lives in the **$/g** of growth factors, not in the grams/kg.
-- Media turnover (1-10×) — acknowledged in model as lacking strong empirical grounding
+- Media-use multiplier — **renamed and tightened April 2026** from "Media turnover (1–10×)" to "Media-use multiplier (0.5–3.0×)". The rename flags that the parameter is a bundled ratio (fresh media / nominal reactor volume), not a literal count of reactor-volume changes, so values below 1 (recycling, fed-batch, harvest concentration) are now allowed. The new range lets the model represent GFI 2023 cost-competitive scenarios (8–13 L/kg ≈ 0.5–1.2× at 60–90 g/L); the old floor of 1.0 mechanically excluded those. See [Learn: media-use mechanisms](learn.html#media-use-mechanisms) for the derivation.
 - Cycle days (0.5-5.0 days) — hardcoded without source attribution
 - Plant factor (1.5-3.5×) — standard engineering multiplier range, not CM-specific
 

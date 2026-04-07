@@ -42,7 +42,7 @@ This section presents the model structure **top-down**: starting with the final 
 |---|-----------|----------|---------------|
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
 | 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + GFs + Other | — |
-| 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × turnover × $/L | density (g/L), turnover, $/L |
+| 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × multiplier × $/L | density (g/L), media-use multiplier, $/L |
 | 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price ($/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
 | 3a | **[CRF](#annualized-capital-costs)** | r(1+r)<sup>n</sup> / ((1+r)<sup>n</sup> &minus; 1) | r=WACC, n=years |
@@ -90,18 +90,18 @@ Earlier versions of this model carried a separate **food-grade micronutrients** 
 
 Media is the liquid nutrient broth that feeds growing cells. Media cost depends on **how much liquid** you need per kg of meat:
 
-$$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{L per kg wet cells}} \times \underbrace{\text{turnover}}_{\text{media changes}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
+$$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\text{nominal L per kg wet cells}} \times \underbrace{\text{multiplier}}_{\text{media-use multiplier (net)}} \times \underbrace{\text{price}}_{\text{\$/L}}$$
 
 **Variable definitions:**
 
 - **Cell density (g/L)**: Final concentration of cells at harvest. Higher density = less media needed per kg. The 1000 converts g/L to L/kg (since 1 kg = 1000 g).
-- **Media turnover**: How many times the media volume is replaced during a production run. Batch systems (turnover = 1) use one fill; perfusion systems (turnover = 3–10) continuously flow fresh media through.
+- **Media-use multiplier (net)**: A dimensionless ratio equal to *net fresh media consumed per kg of cells* divided by the *nominal reactor-fill volume* `1000/density`. Batch systems sit at ≈1, perfusion at ≈2–3, and recycling / fed-batch / harvest concentration can push it **below 1**. This is a bundled parameter — it's not a literal count of reactor-volume changes. See the [Learn page on media-use mechanisms](learn.qmd#media-use-mechanisms) for the three real processes that can take it below 1, or the [simulate() source code](#code-reference) for the legacy variable name (`media_turnover`).
 - **Price ($/L)**: Cost per liter of basal media (amino acids, glucose, **vitamins, minerals, trace salts** — excludes growth factors and supplemental recombinant proteins, which are modeled as a [separate cost component](#growth-factor-cost)). Some literature sources report "complete medium" costs that include growth factors; our model separates these to allow independent uncertainty analysis.
 
 **Example calculation:**
 
 - Cell density: 50 g/L → need 1000/50 = 20 L per kg
-- Media turnover: 3× (perfusion system) → 20 × 3 = 60 L total per kg
+- Media-use multiplier: 3× (perfusion system) → 20 × 3 = 60 L total per kg
 - Media price: $0.50/L (hydrolysates) → 60 × 0.50 = **$30/kg**
 
 **Why does density vary?** Achievable density depends on cell type, bioreactor design, and operating mode. Batch cultures typically reach 30–50 g/L; perfusion cultures with optimized conditions can reach 100–200 g/L ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)).
@@ -123,15 +123,15 @@ Yes. **Media cost ($/L)** refers to the cost of preparing one liter of complete 
 **What varies is $/kg meat**, which depends on:
 
 - How dense the cells grow (cell density, g/L)
-- How many times you replace the media (turnover)
+- The effective media-use multiplier (bundling perfusion, recycling, and harvest concentration)
 
-A $1/L medium costs **$60/kg meat** at 50 g/L density × 3 turnover, but only **$15/kg meat** at 200 g/L × 1 turnover. The $/L is the input; $/kg is the output.
+A $1/L medium costs **$60/kg meat** at 50 g/L density × 3 multiplier, but only **$15/kg meat** at 200 g/L × 1 multiplier. The $/L is the input; $/kg is the output.
 
 </details>
 
 #### Media Cost per kg at Different Cell Densities
 
-Since both $/L and cell density matter, here's how they combine (assuming turnover = 3):
+Since both $/L and cell density matter, here's how they combine (assuming multiplier = 3):
 
 | Cell density | Liters/kg | @ $0.50/L (hydrolysates) | @ $2.00/L (pharma-grade) |
 |--------------|-----------|--------------------------|--------------------------|
@@ -484,15 +484,26 @@ $$
 
 These parameters determine how much media is needed per kg of meat. They feed directly into the [Media Cost equation](#variable-operating-costs-voc):
 
-$$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{turnover} \times \text{price per L}$$
+$$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{media-use multiplier} \times \text{price per L}$$
 
 | Parameter | Range (p5–p95) | Unit | Definition | Where in cost equation |
 |-----------|----------------|------|------------|----------------------|
 | Cell density | 30–200 | g/L | Final biomass concentration at harvest | Denominator of $\frac{1000}{\text{density}}$ — higher density → fewer liters per kg |
 | Cycle time | 0.5–5 | days | Duration of one production batch | Affects annual throughput (and thus CAPEX/kg via $/kg = CAPEX × CRF / output), not media cost directly |
-| Media turnover | 1–10 | × | Times media is replaced per batch | Multiplier on liters/kg — perfusion (>1) uses more media but enables higher density |
+| Media-use multiplier | **0.5–3.0** (was 1–10 before April 2026) | × | Net fresh media consumed per kg of cells, divided by the nominal reactor-fill volume (`1000/density`) | Multiplier on liters/kg — see change log below |
 
-**Media turnover explained:** In **batch mode** (turnover = 1), the reactor is filled once and cells grow until nutrients deplete. In **perfusion mode** (turnover > 1), fresh media continuously flows in while spent media exits. Perfusion uses more media but achieves higher cell densities.
+::: {.callout-note collapse="true"}
+## Media-use multiplier: rename, range change, and what values below 1 mean (April 2026)
+**What changed.** The parameter previously labeled "Media turnover" with a default p5–p95 range of 1–10× was renamed to "Media-use multiplier" and narrowed to **0.5–3.0×**. The internal code variable is still `media_turnover` for git-history stability, but the user-facing name and semantics are new.
+
+**Why the rename.** "Turnover" in biology/lab usage literally means "how many times the media was changed," which implies a hard floor at 1. The cost model, however, uses the parameter as a bundled *effective media-use ratio* that includes real mechanisms producing values below 1 — media recycling, fed-batch with concentrated feeds, and harvest-side cell concentration. "Media-use multiplier" signals the bundling and makes sub-1 values physically coherent rather than nonsensical. See [Learn: media-use mechanisms](learn.qmd#media-use-mechanisms) for the full walkthrough of the three mechanisms.
+
+**Why the range change.** GFI's 2023 recombinant-protein report assumes 8–13 L media per kg of meat as its cost-competitive target. At 60–90 g/L cell density, the nominal reactor-fill volume is 11.1–16.7 L/kg, which back-solves to a multiplier of **≈0.48–1.17**. The old floor of 1.0 mechanically excluded the lower end of the GFI range regardless of how high density was pushed — the dashboard simply could not represent the "cost-competitive future" scenario. The new floor of 0.5 fixes that.
+
+Values in the 5–10× region remain conceivable for heavily media-intensive processes but are now a stress-test region rather than the default sampled range.
+
+**Legacy name.** The `media_turnover` variable in [`simulate()`](index.qmd) still uses the old name because renaming it would churn all the sensitivity-analysis wiring for no behavioral benefit. Treat `media_turnover` as a legacy identifier for the media-use multiplier.
+:::
 
 ### Basal micronutrients (vitamins / minerals / trace salts) {#micronutrient-costs}
 
@@ -518,13 +529,13 @@ Earlier model versions used a very broad 0.0001–0.02 g/kg range with no specif
 **Humbird formulation** (as reproduced in [GFI 2023 recombinant-protein analysis](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)):
 $$\underbrace{1.0 \times 10^{-4}\ \text{g/L}}_{\text{FGF}} + \underbrace{2.0 \times 10^{-6}\ \text{g/L}}_{\text{TGF}\beta} \approx 1.02 \times 10^{-4}\ \text{g/L true GF}$$
 
-**Media-use assumptions** from the same report and the cell-density/turnover math on the main page:
+**Media-use assumptions** from the same report and the cell-density × media-use-multiplier math on the main page:
 
 | Media use (L/kg) | True-GF quantity (g/kg) |
 |---|---|
 | 8 L/kg (GFI efficient-future scenario low) | ≈0.00082 |
 | 13 L/kg (GFI efficient-future scenario high) | ≈0.00133 |
-| 60 L/kg (less-optimized, e.g. 30 g/L density × 2× turnover) | ≈0.00612 |
+| 60 L/kg (less-optimized, e.g. 30 g/L density × 1.8× media-use multiplier) | ≈0.00612 |
 
 **Empirical cross-check.** [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ACF chicken TEA implies ≈0.00187 g growth factor/kg wet biomass, which sits comfortably inside this band.
 
