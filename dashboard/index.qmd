@@ -515,10 +515,21 @@ function simulate(n, seed, params) {
   // Current prices: FGF-2 ~$50,000/g, TGF-β up to $1M/g
   // Target prices: $1-10/g with scaled recombinant production
 
-  // Quantity (g/kg meat) - based on typical concentrations in media
-  // ~10-100 ng/mL in media × 20-60 L/kg = 0.0002-0.006 g/kg
-  const g_recf_cheap = sampleLognormalP5P95(rng, 1e-4, 5e-3, n);  // Reduced usage with optimization
-  const g_recf_exp = sampleLognormalP5P95(rng, 5e-4, 2e-2, n);   // Standard usage
+  // Quantity (g/kg meat) — derived from cited medium concentrations × media-use assumptions.
+  // Humbird formulation reproduced in GFI 2023 recombinant-protein report:
+  //   FGF 1.0e-4 g/L, TGFβ 2.0e-6 g/L → true-GF total ≈ 1.02e-4 g/L.
+  // Efficient future scenarios in GFI 2023 assume ≈8–13 L media/kg product;
+  // less-optimized processes may use up to ~60 L/kg (matching our L_per_kg range).
+  //   0.102 mg/L × 8 L/kg  ≈ 0.00082 g/kg
+  //   0.102 mg/L × 13 L/kg ≈ 0.00133 g/kg
+  //   0.102 mg/L × 60 L/kg ≈ 0.00612 g/kg
+  // Pasitka et al. (2024) ACF TEA implies ≈0.00187 g GF/kg wet biomass — inside this band.
+  // Previous ranges (0.0001–0.02 g/kg) were too broad on both tails; tightened below.
+  // Expensive regime: Humbird formulation across the full media-use range (no breakthrough).
+  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 6e-3, n);
+  // Cheap regime: breakthrough technologies (thermostable FGF2-G3, autocrine lines,
+  // recycling systems, polyphenol substitution) reduce effective per-kg usage ~3×.
+  const g_recf_cheap = sampleLognormalP5P95(rng, 5e-4, 2e-3, n);
   const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
 
   // Price ($/g) - Scaled by gf_progress parameter (0-100%)
@@ -955,10 +966,12 @@ The probability slider represents whether **at least one** of these technology a
 
 | Scenario | Usage (g/kg) | Price ($/g) | **Cost/kg chicken** |
 |----------|-------------|-------------|---------------------|
-| No breakthrough | 0.0005 - 0.02 | $500 - $50,000 | **$0.25 - $1,000** |
-| Breakthrough achieved | 0.0001 - 0.005 | $1 - $100 | **$0.0001 - $0.50** |
+| No breakthrough (Humbird formulation × 8–60 L/kg media use) | 0.001 – 0.006 | $500 – $50,000 | **$0.5 – $300** |
+| Breakthrough achieved (≈3× usage reduction) | 0.0005 – 0.002 | $1 – $100 | **$0.0005 – $0.2** |
 
-**This is a pivotal uncertainty.** The [GFI 2024 State of the Industry report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) identifies growth factor cost reduction as one of the top technical challenges. If solved, GFs become negligible; if not, they dominate the cost structure.
+**Where the quantity range comes from.** GFI's 2023 recombinant-protein cost analysis reproduces the Humbird medium formulation with FGF at 0.1 mg/L and TGFβ at 0.002 mg/L — about 0.102 mg/L of true growth factors combined. GFI's efficient-future scenarios assume roughly 8–13 L media per kg meat; less-optimized processes may use up to ~60 L/kg. Multiplying through gives ≈**0.0008–0.006 g true GF/kg** as the defensible cited range, with Pasitka et al. (2024)'s empirical ACF chicken process landing at ~0.00187 g/kg — comfortably inside this band. An earlier version of this model used 0.0001–0.02 g/kg, which was too broad on both tails.
+
+**This is a pivotal uncertainty.** The [GFI 2024 State of the Industry report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) identifies growth factor cost reduction as one of the top technical challenges. Note that tightening the quantity range means the **price** regime is now doing more of the work in the tornado — the swing in cost comes primarily from the $/g uncertainty, not the g/kg uncertainty.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
@@ -1862,13 +1875,14 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 | [Humbird (2021)](https://doi.org/10.1002/bit.27848) | Pharma-grade media costs ($1-4/L), reactor costs ($50-500/L), scale exponents (0.6-0.9) | Directly used for pharma-grade parameter ranges in simulate() |
 | [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) | Serum-free media cost benchmarks | Informed hydrolysate media cost range ($0.20-1.20/L) |
 | [GFI amino acid report (2025)](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/) | Pharma-grade media cost revised downward ($1-4/L → $0.50-2.50/L) | Real supplier quotes found Humbird AA prices 2-10x too high; since AA dominates basal media cost, this lowers the pharma range |
+| [GFI recombinant-protein cost analysis (2023)](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) | **Growth-factor quantity range (tightened April 2026)** | Reproduces Humbird formulation (FGF 0.1 mg/L, TGFβ 0.002 mg/L) and cost-competitive media-use assumption (8–13 L/kg); drives the revised 0.0005–0.006 g/kg quantity range |
 | [GFI State of Industry (2024)](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Growth factor cost targets, technology status | Informed GF price regime bounds and adoption probability defaults |
 
 **Sources cited for context but NOT directly integrated into parameter values:**
 
 | Source | Relevance |
 |--------|-----------|
-| [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) | Optimistic TEA ($6/lb) — useful comparison but model does not replicate their specific assumptions |
+| [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) | Optimistic TEA ($6/lb); also provides an empirical ACF chicken process figure of ~0.00187 g growth factor/kg wet biomass, which is used as a **cross-check** for the GFI-derived quantity range (April 2026) |
 | [Goodwin et al. (2024)](https://www.nature.com/articles/s43016-024-01061-3) | Scoping review comparing TEAs — informed our understanding of where TEAs disagree |
 | [CE Delft (2021)](https://cedelft.eu/publications/tea-of-cultivated-meat/) | European cost benchmarks — cited in documentation but not directly used for parameter ranges |
 | [Lever VC (2025)](https://www.levervc.com/) | Industry claims on cell density (60-90 g/L) — cited as context for density range upper bound |
@@ -1877,7 +1891,7 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 **Parameters where source grounding is weakest** (review priority):
 
 - Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
-- Growth factor quantities (0.0001-0.02 g/kg) — derived from concentration × volume calculations, not direct empirical measurement
+- Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. The remaining uncertainty lives in the **$/g** of growth factors, not in the grams/kg.
 - Media turnover (1-10×) — acknowledged in model as lacking strong empirical grounding
 - Cycle days (0.5-5.0 days) — hardcoded without source attribution
 - Plant factor (1.5-3.5×) — standard engineering multiplier range, not CM-specific

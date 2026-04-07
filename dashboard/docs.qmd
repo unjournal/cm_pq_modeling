@@ -508,8 +508,32 @@ The model uses two discrete price scenarios, selected by a Bernoulli draw (see [
 
 | Scenario | Quantity (g/kg) | Price ($/g) | What it represents | Source |
 |----------|----------------|-------------|-------------------|--------|
-| **Scalable tech achieved** | 0.0001 – 0.005 | $1 – $100 | At least one breakthrough reaches commercial scale | [GFI 2024 targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) |
-| **Limited progress** | 0.0005 – 0.02 | $500 – $50,000 | Incremental improvements only; no step-change | [Current research prices](https://cen.acs.org/food/Inside-effort-cut-cost-cultivated/101/i33) |
+| **Scalable tech achieved** | 0.0005 – 0.002 | $1 – $100 | At least one breakthrough reaches commercial scale; usage reduced ~3× via thermostable variants / autocrine / recycling | [GFI 2024 targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) |
+| **Limited progress** | 0.001 – 0.006 | $500 – $50,000 | Humbird formulation (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × 8–60 L/kg media use, no step-change | [GFI 2023 recombinant-protein report](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf); [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
+
+::: {.callout-note collapse="true"}
+## How the quantity range was derived (April 2026 revision)
+Earlier model versions used a very broad 0.0001–0.02 g/kg range with no specific citation. That range was tightened to align with primary sources:
+
+**Humbird formulation** (as reproduced in [GFI 2023 recombinant-protein analysis](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)):
+$$\underbrace{1.0 \times 10^{-4}\ \text{g/L}}_{\text{FGF}} + \underbrace{2.0 \times 10^{-6}\ \text{g/L}}_{\text{TGF}\beta} \approx 1.02 \times 10^{-4}\ \text{g/L true GF}$$
+
+**Media-use assumptions** from the same report and the cell-density/turnover math on the main page:
+
+| Media use (L/kg) | True-GF quantity (g/kg) |
+|---|---|
+| 8 L/kg (GFI efficient-future scenario low) | ≈0.00082 |
+| 13 L/kg (GFI efficient-future scenario high) | ≈0.00133 |
+| 60 L/kg (less-optimized, e.g. 30 g/L density × 2× turnover) | ≈0.00612 |
+
+**Empirical cross-check.** [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ACF chicken TEA implies ≈0.00187 g growth factor/kg wet biomass, which sits comfortably inside this band.
+
+**The "cheap" regime** (0.0005–0.002 g/kg) models approximately a 3× usage reduction beyond the Humbird baseline, reflecting thermostable FGF2-G3 variants (longer half-life → less replenishment), autocrine cell lines (cells producing their own FGF), recycling systems, and polyphenol substitution.
+
+**The "expensive" regime** (0.001–0.006 g/kg) is the Humbird formulation across the plausible media-use range, with no breakthrough-driven usage reduction.
+
+**Outside the default.** Values of 0.01–0.02 g/kg remain conceivable for wildly less-optimized processes (much more complex media formulations, much higher media use), but are no longer part of the default sampled range and should be treated as a stress test.
+:::
 
 **Why different quantities too?** Breakthrough technologies often reduce both price and required amount:
 
