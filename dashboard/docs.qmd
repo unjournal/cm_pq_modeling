@@ -41,7 +41,7 @@ This section presents the model structure **top-down**: starting with the final 
 | # | Component | Equation | Key variables |
 |---|-----------|----------|---------------|
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
-| 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + Micros + GFs + Other | — |
+| 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + GFs + Other | — |
 | 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × turnover × $/L | density (g/L), turnover, $/L |
 | 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price ($/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
@@ -76,9 +76,14 @@ $$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbr
 
 ### 2. Variable Operating Costs (VOC)
 
-VOC is the sum of four input categories:
+VOC is the sum of three input categories:
 
-$$\text{VOC} = \text{Media} + \text{Micronutrients} + \text{Growth Factors} + \text{Other}$$
+$$\text{VOC} = \text{Media} + \text{Growth Factors} + \text{Other}$$
+
+::: {.callout-note collapse="true"}
+## Why no separate "micronutrient" term? (April 2026 change)
+Earlier versions of this model carried a separate **food-grade micronutrients** line (vitamins, minerals, trace salts). External review flagged that this double-counted basal media — the model already described media as providing "amino acids, glucose, vitamins" — and that the range (0.1–10 g/kg) was not coherent with the literature. [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) treat vitamin and mineral sourcing as a relatively low-cost issue, while [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) imply roughly 0.15 kg vitamins/minerals per kg wet biomass — orders of magnitude above our old slider. We now fold basal micronutrients into media $/L and reserve any future separate term for **supplemental recombinant proteins** (insulin, transferrin, albumin), which can be sourced from supplier quotes.
+:::
 
 <details>
 <summary>2a. Media Cost</summary>
@@ -91,7 +96,7 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 
 - **Cell density (g/L)**: Final concentration of cells at harvest. Higher density = less media needed per kg. The 1000 converts g/L to L/kg (since 1 kg = 1000 g).
 - **Media turnover**: How many times the media volume is replaced during a production run. Batch systems (turnover = 1) use one fill; perfusion systems (turnover = 3–10) continuously flow fresh media through.
-- **Price ($/L)**: Cost per liter of basal media (amino acids, glucose, vitamins, minerals — excludes growth factors, which are modeled as a [separate cost component](#growth-factor-cost)). Some literature sources report "complete medium" costs that include growth factors; our model separates these to allow independent uncertainty analysis.
+- **Price ($/L)**: Cost per liter of basal media (amino acids, glucose, **vitamins, minerals, trace salts** — excludes growth factors and supplemental recombinant proteins, which are modeled as a [separate cost component](#growth-factor-cost)). Some literature sources report "complete medium" costs that include growth factors; our model separates these to allow independent uncertainty analysis.
 
 **Example calculation:**
 
@@ -160,7 +165,7 @@ $$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg meat}} \times \und
 
 Growth factor cost is one of the four components of Variable Operating Costs:
 
-$$\text{VOC} = \text{Media} + \text{Micronutrients} + \underbrace{\text{Growth Factors}}_{\text{this section}} + \text{Other}$$
+$$\text{VOC} = \text{Media} + \underbrace{\text{Growth Factors}}_{\text{this section}} + \text{Other}$$
 
 And VOC feeds into total unit cost (see [Section 1](#total-unit-cost)).
 
@@ -489,21 +494,11 @@ $$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{turnover} \t
 
 **Media turnover explained:** In **batch mode** (turnover = 1), the reactor is filled once and cells grow until nutrients deplete. In **perfusion mode** (turnover > 1), fresh media continuously flows in while spent media exits. Perfusion uses more media but achieves higher cell densities.
 
-### Micronutrient Costs {#micronutrient-costs}
+### Basal micronutrients (vitamins / minerals / trace salts) {#micronutrient-costs}
 
-Micronutrients (vitamins, minerals, trace elements) are a smaller but still meaningful cost component. The technology switch P(food-grade) determines which price regime applies.
+**Not modeled as a separate line item.** Basal vitamins, minerals, and trace salts are included inside media $/L along with amino acids and glucose. See the callout under [Section 2 (VOC)](#variable-operating-costs-voc) for why the previous standalone "food-grade micronutrients" term was removed, and the [model change log on the main page](index.qmd#micronutrient-change-note) for the full rationale.
 
-| Grade | Usage (g/kg meat) | Price ($/g) | Cost range ($/kg) | Source |
-|-------|------------------|-------------|-------------------|--------|
-| Pharma-grade | 1.0 – 10.0 | $0.50 – $20 | $0.50 – $200 | [Sigma-Aldrich catalog pricing](https://www.sigmaaldrich.com/) |
-| Food-grade | 0.1 – 2.0 | $0.02 – $2 | $0.002 – $4 | Commodity vitamin suppliers |
-
-**Why the 90% cost reduction?** Pharma-grade micronutrients require:
-- Ultra-high purity (>99.9%) with certificates of analysis
-- Controlled manufacturing environments (GMP)
-- Extensive documentation and traceability
-
-Food-grade uses the same compounds at lower purity standards acceptable for human consumption, often sourced from feed or supplement supply chains.
+**If/when we add a separate uncertainty term in this slot**, it will be repurposed to **supplemental recombinant proteins** — insulin, transferrin, and possibly albumin — which have defensible per-g prices (supplier quotes) and per-kg usage levels in the literature. These are distinct from the growth factors (FGF-2, IGF-1, TGF-β) modeled in the [GF section](#growth-factor-cost).
 
 ### Growth Factor Price Scenarios {#gf-scenarios}
 

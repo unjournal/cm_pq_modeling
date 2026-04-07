@@ -480,15 +480,11 @@ function simulate(n, seed, params) {
   let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
   p_hydro = clip(add(p_hydro, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
 
-  let p_foodgrade = sampleBetaMeanStdev(rng, params.p_foodgrade_mean, 0.10, n);
-  p_foodgrade = clip(add(p_foodgrade, scale(maturity.map(m => m - 0.5), 0.20)), 0, 1);
-
   let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
   p_recf = clip(add(p_recf, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
 
   // Bernoulli draws for adoption
   const is_hydro = p_hydro.map(p => rng() < p);
-  const is_foodgrade = p_foodgrade.map(p => rng() < p);
   const is_recf_cheap = p_recf.map(p => rng() < p);
 
   // Process intensities
@@ -497,7 +493,12 @@ function simulate(n, seed, params) {
   const media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
   const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
-  // Media cost ($/L of basal media, excluding growth factors)
+  // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
+  // excluding growth factors and supplemental recombinant proteins)
+  // Basal micronutrients (vitamins, minerals, trace salts) are NOT modeled as a
+  // separate line item — O'Neill et al. (2021) note vitamin sourcing is a "less
+  // pressing issue" and required minerals can be obtained relatively inexpensively,
+  // so they are rolled into media $/L alongside amino acids and glucose.
   // Hydrolysate-based: $0.20-1.20/L (O'Neill et al. 2021; Humbird 2021 hydrolysate estimate)
   const media_cost_hydro = sampleLognormalP5P95(rng, 0.2, 1.2, n);
   // Pharma-grade: $0.50-2.50/L — REVISED downward from $1.00-4.00
@@ -508,16 +509,6 @@ function simulate(n, seed, params) {
   const media_cost_pharma = sampleLognormalP5P95(rng, 0.5, 2.5, n);
   const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
   const cost_media = mul(L_per_kg, media_cost_L);
-
-  // Commodity micronutrients
-  const g_comm_food = sampleLognormalP5P95(rng, 0.1, 2.0, n);
-  const g_comm_pharma = sampleLognormalP5P95(rng, 1.0, 10.0, n);
-  const g_comm = is_foodgrade.map((f, i) => f ? g_comm_food[i] : g_comm_pharma[i]);
-
-  const price_comm_food = sampleLognormalP5P95(rng, 0.02, 2.0, n);
-  const price_comm_pharma = sampleLognormalP5P95(rng, 0.5, 20.0, n);
-  const price_comm = is_foodgrade.map((f, i) => f ? price_comm_food[i] : price_comm_pharma[i]);
-  const cost_comm_micros = mul(g_comm, price_comm);
 
   // Recombinant growth factors (FGF-2, IGF-1, TGF-β, etc.)
   // CRITICAL: Literature shows GFs can be 55-95% of media cost at current prices
@@ -552,8 +543,8 @@ function simulate(n, seed, params) {
   // Other variable costs
   const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
 
-  // VOC total
-  const voc = add(add(add(cost_media, cost_comm_micros), cost_recf), other_var);
+  // VOC total (micronutrients folded into cost_media)
+  const voc = add(add(cost_media, cost_recf), other_var);
 
   // CAPEX calculation
   let capex_perkg = new Array(n).fill(0);
@@ -613,14 +604,12 @@ function simulate(n, seed, params) {
   return {
     unit_cost,
     cost_media,
-    cost_comm_micros,
     cost_recf,
     cost_other_var: other_var,
     cost_capex: capex_perkg,
     cost_fixed: fixed_perkg,
     cost_downstream: downstream_perkg,
     pct_hydro: is_hydro.filter(x => x).length / n,
-    pct_foodgrade: is_foodgrade.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
     // Input parameters for sensitivity analysis
     maturity_samples: maturity,
@@ -629,7 +618,6 @@ function simulate(n, seed, params) {
     L_per_kg_samples: L_per_kg,
     media_cost_L_samples: media_cost_L,
     is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
-    is_foodgrade_samples: is_foodgrade.map(x => x ? 1 : 0),
     is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
     g_recf_samples: g_recf,
     price_recf_samples: price_recf,
@@ -709,7 +697,7 @@ viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value
 ```{ojs}
 //| echo: false
 html`<div id="simplified-note" style="display: ${simpleMode ? 'block' : 'none'}; background: #f0f4e8; border-left: 4px solid #5a7a5a; padding: 0.7rem 0.9rem; margin-bottom: 1rem; font-size: 0.82em; line-height: 1.5; border-radius: 0 4px 4px 0;">
-<strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, food-grade micronutrients, media turnover) are set to reasonable defaults.
+<strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, media turnover) are set to reasonable defaults.
 In our sensitivity analysis, these contribute less than 10% of the variance in cost estimates.
 <em>Switch off to adjust all parameters.</em>
 </div>`
@@ -863,8 +851,6 @@ viewof reset_adoption = Inputs.button("Reset adoption defaults", {
     // Set viewof values back to defaults
     viewof p_hydro.value = 0.75;
     viewof p_hydro.dispatchEvent(new Event("input", {bubbles: true}));
-    viewof p_foodgrade.value = 0.65;
-    viewof p_foodgrade.dispatchEvent(new Event("input", {bubbles: true}));
     viewof p_recfactors.value = 0.5;
     viewof p_recfactors.dispatchEvent(new Event("input", {bubbles: true}));
     viewof gf_progress.value = 50;
@@ -905,36 +891,12 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
 
-```{=html}
-<div class="full-mode-only">
-```
+<details><summary>Note: basal micronutrients are folded into media $/L (click to expand)</summary>
 
-```{ojs}
-//| echo: false
-viewof p_foodgrade = Inputs.range([0.1, 0.9], {
-  value: 0.65, step: 0.05,
-  label: "P(Food-grade micronutrients)"
-})
-```
-<details><summary>What is this? (click to expand)</summary>
+**This slider has been removed.** A previous version of the model carried a separate "food-grade micronutrients" cost line (vitamins, minerals, trace salts). That structure double-counted basal media, which the model already describes as providing "amino acids, glucose, vitamins."
 
-**Micronutrients** include vitamins, minerals, and trace elements needed for cell metabolism.
-
-**Why it matters:**
-
-| Grade | Usage (g/kg meat) | Price ($/g) | Cost Impact |
-|-------|------------------|-------------|-------------|
-| Pharma-grade | 1.0 - 10.0 | $0.50 - $20 | $0.50 - $200/kg |
-| Food-grade | 0.1 - 2.0 | $0.02 - $2 | $0.002 - $4/kg |
-
-Pharma-grade uses ultra-pure compounds at precise concentrations. Food-grade uses commodity ingredients acceptable for human consumption.
-
-*See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
+Basal micronutrients (vitamins, minerals, trace salts) are not modeled separately here. Basal media on this page already includes vitamins, and the literature suggests vitamin/mineral sourcing is relatively low-cost compared with growth factors and recombinant proteins ([O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678): vitamin sourcing is a "less pressing issue" and required minerals can "generally be obtained relatively inexpensively"). We therefore include basal micronutrients inside media $/L and reserve separate uncertainty terms for supplemental recombinant proteins (insulin, transferrin, albumin) if/when we add them as a standalone category — see the [model change log](#micronutrient-change-note) below.
 </details>
-
-```{=html}
-</div>
-```
 
 <a id="growth-factors-explanation"></a>
 ```{ojs}
@@ -1139,7 +1101,6 @@ results = {
     uptime_mean: simpleMode ? 0.90 : uptime,
     maturity_mean: adjustedMaturity,
     p_hydro_mean: p_hydro,
-    p_foodgrade_mean: simpleMode ? 0.65 : p_foodgrade,
     p_recfactors_mean: p_recfactors,
     wacc_p5: simpleMode ? 0.08 : wacc_lo / 100,
     wacc_p95: simpleMode ? 0.20 : wacc_hi / 100,
@@ -1330,8 +1291,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 //| echo: false
 {
   const allComponents = [
-    {name: "Media", value: mean(results.cost_media), color: "#27ae60"},
-    {name: "Micronutrients", value: mean(results.cost_comm_micros), color: "#3498db"},
+    {name: "Media (incl. basal micros)", value: mean(results.cost_media), color: "#27ae60"},
     {name: "Growth Factors", value: mean(results.cost_recf), color: "#9b59b6"},
     {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
     {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
@@ -1407,8 +1367,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 
 **Variable Operating Costs (VOC):**
 
-- **[Media](learn.html#media-composition-40-70-of-total-cost)**: Nutrient broth for cell growth (amino acids, glucose, vitamins)
-- **[Comm. Micros](learn.html#hydrolysates-the-big-win-for-amino-acids)**: Commercial micronutrients (minerals, trace elements)
+- **[Media](learn.html#media-composition-40-70-of-total-cost)**: Nutrient broth for cell growth (amino acids, glucose, vitamins, minerals, trace salts) — basal micronutrients are included here, not as a separate line item
 - **[Recombinant](learn.html#step-5-growth-factors-a-key-cost-driver)**: Growth factors (proteins signaling cell division)
 - **Other VOC**: Utilities, consumables, waste disposal
 
@@ -1437,8 +1396,7 @@ function formatCost(val) {
 
 {
   const allComponents = [
-    {name: "Media", data: results.cost_media, color: "#27ae60"},
-    {name: "Micronutrients", data: results.cost_comm_micros, color: "#3498db"},
+    {name: "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
     {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
@@ -1507,18 +1465,12 @@ These distributions are generated from the simulation using the parameters you s
 
 ```{ojs}
 //| echo: false
-html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
+html`<div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 2rem 0;">
 
 <div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>Hydrolysates Adopted</h5>
 <h2 style="color: #27ae60;">${(results.pct_hydro * 100).toFixed(0)}%</h2>
 <small>of simulations use hydrolysates</small>
-</div>
-
-<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
-<h5>Food-Grade Micros</h5>
-<h2 style="color: #3498db;">${(results.pct_foodgrade * 100).toFixed(0)}%</h2>
-<small>of simulations use food-grade</small>
 </div>
 
 <div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
@@ -1546,7 +1498,6 @@ Which parameters have the most impact on the final cost? This chart shows **Spea
     {name: "L/kg (volume)", corr: spearmanCorr(results.L_per_kg_samples, uc), direction: "direct"},
     {name: "Media $/L", corr: spearmanCorr(results.media_cost_L_samples, uc), direction: "direct"},
     {name: "Uses Hydrolysates", corr: spearmanCorr(results.is_hydro_samples, uc), direction: "inverse"},
-    {name: "Uses Food-Grade", corr: spearmanCorr(results.is_foodgrade_samples, uc), direction: "inverse"},
     {name: "Has Cheap GFs", corr: spearmanCorr(results.is_recf_cheap_samples, uc), direction: "inverse"},
     {name: "GF Quantity (g/kg)", corr: spearmanCorr(results.g_recf_samples, uc), direction: "direct"},
     {name: "GF Price ($/g)", corr: spearmanCorr(results.price_recf_samples, uc), direction: "direct"},
@@ -1889,7 +1840,18 @@ The table below summarizes typical outcomes from this interactive model at diffe
 
 ::: {.callout-warning collapse="true"}
 ## Honesty note on sourcing
-This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Some ranges (particularly for micronutrients, growth factor quantities, media turnover, and cycle days) may reflect AI-synthesized estimates rather than direct citations. This is one reason we are seeking expert review.
+This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Some ranges (particularly for growth factor quantities, media turnover, and cycle days) may reflect AI-synthesized estimates rather than direct citations. This is one reason we are seeking expert review.
+:::
+
+<a id="micronutrient-change-note"></a>
+::: {.callout-note collapse="true"}
+## Model change log — basal micronutrients folded into media (April 2026)
+Earlier versions of this model carried a separate **food-grade micronutrient** cost line (vitamins, minerals, trace elements) with its own adoption toggle, usage range (0.1–10 g/kg), and price range ($0.02–20/g). External review flagged two problems:
+
+1. **Category confusion / double counting.** The page already describes basal media as containing "amino acids, glucose, vitamins," and the model comments described media as "basal media, excluding growth factors." A separate line for vitamins/minerals was therefore adding a second charge for the same inputs.
+2. **Ranges not coherent with the literature.** [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) describe vitamin sourcing as a "less pressing issue" and note required minerals can "generally be obtained relatively inexpensively." Meanwhile [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) report an ACF-medium supplement (vitamins + minerals) at roughly 0.151 kg per kg wet biomass — orders of magnitude above the slider's 0.1–2 g/kg range. So the old slider was not tracking any coherent category.
+
+**What changed:** The separate slider and cost line were removed. Basal vitamins, minerals, and trace salts are now included inside media $/L along with amino acids and glucose, consistent with how the media-cost literature is reported. Supplemental **recombinant proteins** (insulin, transferrin, albumin) remain unmodeled as a standalone line for now; if we reintroduce a separate uncertainty term, it will be repurposed to these proteins where per-g prices and per-kg usage can be sourced.
 :::
 
 **Sources that directly informed model structure and parameter ranges:**
@@ -1914,7 +1876,7 @@ This model was largely AI-generated. We have grounded key parameter ranges in pu
 
 **Parameters where source grounding is weakest** (review priority):
 
-- Micronutrient quantities and prices (food-grade: 0.1-2 g/kg at $0.02-2/g; pharma: 1-10 g/kg at $0.5-20/g) — ranges are plausible but not traced to specific citations
+- Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
 - Growth factor quantities (0.0001-0.02 g/kg) — derived from concentration × volume calculations, not direct empirical measurement
 - Media turnover (1-10×) — acknowledged in model as lacking strong empirical grounding
 - Cycle days (0.5-5.0 days) — hardcoded without source attribution
