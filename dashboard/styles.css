@@ -251,6 +251,36 @@ abbr[title]:hover::before {
     width: 100%;
 }
 
+/* Make Observable Inputs.button() reset buttons more prominent.
+   Default OJS buttons render as low-contrast dark-on-dark in the cosmo theme.
+   Force a high-contrast blue style with clear borders and hover state. */
+.cell form button,
+.cell form input[type="button"],
+.cell form input[type="submit"] {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    border: 2px solid #0a58ca !important;
+    padding: 0.45rem 1rem !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25) !important;
+    transition: background-color 0.15s, box-shadow 0.15s, transform 0.05s !important;
+}
+.cell form button:hover,
+.cell form input[type="button"]:hover,
+.cell form input[type="submit"]:hover {
+    background-color: #0a58ca !important;
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.35) !important;
+}
+.cell form button:active,
+.cell form input[type="button"]:active,
+.cell form input[type="submit"]:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(13, 110, 253, 0.25) !important;
+}
+
 .panel-sidebar details th,
 .panel-sidebar details td {
     padding: 0.35rem 0.5rem;
