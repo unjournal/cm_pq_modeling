@@ -13,7 +13,7 @@ website:
         href: learn.qmd
       - text: "TEA Comparison"
         href: compare.qmd
-      - text: "Technical Reference"
+      - text: "Model formulas"
         href: docs.qmd
       - text: "Discuss"
         href: discuss.qmd

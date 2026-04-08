@@ -1844,10 +1844,10 @@ See: [The Unjournal's Pivotal Questions documentation](https://globalimpact.gitb
 
 ---
 
-## Technical Reference
+## Model formulas
 
 ::: {.callout-note}
-**[View Full Technical Documentation](docs.qmd)** — Complete model formulas, parameter definitions, code reference, and methodology.
+**[View Full Model Formulas page](docs.qmd)** — Complete model formulas, parameter definitions, code reference, and methodology.
 
 Quick reference:
 

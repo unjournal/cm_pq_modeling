@@ -1,6 +1,6 @@
 ---
-title: "Technical Reference"
-subtitle: "Model Formulas, Parameters, and Code Documentation"
+title: "Model formulas"
+subtitle: "Equations, Parameters, and Code Documentation"
 toc: true
 format:
   html:
