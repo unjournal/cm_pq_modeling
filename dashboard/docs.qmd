@@ -632,8 +632,8 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 | WACC | 8–20% | Weighted average cost of capital | $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Asset life | 8–20 years | Equipment depreciation period for bioreactors, buildings, and support facilities | $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Scale exponent | 0.6–0.9 | Economies of scale power (how much CAPEX grows as plant capacity increases) | $s$ in $\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [economies of scale section](#economies-of-scale-the-k-sim-qs-relationship). Note: $s$ (scale exponent) is distinct from $r$ (WACC) used in the CRF formula. |
-| Pharma-grade CAPEX | $5–25/kg capacity | Base capital cost at 20 kTA | CAPEX$_{\text{ref}}$ in scaling equation |
-| Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on CAPEX$_{\text{ref}}$ when using food-grade |
+| Pharma-grade CAPEX | \$5–25 / kg capacity | Base capital cost at 20 kTA | $\text{CAPEX}_{\text{ref}}$ in scaling equation |
+| Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on $\text{CAPEX}_{\text{ref}}$ when using food-grade |
 
 #### WACC Justification
 
