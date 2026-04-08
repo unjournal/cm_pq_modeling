@@ -253,31 +253,51 @@ abbr[title]:hover::before {
 
 /* Make Observable Inputs.button() reset buttons more prominent.
    Default OJS buttons render as low-contrast dark-on-dark in the cosmo theme.
-   Force a high-contrast blue style with clear borders and hover state. */
+   We use a broad selector because the OJS button can be wrapped in
+   .cell-output, .cell-output-display, or appear as a bare form depending on
+   how the chunk is rendered. Specificity bumped via :where() + !important. */
+.cell-output-display form button,
+.cell-output form button,
 .cell form button,
+.observablehq form button,
+form > button.observablehq-button,
+form button[type="submit"]:not(.btn),
+.cell-output-display form input[type="button"],
+.cell-output form input[type="button"],
 .cell form input[type="button"],
+.cell-output-display form input[type="submit"],
+.cell-output form input[type="submit"],
 .cell form input[type="submit"] {
     background-color: #0d6efd !important;
     color: #ffffff !important;
     border: 2px solid #0a58ca !important;
-    padding: 0.45rem 1rem !important;
+    padding: 0.55rem 1.2rem !important;
     border-radius: 6px !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
     cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.25) !important;
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3) !important;
     transition: background-color 0.15s, box-shadow 0.15s, transform 0.05s !important;
+    text-shadow: none !important;
+    margin: 0.25rem 0 !important;
+    min-height: 2.2rem !important;
+    line-height: 1.2 !important;
 }
+.cell-output-display form button:hover,
+.cell-output form button:hover,
 .cell form button:hover,
+.observablehq form button:hover,
+.cell-output-display form input[type="button"]:hover,
 .cell form input[type="button"]:hover,
+.cell-output-display form input[type="submit"]:hover,
 .cell form input[type="submit"]:hover {
     background-color: #0a58ca !important;
-    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.35) !important;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4) !important;
 }
-.cell form button:active,
-.cell form input[type="button"]:active,
-.cell form input[type="submit"]:active {
-    transform: translateY(1px);
+.cell-output-display form button:active,
+.cell-output form button:active,
+.cell form button:active {
+    transform: translateY(1px) !important;
     box-shadow: 0 1px 2px rgba(13, 110, 253, 0.25) !important;
 }
 
@@ -285,4 +305,16 @@ abbr[title]:hover::before {
 .panel-sidebar details td {
     padding: 0.35rem 0.5rem;
     border-bottom: 1px solid #e2e8f0;
+}
+
+/* Wrapper to make reset buttons visually distinct from sliders above. */
+.reset-button-row {
+    margin: 0.5rem 0 0.75rem 0;
+    padding: 0.5rem;
+    background: #eef4ff;
+    border-left: 3px solid #0d6efd;
+    border-radius: 4px;
+}
+.reset-button-row form {
+    margin: 0 !important;
 }

@@ -784,16 +784,16 @@ Most cultivated meat products in development are hybrids — e.g., 10-30% cultur
 ```{ojs}
 //| echo: false
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
-viewof include_fixed_opex = Inputs.toggle({label: "Include fixed operating costs", value: true})
+viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: true})
 viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - **CAPEX**: Bioreactor and facility capital costs, annualized. **On by default** because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
-- **Fixed OPEX**: Labor, maintenance, overhead (scales sub-linearly with plant size). **On by default** for the same reason. Toggle off to focus on marginal costs only.
+- **Plant overhead OPEX**: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* **On by default** for the same reason as CAPEX. Toggle off to focus on marginal costs only.
 - **Downstream**: Scaffolding, texturization, and forming for structured products. **Off by default** because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2-15/kg.
 
-**Note:** Most published TEAs report costs with CAPEX and Fixed OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
+**Note:** Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
 
 ```{=html}
@@ -828,7 +828,7 @@ viewof plant_capacity = Inputs.range([5, 100], {
 | Cost Component | Effect of Larger Plant |
 |----------------|----------------------|
 | CAPEX per kg | ↓ Scales sub-linearly (power law ~0.6-0.9) |
-| Fixed OPEX per kg | ↓ Overhead spread over more output |
+| Plant overhead OPEX per kg | ↓ Overhead spread over more output |
 | Variable costs per kg | — No direct effect (same $/L, $/g) |
 
 Larger plants have **lower per-kg costs** due to economies of scale in capital and fixed costs. Variable costs (media, growth factors) don't change with scale — they depend on technology adoption.
@@ -883,9 +883,13 @@ The model adjusts maturity expectations based on years from 2024.
 
 Probability that each cost-reducing technology is widely adopted by the projection year.
 
+```{=html}
+<div class="reset-button-row">
+```
+
 ```{ojs}
 //| echo: false
-viewof reset_adoption = Inputs.button("Reset adoption defaults", {
+viewof reset_adoption = Inputs.button("↺ Reset adoption defaults", {
   reduce: () => {
     // Set viewof values back to defaults
     viewof p_hydro.value = 0.75;
@@ -898,6 +902,10 @@ viewof reset_adoption = Inputs.button("Reset adoption defaults", {
 })
 ```
 
+```{=html}
+</div>
+```
+
 ```{ojs}
 //| echo: false
 viewof p_hydro = Inputs.range([0.3, 0.95], {
@@ -905,6 +913,10 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
   label: "P(Hydrolysates for basal media)"
 })
 ```
+
+::: {.callout-note appearance="minimal" icon=false collapse=false}
+**Basal media** = the bulk nutrient broth cells grow in (water + amino acids + glucose + salts + vitamins) — *everything except* the expensive recombinant growth factors, which we model on a separate line. **Hydrolysates** are cheap enzymatically-digested plant or yeast proteins; they replace the *purified pharmaceutical-grade amino acids* (vegan but ~10× more expensive) that dominate Humbird's basal-media cost.
+:::
 <details><summary>What is this? (click to expand)</summary>
 
 *Reminder:* <abbr title="Basal media = the bulk nutrient broth cells grow in: water + amino acids + glucose + salts + vitamins/minerals. It is everything except the expensive recombinant growth factors, which are added separately.">**Basal media**</abbr> is the bulk nutrient broth cells grow in (water, amino acids, glucose, salts, vitamins) — everything except the expensive recombinant growth factors, which we model as a separate line.
@@ -1347,7 +1359,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
     {name: "Growth Factors", value: mean(results.cost_recf), color: "#9b59b6"},
     {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
     {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
-    {name: "Fixed OPEX", value: mean(results.cost_fixed), color: "#f39c12"},
+    {name: "Plant overhead OPEX", value: mean(results.cost_fixed), color: "#f39c12"},
     {name: "Downstream", value: mean(results.cost_downstream), color: "#1abc9c"}
   ];
   // Filter out zero-value components (e.g., downstream when not included)
@@ -1423,17 +1435,17 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 - **[Recombinant](learn.html#step-5-growth-factors-a-key-cost-driver)**: Growth factors (proteins signaling cell division)
 - **Other VOC**: Utilities, consumables, waste disposal
 
-**Fixed Costs:**
+**Capacity-anchored Costs (per-plant, scale sub-linearly with plant size):**
 
 - **CAPEX**: Capital costs (reactors, facilities) annualized via Capital Recovery Factor
-- **Fixed OPEX**: Labor, maintenance, overhead (scales with plant size)
+- **Plant overhead OPEX**: Labor, maintenance, plant overhead (conventionally called "Fixed OPEX" — total scales sub-linearly with plant size, so per-kg overhead falls as plants grow)
 
 The relative sizes shift dramatically based on technology adoption assumptions.
 </details>
 
 ### Component Distributions
 
-Individual distributions for each cost driver. **These charts update dynamically** when you change the sidebar parameters. If you adjust plant capacity, the CAPEX and Fixed OPEX distributions will shift; if you change technology adoption probabilities, the media and growth factor distributions will change. (Note: some parameters, like plant capacity, primarily affect CAPEX and fixed costs rather than variable costs like media.)
+Individual distributions for each cost driver. **These charts update dynamically** when you change the sidebar parameters. If you adjust plant capacity, the CAPEX and plant-overhead OPEX distributions will shift; if you change technology adoption probabilities, the media and growth factor distributions will change. (Note: some parameters, like plant capacity, primarily affect CAPEX and overhead rather than variable costs like media.)
 
 ```{ojs}
 //| echo: false
@@ -1452,7 +1464,7 @@ function formatCost(val) {
     {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
-    {name: "Fixed OPEX", data: results.cost_fixed, color: "#f39c12"},
+    {name: "Plant overhead OPEX", data: results.cost_fixed, color: "#f39c12"},
     {name: "Downstream", data: results.cost_downstream, color: "#1abc9c"}
   ];
 

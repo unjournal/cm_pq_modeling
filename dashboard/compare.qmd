@@ -91,7 +91,7 @@ This is where the differences become clearest. Each study makes different assump
 
 ### Media & Amino Acid Costs
 
-| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 | GFI 2025 (amino acids only) |
+| Parameter | [Pasitka 2024](https://www.nature.com/articles/s43016-024-01022-w) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) | [CE Delft 2021](https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/) | [GFI 2025](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/) (amino acids only) |
 |-----------|-------------|--------------|---------------|---------------------------|
 | **Media type** | Animal-component-free (ACF), hydrolysate-based | Pharma-grade baseline; hydrolysate sensitivity | Varies by scenario | N/A (component study) |
 | **Media cost ($/L)** | $0.63/L (reported) | $1-4/L (pharma); ~$0.50-1.50/L (hydrolysate) | Varies; not always explicit | Amino acid contribution only: $0.02-$0.17/L |
@@ -100,7 +100,7 @@ This is where the differences become clearest. Each study makes different assump
 
 ### Growth Factors
 
-| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+| Parameter | [Pasitka 2024](https://www.nature.com/articles/s43016-024-01022-w) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) | [CE Delft 2021](https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/) |
 |-----------|-------------|--------------|---------------|
 | **GF approach** | ACF medium (proprietary formulation) | Recombinant FGF-2 + TGF-β at bulk pricing | Scenario-dependent |
 | **GF cost contribution** | Included in $0.63/L media cost (not separately reported) | $3-4/kg at 100 kTA (assumes bulk pricing breakthroughs) | Not separately broken out in most scenarios |
@@ -108,7 +108,7 @@ This is where the differences become clearest. Each study makes different assump
 
 ### Cell Density & Process Mode
 
-| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+| Parameter | [Pasitka 2024](https://www.nature.com/articles/s43016-024-01022-w) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) | [CE Delft 2021](https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/) |
 |-----------|-------------|--------------|---------------|
 | **Achieved density** | 130×10⁶ cells/mL (~43% w/v) | Fed-batch: ~110 g/L; Perfusion: up to 195 g/L | Varies (10-100+ g/L across scenarios) |
 | **Process mode** | Continuous perfusion | Fed-batch (primary); perfusion (sensitivity) | Multiple scenarios |
@@ -116,7 +116,7 @@ This is where the differences become clearest. Each study makes different assump
 
 ### Capital Costs & Financing
 
-| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+| Parameter | [Pasitka 2024](https://www.nature.com/articles/s43016-024-01022-w) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) | [CE Delft 2021](https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/) |
 |-----------|-------------|--------------|---------------|
 | **Reactor type** | Modeled: 2m³ (ATF), 5m³ (TFF), 25m³ (perfusion) | 2m³ (perfusion), up to 50m³ (fed-batch sensitivity) | Large STRs (future scenarios) |
 | **Equipment grade** | Not specified (modeled cost) | Pharma-grade 316L stainless steel | Varies; includes food-grade scenarios |
@@ -125,7 +125,7 @@ This is where the differences become clearest. Each study makes different assump
 
 ### Scale
 
-| Parameter | Pasitka 2024 | Humbird 2021 | CE Delft 2021 |
+| Parameter | [Pasitka 2024](https://www.nature.com/articles/s43016-024-01022-w) | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) | [CE Delft 2021](https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/) |
 |-----------|-------------|--------------|---------------|
 | **Plant capacity** | 50,000 L working volume | ~20 kTA reference; sensitivity to larger | Future industrial (>10 kTA) |
 | **Utilization** | Continuous operation assumed | 90% utilization | Varies |
@@ -203,7 +203,7 @@ This is where the differences become clearest. Each study makes different assump
 <div class="waterfall-container">
 
 <div class="waterfall-study">
-<h4>Pasitka 2024<br><small>(Chicken, large perfusion)</small></h4>
+<h4><a href="https://www.nature.com/articles/s43016-024-01022-w">Pasitka 2024</a><br><small>(Chicken, large perfusion)</small></h4>
 <div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 120px;">~$6-8/kg</div></div>
 <div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 30px;">incl.</div></div>
 <div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 70px;">~$3-4/kg</div></div>
@@ -213,7 +213,7 @@ This is where the differences become clearest. Each study makes different assump
 </div>
 
 <div class="waterfall-study">
-<h4>Humbird 2021<br><small>(Generic mammalian, fed-batch)</small></h4>
+<h4><a href="https://www.sciencedirect.com/science/article/pii/S2589014X21000026">Humbird 2021</a><br><small>(Generic mammalian, fed-batch)</small></h4>
 <div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 160px;">~$19/kg (AAs)</div></div>
 <div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 40px;">~$3/kg</div></div>
 <div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 100px;">~$12/kg</div></div>
@@ -223,7 +223,7 @@ This is where the differences become clearest. Each study makes different assump
 </div>
 
 <div class="waterfall-study">
-<h4>Humbird 2021<br><small>(With hydrolysates)</small></h4>
+<h4><a href="https://www.sciencedirect.com/science/article/pii/S2589014X21000026">Humbird 2021</a><br><small>(With hydrolysates)</small></h4>
 <div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 50px;">~$3/kg</div></div>
 <div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 40px;">~$3/kg</div></div>
 <div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 100px;">~$12/kg</div></div>
