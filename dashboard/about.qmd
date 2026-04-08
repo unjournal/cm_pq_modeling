@@ -45,10 +45,14 @@ This model aims to help evaluators and forecasters:
 
 ### Contributors
 
-- **David Reinstein** (The Unjournal) - Project lead
-- **David van der Linden** - Model validation
-- **Jacob Kozlowski** - Financial modeling
-- **Ash Meader** - TEA literature review
+- **David Reinstein** (The Unjournal) — project lead
+- **Ash Meader** — TEA literature review
+
+### Feedback provided by
+
+- **Jakub Kozlowski**
+- **David van der Linden**
+- Others who have contributed via [Hypothes.is](https://hypothes.is/) annotations on the dashboard pages — see the [Discussion Map](discuss.qmd) for active threads.
 
 ### Sources
 

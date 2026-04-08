@@ -20,7 +20,7 @@ website:
       - text: "About"
         href: about.qmd
     right:
-      - text: "A project of The Unjournal ↗"
+      - text: "an Unjournal project ↗"
         href: https://unjournal.org
         target: _blank
   page-footer:

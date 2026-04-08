@@ -5,6 +5,28 @@ format:
   html:
     page-layout: full
     css: styles.css
+    include-in-header:
+      text: |
+        <script>
+        // Run synchronously in the <head>, BEFORE Hypothes.is loads.
+        // If the URL has a query string (shared link or a legacy write
+        // from a previous session), extract the params into a global,
+        // then strip the query from the URL. This way Hypothes.is sees
+        // the bare canonical URL and can find annotations anchored to
+        // it, while OJS still gets the slider values via the global.
+        (function () {
+          try {
+            if (!window.location.search) return;
+            var usp = new URLSearchParams(window.location.search);
+            window.__CM_URL_STATE__ = {};
+            usp.forEach(function (v, k) { window.__CM_URL_STATE__[k] = v; });
+            history.replaceState(null, "",
+              window.location.pathname + window.location.hash);
+          } catch (e) {
+            console.warn("CM URL state extraction failed:", e);
+          }
+        })();
+        </script>
     include-after-body:
       text: |
         <script src="https://hypothes.is/embed.js" async></script>
@@ -720,16 +742,14 @@ function spearmanCorr(x, y) {
 
 ```{ojs}
 //| echo: false
-// URL state helpers: let any slider's default value pick up a value from
-// ?key=val in the page URL, so a link captures the full parameter set.
-// Parse once on page load; a separate reactive cell (below the sliders)
-// writes back to the URL when viewof values change.
-urlParams = {
-  const usp = new URLSearchParams(location.search);
-  const parsed = {};
-  for (const [k, v] of usp.entries()) parsed[k] = v;
-  return parsed;
-}
+// URL state helpers: slider defaults pick up values from a synchronous
+// <head> script that extracts ?key=val on page load, stashes them in
+// window.__CM_URL_STATE__, and strips the query string BEFORE Hypothes.is
+// loads. See the include-in-header block at the top of this file.
+// Reading from the global (not location.search) is critical — by the time
+// OJS runs, the query string has already been stripped so that Hypothes.is
+// can find annotations anchored to the bare canonical URL.
+urlParams = window.__CM_URL_STATE__ || {}
 ```
 
 ```{ojs}
@@ -1180,12 +1200,27 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
 
 ```{ojs}
 //| echo: false
-// URL state writer: serialize every viewof value into ?key=val pairs and
-// update the URL via history.replaceState (debounced so dragging a slider
-// doesn't spam the history API). The writer depends on every viewof name
-// below so OJS re-runs it whenever any input changes. Reads nothing from
-// urlParams, so there's no feedback loop with the initial-value readers.
+// URL state writer: serialize every viewof value that DIFFERS FROM ITS
+// DEFAULT into ?key=val pairs, then debounce-write to the URL via
+// history.replaceState. Critical invariant: if every slider is at its
+// default, the URL stays bare (pathname + hash only) — no query string.
+// This is required so Hypothes.is can find annotations on the canonical
+// bare URL; a polluted URL breaks annotation lookup for every visitor.
+// The writer depends on every viewof name below so OJS re-runs it
+// whenever any input changes. Reads nothing from urlParams.
 {
+  // Hard-coded defaults must stay in sync with each Inputs.range() /
+  // Inputs.toggle() declaration above and with the reset_adoption button.
+  const defaults = {
+    simpleMode: true, include_blending: false, blending_share: 0.25, filler_cost: 3,
+    include_capex: true, include_fixed_opex: true, include_downstream: false,
+    plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
+    p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50,
+    wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
+    density_lo: 30, density_hi: 200,
+    media_turnover_lo: 0.5, media_turnover_hi: 3.0
+  };
+
   const state = {
     simpleMode, include_blending, blending_share, filler_cost,
     include_capex, include_fixed_opex, include_downstream,
@@ -1196,15 +1231,28 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
   };
 
   const usp = new URLSearchParams();
+  let hasDiff = false;
   for (const [k, v] of Object.entries(state)) {
-    if (typeof v === "boolean") usp.set(k, v ? "1" : "0");
-    else if (typeof v === "number" && Number.isFinite(v)) usp.set(k, String(v));
+    const def = defaults[k];
+    let matches;
+    if (typeof v === "boolean") matches = (v === def);
+    else if (typeof v === "number") matches = Math.abs(v - def) < 1e-9;
+    else matches = (v === def);
+
+    if (!matches) {
+      hasDiff = true;
+      if (typeof v === "boolean") usp.set(k, v ? "1" : "0");
+      else if (typeof v === "number" && Number.isFinite(v)) usp.set(k, String(v));
+    }
   }
 
   if (window._urlWriteTimer) clearTimeout(window._urlWriteTimer);
   window._urlWriteTimer = setTimeout(() => {
     try {
-      history.replaceState(null, "", "?" + usp.toString() + location.hash);
+      const newUrl = hasDiff
+        ? (location.pathname + "?" + usp.toString() + location.hash)
+        : (location.pathname + location.hash);
+      history.replaceState(null, "", newUrl);
     } catch (e) {
       console.warn("URL state update failed:", e);
     }
