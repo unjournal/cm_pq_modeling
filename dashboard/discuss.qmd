@@ -24,7 +24,7 @@ GitHub Discussions is a flat stack of threads per category; the structure below 
 
 | I want to... | Use... |
 |---|---|
-| Comment on a specific line, paragraph, parameter, or equation | [**Hypothesis**](https://hypothes.is/) — click the `<` tab on the right edge of any dashboard page |
+| Comment on a specific line, paragraph, parameter, or equation | [**Hypothesis**](https://hypothes.is/) — click the `<` tab on the right edge of any dashboard page (a free Hypothesis account is required, signup takes ~30 seconds) |
 | Debate actual cost values, biology, engineering, welfare, or methodology | [**Substantive hub (#3)**](https://github.com/unjournal/cm_pq_modeling/discussions/3) |
 | Discuss how to *frame* a Pivotal Question (resolution, jurisdiction fork, retiring/splitting) | [**PQ framing hub (#4)**](https://github.com/unjournal/cm_pq_modeling/discussions/4) |
 | Discuss workshop logistics, scheduling, session format | [**Workshop hub (#2)**](https://github.com/unjournal/cm_pq_modeling/discussions/2) |
