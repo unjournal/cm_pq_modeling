@@ -907,6 +907,8 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 ```
 <details><summary>What is this? (click to expand)</summary>
 
+*Reminder:* <abbr title="Basal media = the bulk nutrient broth cells grow in: water + amino acids + glucose + salts + vitamins/minerals. It is everything except the expensive recombinant growth factors, which are added separately.">**Basal media**</abbr> is the bulk nutrient broth cells grow in (water, amino acids, glucose, salts, vitamins) — everything except the expensive recombinant growth factors, which we model as a separate line.
+
 **Hydrolysates** are enzymatically digested plant/yeast proteins that provide **amino acids for basal media** — the bulk nutrient broth that cells grow in.
 
 **Important clarification:** Hydrolysates replace **amino acids**, NOT growth factors. These are completely separate cost categories:
