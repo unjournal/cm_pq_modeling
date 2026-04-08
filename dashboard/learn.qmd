@@ -80,7 +80,7 @@ abbr[title]:hover::before {
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
 
-**For substantive debate on biology, costs, or welfare — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions).** That's where threaded conversation can get involved, with replies others can reply to and build on. Direct links:
+For substantive debate on biology, costs, or welfare — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions). That's where threaded conversation can get involved, with replies others can reply to and build on. Direct links:
 
 - 🧠 [**Substantive hub**](https://github.com/unjournal/cm_pq_modeling/discussions/3) — for biology, economics, engineering, and welfare debate (**the main event**)
 - 🎯 [PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4) — for how we *define* the questions (jurisdiction forks, resolution criteria)
@@ -96,7 +96,7 @@ For **quick inline notes** on specific text, use [Hypothesis](https://hypothes.i
 
 ## Overview
 
-**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for **pure cultured cells**, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. **To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).**
+**Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for pure cultured cells, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).
 
 ::: {.callout-warning}
 ## Cost Basis Matters: Read Carefully
@@ -312,7 +312,7 @@ Think of it like this:
 
 If a bank costs $200K and supports 10,000 batches of 1,000 kg each, the per-kg cost is: $200K ÷ 10M kg = **$0.02/kg**
 
-**This is negligible** compared to media costs ($5-50/kg) and CAPEX ($2-10/kg). Cell banking typically represents **<1% of total production cost** at scale.
+This is negligible compared to media costs ($5-50/kg) and CAPEX ($2-10/kg). Cell banking typically represents **<1% of total production cost** at scale.
 
 The cells aren't "used up" in the traditional sense — each frozen vial is thawed and expanded by ~10 billion-fold before production. The bank only needs replacement when vials run out or cells lose performance.
 :::
@@ -329,7 +329,7 @@ The **<abbr title="Per Hayflick 1961: 'normal human fetal cell population will d
 - **Immortalized lines** eliminate this constraint — one cell bank can theoretically last forever
 - Trade-off: Immortalized cells may require GMO labeling and face regulatory scrutiny
 
-**Cost implication:** If a cell line can produce 10× more batches before replacement, your per-batch cell banking cost drops by 10×.
+Cost implication: If a cell line can produce 10× more batches before replacement, your per-batch cell banking cost drops by 10×.
 :::
 
 ---
@@ -447,7 +447,7 @@ The <abbr title="The sequence of progressively larger vessels used to expand cel
 ::: {.callout-note collapse="true"}
 ## Are Companies Still Using Pharma-Grade? (click to expand)
 
-**Increasingly, no.** While early R&D relied heavily on pharma-grade media and equipment, most companies scaling up have transitioned to food-grade alternatives. Per a [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive):
+Increasingly, no. While early R&D relied heavily on pharma-grade media and equipment, most companies scaling up have transitioned to food-grade alternatives. Per a [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive):
 
 - **Media**: "costs $1 per liter or less and several are under $0.50 per liter" — "10-30× cheaper than [Humbird 2021] thought possible"
 - **Equipment**: Vow built a 20,000L bioreactor "well under $1 million" (80% below off-the-shelf costs)
@@ -587,9 +587,9 @@ Companies like UPSIDE Foods and Believer Meats have built large-scale facilities
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
 
-**Bioreactor CAPEX accounts for <abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of total production cost at scale</abbr>**, making it a pivotal cost driver. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
+Bioreactor CAPEX accounts for **<abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of total production cost at scale</abbr>**, making it a pivotal cost driver. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
 
-**The opportunity — already being realized:** Several companies are now using simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)). Vow (Australia) has built custom food-grade bioreactors at ~80% below pharma costs, and other companies are following suit. If this approach scales successfully, equipment costs could drop by **10x** industry-wide.
+The opportunity — already being realized: Several companies are now using simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)). Vow (Australia) has built custom food-grade bioreactors at ~80% below pharma costs, and other companies are following suit. If this approach scales successfully, equipment costs could drop by **10x** industry-wide.
 
 | Equipment Type | Cost per Liter | Example Industry |
 |---------------|----------------|------------------|
@@ -597,17 +597,17 @@ Companies like UPSIDE Foods and Believer Meats have built large-scale facilities
 | Food-grade fermentation | $10-50/L | Specialty ingredients |
 | Beer brewing tanks | $5-15/L | Craft breweries |
 
-**Key question:** Can cultured meat production maintain sterility and consistency with simpler equipment? This depends on whether the process can tolerate:
+Key question: Can cultured meat production maintain sterility and consistency with simpler equipment? This depends on whether the process can tolerate:
 - Less precise temperature control
 - Simpler cleaning validation
 - Lower-grade materials (304 vs 316L stainless)
 
-**Contamination is a real risk:** Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This helps explain why many cultured meat companies have historically relied on pharma-grade equipment, though the trend is shifting: companies like Vow and others are now building custom food-grade bioreactors at substantially lower cost (per a [2025 Lever VC report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive), Vow built a 20,000L bioreactor "well under $1 million," 80% below off-the-shelf costs).
+Contamination is a real risk: Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This helps explain why many cultured meat companies have historically relied on pharma-grade equipment, though the trend is shifting: companies like Vow and others are now building custom food-grade bioreactors at substantially lower cost (per a [2025 Lever VC report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive), Vow built a 20,000L bioreactor "well under $1 million," 80% below off-the-shelf costs).
 :::
 
 ### Batch vs. Perfusion: Two Operating Modes
 
-**TL;DR:** Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the **<abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">media-use multiplier</abbr>** parameter in [our cost model](index.qmd): batch ≈ 1, perfusion ≈ 2–3, media recycling or fed-batch ≈ 0.5–1. Values below 1 are discussed in [the next section](#media-use-mechanisms).
+TL;DR: Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the <abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">media-use multiplier</abbr> parameter in [our cost model](index.qmd): batch ≈ 1, perfusion ≈ 2–3, media recycling or fed-batch ≈ 0.5–1. Values below 1 are discussed in [the next section](#media-use-mechanisms).
 
 ::: {.callout-note collapse="true"}
 ## Details: How batch vs. perfusion works (click to expand)
@@ -752,7 +752,7 @@ Values above 5× remain plausible for heavily media-intensive processes but are 
 
 *The batch/perfusion distinction is a simplification. In practice, cell density, media-use multiplier, and recycle fraction are interdependent — higher perfusion density may require additional retention devices (e.g., ATF filters), and media recycling can partially decouple the multiplier from fresh media cost. Our [dashboard model](index.qmd) treats density and the media-use multiplier as separate parameters for simplicity, with the multiplier bundling recycling and harvest concentration (see [Media-use mechanisms](#media-use-mechanisms)); see [Technical Reference](docs.qmd#process-intensities) for how these interact in the cost equations.*
 
-**Bottom line:** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg wet cell mass** (or $22/kg with hydrolysates), while perfusion costs **$51/kg wet cell mass** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales. Note: Humbird models generic mammalian cells, not chicken specifically.
+Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg wet cell mass** (or $22/kg with hydrolysates), while perfusion costs **$51/kg wet cell mass** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales. Note: Humbird models generic mammalian cells, not chicken specifically.
 :::
 
 ---
@@ -796,41 +796,21 @@ At production scale, media (including growth factors) typically represents **40-
 This is why media cost reduction (hydrolysates, cheap growth factors, high cell density) is so critical.
 :::
 
-### The Serum-Free Challenge
-
-Traditional cell culture uses **<abbr title="Blood serum extracted from fetuses of pregnant cows at slaughter — contains thousands of growth factors and proteins that cells need">fetal bovine serum (FBS)</abbr>** — a complex mixture that provides growth factors, hormones, and attachment proteins.
+All commercial cultured meat now uses serum-free media — no current-paradigm cost trajectory depends on fetal bovine serum (FBS).
 
 ::: {.callout-note collapse="true"}
-## What is FBS and Where Does It Come From? (click to expand)
+## Historical note: why the industry moved to serum-free (click to expand)
 
-FBS is collected from bovine fetuses when pregnant cows are slaughtered for meat. The fetus is removed and blood is extracted from its heart. Per [PMC 2014](https://pmc.ncbi.nlm.nih.gov/articles/PMC3967615/): "major sources of FBS are far away—in Brasil, Argentina, South Africa, Australia, New Zealand, and Central America." This serum contains a rich mix of growth factors, hormones, and nutrients that support cell growth.
+Until ~2018, animal cell culture relied on **fetal bovine serum** ($200–1,000/L), a complex mixture collected from bovine fetuses at slaughter. FBS was the universal cell-culture supplement — used across chicken, cow, pig, and fish work — because it contains hundreds of beneficial proteins (growth factors, albumin, attachment proteins, hormones).
 
-**Why mention bovine serum for chicken?** The same FBS has historically been used for *all* animal cell culture — chicken, cow, pig, fish. It's a universal growth supplement because it contains hundreds of beneficial proteins. The industry standard was to use FBS regardless of the target species.
+It was abandoned for cultured meat for three reasons that all point the same direction:
+
+- **It can't scale.** Global FBS supply is ~500,000–800,000 L/yr ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/)). At ~100 mL FBS per kg of meat (10% supplementation), 1 Mt of cultured meat would need ~100 billion L/yr — roughly 200,000× existing supply.
+- **It contradicts the welfare goal.** FBS is collected from bovine fetuses when pregnant cows are slaughtered (~1M+ fetuses/yr per [PMC 2014](https://pmc.ncbi.nlm.nih.gov/articles/PMC3967615/)).
+- **It's expensive and inconsistent.** Batch-to-batch variability and $200–1,000/L pricing make it unworkable for commodity production.
+
+All approved cultured meat products to date ([UPSIDE Foods](https://www.upsidefoods.com/), [GOOD Meat](https://www.goodmeat.co/)) use serum-free formulations. **For cost modeling, FBS should be treated as historical context, not a current cost line.**
 :::
-
-Problems with FBS:
-
-- **Expensive**: <abbr title="Heat-inactivated FBS ~$200-400/L; specialty/embryonic grades $500-1,000+/L; premium certified grades even higher (2024 supplier pricing)">$200-1,000/L</abbr> depending on grade and certification level
-- **Variable**: Batch-to-batch inconsistency makes reproducibility difficult
-- **Ethical**: Derived from fetal calves — <abbr title="FBS is collected from bovine fetuses when pregnant cows are slaughtered. Per PMC 2014: 'more than 1,000,000 bovine fetuses are harvested' annually for FBS production. This directly contradicts the goal of reducing animal slaughter.">defeats the goal of reducing animal slaughter</abbr>
-- **Limited supply**: <abbr title="Per PMC 2014: 'approximately 500,000 L of FBS are sold per year' requiring 'more than 1,000,000 bovine fetuses to be harvested.' Updated estimates suggest 600-800,000 L/year globally.">~500,000-800,000 L/year globally</abbr> ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/), [PMC 2014](https://pmc.ncbi.nlm.nih.gov/articles/PMC3967615/))
-- **Multi-functional**: FBS provides not just growth factors but also <abbr title="FBS contains hundreds of proteins including albumin, transferrin, insulin-like growth factors, attachment factors, lipids, and hormones. Replacing FBS means finding substitutes for all of these functions, not just one component.">albumin, attachment proteins, lipids, hormones, and trace nutrients</abbr> — making it hard to replace with a single substitute
-
-::: {.callout-warning collapse="true"}
-## Why FBS Cannot Scale (click to expand)
-
-Even if ethics weren't a concern, FBS fundamentally cannot scale for cultured meat:
-
-- **Global FBS supply**: ~500,000 L/year
-- **FBS needed for 1 kg meat** (at 10% media supplementation): ~100 mL
-- **FBS for 1 million tonnes** of cultured meat: ~100 billion L/year
-
-That's **200,000× more FBS than exists globally**. There is no scenario where FBS-based cultured meat reaches meaningful scale.
-
-This is why <abbr title="Cell culture media formulated without any animal-derived serum — uses defined growth factors and supplements instead">serum-free media</abbr> development has been a <abbr title="Without serum-free alternatives, cultured meat cannot scale beyond niche volumes. FBS supply is orders of magnitude too small, and the ethical contradiction would undermine consumer acceptance.">practical necessity</abbr> for the industry to scale.
-:::
-
-For these reasons, the cultured meat industry has converged on <abbr title="Media without animal-derived serum — uses defined growth factors and plant/microbial supplements instead">serum-free media</abbr>. All approved cultured meat products to date use serum-free formulations ([UPSIDE Foods](https://www.upsidefoods.com/), [GOOD Meat](https://www.goodmeat.co/)).
 
 ### Hydrolysates: The Big Win for Amino Acids
 
@@ -866,7 +846,7 @@ Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densi
 :::
 
 ::: {.callout-tip}
-**Hydrolysates are a promising and widely-pursued cost reduction pathway.** Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)), and <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media.">several companies report achieving hydrolysate-based media at $1/L or less</abbr>.^[There is some disagreement here. GFI's 2025 amino acid report notes that hydrolysates can be deficient in key amino acids and typically require supplementation or blending. Humbird (2021) describes hydrolysate suitability as requiring "further study." We are investigating the latest evidence on this point and welcome feedback.]
+Hydrolysates are a promising and widely-pursued cost reduction pathway. Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)), and <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media.">several companies report achieving hydrolysate-based media at $1/L or less</abbr>.^[There is some disagreement here. GFI's 2025 amino acid report notes that hydrolysates can be deficient in key amino acids and typically require supplementation or blending. Humbird (2021) describes hydrolysate suitability as requiring "further study." We are investigating the latest evidence on this point and welcome feedback.]
 :::
 
 ---
@@ -877,64 +857,9 @@ Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densi
 
 ### What Are Growth Factors?
 
-**Growth factors** are signaling proteins that tell cells to proliferate and differentiate. They bind to cell surface receptors and trigger intracellular cascades:
+Growth factors are signaling proteins that tell cells to proliferate and differentiate. They bind to cell surface receptors and trigger intracellular cascades:
 
-::: {.callout-note collapse="true"}
-## How Growth Factor Signaling Works (click to expand)
-
-*A growth factor protein (GF) binds to a receptor on the cell membrane, triggering a chain of signals inside the cell that tells the cell to "PROLIFERATE" (divide).*
-
-```{=html}
-<svg viewBox="0 0 500 210" style="width: 100%; max-width: 700px; min-height: 300px; margin: 1.5rem auto; display: block;">
-  <rect width="500" height="210" fill="#f8f9fa" rx="8"/>
-
-  <!-- Outside label -->
-  <text x="250" y="25" text-anchor="middle" font-size="11" fill="#2c3e50">Outside Cell (media)</text>
-
-  <!-- Growth factor -->
-  <circle cx="100" cy="55" r="15" fill="#9b59b6"/>
-  <text x="100" y="60" text-anchor="middle" font-size="9" fill="white">GF</text>
-
-  <!-- Cell membrane -->
-  <rect x="50" y="85" width="400" height="20" fill="#f39c12" opacity="0.3" rx="10"/>
-  <text x="250" y="99" text-anchor="middle" font-size="10" fill="#7f8c8d">Cell Membrane</text>
-
-  <!-- Receptor -->
-  <rect x="90" y="70" width="20" height="50" fill="#e74c3c" rx="3"/>
-
-  <!-- Inside label -->
-  <text x="60" y="135" text-anchor="start" font-size="10" fill="#2c3e50">Inside Cell</text>
-
-  <!-- Arrow to signal -->
-  <path d="M120 115 L155 145" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-
-  <!-- Signal cascade -->
-  <circle cx="170" cy="155" r="10" fill="#27ae60"/>
-  <text x="170" y="159" text-anchor="middle" font-size="8" fill="white">1</text>
-  <path d="M185 155 L210 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <circle cx="225" cy="155" r="10" fill="#27ae60"/>
-  <text x="225" y="159" text-anchor="middle" font-size="8" fill="white">2</text>
-  <path d="M240 155 L265 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <circle cx="280" cy="155" r="10" fill="#27ae60"/>
-  <text x="280" y="159" text-anchor="middle" font-size="8" fill="white">3</text>
-
-  <!-- Result -->
-  <path d="M295 155 L340 155" stroke="#27ae60" stroke-width="2" marker-end="url(#arr5)"/>
-  <rect x="345" y="140" width="90" height="30" fill="#3498db" rx="5"/>
-  <text x="390" y="160" text-anchor="middle" font-size="10" fill="white">PROLIFERATE</text>
-
-  <!-- Labels -->
-  <text x="100" y="185" text-anchor="middle" font-size="9" fill="#7f8c8d">Receptor</text>
-  <text x="280" y="195" text-anchor="middle" font-size="9" fill="#7f8c8d">Signal cascade → Gene expression</text>
-
-  <defs>
-    <marker id="arr5" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#27ae60"/>
-    </marker>
-  </defs>
-</svg>
-```
-:::
+*Mechanism in one sentence: a growth factor protein binds a cell-surface receptor → intracellular signal cascade → gene expression telling the cell to divide. The SVG illustrating this was removed from this page in the Apr 2026 trim — it's educational but not cost-relevant. (See any cell-biology textbook, or [GFI's growth factor primer](https://gfi.org/science/the-science-of-cultivated-meat/).)*
 
 ### Key Growth Factors for Cultured Meat
 
@@ -948,9 +873,9 @@ Different growth factors serve different purposes in the cell lifecycle:
 - **<abbr title="Transforming Growth Factor beta — triggers cells to mature into muscle fibers">TGF-β</abbr>**: Triggers differentiation and <abbr title="Extracellular matrix — the structural proteins between cells">ECM</abbr> production
 - **<abbr title="Epidermal Growth Factor — general proliferation signal">EGF</abbr>**: Additional proliferation signal
 
-**Are they all required?** Not necessarily all four — formulations vary. But you typically need *at least* FGF-2 (for proliferation) and something to trigger differentiation (TGF-β or similar). The exact cocktail depends on cell type and process.
+Are they all required? Not necessarily all four — formulations vary. But you typically need *at least* FGF-2 (for proliferation) and something to trigger differentiation (TGF-β or similar). The exact cocktail depends on cell type and process.
 
-**Usage:** Typically 10-100 <abbr title="nanograms per milliliter — billionths of a gram per mL">ng/mL</abbr> of each factor, refreshed as media is changed.
+Usage: typically 10-100 <abbr title="nanograms per milliliter — billionths of a gram per mL">ng/mL</abbr> of each factor, refreshed as media is changed.
 :::
 
 | Factor | Function | <abbr title="Catalog/research-grade prices from suppliers like Sigma-Aldrich, PeproTech, R&D Systems (2024). Bulk production-scale pricing is substantially lower but not publicly available. These catalog prices represent the starting point that must be reduced.">Research Price</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at research-grade prices. Assumes ~50 ng/mL usage and ~20 L media per kg meat (at 50 g/L cell density). Actual values vary with formulation and density.">Cost/kg meat (research)</abbr> | <abbr title="Target prices needed for cultured meat to reach cost-competitiveness (~$10-25/kg). Per GFI: 'albumin at $10/kg, insulin and transferrin at $1,000/kg, and growth factors at $100,000/kg.' Some companies report approaching these targets via precision fermentation.">Production Target</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at target production prices. Same usage assumptions as research column.">Cost/kg meat (target)</abbr> | Source |
@@ -989,37 +914,16 @@ Based on our analysis, growth factor costs appear to be one of the largest uncer
 | **Partial success** | $5-20/kg | Significant but potentially manageable |
 | **Limited progress** | $50-100+/kg | Could be prohibitive at scale |
 
-**Why we frame this as "any one works":** The breakthrough technologies (<abbr title="Using microbes to produce proteins at scale">precision fermentation</abbr>, <abbr title="Genetically modified plants producing growth factors">plant molecular farming</abbr>, <abbr title="Cells engineered to produce their own growth factors">autocrine cell lines</abbr>) are largely substitutes. If any one succeeds at scale, the problem is substantially addressed.
+Why we frame this as "any one works": The breakthrough technologies (<abbr title="Using microbes to produce proteins at scale">precision fermentation</abbr>, <abbr title="Genetically modified plants producing growth factors">plant molecular farming</abbr>, <abbr title="Cells engineered to produce their own growth factors">autocrine cell lines</abbr>) are largely substitutes. If any one succeeds at scale, the problem is substantially addressed.
 
 This reasoning underlies our model's **<abbr title="Binary switch = the model treats each breakthrough technology as either 'adopted' or 'not adopted' (a Bernoulli draw with probability p). If adopted, growth factor costs drop to near-zero; if not, they remain high. This is a simplification — in reality, adoption is gradual and partial — but it captures the key economic bifurcation.">binary switch</abbr>** approach — though we acknowledge this is a simplification. Reality may involve partial successes or combinations of approaches.
 
 See [GFI's analysis](https://gfi.org/science/the-science-of-cultivated-meat/) for detailed technical roadmaps on each approach.
 
-**Important caveat:** A [2024 Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3) of TEAs concluded: "TEAs published to date demonstrate that, under the current technological paradigm, CM is unlikely to be competitive with conventional meat." However, the review notes that "scale-up feasibility may hinge on cost-saving areas such as use of plant-based media components, food-grade aseptic conditions and extensive scaling of related supply chains."
+Important caveat: a [2024 Nature Food scoping review](https://www.nature.com/articles/s43016-024-01061-3) of TEAs concluded: "TEAs published to date demonstrate that, under the current technological paradigm, CM is unlikely to be competitive with conventional meat." However, the review notes that "scale-up feasibility may hinge on cost-saving areas such as use of plant-based media components, food-grade aseptic conditions and extensive scaling of related supply chains."
 :::
 
-::: {.callout-tip collapse="true"}
-## Discussion: Does gene editing regulation affect growth factor costs?
-
-Several of the most promising approaches to cheap growth factors involve genetic modification:
-
-- **Autocrine cell lines**: Engineering cells to produce their own growth factors (FGF-2, IGF-1). This could eliminate external GF costs entirely but requires genetic modification of the production cell lines.
-- **Plant molecular farming**: Expressing growth factors in transgenic plants (tobacco, lettuce). Companies like BioBetter and ORF Genetics are pursuing this.
-- **Precision fermentation**: Using engineered E. coli or yeast to produce GFs at scale (similar to insulin production).
-
-**Jurisdiction matters.** Markets that restrict gene editing or GMO-derived inputs may not allow these approaches:
-
-| Market | GM cell lines | GM-derived GFs | Implications |
-|--------|:---:|:---:|---|
-| Singapore | Allowed | Allowed | Most permissive; first CM regulatory approvals |
-| US (FDA/USDA) | Case-by-case | Generally allowed | Regulatory pathway exists but untested at scale |
-| EU (EFSA) | Restricted | Novel food rules apply | May require non-GM alternatives, raising costs |
-| Israel | Relatively permissive | Allowed | Active CM industry |
-
-This creates a potential fork in cost trajectories: **markets allowing gene editing may achieve dramatically lower growth factor costs**, while restrictive markets may be stuck with expensive non-GM alternatives. This is relevant to how we specify CM_01 — should we ask about cost "in markets where gene editing is allowed" vs "globally averaged"?
-
-See the [workshop discussion](https://uj-cm-workshop.netlify.app/) on whether to fork CM_01 by regulatory environment.
-:::
+> *Most cheap-GF approaches (autocrine cell lines, precision fermentation, plant molecular farming) involve some form of genetic modification, so jurisdictions that restrict GM inputs may face structurally higher GF costs. Whether and how to fork CM_01 by regulatory environment is being discussed at the [workshop](https://uj-cm-workshop.netlify.app/).*
 
 ---
 
@@ -1140,49 +1044,19 @@ Many foundational TEA analyses in this field date from 2021 (Humbird, Risner et 
 The field is evolving rapidly. If you know of newer sources we should cite, please add a Hypothesis comment!
 :::
 
-::: {.callout-tip collapse="true"}
-## Discussion: Which market? Jurisdiction and cost trajectories
-
-A key question for the workshop: should CM_01 specify a particular market, or ask about a global average?
-
-**Why it matters:**
-
-- Regulatory requirements (especially on gene editing) directly affect which cost-reduction technologies are available
-- "Average across all large-scale plants in the world" (the current CM_01 wording) implicitly asks a second question about each market's share of production
-- A market that restricts GM inputs may have structurally higher costs than one that doesn't
-
-**Options under discussion:**
-
-- Specify a single large market (e.g., "for the US market" or "for markets where gene editing is allowed")
-- Fork into two questions: one for GM-permissive markets, one for GM-restrictive
-- Choose a "representative country" — not the most restrictive, not the least
-- Keep the current global wording but acknowledge it bundles multiple uncertainties
-
-This will be discussed at the [workshop](https://uj-cm-workshop.netlify.app/). Your input via [Hypothesis annotations](https://hypothes.is) is welcome.
-:::
+> *Whether to specify CM_01 by jurisdiction (gene-editing-permissive vs restrictive markets, US vs EU vs Singapore) or stick with a global average is a workshop framing question — see the [workshop discussion](https://uj-cm-workshop.netlify.app/).*
 
 ---
 
 ## Further Resources
 
-### Video & Process Explainers
+The full prioritized reading list lives on the [workshop resources page](https://uj-cm-workshop.netlify.app/resources). Three starting points:
 
-- [Good Food Institute: What is Cultivated Meat?](https://gfi.org/cultivated/) — Interactive overview with visuals
-- [UPSIDE Foods: Our Process](https://upsidefoods.com/innovation) — How their EPIC facility works
-- [Mosa Meat: How We Make Real Meat](https://mosameat.com/growing-beef) — Cell-to-burger process explained
-- [PBS News Hour: How 'Lab-Grown' Meat is Made](https://www.pbs.org/video/lab-meat-1703711827/) — Independent documentary
+- [Goodwin, Aimutis & Shirwaiker (2024)](https://www.nature.com/articles/s43016-024-01100-z) — scoping review of TEAs (best single starting point)
+- [Humbird (2021)](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — pessimistic engineering baseline
+- [GFI amino acid report (2025)](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/) — supplier-quoted prices challenging Humbird's media assumptions
 
-### Academic Papers (Key Sources)
-
-- [Risner et al. (2021) - "Preliminary Techno-Economic Assessment of Animal Cell-Based Meat"](https://www.mdpi.com/2304-8158/10/1/3) — UC Davis cost model
-- [Humbird (2021) - "Scale-Up Economics of Cultured Meat"](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) — Independent TEA analysis
-- [Pasitka et al. (2022) - "Spontaneous immortalization of chicken fibroblasts"](https://www.nature.com/articles/s43016-022-00658-w) — Spontaneous immortalization in avian cells
-- [GFI State of the Industry Report 2024](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) — Annual industry overview
-
-### Interactive Tools
-
-- [UC Davis ACBM Calculator](https://acbmcostcalculator.ucdavis.edu/) — Academic cost model
-- **This Dashboard**: [Interactive Monte Carlo Model](index.qmd) — Play with parameters
+For a side-by-side of how the major TEAs differ, see the [TEA comparison page](compare.qmd).
 
 ---
 
