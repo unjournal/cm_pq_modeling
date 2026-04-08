@@ -9,7 +9,7 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Audio Review (MP3)](model_review_report.mp3)** | **[Workshop (Apr 2026)](https://uj-cm-workshop.netlify.app/)**
+**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Audio Review (MP3)](model_review_report.mp3)** | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
 
 ::: {.callout-note collapse="true"}
 ## Feedback & Annotations
