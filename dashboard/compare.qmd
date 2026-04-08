@@ -45,35 +45,35 @@ The tables below attempt to put these studies on a comparable footing. Where a d
 </thead>
 <tbody>
 <tr style="border-bottom: 1px solid #dee2e6;">
-  <td style="padding: 8px;"><strong>Pasitka et al. 2024</strong> (Nature Food + supplement)</td>
+  <td style="padding: 8px;"><strong><a href="https://www.nature.com/articles/s43016-024-01022-w">Pasitka et al. 2024</a></strong> (Nature Food + supplement)</td>
   <td style="padding: 8px;">Chicken; pure cell mass (ACF medium)</td>
   <td style="padding: 8px;">$13.75/kg (large perfusion), $15.03/kg (TFF), $22.27/kg (ATF) — Supplement Table S10. The widely-cited ~$6/lb figure is a 50/50 hybrid product (per GFI State of Industry 2024); pure cell mass costs are higher.</td>
   <td style="padding: 8px;">2×25m³ (perfusion), 10×5m³ (TFF), 25×2m³ (ATF); 14.6% annual capital charge</td>
   <td style="padding: 8px;">Believer Meats shut down Dec 2025. Only chicken-specific TEA in the literature.</td>
 </tr>
 <tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
-  <td style="padding: 8px;"><strong>Humbird 2021</strong> (Open Philanthropy)</td>
+  <td style="padding: 8px;"><strong><a href="https://www.sciencedirect.com/science/article/pii/S2589014X21000026">Humbird 2021</a></strong> (Open Philanthropy)</td>
   <td style="padding: 8px;">Generic mammalian (CHO-like); wet cell mass</td>
   <td style="padding: 8px;">$37/kg (fed-batch), $51/kg (perfusion), ~$22/kg (with hydrolysates), ~$16/kg (asymptotic extreme scale)</td>
   <td style="padding: 8px;">Fed-batch ~110 g/L; perfusion up to 195 g/L in 2m³; sensitivity to 50m³</td>
   <td style="padding: 8px;">Not chicken-specific; amino acid costs likely overestimated 2-10× per GFI 2025</td>
 </tr>
 <tr style="border-bottom: 1px solid #dee2e6;">
-  <td style="padding: 8px;"><strong>CE Delft 2021</strong> (corrigendum)</td>
+  <td style="padding: 8px;"><strong><a href="https://cedelft.eu/publications/tea-of-cultivated-meat-future-projections-of-different-scenarios/">CE Delft 2021</a></strong> (corrigendum)</td>
   <td style="padding: 8px;">Non-specific CM slurry/paste (~70-77% water)</td>
   <td style="padding: 8px;">$6.43/kg (best-case) to ~$25/kg (mid-scenarios)</td>
   <td style="padding: 8px;">Future 2030-style industrial scenarios; one scenario removed as physically inconsistent</td>
   <td style="padding: 8px;">Not species-specific; product is undefined slurry; best-case combines multiple optimistic assumptions</td>
 </tr>
 <tr style="border-bottom: 1px solid #dee2e6; background: #f8f9fa;">
-  <td style="padding: 8px;"><strong>GFI component reports</strong> (2020-2025)</td>
+  <td style="padding: 8px;"><strong><a href="https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/">GFI component reports</a></strong> (2020-2025)</td>
   <td style="padding: 8px;">Component studies, not full TEAs</td>
   <td style="padding: 8px;">Amino acids: $0.02-$0.17/L, could fall below $5/kg CM (<a href="https://gfi.org/wp-content/uploads/2025/12/Amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat.pdf">2025 report</a>). Growth factors: competitive target ~$1/kg CM with 8-13 L/kg media use (<a href="https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/">GF analysis</a>). Scale-up trends: media recycling increasingly common; 316L stainless ~40% more expensive than 304 (<a href="https://gfi.org/wp-content/uploads/2024/04/Trends-in-cultivated-meat-scale-up-and-bioprocessing.pdf">2024 survey</a>).</td>
   <td style="padding: 8px;">Based on supplier quotes, industry surveys, and techno-economic modeling</td>
   <td style="padding: 8px;">Not full TEAs; use to update individual parameter priors rather than total cost estimates</td>
 </tr>
 <tr style="border-bottom: 1px solid #dee2e6;">
-  <td style="padding: 8px;"><strong>Goodwin et al. 2024</strong> (Nature Food)</td>
+  <td style="padding: 8px;"><strong><a href="https://www.nature.com/articles/s43016-024-01100-z">Goodwin et al. 2024</a></strong> (Nature Food)</td>
   <td style="padding: 8px;">Scoping review — no cost estimate</td>
   <td style="padding: 8px;">—</td>
   <td style="padding: 8px;">Reviews methodology of published TEAs</td>
