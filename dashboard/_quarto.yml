@@ -19,6 +19,10 @@ website:
         href: discuss.qmd
       - text: "About"
         href: about.qmd
+    right:
+      - text: "A project of The Unjournal ↗"
+        href: https://unjournal.org
+        target: _blank
   page-footer:
     center: |
       Built by [The Unjournal](https://unjournal.org) |
