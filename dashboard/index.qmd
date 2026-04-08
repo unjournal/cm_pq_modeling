@@ -718,6 +718,39 @@ function spearmanCorr(x, y) {
 }
 ```
 
+```{ojs}
+//| echo: false
+// URL state helpers: let any slider's default value pick up a value from
+// ?key=val in the page URL, so a link captures the full parameter set.
+// Parse once on page load; a separate reactive cell (below the sliders)
+// writes back to the URL when viewof values change.
+urlParams = {
+  const usp = new URLSearchParams(location.search);
+  const parsed = {};
+  for (const [k, v] of usp.entries()) parsed[k] = v;
+  return parsed;
+}
+```
+
+```{ojs}
+//| echo: false
+urlNum = function(key, def) {
+  const v = urlParams[key];
+  if (v === undefined) return def;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : def;
+}
+```
+
+```{ojs}
+//| echo: false
+urlBool = function(key, def) {
+  const v = urlParams[key];
+  if (v === undefined) return def;
+  return v === "1" || v === "true";
+}
+```
+
 ### Model Parameters
 
 ::: {.panel-sidebar}
@@ -730,7 +763,7 @@ function spearmanCorr(x, y) {
 
 ```{ojs}
 //| echo: false
-viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value: true})
+viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value: urlBool("simpleMode", true)})
 ```
 
 ```{ojs}
@@ -754,18 +787,18 @@ html`<style>
 
 ```{ojs}
 //| echo: false
-viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: false})
+viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: urlBool("include_blending", false)})
 ```
 
 ```{ojs}
 //| echo: false
 viewof blending_share = Inputs.range([0.05, 1.0], {
-    value: 0.25, step: 0.05,
+    value: urlNum("blending_share", 0.25), step: 0.05,
     label: "CM inclusion rate (%)",
     disabled: !include_blending
   })
 viewof filler_cost = Inputs.range([1, 10], {
-    value: 3, step: 0.5,
+    value: urlNum("filler_cost", 3), step: 0.5,
     label: "Filler cost ($/kg)",
     disabled: !include_blending
   })
@@ -783,9 +816,9 @@ Most cultivated meat products in development are hybrids — e.g., 10-30% cultur
 
 ```{ojs}
 //| echo: false
-viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: true})
-viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: true})
-viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: false})
+viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: urlBool("include_capex", true)})
+viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: urlBool("include_fixed_opex", true)})
+viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: urlBool("include_downstream", false)})
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
@@ -813,7 +846,7 @@ These sliders set the **center** of each parameter's distribution used in the Mo
 ```{ojs}
 //| echo: false
 viewof plant_capacity = Inputs.range([5, 100], {
-  value: 20, step: 5,
+  value: urlNum("plant_capacity", 20), step: 5,
   label: "Plant Capacity (kTA/yr)"
 })
 ```
@@ -837,7 +870,7 @@ Larger plants have **lower per-kg costs** due to economies of scale in capital a
 ```{ojs}
 //| echo: false
 viewof uptime = Inputs.range([0.6, 0.99], {
-  value: 0.90, step: 0.01,
+  value: urlNum("uptime", 0.90), step: 0.01,
   label: "Utilization Rate"
 })
 ```
@@ -852,7 +885,7 @@ Fraction of capacity actually used. Accounts for downtime, cleaning, maintenance
 ```{ojs}
 //| echo: false
 viewof maturity = Inputs.range([0.1, 0.9], {
-  value: 0.5, step: 0.05,
+  value: urlNum("maturity", 0.5), step: 0.05,
   label: "Industry Maturity by 2036"
 })
 ```
@@ -867,7 +900,7 @@ A latent factor (0=nascent, 1=mature) that affects all technology adoption, reac
 ```{ojs}
 //| echo: false
 viewof target_year = Inputs.range([2026, 2050], {
-  value: 2036, step: 1,
+  value: urlNum("target_year", 2036), step: 1,
   label: "Projection Year"
 })
 ```
@@ -909,7 +942,7 @@ viewof reset_adoption = Inputs.button("↺ Reset adoption defaults", {
 ```{ojs}
 //| echo: false
 viewof p_hydro = Inputs.range([0.3, 0.95], {
-  value: 0.75, step: 0.05,
+  value: urlNum("p_hydro", 0.75), step: 0.05,
   label: "P(Hydrolysates for basal media)"
 })
 ```
@@ -955,7 +988,7 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 ```{ojs}
 //| echo: false
 viewof p_recfactors = Inputs.range([0.1, 0.9], {
-  value: 0.5, step: 0.05,
+  value: urlNum("p_recfactors", 0.5), step: 0.05,
   label: "P(Scalable GF technology)"
 })
 ```
@@ -963,7 +996,7 @@ viewof p_recfactors = Inputs.range([0.1, 0.9], {
 ```{ojs}
 //| echo: false
 viewof gf_progress = Inputs.range([0, 100], {
-  value: 50, step: 5,
+  value: urlNum("gf_progress", 50), step: 5,
   label: html`GF cost reduction by ${target_year} (%)`
 })
 ```
@@ -1029,19 +1062,19 @@ The probability slider represents whether **at least one** of these technology a
 ```{ojs}
 //| echo: false
 viewof wacc_lo = Inputs.range([5, 20], {
-  value: 8, step: 1,
+  value: urlNum("wacc_lo", 8), step: 1,
   label: "WACC Low (%)"
 })
 viewof wacc_hi = Inputs.range([10, 35], {
-  value: 20, step: 1,
+  value: urlNum("wacc_hi", 20), step: 1,
   label: "WACC High (%)"
 })
 viewof asset_life_lo = Inputs.range([5, 15], {
-  value: 8, step: 1,
+  value: urlNum("asset_life_lo", 8), step: 1,
   label: "Asset Life Low (years)"
 })
 viewof asset_life_hi = Inputs.range([10, 30], {
-  value: 20, step: 1,
+  value: urlNum("asset_life_hi", 20), step: 1,
   label: "Asset Life High (years)"
 })
 ```
@@ -1065,11 +1098,11 @@ These two parameters together determine the **Capital Recovery Factor**: CRF = r
 ```{ojs}
 //| echo: false
 viewof density_lo = Inputs.range([10, 100], {
-  value: 30, step: 10,
+  value: urlNum("density_lo", 30), step: 10,
   label: "Cell Density Low (g/L)"
 })
 viewof density_hi = Inputs.range([50, 300], {
-  value: 200, step: 10,
+  value: urlNum("density_hi", 200), step: 10,
   label: "Cell Density High (g/L)"
 })
 ```
@@ -1131,11 +1164,11 @@ The model computes media volume per kg as `(1000 / density) × multiplier`. A va
 ```{ojs}
 //| echo: false
 viewof media_turnover_lo = Inputs.range([0.25, 2], {
-  value: 0.5, step: 0.05,
+  value: urlNum("media_turnover_lo", 0.5), step: 0.05,
   label: "Media-use multiplier p5 (low end)"
 })
 viewof media_turnover_hi = Inputs.range([1, 10], {
-  value: 3.0, step: 0.1,
+  value: urlNum("media_turnover_hi", 3.0), step: 0.1,
   label: "Media-use multiplier p95 (high end)"
 })
 ```
@@ -1143,6 +1176,42 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
 
 ```{=html}
 </div>
+```
+
+```{ojs}
+//| echo: false
+// URL state writer: serialize every viewof value into ?key=val pairs and
+// update the URL via history.replaceState (debounced so dragging a slider
+// doesn't spam the history API). The writer depends on every viewof name
+// below so OJS re-runs it whenever any input changes. Reads nothing from
+// urlParams, so there's no feedback loop with the initial-value readers.
+{
+  const state = {
+    simpleMode, include_blending, blending_share, filler_cost,
+    include_capex, include_fixed_opex, include_downstream,
+    plant_capacity, uptime, maturity, target_year,
+    p_hydro, p_recfactors, gf_progress,
+    wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
+    density_lo, density_hi, media_turnover_lo, media_turnover_hi
+  };
+
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(state)) {
+    if (typeof v === "boolean") usp.set(k, v ? "1" : "0");
+    else if (typeof v === "number" && Number.isFinite(v)) usp.set(k, String(v));
+  }
+
+  if (window._urlWriteTimer) clearTimeout(window._urlWriteTimer);
+  window._urlWriteTimer = setTimeout(() => {
+    try {
+      history.replaceState(null, "", "?" + usp.toString() + location.hash);
+    } catch (e) {
+      console.warn("URL state update failed:", e);
+    }
+  }, 300);
+
+  return null;
+}
 ```
 
 :::
@@ -1251,6 +1320,119 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
 
 </div>`
 ```
+
+```{ojs}
+//| echo: false
+// Save / share bar: copy the current shareable link, or export the full
+// simulation (CSV of all 30,000 samples, or a compact JSON with the
+// parameters + summary stats + component means). Buttons are plain DOM so
+// we can attach click handlers that read the current `results` / `stats`
+// closure — the cell re-runs on every results change, which is fine.
+{
+  function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], {type: mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  const stamp = () => new Date().toISOString().slice(0, 10);
+
+  function downloadCSV() {
+    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_other_var", "cost_capex", "cost_fixed", "cost_downstream"];
+    const rows = [cols.join(",")];
+    const n = results.unit_cost.length;
+    for (let i = 0; i < n; i++) {
+      rows.push(cols.map(c => results[c][i].toFixed(4)).join(","));
+    }
+    downloadBlob(rows.join("\n"), `cm_pq_results_${stamp()}.csv`, "text/csv");
+  }
+
+  function downloadJSON() {
+    const config = {
+      generated_at: new Date().toISOString(),
+      dashboard_url: window.location.origin + window.location.pathname,
+      shareable_link: window.location.href,
+      parameters: {
+        simpleMode, include_blending, blending_share, filler_cost,
+        include_capex, include_fixed_opex, include_downstream,
+        plant_capacity, uptime, maturity, target_year,
+        p_hydro, p_recfactors, gf_progress,
+        wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
+        density_lo, density_hi, media_turnover_lo, media_turnover_hi
+      },
+      summary_stats_unit_cost_per_kg: {
+        n_simulations: stats.n,
+        p5: +stats.p5.toFixed(2),
+        p50: +stats.p50.toFixed(2),
+        p95: +stats.p95.toFixed(2),
+        prob_under_10: +stats.prob_10.toFixed(1),
+        prob_under_25: +stats.prob_25.toFixed(1),
+        prob_under_50: +stats.prob_50.toFixed(1),
+        prob_under_100: +stats.prob_100.toFixed(1)
+      },
+      component_means_per_kg: {
+        media: +mean(results.cost_media).toFixed(2),
+        growth_factors: +mean(results.cost_recf).toFixed(2),
+        other_voc: +mean(results.cost_other_var).toFixed(2),
+        capex_annualized: +mean(results.cost_capex).toFixed(2),
+        fixed_opex: +mean(results.cost_fixed).toFixed(2),
+        downstream: +mean(results.cost_downstream).toFixed(2)
+      },
+      notes: {
+        units: "USD per kg of pure cultured cell mass, wet weight",
+        simulation_seed: 42,
+        monte_carlo_samples: 30000
+      }
+    };
+    downloadBlob(JSON.stringify(config, null, 2), `cm_pq_config_${stamp()}.json`, "application/json");
+  }
+
+  const btnStyle = "padding: 0.45rem 0.85rem; font-size: 0.85rem; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; cursor: pointer; white-space: nowrap; font-weight: 500;";
+
+  const container = html`<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 0 0 1.25rem 0; padding: 0.6rem 0.85rem; background: #fbfcf9; border: 1px solid #d4e0d4; border-radius: 6px;">
+    <strong style="font-size: 0.85rem; color: #2d4a2d; margin-right: 0.25rem;">Save / share this scenario:</strong>
+    <button data-btn="copy" style="${btnStyle}" title="Copy a URL that captures every slider and toggle value. Paste it anywhere to restore the exact scenario.">📋 Copy shareable link</button>
+    <button data-btn="csv" style="${btnStyle}" title="Download all 30,000 Monte Carlo samples as CSV (unit cost + every component).">⬇ Results CSV</button>
+    <button data-btn="json" style="${btnStyle}" title="Download a compact JSON with your parameter values, summary percentiles, and component means.">⬇ Config + summary JSON</button>
+    <span data-status="" style="font-size: 0.82rem; font-weight: 500;"></span>
+  </div>`;
+
+  const statusEl = container.querySelector("[data-status]");
+  function flash(msg, ok = true) {
+    statusEl.textContent = msg;
+    statusEl.style.color = ok ? "#27ae60" : "#c0392b";
+    setTimeout(() => { statusEl.textContent = ""; }, 2200);
+  }
+
+  container.querySelector("[data-btn=copy]").addEventListener("click", () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => flash("✓ Link copied to clipboard"))
+        .catch(() => flash("× Clipboard denied — copy the URL from the address bar", false));
+    } else {
+      flash("× Clipboard API unavailable — copy the URL from the address bar", false);
+    }
+  });
+  container.querySelector("[data-btn=csv]").addEventListener("click", () => {
+    try { downloadCSV(); flash("✓ CSV downloaded"); }
+    catch (e) { flash("× CSV export failed: " + e.message, false); }
+  });
+  container.querySelector("[data-btn=json]").addEventListener("click", () => {
+    try { downloadJSON(); flash("✓ JSON downloaded"); }
+    catch (e) { flash("× JSON export failed: " + e.message, false); }
+  });
+
+  return container;
+}
+```
+
+*Tip: the URL in your address bar updates live as you move sliders, so the "Copy shareable link" button always reflects the scenario you're currently viewing.*
 
 ### Cost Distribution
 
