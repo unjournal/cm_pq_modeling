@@ -12,6 +12,20 @@ format:
 
 ---
 
+## How feedback becomes changes
+
+Two channels, two speeds:
+
+**Hypothes.is → quick fix (hours)**
+Annotate any page inline — click the `<` tab on the right edge of any dashboard page or the [workshop site](https://uj-cm-workshop.netlify.app). No GitHub account needed (free Hypothes.is account, ~30 seconds to sign up). The project team monitors all annotations. Obvious corrections — wrong terminology, unclear labels, parameter typos — are implemented directly and you'll see a `Claude:` confirmation annotation on your thread when done.
+
+**GitHub Discussions → model/site commit (days)**
+Post in the [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) for anything that needs expert debate rather than a quick fix. Resolved discussions are committed to the model or site with the discussion linked in the commit message. Track implementation in the [git log](https://github.com/unjournal/cm_pq_modeling/commits/main).
+
+*Not sure which channel? Annotate first. If it needs broader discussion, the team will open a GitHub thread and link your annotation.*
+
+---
+
 ## The structure
 
 **Substantive discussion is unified.** Biology, economics, statistics, engineering, and welfare debates happen in one place — the [Substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) — rather than fragmenting across Workshop / Model / PQ silos.
@@ -43,8 +57,8 @@ Unified home for biology, economics, statistics/methodology, engineering, and we
 
 ### Currently seeking bio / engineering expert input
 
-- [**#12** Hydrolysates: how confident are we they'll replace amino acids in basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/12) — 🧑 *human-drafted*
-- [**#17** Is cell density correlated with the cost/L of basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/17) — 🤝 *human-drafted, verifying a Claude take*
+- [**#12** Hydrolysates: how confident are we they'll replace amino acids in basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/12) — 🤝 *has expert input from Oana Kubinyecz clarifying hydrolysates vs GF distinction; seeking verification of the 75% baseline adoption estimate*
+- [**#17** Is cell density correlated with the cost/L of basal media?](https://github.com/unjournal/cm_pq_modeling/discussions/17) — 🤖 *Claude analytical take posted (perfusion-density coupling, GF-inclusion ambiguity); awaiting expert verification*
 
 [See all via the `bio_engineering_expert` label →](https://github.com/unjournal/cm_pq_modeling/discussions?discussions_q=is%3Aopen+label%3Abio_engineering_expert)
 
