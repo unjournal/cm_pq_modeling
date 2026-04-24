@@ -810,9 +810,41 @@ It was abandoned for cultured meat for three reasons that all point the same dir
 - **It's expensive and inconsistent.** Batch-to-batch variability and $200–1,000/L pricing make it unworkable for commodity production.
 
 All approved cultured meat products to date ([UPSIDE Foods](https://www.upsidefoods.com/), [GOOD Meat](https://www.goodmeat.co/)) use serum-free formulations. **For cost modeling, FBS should be treated as historical context, not a current cost line.**
+
+**Why this matters for understanding hydrolysates and growth factors:**
+
+```{=html}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; font-size: 13px; line-height: 1.55;">
+  <div style="background: #fdf5f5; border: 1px solid #d8b0b0; border-radius: 6px; padding: 12px;">
+    <strong style="color: #7a2a2a;">FBS-based culture — one input</strong>
+    <p style="margin: 6px 0 4px;">A single biological fluid provided everything cells need:</p>
+    <ul style="margin: 4px 0; padding-left: 16px;">
+      <li>Amino acids &amp; nutrients (basal nutrition)</li>
+      <li>Growth factor signalling (FGF-2, IGF-1, TGF-β)</li>
+      <li>Hormones, lipids, attachment proteins</li>
+    </ul>
+    <p style="margin: 6px 0 0; color: #7a2a2a;"><em>Why abandoned: can't scale, slaughterhouse-derived, inconsistent batch-to-batch.</em></p>
+  </div>
+  <div style="background: #f4f8f4; border: 1px solid #a8c8a8; border-radius: 6px; padding: 12px;">
+    <strong style="color: #2a5a2a;">Serum-free culture — two separate inputs</strong>
+    <p style="margin: 6px 0 4px;">Two independent cost problems to solve:</p>
+    <ul style="margin: 4px 0; padding-left: 16px;">
+      <li><strong>Basal media</strong> — amino acids, glucose, vitamins<br><em style="color: #555;">← this is what hydrolysates address (CM_12)</em></li>
+      <li><strong>Recombinant growth factors</strong> — FGF-2, IGF-1, TGF-β<br><em style="color: #555;">← separate cost line, separate solutions (CM_13)</em></li>
+    </ul>
+    <p style="margin: 6px 0 0; color: #2a5a2a;"><em>Scalable and animal-free — but two distinct cost challenges.</em></p>
+  </div>
+</div>
+```
+
+Because FBS was doing both jobs in one fluid, switching to serum-free doesn't solve one cost problem — it creates two distinct ones. Hydrolysates address only the basal media component (top left → top right). Growth factors remain a separate challenge regardless of what you use for basal media.
 :::
 
 ### Hydrolysates: The Big Win for Amino Acids
+
+::: {.callout-important}
+**Hydrolysates address basal media amino acids — not growth factors.** These are basically separate cost categories. Hydrolysates can improve overall cell nutrition and may modestly reduce the *amount* of growth factor stimulation cells need, but they cannot replace growth factor signalling (FGF-2, IGF-1, TGF-β). The model tracks them on separate cost lines for this reason. See the before/after schematic in the FBS historical note above for why these are two independent problems.
+:::
 
 **<abbr title="Proteins broken down into amino acids and peptides using enzymes — much cheaper than purified individual amino acids. Hydrolysates replace the amino acid component of media, which represents 30-50% of total media cost (or roughly 15-35% of total production cost).">Hydrolysates</abbr>** are enzymatically digested proteins from plants (soy, wheat) or yeast. They replace the amino acid fraction of media — typically **30-50% of media cost** — and provide complete <abbr title="All 20 amino acids needed for protein synthesis, in the right proportions">amino acid profiles</abbr> at food-grade prices:
 
