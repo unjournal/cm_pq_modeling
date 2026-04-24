@@ -17,7 +17,7 @@ format:
 Two channels, two speeds:
 
 **Hypothes.is → quick fix (hours)**
-Annotate any page inline — click the `<` tab on the right edge of any dashboard page or the [workshop site](https://uj-cm-workshop.netlify.app). No GitHub account needed (free Hypothes.is account, ~30 seconds to sign up). The project team monitors all annotations. Obvious corrections — wrong terminology, unclear labels, parameter typos — are implemented directly and you'll see a `Claude:` confirmation annotation on your thread when done.
+Navigate to the page where you noticed the problem — the [model dashboard](https://unjournal.github.io/cm_pq_modeling/), [learn page](https://unjournal.github.io/cm_pq_modeling/learn.html), [TEA comparison](https://unjournal.github.io/cm_pq_modeling/compare.html), or [workshop site](https://uj-cm-workshop.netlify.app/) — then click the `<` tab on the right edge of that page to open Hypothes.is and annotate the specific text. (Hypothes.is runs on those sites, not on GitHub itself.) No GitHub account needed; free Hypothes.is account takes ~30 seconds. The team monitors all annotations and you'll see a `Claude:` confirmation annotation on your thread when the fix is implemented.
 
 **GitHub Discussions → model/site commit (days)**
 Post in the [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) for anything that needs expert debate rather than a quick fix. Resolved discussions are committed to the model or site with the discussion linked in the commit message. Track implementation in the [git log](https://github.com/unjournal/cm_pq_modeling/commits/main).
