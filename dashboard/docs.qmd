@@ -54,9 +54,15 @@ Click any link to jump to the detailed explanation.
 
 ### 1. Total Unit Cost
 
-The model estimates **unit production cost** ($/kg) by summing four components:
+The model estimates **unit production cost** ($/kg) by summing four components under the default **in-house** production model:
 
 $$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
+
+In **CDMO mode** (togglable in the dashboard), the capital and overhead terms are replaced by a contract toll fee:
+
+$$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CDMO Toll}_{/\text{kg}}}_{\text{contract fee}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
+
+The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
 **Output basis:** All costs in this model are expressed as **$/kg of pure cultured cell mass (wet weight)**, not hybrid products, retail products, or dry biomass. This matters when comparing to published TEA figures, some of which report costs for blended/hybrid products. See our [TEA comparison page](compare.qmd) for a systematic breakdown of how published estimates differ in output basis.
@@ -646,6 +652,51 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 | Cultured meat companies | 12–20% | <abbr title="Humbird (2021) uses 10% WACC as baseline for his TEA analysis but notes this is 'optimistic for a startup company.' CE Delft (2021) uses 7-12% for mature scenarios. Our range of 8-20% spans from optimistic mature-industry to realistic early-stage.">Humbird (2021)</abbr>, [CE Delft (2021)](https://cedelft.eu/publications/tea-of-cultivated-meat/) |
 
 **Why the range is wide:** The low end (8%) assumes the industry matures to food-company norms -- stable revenue, proven unit economics, low technology risk. The high end (20%) reflects today's reality: most cultured meat companies are venture-backed with no revenue, unproven at scale, and facing regulatory uncertainty. As the industry matures ([higher $m$](#maturity-factor)), WACC should decline toward food-industry norms. Our 8-20% range brackets both [Humbird's 10% baseline](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) and [CE Delft's 7-12% range](https://cedelft.eu/publications/tea-of-cultivated-meat/).
+
+---
+
+## CDMO Production Model {#cdmo-production-model}
+
+A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies, charging a per-unit toll fee. The dashboard includes a CDMO mode toggle that replaces in-house CAPEX and Fixed OPEX with a sampled toll fee.
+
+### When CDMO mode changes the cost equation
+
+| Mode | CAPEX/kg | Fixed OPEX/kg | CDMO Toll/kg |
+|------|----------|--------------|--------------|
+| In-House (default) | Sampled from in-house model | Sampled from in-house model | 0 |
+| CDMO mode | 0 | 0 | Sampled from lognormal(p5, p95) |
+
+VOC (media, growth factors, other variable), downstream, and all technology adoption assumptions remain unchanged.
+
+### CDMO Toll Parameter
+
+| Parameter | Symbol | Distribution | Default | Unit | Notes |
+|-----------|--------|--------------|---------|------|-------|
+| CDMO Toll | — | Lognormal(p5, p95) | p5=4, p95=40 | $/kg | Covers CDMO's CAPEX, fixed costs, and margin |
+
+**Interpretation of the default range:**
+
+| Toll ($/kg) | Scenario |
+|-------------|----------|
+| ~$4 (p5) | Efficient food-grade CDMO, high multi-client utilization (~80-90%), thin margin |
+| ~$12 (typical) | CDMO serving several clients, food-grade equipment, ~25-35% margin over cost |
+| ~$40 (p95) | Pharma-adjacent CDMO, low utilization, high quality premiums and margin |
+
+For reference, in-house CAPEX + Fixed OPEX in the default model spans roughly $3–25/kg (median ~$8/kg at 50% maturity). The CDMO toll range is set wider to account for the additional uncertainty about whether CDMO pricing develops favorably for the cultured meat sector.
+
+### When CDMO might be cheaper
+
+The comparison chart in the dashboard shows the full distribution difference. In general:
+
+- When **in-house CAPEX is high** (early-stage, pharma-grade, low maturity): CDMO can be cheaper if the CDMO captures scale economies across multiple clients
+- When **plant capacity is small** (scale diseconomies hit the in-house model harder than a shared CDMO): CDMO wins
+- When **in-house CAPEX is low** (mature industry, food-grade equipment, large scale): in-house tends to be cheaper because it avoids the CDMO's margin
+
+### Limitations of the CDMO model
+
+1. **No maturity adjustment on toll**: In the current implementation, the CDMO toll is sampled independently of the maturity factor. In reality, CDMO pricing would likely become more competitive as the industry matures and more providers enter the market. This could be added in a future version.
+2. **No IP/process risk modeling**: CDMOs require sharing cell lines and media formulations, which may be a competitive disadvantage. This risk is not modeled.
+3. **No utilization feedback**: In-house utilization is an explicit parameter; CDMO utilization is implicit in the toll range. The two are not directly comparable.
 
 ---
 

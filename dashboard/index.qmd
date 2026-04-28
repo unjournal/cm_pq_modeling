@@ -34,7 +34,7 @@ format:
 
 ::: {.callout-warning}
 ## Important: Model Status
-This model is **largely AI-generated** and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. **Do not treat the outputs as authoritative cost estimates.** We welcome feedback to improve it — see below.
+This model is *largely AI-generated* and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. *Do not treat the outputs as authoritative cost estimates.* We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources--how-they-inform-the-model).
 :::
 
 ::: {.callout-note collapse="true"}
@@ -319,7 +319,7 @@ This model uses **Monte Carlo simulation**: we sample thousands of possible futu
   <td style="padding: 8px;">Probabilities, fractions</td>
   <td style="padding: 8px;"><strong>Beta</strong></td>
   <td style="padding: 8px;">Bounded between 0 and 1, flexible shape</td>
-  <td style="padding: 8px;">Maturity factor, adoption probabilities, uptime. For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption <em>probability</em> from a Beta distribution, then uses a Bernoulli draw to determine whether each run uses the "adopted" or "non-adopted" cost regime.</td>
+  <td style="padding: 8px;">Maturity factor, adoption probabilities, utilization rate (0–1 share). For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption <em>probability</em> from a Beta distribution, then uses a Bernoulli draw to determine whether each run uses the "adopted" or "non-adopted" cost regime.</td>
 </tr>
 <tr style="vertical-align: top;">
   <td style="padding: 8px;">Bounded ranges</td>
@@ -349,11 +349,13 @@ A key feature is the **latent maturity factor** that links:
 
 In "good worlds" for cultured chicken (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
 
-This approach draws on the concept of **copula-based correlation** in Monte Carlo simulation, where a shared latent variable induces dependence among otherwise independent marginal distributions. See [Vose (2008), *Risk Analysis*](https://www.wiley.com/en-us/Risk+Analysis%3A+A+Quantitative+Guide-p-9780470512845) for a textbook treatment of correlated sampling in cost models, and [Morgan & Henrion (1990), *Uncertainty*](https://doi.org/10.1017/CBO9780511840609) for foundational discussion of dependent uncertainties.
+This approach draws on the concept of *copula-based correlation* in Monte Carlo simulation, where a shared latent variable induces dependence among otherwise independent marginal distributions. <abbr title="Vose (2008), Risk Analysis: A Quantitative Guide (Wiley) — textbook treatment of correlated Monte Carlo sampling; Morgan &amp; Henrion (1990), Uncertainty (Cambridge UP) — foundational discussion of dependent uncertainties.">See methodological references.</abbr>
 
 <details><summary>More detail on the maturity factor implementation</summary>
 
-The maturity factor is sampled once per simulation from a Beta distribution (mean set by the "Industry Maturity" slider, standard deviation 0.20). It then **shifts** the adoption probabilities (hydrolysates, food-grade, recombinant GFs) and **adjusts** WACC downward in high-maturity draws. This creates positive correlation among "good news" variables without imposing a rigid structure. The strength of the correlation is moderate by design -- maturity explains some but not all of the variation in each parameter.
+The maturity factor is sampled once per simulation from a Beta distribution (mean set by the "Industry Maturity" slider, standard deviation 0.20). It then *shifts* the adoption probabilities (hydrolysates, food-grade, recombinant GFs) and *adjusts* WACC downward in high-maturity draws. This creates positive correlation among "good news" variables without imposing a rigid structure. The strength of the correlation is moderate by design — maturity explains some but not all of the variation in each parameter.
+
+*Caveat:* This correlation structure is a modelling convenience, not an empirically calibrated design. The choice of a single latent variable, the specific sensitivity coefficients, and the functional form are all ad hoc. Results — especially in tail scenarios — may be sensitive to these choices. We encourage users to stress-test by varying the maturity slider widely and treat correlated-scenario outputs as illustrative rather than calibrated.
 </details>
 :::
 
@@ -590,9 +592,17 @@ function simulate(n, seed, params) {
   // VOC total (micronutrients folded into cost_media)
   const voc = add(add(cost_media, cost_recf), other_var);
 
-  // CAPEX calculation
+  // CDMO mode: replace CAPEX + Fixed OPEX with a contract toll fee ($/kg)
+  // The toll covers the CDMO's amortized capital, labor, overhead, and margin.
+  // VOC (media, GFs) remain as direct company costs.
+  let cdmo_toll_perkg = new Array(n).fill(0);
+  if (params.cdmo_mode) {
+    cdmo_toll_perkg = sampleLognormalP5P95(rng, params.cdmo_toll_p5, params.cdmo_toll_p95, n);
+  }
+
+  // CAPEX calculation (skipped in CDMO mode — CDMO bears the capital)
   let capex_perkg = new Array(n).fill(0);
-  if (params.include_capex) {
+  if (!params.cdmo_mode && params.include_capex) {
     const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
     const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
     const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
@@ -621,9 +631,9 @@ function simulate(n, seed, params) {
     capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
   }
 
-  // Fixed OPEX calculation
+  // Fixed OPEX calculation (skipped in CDMO mode — CDMO bears overhead)
   let fixed_perkg = new Array(n).fill(0);
-  if (params.include_fixed_opex) {
+  if (!params.cdmo_mode && params.include_fixed_opex) {
     const ref_output = 20e6 * 0.9;
     const fixed_perkg_ref = sampleUniform(rng, 1.0, 6.0, n);
     const fixed_annual_ref = scale(fixed_perkg_ref, ref_output);
@@ -643,7 +653,7 @@ function simulate(n, seed, params) {
   }
 
   // Total unit cost
-  const unit_cost = add(add(add(voc, capex_perkg), fixed_perkg), downstream_perkg);
+  const unit_cost = add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg);
 
   return {
     unit_cost,
@@ -652,6 +662,7 @@ function simulate(n, seed, params) {
     cost_other_var: other_var,
     cost_capex: capex_perkg,
     cost_fixed: fixed_perkg,
+    cost_cdmo_toll: cdmo_toll_perkg,
     cost_downstream: downstream_perkg,
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
@@ -842,11 +853,86 @@ viewof include_downstream = Inputs.toggle({label: "Include downstream processing
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
-- **CAPEX**: Bioreactor and facility capital costs, annualized. **On by default** because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
-- **Plant overhead OPEX**: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* **On by default** for the same reason as CAPEX. Toggle off to focus on marginal costs only.
-- **Downstream**: Scaffolding, texturization, and forming for structured products. **Off by default** because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2-15/kg.
+- *CAPEX*: Bioreactor and facility capital costs, annualized. On by default because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
+- *Plant overhead OPEX*: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* On by default for the same reason as CAPEX. Toggle off to focus on marginal costs only.
+- *Downstream*: Scaffolding, texturization, and forming for structured products. Off by default because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2–15/kg.
 
-**Note:** Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
+Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
+</details>
+
+---
+
+**Production Model**
+
+```{ojs}
+//| echo: false
+viewof cdmo_mode = Inputs.toggle({label: "CDMO / Contract Manufacturing mode", value: urlBool("cdmo_mode", false)})
+```
+
+```{ojs}
+//| echo: false
+html`<div style="display: ${cdmo_mode ? 'block' : 'none'}; padding: 0.6rem 0.8rem; background: #fef9e7; border-left: 3px solid #f39c12; font-size: 0.84em; margin: 0.3rem 0 0.6rem 0; line-height: 1.5;">
+<strong>CDMO mode on.</strong> CAPEX and Plant Overhead OPEX are replaced by a <em>contract toll fee</em> — what a CDMO charges per kg to cover their own capital, labour, and margin. Your direct costs remain VOC (media, growth factors, other variable). A <a href="#in-house-vs-cdmo-comparison">side-by-side comparison</a> appears in the results.
+</div>`
+```
+
+```{ojs}
+//| echo: false
+viewof cdmo_toll_p5 = Inputs.range([1, 20], {
+  value: urlNum("cdmo_toll_p5", 4), step: 1,
+  label: "CDMO Toll p5 ($/kg)",
+  disabled: !cdmo_mode
+})
+viewof cdmo_toll_p95 = Inputs.range([10, 100], {
+  value: urlNum("cdmo_toll_p95", 40), step: 2,
+  label: "CDMO Toll p95 ($/kg)",
+  disabled: !cdmo_mode
+})
+```
+
+<details><summary>What is CDMO mode? (click to expand)</summary>
+
+A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies. In the cultured meat context, a CDMO would:
+
+- Own and operate the bioreactors and facility
+- Charge the cultured meat brand a *per-kg toll fee* for production
+- Allow the brand to avoid direct CAPEX and fixed overhead
+
+**What changes in the model:**
+
+| Cost component | In-House | CDMO mode |
+|----------------|----------|-----------|
+| Media (VOC) | Your cost | Your cost |
+| Growth factors (VOC) | Your cost | Your cost |
+| CAPEX (bioreactors, facility) | Your cost | → CDMO toll |
+| Plant overhead (labour, maintenance) | Your cost | → CDMO toll |
+| Downstream (optional) | Your cost | Your cost |
+
+**CDMO toll range (default p5=$4, p95=$40/kg):**
+
+This range attempts to cover the uncertainty about what a food-grade CDMO would charge for cultivated meat production by 2036:
+
+| Scenario | Toll ($/kg) | Basis |
+|----------|------------|-------|
+| Optimistic (p5) | ~$4 | Efficient food-grade CDMO with high multi-client utilization |
+| Typical | ~$12 | CDMO serving multiple clients, food-grade equipment, ~30% margin |
+| Pessimistic (p95) | ~$40 | Pharma-adjacent CDMO with low utilization and high margin |
+
+For context: current pharma CDMOs charge ~$50–500/L-day bioreactor time; at 50 g/L and a 3-day cycle, that's $1,000–30,000/kg — far too expensive. The default range assumes a future food-grade CDMO sector has developed alongside the industry.
+
+**When would CDMO be preferable to in-house?**
+
+- Early-stage companies that want market entry without construction risk
+- If CDMO scale economies across multiple clients reduce per-unit CAPEX
+- When the brand's competitive advantage is recipe/branding, not manufacturing
+
+**When might in-house be preferable?**
+
+- At large scale where you capture the economies yourself
+- When process IP is a competitive advantage you can't share
+- When long-run in-house costs fall below the CDMO margin
+
+The comparison chart in the results section shows when each mode produces lower costs under the current parameters.
 </details>
 
 ```{=html}
@@ -1214,6 +1300,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
   const defaults = {
     simpleMode: true, include_blending: false, blending_share: 0.25, filler_cost: 3,
     include_capex: true, include_fixed_opex: true, include_downstream: false,
+    cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
     plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
     p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50,
     wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
@@ -1224,6 +1311,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
   const state = {
     simpleMode, include_blending, blending_share, filler_cost,
     include_capex, include_fixed_opex, include_downstream,
+    cdmo_mode, cdmo_toll_p5, cdmo_toll_p95,
     plant_capacity, uptime, maturity, target_year,
     p_hydro, p_recfactors, gf_progress,
     wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
@@ -1269,14 +1357,11 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
 ```{ojs}
 //| echo: false
 
-// Run simulation reactively whenever inputs change
-results = {
-  // Adjust maturity based on target year (2024 baseline)
-  // Later years allow more time for industry development
+// Shared parameter object — consumed by both the primary run and the comparison run
+simParams = {
   const yearFactor = Math.max(0, Math.min(1, (target_year - 2024) / 20));
   const adjustedMaturity = maturity * (0.5 + 0.5 * yearFactor);
-
-  const params = {
+  return {
     plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
     plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,
     uptime_mean: simpleMode ? 0.90 : uptime,
@@ -1294,10 +1379,25 @@ results = {
     include_capex: simpleMode ? true : include_capex,
     include_fixed_opex: simpleMode ? true : include_fixed_opex,
     include_downstream: simpleMode ? false : include_downstream,
-    gf_progress: gf_progress
+    gf_progress: gf_progress,
+    cdmo_mode: cdmo_mode,
+    cdmo_toll_p5: cdmo_toll_p5,
+    cdmo_toll_p95: cdmo_toll_p95
   };
+}
+```
 
-  return simulate(30000, 42, params);
+```{ojs}
+//| echo: false
+
+// Primary simulation run (uses whatever mode is selected)
+results = simulate(30000, 42, simParams)
+
+// Comparison run: when CDMO mode is on, also run the in-house baseline
+// (same seed so VOC components are paired; only capital structure differs)
+inhouse_results = {
+  if (!cdmo_mode) return null;
+  return simulate(30000, 42, {...simParams, cdmo_mode: false});
 }
 
 // Calculate statistics
@@ -1392,7 +1492,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   function downloadCSV() {
-    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_other_var", "cost_capex", "cost_fixed", "cost_downstream"];
+    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream"];
     const rows = [cols.join(",")];
     const n = results.unit_cost.length;
     for (let i = 0; i < n; i++) {
@@ -1409,6 +1509,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
       parameters: {
         simpleMode, include_blending, blending_share, filler_cost,
         include_capex, include_fixed_opex, include_downstream,
+        cdmo_mode, cdmo_toll_p5, cdmo_toll_p95,
         plant_capacity, uptime, maturity, target_year,
         p_hydro, p_recfactors, gf_progress,
         wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
@@ -1430,6 +1531,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         other_voc: +mean(results.cost_other_var).toFixed(2),
         capex_annualized: +mean(results.cost_capex).toFixed(2),
         fixed_opex: +mean(results.cost_fixed).toFixed(2),
+        cdmo_toll: +mean(results.cost_cdmo_toll).toFixed(2),
         downstream: +mean(results.cost_downstream).toFixed(2)
       },
       notes: {
@@ -1542,6 +1644,105 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 The **width** of the distribution shows uncertainty. Narrow = confident. Wide = uncertain.
 </details>
 
+<a id="in-house-vs-cdmo-comparison"></a>
+
+```{ojs}
+//| echo: false
+{
+  if (!cdmo_mode || !inhouse_results) return html``;
+
+  const uc_cdmo = results.unit_cost;
+  const uc_inhouse = inhouse_results.unit_cost;
+
+  const clipVal = Math.min(quantile(uc_inhouse, 0.97), 250);
+
+  const cdmo_p5  = quantile(uc_cdmo, 0.05);
+  const cdmo_p50 = quantile(uc_cdmo, 0.50);
+  const cdmo_p95 = quantile(uc_cdmo, 0.95);
+  const ih_p5    = quantile(uc_inhouse, 0.05);
+  const ih_p50   = quantile(uc_inhouse, 0.50);
+  const ih_p95   = quantile(uc_inhouse, 0.95);
+
+  const diff_p50 = cdmo_p50 - ih_p50;
+  const diffSign = diff_p50 >= 0 ? "+" : "−";
+  const diffAbs  = Math.abs(diff_p50).toFixed(1);
+
+  // Build plot data: subsample to 10k each for performance
+  const step = Math.floor(30000 / 10000);
+  const plotData = [];
+  for (let i = 0; i < 30000; i += step) {
+    if (uc_cdmo[i] <= clipVal)    plotData.push({x: uc_cdmo[i],    mode: "CDMO"});
+    if (uc_inhouse[i] <= clipVal) plotData.push({x: uc_inhouse[i], mode: "In-House"});
+  }
+
+  const compPlot = Plot.plot({
+    width: 820,
+    height: 340,
+    marginLeft: 60,
+    marginBottom: 50,
+    x: {label: "Production Cost ($/kg, wet weight)", domain: [0, clipVal * 1.02]},
+    y: {label: "Frequency", grid: true},
+    color: {
+      domain: ["In-House", "CDMO"],
+      range:  ["#3498db", "#e67e22"],
+      legend: true
+    },
+    marks: [
+      Plot.rectY(plotData.filter(d => d.mode === "In-House"),
+        Plot.binX({y: "count"}, {x: "x", fill: "#3498db", fillOpacity: 0.55})),
+      Plot.rectY(plotData.filter(d => d.mode === "CDMO"),
+        Plot.binX({y: "count"}, {x: "x", fill: "#e67e22", fillOpacity: 0.55})),
+      Plot.ruleX([ih_p50],   {stroke: "#3498db", strokeWidth: 2.5}),
+      Plot.ruleX([cdmo_p50], {stroke: "#e67e22", strokeWidth: 2.5}),
+      Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
+      Plot.ruleX([25], {stroke: "orange",    strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
+      Plot.text([
+        {x: ih_p50   + 1.5, y: 900, text: `In-House p50: $${ih_p50.toFixed(0)}`},
+        {x: cdmo_p50 + 1.5, y: 750, text: `CDMO p50: $${cdmo_p50.toFixed(0)}`}
+      ], {x: "x", y: "y", text: "text", fontSize: 12})
+    ],
+    title: `In-House vs. CDMO: Projected ${target_year} Cost`
+  });
+
+  const rows = [
+    {label: "p5 (optimistic)",   ih: ih_p5,  cdmo: cdmo_p5},
+    {label: "p50 (median)",      ih: ih_p50, cdmo: cdmo_p50},
+    {label: "p95 (pessimistic)", ih: ih_p95, cdmo: cdmo_p95}
+  ];
+
+  const tbody = document.createElement("tbody");
+  rows.forEach(r => {
+    const d = r.cdmo - r.ih;
+    const dStr = (d >= 0 ? "+" : "−") + "$" + Math.abs(d).toFixed(0);
+    const dColor = d >= 0 ? "#c0392b" : "#27ae60";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td style="padding:5px 8px;">${r.label}</td>` +
+      `<td style="padding:5px 8px; text-align:right; color:#3498db;"><strong>$${r.ih.toFixed(0)}</strong></td>` +
+      `<td style="padding:5px 8px; text-align:right; color:#e67e22;"><strong>$${r.cdmo.toFixed(0)}</strong></td>` +
+      `<td style="padding:5px 8px; text-align:right; color:${dColor};"><strong>${dStr}</strong></td>`;
+    tbody.appendChild(tr);
+  });
+
+  return html`<div style="margin: 1.5rem 0;">
+    <h3 style="margin-bottom:0.3rem;">In-House vs. CDMO Comparison</h3>
+    <p style="font-size:0.88em; color:#555; margin-top:0;">Overlapping distributions for the same VOC parameters. Difference = CDMO − In-House; negative means CDMO is cheaper.</p>
+    ${compPlot}
+    <table style="margin-top:1rem; font-size:0.9em; border-collapse:collapse; min-width:360px;">
+      <thead><tr style="border-bottom:2px solid #ddd;">
+        <th style="padding:5px 8px; text-align:left;"></th>
+        <th style="padding:5px 8px; text-align:right; color:#3498db;">In-House</th>
+        <th style="padding:5px 8px; text-align:right; color:#e67e22;">CDMO</th>
+        <th style="padding:5px 8px; text-align:right;">Difference</th>
+      </tr></thead>
+      ${tbody}
+    </table>
+    <p style="font-size:0.82em; color:#777; margin-top:0.6rem;">
+      Both runs use seed 42 and identical VOC parameters. The difference isolates the capital cost structure: in-house (sampled CAPEX + fixed OPEX) vs. CDMO toll (lognormal p5=$${cdmo_toll_p5}, p95=$${cdmo_toll_p95}/kg).
+    </p>
+  </div>`;
+}
+```
+
 ### Probability Thresholds
 
 These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. These are the decision-relevant outputs for evaluating whether cultured meat can compete with conventional chicken.
@@ -1590,6 +1791,7 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
     {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
     {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
     {name: "Plant overhead OPEX", value: mean(results.cost_fixed), color: "#f39c12"},
+    {name: "CDMO Toll", value: mean(results.cost_cdmo_toll), color: "#e67e22"},
     {name: "Downstream", value: mean(results.cost_downstream), color: "#1abc9c"}
   ];
   // Filter out zero-value components (e.g., downstream when not included)
@@ -1695,6 +1897,7 @@ function formatCost(val) {
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
     {name: "Plant overhead OPEX", data: results.cost_fixed, color: "#f39c12"},
+    {name: "CDMO Toll", data: results.cost_cdmo_toll, color: "#e67e22"},
     {name: "Downstream", data: results.cost_downstream, color: "#1abc9c"}
   ];
 

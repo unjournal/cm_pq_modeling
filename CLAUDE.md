@@ -194,3 +194,11 @@ quarto render               # Build static site to _site/
 # Deploy (automatic via GitHub Actions on push to main)
 git push origin main        # Triggers deploy workflow
 ```
+
+## Scheduled Jobs
+
+| Schedule | Script | Log |
+|----------|--------|-----|
+| Every 30 min, 10 AM–11 PM | `.private/check_hypothesis_comments.py` | `/tmp/cm_hypothesis_check.log` |
+
+Checks for new Hypothesis annotations on the live dashboard and logs/notifies. Script is gitignored (local-only private content).
