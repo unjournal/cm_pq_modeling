@@ -512,20 +512,38 @@ function simulate(n, seed, params) {
   const is_recf_cheap = p_recf.map(p => rng() < p);
 
   // Process intensities
-  const density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
+  // Mode-based sampling: each Monte Carlo run draws a process mode, then samples
+  // density and media-use from that mode's physical range. This prevents incoherent
+  // combinations (e.g., 200 g/L density in batch mode, which is biologically impossible).
+  // Pure batch is excluded as not commercially viable at scale (Oana Kubinecz, Apr 2026).
   const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
-  // "media_turnover" is the LEGACY variable name for what is now user-facing as the
-  // "net media-use multiplier": a dimensionless ratio of fresh media consumed per
-  // kg of cells to the nominal (1000/density) reactor-fill volume.
-  //   = 1    → traditional batch mode (one reactor fill per kg of cells)
-  //   > 1    → perfusion (multiple media volumes flow through during the run)
-  //   < 1    → media recycling, fed-batch with concentrated feeds, or harvest
-  //            concentration (e.g., settling/filtering cells above nominal density).
-  // Default p5/p95 of 0.5–3.0 was chosen so the distribution can represent both the
-  // GFI 2023 cost-competitive target (8–13 L/kg, implying ~0.5–1.2× at 60–90 g/L)
-  // and standard perfusion (2–3×). Earlier default of 1–10× mechanically excluded
-  // recycled / fed-batch scenarios below 1 and was biased high.
-  const media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
+
+  let density_gL, media_turnover, mode_labels;
+  if (params.override_mode_constraints) {
+    // Expert override: use manually specified density and turnover ranges directly.
+    density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
+    media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
+    mode_labels = new Array(n).fill("override");
+  } else {
+    // Default: sample process mode per run, then draw density and turnover from that
+    // mode's range. Pre-generate all six arrays (vectorized) for performance.
+    const p_total = params.p_fedbatch + params.p_perfusion + params.p_continuous;
+    const p0  = params.p_fedbatch / p_total;
+    const p01 = p0 + params.p_perfusion / p_total;
+    const d_fb = sampleLognormalP5P95(rng, 5, 30, n);    // Fed-batch density
+    const d_pf = sampleLognormalP5P95(rng, 30, 150, n);  // Perfusion density
+    const d_ct = sampleLognormalP5P95(rng, 50, 200, n);  // Continuous density
+    const t_fb = sampleLognormalP5P95(rng, 1.0, 2.0, n); // Fed-batch media-use multiplier
+    const t_pf = sampleLognormalP5P95(rng, 1.0, 5.0, n); // Perfusion media-use multiplier
+    const t_ct = sampleLognormalP5P95(rng, 0.5, 3.0, n); // Continuous media-use multiplier
+    const mode_rand = sampleUniform(rng, 0, 1, n);
+    mode_labels = mode_rand.map(r => r < p0 ? "fedbatch" : r < p01 ? "perfusion" : "continuous");
+    density_gL    = mode_labels.map((m, i) =>
+      m === "fedbatch" ? d_fb[i] : m === "perfusion" ? d_pf[i] : d_ct[i]);
+    media_turnover = mode_labels.map((m, i) =>
+      m === "fedbatch" ? t_fb[i] : m === "perfusion" ? t_pf[i] : t_ct[i]);
+  }
+
   const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
   // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
@@ -589,8 +607,22 @@ function simulate(n, seed, params) {
   // Other variable costs
   const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
 
-  // VOC total (micronutrients folded into cost_media)
-  const voc = add(add(cost_media, cost_recf), other_var);
+  // Bundled media override (advanced full-view mode): replaces the separable basal+GF
+  // structure with a single complete-medium $/L figure, matching the convention used in
+  // research-grade published TEAs (e.g., Humbird 2021 quotes $50-500/L complete media).
+  // GF sampling above still runs to maintain RNG consistency regardless of bundled mode.
+  let cost_media_eff = cost_media;
+  let cost_recf_eff = cost_recf;
+  let media_cost_L_eff = media_cost_L;
+  if (params.bundled_media) {
+    const complete_media_L = sampleLognormalP5P95(rng, params.bundled_media_p5, params.bundled_media_p95, n);
+    cost_media_eff  = mul(L_per_kg, complete_media_L);
+    cost_recf_eff   = new Array(n).fill(0);
+    media_cost_L_eff = complete_media_L;
+  }
+
+  // VOC total (micronutrients folded into cost_media_eff)
+  const voc = add(add(cost_media_eff, cost_recf_eff), other_var);
 
   // CDMO mode: replace CAPEX + Fixed OPEX with a contract toll fee ($/kg)
   // The toll covers the CDMO's amortized capital, labor, overhead, and margin.
@@ -657,8 +689,8 @@ function simulate(n, seed, params) {
 
   return {
     unit_cost,
-    cost_media,
-    cost_recf,
+    cost_media: cost_media_eff,
+    cost_recf: cost_recf_eff,
     cost_other_var: other_var,
     cost_capex: capex_perkg,
     cost_fixed: fixed_perkg,
@@ -666,12 +698,14 @@ function simulate(n, seed, params) {
     cost_downstream: downstream_perkg,
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
+    // Process mode realized shares
+    mode_labels_samples: mode_labels,
     // Input parameters for sensitivity analysis
     maturity_samples: maturity,
     density_samples: density_gL,
     media_turnover_samples: media_turnover,
     L_per_kg_samples: L_per_kg,
-    media_cost_L_samples: media_cost_L,
+    media_cost_L_samples: media_cost_L_eff,
     is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
     is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
     g_recf_samples: g_recf,
@@ -810,8 +844,11 @@ In our sensitivity analysis, these contribute less than 10% of the variance in c
 //| echo: false
 // Reactive style block to hide/show full-mode-only and cdmo-only inputs
 html`<style>
-  .full-mode-only { display: ${simpleMode ? 'none' : 'block'}; }
-  .cdmo-only { display: ${cdmo_mode ? 'block' : 'none'}; }
+  .full-mode-only     { display: ${simpleMode ? 'none' : 'block'}; }
+  .cdmo-only          { display: ${cdmo_mode ? 'block' : 'none'}; }
+  .override-mode-only { display: ${override_mode_constraints ? 'block' : 'none'}; }
+  .separable-only     { display: ${bundled_media ? 'none' : 'block'}; }
+  .bundled-only       { display: ${bundled_media ? 'block' : 'none'}; }
 </style>`
 ```
 
@@ -860,6 +897,48 @@ viewof include_downstream = Inputs.toggle({label: "Include downstream processing
 
 Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
+
+---
+
+**Media Accounting**
+
+```{ojs}
+//| echo: false
+viewof bundled_media = Inputs.toggle({
+  label: html`Bundled media pricing (TEA-comparable) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="When ON: basal media + growth factors are replaced by a single 'complete media' $/L figure, matching the convention used in research-grade published TEAs (Humbird 2021 etc.). Default OFF = separable accounting, which is better for reasoning about future cost reduction.">(?)</abbr>`,
+  value: urlBool("bundled_media", false)
+})
+```
+
+```{=html}
+<div class="bundled-only">
+```
+
+```{ojs}
+//| echo: false
+html`<div style="padding: 0.5rem 0.8rem; background: #f0f4fa; border-left: 3px solid #3498db; font-size: 0.84em; margin: 0.25rem 0 0.4rem 0; line-height: 1.5;">
+<strong>Bundled mode:</strong> Complete media $/L replaces basal media + GF lines. GF sliders hidden.
+Range ($50–$500/L default) reflects current research-grade complete media with pharma GFs.
+For 2036 projection, consider lowering the range. &nbsp;
+<a href="docs.html#bundled-media-pricing" target="_blank" style="white-space:nowrap;">Details ↗</a>
+</div>`
+```
+
+```{ojs}
+//| echo: false
+viewof bundled_media_p5 = Inputs.range([1, 200], {
+  value: urlNum("bundled_media_p5", 50), step: 5,
+  label: "Complete media p5 ($/L)"
+})
+viewof bundled_media_p95 = Inputs.range([50, 1000], {
+  value: urlNum("bundled_media_p95", 500), step: 10,
+  label: "Complete media p95 ($/L)"
+})
+```
+
+```{=html}
+</div>
+```
 
 ```{=html}
 </div>
@@ -986,6 +1065,57 @@ The model adjusts maturity expectations based on years from 2024.
 
 ---
 
+**Process Mode Mix**
+
+```{ojs}
+//| echo: false
+viewof p_fedbatch = Inputs.range([0, 1], {
+  value: urlNum("p_fedbatch", 0.20), step: 0.05,
+  label: html`Fed-batch weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Low density (5–30 g/L), moderate media use (1–2×). Semi-continuous: nutrient-concentrated feeds added periodically. Less efficient than perfusion.">(?)</abbr>`
+})
+viewof p_perfusion = Inputs.range([0, 1], {
+  value: urlNum("p_perfusion", 0.50), step: 0.05,
+  label: html`Perfusion weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Medium-high density (30–150 g/L), higher media throughput (1–5×). Continuous media exchange with cell retention. Currently the industry standard for high-density CM production.">(?)</abbr>`
+})
+viewof p_continuous = Inputs.range([0, 1], {
+  value: urlNum("p_continuous", 0.30), step: 0.05,
+  label: html`Continuous weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Highest density (50–200 g/L), efficient media use (0.5–3×). Near-steady-state operation; cells grown and harvested continuously with optimized recycling.">(?)</abbr>`
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const tot = p_fedbatch + p_perfusion + p_continuous;
+  if (tot <= 0) return html``;
+  const fb = (p_fedbatch / tot * 100).toFixed(0);
+  const pf = (p_perfusion / tot * 100).toFixed(0);
+  const ct = (p_continuous / tot * 100).toFixed(0);
+  return html`<div style="font-size:0.84em; color:#555; margin: -0.2rem 0 0.4rem 0;">
+    Effective: Fed-batch <strong>${fb}%</strong> · Perfusion <strong>${pf}%</strong> · Continuous <strong>${ct}%</strong>
+  </div>`;
+}
+```
+
+<details><summary>What are these modes and why does it matter? (click to expand)</summary>
+
+These weights set the probability of each bioreactor process mode being drawn per Monte Carlo simulation. Within each mode, cell density and media-use multiplier are sampled from mode-specific ranges — preventing physically incoherent combinations.
+
+| Mode | Density (g/L) | Media-use (×) | Typical application |
+|------|--------------|--------------|---------------------|
+| Fed-batch | 5–30 | 1.0–2.0 | Periodic nutrient addition; lower achievable densities |
+| Perfusion | 30–150 | 1.0–5.0 | Continuous exchange with cell retention (hollow fiber / centrifuge) |
+| Continuous | 50–200 | 0.5–3.0 | Near-steady-state with recycling; highest densities |
+
+Pure batch (single fill-and-dump) is excluded — not considered commercially viable for cultured meat at scale (expert reviewer feedback, April 2026).
+
+*Note: the default mix (20% / 50% / 30%) produces somewhat higher media usage per kg than the previous unconstrained defaults, because fed-batch and perfusion at medium density use more liquid than the prior lognormal(30–200 g/L) assumption. This is more physically realistic.*
+
+*In full view, an "Override process mode constraints" toggle restores manual density and media-use sliders.*
+</details>
+
+---
+
 **Technology Adoption by ${target_year}**
 
 Probability that each cost-reducing technology is widely adopted by the projection year.
@@ -1059,6 +1189,11 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 </details>
 
 <a id="growth-factors-explanation"></a>
+
+```{=html}
+<div class="separable-only">
+```
+
 ```{ojs}
 //| echo: false
 viewof p_recfactors = Inputs.range([0.1, 0.9], {
@@ -1126,6 +1261,10 @@ The probability slider represents whether **at least one** of these technology a
 </details>
 
 ```{=html}
+</div>
+```
+
+```{=html}
 <div class="full-mode-only">
 ```
 
@@ -1167,7 +1306,19 @@ These two parameters together determine the **Capital Recovery Factor**: CRF = r
 
 ---
 
-**Cell Density Range**
+**Cell Density / Media-Use Override**
+
+```{ojs}
+//| echo: false
+viewof override_mode_constraints = Inputs.toggle({
+  label: html`Override process mode constraints <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="When ON: process-mode sampling is bypassed and you can specify density and media-use ranges directly. Useful for experts wanting to model specific bioreactor configurations.">(?)</abbr>`,
+  value: urlBool("override_mode_constraints", false)
+})
+```
+
+```{=html}
+<div class="override-mode-only">
+```
 
 ```{ojs}
 //| echo: false
@@ -1252,6 +1403,10 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
 </div>
 ```
 
+```{=html}
+</div>
+```
+
 ```{ojs}
 //| echo: false
 // URL state writer: serialize every viewof value that DIFFERS FROM ITS
@@ -1269,7 +1424,10 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     simpleMode: true, include_blending: false, blending_share: 0.25, filler_cost: 3,
     include_capex: true, include_fixed_opex: true, include_downstream: false,
     cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
+    bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
     plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
+    p_fedbatch: 0.20, p_perfusion: 0.50, p_continuous: 0.30,
+    override_mode_constraints: false,
     p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50,
     wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
     density_lo: 30, density_hi: 200,
@@ -1280,7 +1438,9 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     simpleMode, include_blending, blending_share, filler_cost,
     include_capex, include_fixed_opex, include_downstream,
     cdmo_mode, cdmo_toll_p5, cdmo_toll_p95,
+    bundled_media, bundled_media_p5, bundled_media_p95,
     plant_capacity, uptime, maturity, target_year,
+    p_fedbatch, p_perfusion, p_continuous, override_mode_constraints,
     p_hydro, p_recfactors, gf_progress,
     wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
     density_lo, density_hi, media_turnover_lo, media_turnover_hi
@@ -1350,7 +1510,16 @@ simParams = {
     gf_progress: gf_progress,
     cdmo_mode: cdmo_mode,
     cdmo_toll_p5: cdmo_toll_p5,
-    cdmo_toll_p95: cdmo_toll_p95
+    cdmo_toll_p95: cdmo_toll_p95,
+    // Process mode (always active; override only available in full view)
+    p_fedbatch: p_fedbatch,
+    p_perfusion: p_perfusion,
+    p_continuous: p_continuous,
+    override_mode_constraints: simpleMode ? false : override_mode_constraints,
+    // Bundled media (full view only)
+    bundled_media: simpleMode ? false : bundled_media,
+    bundled_media_p5: bundled_media_p5,
+    bundled_media_p95: bundled_media_p95
   };
 }
 ```
@@ -1753,14 +1922,15 @@ html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; 
 ```{ojs}
 //| echo: false
 {
+  const mediaLabel = bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)";
   const allComponents = [
-    {name: "Media (incl. basal micros)", value: mean(results.cost_media), color: "#27ae60"},
-    {name: "Growth Factors", value: mean(results.cost_recf), color: "#9b59b6"},
-    {name: "Other VOC", value: mean(results.cost_other_var), color: "#7f8c8d"},
-    {name: "CAPEX (annualized)", value: mean(results.cost_capex), color: "#e74c3c"},
-    {name: "Plant overhead OPEX", value: mean(results.cost_fixed), color: "#f39c12"},
-    {name: "CDMO Toll", value: mean(results.cost_cdmo_toll), color: "#e67e22"},
-    {name: "Downstream", value: mean(results.cost_downstream), color: "#1abc9c"}
+    {name: mediaLabel,               value: mean(results.cost_media),        color: "#27ae60"},
+    {name: "Growth Factors",         value: mean(results.cost_recf),          color: "#9b59b6"},
+    {name: "Other VOC",              value: mean(results.cost_other_var),     color: "#7f8c8d"},
+    {name: "CAPEX (annualized)",     value: mean(results.cost_capex),         color: "#e74c3c"},
+    {name: "Plant overhead OPEX",    value: mean(results.cost_fixed),         color: "#f39c12"},
+    {name: "CDMO Toll",              value: mean(results.cost_cdmo_toll),     color: "#e67e22"},
+    {name: "Downstream",             value: mean(results.cost_downstream),    color: "#1abc9c"}
   ];
   // Filter out zero-value components (e.g., downstream when not included)
   const components = allComponents.filter(c => c.value > 0.001).sort((a, b) => b.value - a.value);
@@ -1860,7 +2030,7 @@ function formatCost(val) {
 
 {
   const allComponents = [
-    {name: "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
+    {name: bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
     {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
@@ -1926,11 +2096,33 @@ Each mini-histogram shows the distribution for one cost component across 30,000 
 These distributions are generated from the simulation using the parameters you set in the sidebar above. When you adjust the sliders, these distributions update accordingly. They are analogous to Squiggle/Guesstimate visualizations -- showing the full range of possible values, not just a point estimate.
 </details>
 
-### Technology Adoption (Realized)
+### Technology Adoption & Process Mode (Realized)
 
 ```{ojs}
 //| echo: false
-html`<div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 2rem 0;">
+{
+  const ml = results.mode_labels_samples;
+  const n = ml.length;
+  const isOverride = ml[0] === "override";
+  const pct_fb = isOverride ? null : (ml.filter(m => m === "fedbatch").length / n * 100).toFixed(0);
+  const pct_pf = isOverride ? null : (ml.filter(m => m === "perfusion").length / n * 100).toFixed(0);
+  const pct_ct = isOverride ? null : (ml.filter(m => m === "continuous").length / n * 100).toFixed(0);
+
+  const modeCard = isOverride
+    ? html`<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center; grid-column: 1 / -1;">
+        <h5>Process Mode</h5>
+        <div style="color: #888; font-size: 0.9em;">Override — using manual density / media-use ranges</div>
+      </div>`
+    : html`<div class="card" style="border: 1px solid #16a085; padding: 1rem; border-radius: 8px; grid-column: 1 / -1;">
+        <h5 style="margin-bottom:0.5rem;">Process Mode (realized)</h5>
+        <div style="display:flex; gap:1.5rem; justify-content:center; font-size:1.1em;">
+          <span>Fed-batch <strong style="color:#e67e22;">${pct_fb}%</strong></span>
+          <span>Perfusion <strong style="color:#16a085;">${pct_pf}%</strong></span>
+          <span>Continuous <strong style="color:#2980b9;">${pct_ct}%</strong></span>
+        </div>
+      </div>`;
+
+  return html`<div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 2rem 0;">
 
 <div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
 <h5>Hydrolysates Adopted</h5>
@@ -1944,7 +2136,10 @@ html`<div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; 
 <small>of simulations have cheap factors</small>
 </div>
 
-</div>`
+${modeCard}
+
+</div>`;
+}
 ```
 
 ### Sensitivity Analysis (Tornado Chart)

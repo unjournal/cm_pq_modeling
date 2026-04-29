@@ -700,6 +700,56 @@ The comparison chart in the dashboard shows the full distribution difference. In
 
 ---
 
+## Process Mode {#process-mode}
+
+The model draws a bioreactor process mode for each Monte Carlo simulation, then samples cell density and media-use multiplier from that mode's physical range. This prevents incoherent parameter combinations that the previous unconstrained approach allowed (e.g., 200 g/L density with batch-like media use, which is biologically impossible).
+
+**Pure batch is excluded** — not commercially viable at scale for cultured meat (expert reviewer feedback, April 2026).
+
+### Mode-Specific Parameter Ranges
+
+| Mode | Default weight | Density (g/L) p5–p95 | Media-use multiplier p5–p95 | Rationale |
+|------|---------------|---------------------|----------------------------|-----------|
+| Fed-batch | 20% | 5–30 | 1.0–2.0× | Periodic concentrated nutrient addition; lower achievable density |
+| Perfusion | 50% | 30–150 | 1.0–5.0× | Continuous media exchange with cell retention; higher density, higher throughput |
+| Continuous | 30% | 50–200 | 0.5–3.0× | Near-steady-state with recycling; highest densities |
+
+Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. The **Override process mode constraints** toggle (full view) bypasses mode-based sampling and restores the manual density and media-use sliders for expert use.
+
+**Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. This is more physically realistic — fed-batch is genuinely more media-intensive. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.
+
+---
+
+## Bundled Media Pricing {#bundled-media-pricing}
+
+Published TEAs use two different accounting conventions for media costs. Understanding the difference is critical when comparing model outputs to the literature.
+
+### Two Conventions
+
+| Convention | What "media $/L" includes | Example sources | When to use |
+|------------|--------------------------|-----------------|-------------|
+| **Separable** (default) | Basal media only (amino acids, glucose, vitamins) — GFs on separate $/g line | This model, GFI cost analyses | Reasoning about future cost reduction; GF breakthrough affects a visible separate line |
+| **Bundled** | Complete media including all growth factors | Humbird 2021, most research-grade TEAs | Comparing to published figures; current-state benchmarking |
+
+### How to Use the Bundled Toggle
+
+Enabling **Bundled media pricing** in the dashboard (full view → Media Accounting):
+
+- Replaces the separable basal-media $/L and GF $/g lines with a single **complete media $/L** parameter
+- Default range: **$50–$500/L** — reflecting current research-grade complete media with pharma-grade GFs
+- GF probability and progress sliders are hidden (bundled into the media price)
+- The cost breakdown shows "Complete Media (incl. GFs)" instead of separate Media and GF bars
+
+**For 2036 projection work:** the $50–500/L default is appropriate for current-state benchmarking. For a 2036 projection, lower the range significantly (e.g., p5=$5, p95=$100) to reflect anticipated GF cost reductions bundled into the complete medium price.
+
+### Why We Default to Separable
+
+The separable structure is better for the core purpose of this model — identifying which cost reduction pathways matter most. If growth factor breakthroughs are explicitly modeled as a binary switch on a separate cost line, users can directly see how much they shift the cost distribution. In bundled mode, GF improvements are hidden inside the media price, making the model less transparent about what is driving costs.
+
+Separable accounting also better matches the future state of the cultured meat industry, where GF supply chains are likely to become commodity markets analogous to amino acid supply chains — priced and contracted separately from the bulk nutrient broth.
+
+---
+
 ## Code Reference {#code-reference}
 
 The full model implementation is available in multiple formats:
