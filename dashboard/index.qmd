@@ -808,9 +808,10 @@ In our sensitivity analysis, these contribute less than 10% of the variance in c
 
 ```{ojs}
 //| echo: false
-// Reactive style block to hide/show full-mode-only inputs
+// Reactive style block to hide/show full-mode-only and cdmo-only inputs
 html`<style>
   .full-mode-only { display: ${simpleMode ? 'none' : 'block'}; }
+  .cdmo-only { display: ${cdmo_mode ? 'block' : 'none'}; }
 </style>`
 ```
 
@@ -870,13 +871,23 @@ Most published TEAs report costs with CAPEX and plant overhead OPEX included. To
 
 ```{ojs}
 //| echo: false
-viewof cdmo_mode = Inputs.toggle({label: "CDMO / Contract Manufacturing mode", value: urlBool("cdmo_mode", false)})
+viewof cdmo_mode = Inputs.toggle({
+  label: html`CDMO / Contract Manufacturing mode <abbr style="cursor:help; text-decoration:underline dotted; font-size:0.85em; color:#888;" title="A CDMO (Contract Development &amp; Manufacturing Organization) owns the bioreactors and facility and charges a per-kg toll, replacing your CAPEX and plant overhead. Your VOC costs (media, growth factors) remain direct.">(?)</abbr>`,
+  value: urlBool("cdmo_mode", false)
+})
+```
+
+```{=html}
+<div class="cdmo-only">
 ```
 
 ```{ojs}
 //| echo: false
-html`<div style="display: ${cdmo_mode ? 'block' : 'none'}; padding: 0.6rem 0.8rem; background: #fef9e7; border-left: 3px solid #f39c12; font-size: 0.84em; margin: 0.3rem 0 0.6rem 0; line-height: 1.5;">
-<strong>CDMO mode on.</strong> CAPEX and Plant Overhead OPEX are replaced by a <em>contract toll fee</em> — what a CDMO charges per kg to cover their own capital, labour, and margin. Your direct costs remain VOC (media, growth factors, other variable). A <a href="#in-house-vs-cdmo-comparison">side-by-side comparison</a> appears in the results.
+html`<div style="padding: 0.5rem 0.8rem; background: #fef9e7; border-left: 3px solid #f39c12; font-size: 0.84em; margin: 0.25rem 0 0.5rem 0; line-height: 1.5;">
+CAPEX and Plant Overhead OPEX replaced by a lognormal <em>CDMO toll fee</em>.
+VOC (media, GFs, other variable) and downstream remain direct costs.
+A side-by-side comparison appears in the results below. &nbsp;
+<a href="docs.html#cdmo-production-model" target="_blank" style="white-space:nowrap;">Full explanation ↗</a>
 </div>`
 ```
 
@@ -884,60 +895,17 @@ html`<div style="display: ${cdmo_mode ? 'block' : 'none'}; padding: 0.6rem 0.8re
 //| echo: false
 viewof cdmo_toll_p5 = Inputs.range([1, 20], {
   value: urlNum("cdmo_toll_p5", 4), step: 1,
-  label: "CDMO Toll p5 ($/kg)",
-  disabled: !cdmo_mode
+  label: "CDMO Toll p5 ($/kg)"
 })
 viewof cdmo_toll_p95 = Inputs.range([10, 100], {
   value: urlNum("cdmo_toll_p95", 40), step: 2,
-  label: "CDMO Toll p95 ($/kg)",
-  disabled: !cdmo_mode
+  label: "CDMO Toll p95 ($/kg)"
 })
 ```
 
-<details><summary>What is CDMO mode? (click to expand)</summary>
-
-A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies. In the cultured meat context, a CDMO would:
-
-- Own and operate the bioreactors and facility
-- Charge the cultured meat brand a *per-kg toll fee* for production
-- Allow the brand to avoid direct CAPEX and fixed overhead
-
-**What changes in the model:**
-
-| Cost component | In-House | CDMO mode |
-|----------------|----------|-----------|
-| Media (VOC) | Your cost | Your cost |
-| Growth factors (VOC) | Your cost | Your cost |
-| CAPEX (bioreactors, facility) | Your cost | → CDMO toll |
-| Plant overhead (labour, maintenance) | Your cost | → CDMO toll |
-| Downstream (optional) | Your cost | Your cost |
-
-**CDMO toll range (default p5=$4, p95=$40/kg):**
-
-This range attempts to cover the uncertainty about what a food-grade CDMO would charge for cultivated meat production by 2036:
-
-| Scenario | Toll ($/kg) | Basis |
-|----------|------------|-------|
-| Optimistic (p5) | ~$4 | Efficient food-grade CDMO with high multi-client utilization |
-| Typical | ~$12 | CDMO serving multiple clients, food-grade equipment, ~30% margin |
-| Pessimistic (p95) | ~$40 | Pharma-adjacent CDMO with low utilization and high margin |
-
-For context: current pharma CDMOs charge ~$50–500/L-day bioreactor time; at 50 g/L and a 3-day cycle, that's $1,000–30,000/kg — far too expensive. The default range assumes a future food-grade CDMO sector has developed alongside the industry.
-
-**When would CDMO be preferable to in-house?**
-
-- Early-stage companies that want market entry without construction risk
-- If CDMO scale economies across multiple clients reduce per-unit CAPEX
-- When the brand's competitive advantage is recipe/branding, not manufacturing
-
-**When might in-house be preferable?**
-
-- At large scale where you capture the economies yourself
-- When process IP is a competitive advantage you can't share
-- When long-run in-house costs fall below the CDMO margin
-
-The comparison chart in the results section shows when each mode produces lower costs under the current parameters.
-</details>
+```{=html}
+</div>
+```
 
 ---
 
