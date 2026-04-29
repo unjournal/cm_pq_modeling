@@ -860,6 +860,10 @@ viewof include_downstream = Inputs.toggle({label: "Include downstream processing
 Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
 
+```{=html}
+</div>
+```
+
 ---
 
 **Production Model**
@@ -934,10 +938,6 @@ For context: current pharma CDMOs charge ~$50–500/L-day bioreactor time; at 50
 
 The comparison chart in the results section shows when each mode produces lower costs under the current parameters.
 </details>
-
-```{=html}
-</div>
-```
 
 ---
 
