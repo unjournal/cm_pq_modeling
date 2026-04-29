@@ -159,15 +159,18 @@ function toggleParams() {
   const fill = document.querySelector('.panel-fill');
   if (!sidebar) return;
 
-  if (sidebar.classList.contains('params-hidden')) {
+  // Use computedStyle to detect actual visibility — more reliable than classList check
+  // alone, since both class and inline style can cause display:none.
+  const isHidden = window.getComputedStyle(sidebar).display === 'none';
+
+  if (isHidden) {
     sidebar.classList.remove('params-hidden');
-    sidebar.style.display = '';
-    if (fill) fill.style.gridColumn = '';
+    sidebar.style.removeProperty('display');          // explicit removal, not '' assignment
+    if (fill) { fill.style.removeProperty('grid-column'); fill.style.removeProperty('width'); }
     if (btn) btn.textContent = '◀ Hide Parameters (expand charts)';
     if (vcBtn) { vcBtn.textContent = '◀ Parameters'; vcBtn.style.background = '#e8f4e8'; vcBtn.style.borderColor = '#5a7a5a'; }
   } else {
-    sidebar.classList.add('params-hidden');
-    sidebar.style.display = 'none';
+    sidebar.classList.add('params-hidden');           // CSS class has display:none !important
     if (fill) fill.style.gridColumn = '1 / -1';
     if (btn) btn.textContent = '▶ Show Parameters';
     if (vcBtn) { vcBtn.textContent = '▶ Parameters'; vcBtn.style.background = '#f8f9fa'; vcBtn.style.borderColor = '#ccc'; }
@@ -221,7 +224,8 @@ function hideHypothesis() {
 </script>
 
 <!-- Fixed floating view controls — lower right -->
-<div id="view-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 160px;">
+<!-- z-index 10001: must be above Hypothes.is badge (~9999) so clicks reach our buttons -->
+<div id="view-controls" style="position: fixed; bottom: 20px; right: 52px; z-index: 10001; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 160px;">
   <div style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">View</div>
   <button onclick="toggleParams()" id="vc-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; text-align: left;">◀ Parameters</button>
   <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
