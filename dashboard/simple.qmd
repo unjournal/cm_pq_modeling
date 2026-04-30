@@ -1,0 +1,678 @@
+---
+title: "Simplest Model"
+subtitle: "A first look at cultured chicken cost — for exploration and understanding"
+format:
+  html:
+    page-layout: full
+    css: styles.css
+    include-in-header:
+      text: |
+        <script>
+        // Strip URL query params before Hypothes.is loads so annotations
+        // anchor to the canonical bare URL, while OJS gets params via global.
+        (function () {
+          try {
+            if (!window.location.search) return;
+            var usp = new URLSearchParams(window.location.search);
+            window.__CM_URL_STATE__ = {};
+            usp.forEach(function (v, k) { window.__CM_URL_STATE__[k] = v; });
+            history.replaceState(null, "", window.location.pathname + window.location.hash);
+          } catch (e) {}
+        })();
+        </script>
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+::: {.callout-warning}
+## Preliminary model — for exploration only
+This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For more complete analysis with all parameters exposed, use the [Advanced Model](index.qmd).
+:::
+
+::: {.callout-note collapse="true"}
+## How to use this page
+
+This Simplest Model exposes only the **biggest levers** on cultured chicken production cost. Each parameter has an inline explanation — no further reading required to understand what you're adjusting.
+
+Once you've explored here, click **→ Advanced Model** at the bottom of the sidebar to carry your settings over to a fuller parameter set.
+
+**Parameters exposed here:** Projection Year · P(Growth Factor Breakthrough) · P(Hydrolysates adopted) · Process Mode Mix · Blended Product
+
+**Everything else** (WACC, plant size, cell density, media-use multiplier, asset life, downstream costs) is held at reasonable defaults — see the "Background parameters" section in the sidebar.
+:::
+
+```{ojs}
+//| echo: false
+
+// ============================================================
+// SEEDED RANDOM NUMBER GENERATOR
+// ============================================================
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+// ============================================================
+// STATISTICAL SAMPLING FUNCTIONS
+// ============================================================
+function boxMuller(rng) {
+  const u1 = rng(); const u2 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+function sampleLognormalP5P95(rng, p5, p95, n) {
+  const Z_95 = 1.6448536269514722;
+  const mu = (Math.log(p5) + Math.log(p95)) / 2;
+  const sigma = (Math.log(p95) - Math.log(p5)) / (2 * Z_95);
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) samples[i] = Math.exp(mu + sigma * boxMuller(rng));
+  return samples;
+}
+function sampleUniform(rng, lo, hi, n) {
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) samples[i] = lo + (hi - lo) * rng();
+  return samples;
+}
+function betaFromMeanStdev(mean, stdev) {
+  let variance = stdev * stdev;
+  const maxVar = mean * (1 - mean);
+  if (variance <= 0 || variance >= maxVar) { stdev = Math.sqrt(maxVar * 0.99); variance = stdev * stdev; }
+  const t = maxVar / variance - 1;
+  return [Math.max(mean * t, 0.01), Math.max((1 - mean) * t, 0.01)];
+}
+function sampleBeta(rng, a, b) {
+  const gammaA = sampleGamma(rng, a); const gammaB = sampleGamma(rng, b);
+  return gammaA / (gammaA + gammaB);
+}
+function sampleGamma(rng, shape) {
+  if (shape < 1) return sampleGamma(rng, shape + 1) * Math.pow(rng(), 1 / shape);
+  const d = shape - 1/3; const c = 1 / Math.sqrt(9 * d);
+  while (true) {
+    let x, v;
+    do { x = boxMuller(rng); v = 1 + c * x; } while (v <= 0);
+    v = v * v * v; const u = rng();
+    if (u < 1 - 0.0331 * (x*x) * (x*x)) return d * v;
+    if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+  }
+}
+function sampleBetaMeanStdev(rng, mean, stdev, n) {
+  const [a, b] = betaFromMeanStdev(mean, stdev);
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) samples[i] = sampleBeta(rng, a, b);
+  return samples;
+}
+function crf(wacc, nYears) {
+  return wacc * Math.pow(1 + wacc, nYears) / (Math.pow(1 + wacc, nYears) - 1);
+}
+function clip(arr, min, max) { return arr.map(v => Math.min(Math.max(v, min), max)); }
+function add(a, b) { return a.map((v, i) => v + b[i]); }
+function mul(a, b) { return a.map((v, i) => v * b[i]); }
+function div(a, b) { return a.map((v, i) => v / b[i]); }
+function scale(arr, s) { return arr.map(v => v * s); }
+
+// ============================================================
+// MAIN SIMULATION FUNCTION (identical to Advanced Model)
+// ============================================================
+function simulate(n, seed, params) {
+  const rng = mulberry32(seed);
+  const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
+  const plant_kta = sampleLognormalP5P95(rng, params.plant_kta_p5, params.plant_kta_p95, n);
+  const uptime = sampleBetaMeanStdev(rng, params.uptime_mean, 0.05, n);
+  const output_kgpy = mul(scale(plant_kta, 1e6), uptime);
+  let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
+  p_hydro = clip(add(p_hydro, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
+  let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
+  p_recf = clip(add(p_recf, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
+  const is_hydro = p_hydro.map(p => rng() < p);
+  const is_recf_cheap = p_recf.map(p => rng() < p);
+  const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+  let density_gL, media_turnover, mode_labels;
+  const p_total = params.p_fedbatch + params.p_perfusion + params.p_continuous;
+  const p0  = params.p_fedbatch / p_total;
+  const p01 = p0 + params.p_perfusion / p_total;
+  const d_fb = sampleLognormalP5P95(rng, 5, 30, n);
+  const d_pf = sampleLognormalP5P95(rng, 30, 150, n);
+  const d_ct = sampleLognormalP5P95(rng, 50, 200, n);
+  const t_fb = sampleLognormalP5P95(rng, 1.0, 2.0, n);
+  const t_pf = sampleLognormalP5P95(rng, 1.0, 5.0, n);
+  const t_ct = sampleLognormalP5P95(rng, 0.5, 3.0, n);
+  const mode_rand = sampleUniform(rng, 0, 1, n);
+  mode_labels = mode_rand.map(r => r < p0 ? "fedbatch" : r < p01 ? "perfusion" : "continuous");
+  density_gL    = mode_labels.map((m, i) => m === "fedbatch" ? d_fb[i] : m === "perfusion" ? d_pf[i] : d_ct[i]);
+  media_turnover = mode_labels.map((m, i) => m === "fedbatch" ? t_fb[i] : m === "perfusion" ? t_pf[i] : t_ct[i]);
+  const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
+  const media_cost_hydro = sampleLognormalP5P95(rng, 0.2, 1.2, n);
+  const media_cost_pharma = sampleLognormalP5P95(rng, 0.5, 2.5, n);
+  const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
+  const cost_media = mul(L_per_kg, media_cost_L);
+  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 6e-3, n);
+  const g_recf_cheap = sampleLognormalP5P95(rng, 5e-4, 2e-3, n);
+  const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
+  const progress = params.gf_progress / 100;
+  const cheap_p5 = 100 * Math.pow(0.01, progress);
+  const cheap_p95 = 10000 * Math.pow(0.01, progress);
+  const price_recf_cheap = sampleLognormalP5P95(rng, cheap_p5, cheap_p95, n);
+  const exp_p5 = 5000 * Math.pow(0.01, progress);
+  const exp_p95 = 500000 * Math.pow(0.01, progress);
+  const price_recf_exp = sampleLognormalP5P95(rng, exp_p5, exp_p95, n);
+  const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
+  const cost_recf = mul(g_recf, price_recf);
+  const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+  const voc = add(add(cost_media, cost_recf), other_var);
+  let cdmo_toll_perkg = new Array(n).fill(0);
+  let capex_perkg = new Array(n).fill(0);
+  if (params.include_capex) {
+    const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
+    const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
+    const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
+    const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
+    let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
+    custom_share = clip(add(custom_share, scale(maturity.map(m => m - 0.5), 0.30)), 0, 1);
+    const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
+      p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i])));
+    const capex_s = sampleUniform(rng, 0.6, 0.9, n);
+    const plant_factor = sampleLognormalP5P95(rng, 1.5, 3.5, n);
+    const V_ref = 1e6;
+    const capex_total = reactor_cost_L_avg.map((r, i) =>
+      r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]);
+    let wacc = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
+    wacc = clip(wacc.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
+    const asset_life = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
+    const crf_val = wacc.map((w, i) => crf(w, asset_life[i]));
+    capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
+  }
+  let fixed_perkg = new Array(n).fill(0);
+  if (params.include_fixed_opex) {
+    const ref_output = 20e6 * 0.9;
+    const fixed_perkg_ref = sampleUniform(rng, 1.0, 6.0, n);
+    const fixed_annual_ref = scale(fixed_perkg_ref, ref_output);
+    const fixed_scale = sampleUniform(rng, 0.6, 1.0, n);
+    const fixed_annual = fixed_annual_ref.map((f, i) =>
+      f * Math.pow(output_kgpy[i] / ref_output, fixed_scale[i]));
+    fixed_perkg = div(fixed_annual, output_kgpy);
+  }
+  const unit_cost = add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg);
+  return {
+    unit_cost,
+    pct_hydro: is_hydro.filter(x => x).length / n,
+    pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
+    pct_fedbatch:   mode_labels.filter(m => m === "fedbatch").length  / n,
+    pct_perfusion:  mode_labels.filter(m => m === "perfusion").length / n,
+    pct_continuous: mode_labels.filter(m => m === "continuous").length / n,
+  };
+}
+
+// ============================================================
+// STATISTICS HELPERS
+// ============================================================
+function quantile(arr, q) {
+  const sorted = [...arr].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * q;
+  const lo = Math.floor(idx); const hi = Math.ceil(idx);
+  return sorted[lo] * (1 - (idx - lo)) + sorted[hi] * (idx - lo);
+}
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+```
+
+```{ojs}
+//| echo: false
+urlParams_s = window.__CM_URL_STATE__ || {}
+urlNum_s = function(key, def) {
+  const v = urlParams_s[key];
+  if (v === undefined) return def;
+  const n = Number(v); return Number.isFinite(n) ? n : def;
+}
+urlBool_s = function(key, def) {
+  const v = urlParams_s[key];
+  if (v === undefined) return def;
+  return v === "1" || v === "true";
+}
+```
+
+```{ojs}
+//| echo: false
+// Reactive CSS for blending-only visibility
+html`<style>
+  .blending-only-s { display: ${include_blending_s ? 'block' : 'none'}; }
+</style>`
+```
+
+::: {.panel-sidebar}
+
+### Model Parameters
+
+```{=html}
+<div style="display: flex; gap: 5px; margin-bottom: 0.75rem; position: sticky; top: var(--quarto-navbar-height, 62px); background: white; padding: 0.5rem 0; border-bottom: 1px solid #eee; z-index: 5; margin-top: -0.5rem;">
+  <a href="index.html" style="flex:1; text-align:center; padding:0.4rem 0.3rem; font-size:0.82rem; border:1px solid #3498db; border-radius:6px; background:#f0f8ff; color:#1a5276; font-weight:500; text-decoration:none;">
+    Advanced Model →
+  </a>
+  <button onclick="window.location.href=window.location.pathname" title="Reset all to defaults" style="padding:0.4rem 0.5rem; font-size:0.82rem; cursor:pointer; border:1px solid #c0392b; border-radius:6px; background:#fef9f9; color:#922b21; font-weight:500;">
+    ↺ Reset
+  </button>
+</div>
+```
+
+---
+
+**Projection Year**
+
+```{ojs}
+//| echo: false
+viewof target_year_s = Inputs.range([2026, 2050], {
+  value: urlNum_s("target_year", 2036), step: 1,
+  label: "Projection year"
+})
+```
+
+*Further-out years give more time for cost reductions and industry scale-up.*
+
+---
+
+**Will a Growth Factor (GF) breakthrough happen?**
+
+```{ojs}
+//| echo: false
+viewof p_recfactors_s = Inputs.range([0, 100], {
+  value: Math.round(urlNum_s("p_recfactors", 0.50) * 100), step: 5,
+  label: "P(GF breakthrough) %"
+})
+```
+
+*Growth factors (FGF-2, IGF-1, TGF-β) are the most expensive media ingredient — often 55-95% of media cost at current research-grade prices. A "breakthrough" means at least one of these reaches commercial scale cheaply: autocrine cell lines (cells make their own), plant molecular farming, or precision fermentation. If no breakthrough: GF costs could dominate the total.*
+
+---
+
+**Will hydrolysates replace pharma-grade amino acids?**
+
+```{ojs}
+//| echo: false
+viewof p_hydro_s = Inputs.range([0, 100], {
+  value: Math.round(urlNum_s("p_hydro", 0.75) * 100), step: 5,
+  label: "P(Hydrolysates adopted) %"
+})
+```
+
+*The nutrient broth cells grow in (basal media) requires amino acids. "Hydrolysates" are cheap plant/yeast protein digests that replace expensive pharmaceutical-grade amino acids. Hydrolysates: ~$0.20-1.20/L vs pharma-grade: ~$0.50-2.50/L — a ~70% cost reduction for media.*
+
+---
+
+**Process Mode Mix** *(must sum to 100%)*
+
+```{ojs}
+//| echo: false
+viewof p_fedbatch_s = Inputs.range([0, 100], {
+  value: Math.round(urlNum_s("p_fedbatch", 0.20) * 100), step: 5,
+  label: "Fed-batch %"
+})
+viewof p_perfusion_s = Inputs.range([0, 100], {
+  value: Math.round(urlNum_s("p_perfusion", 0.50) * 100), step: 5,
+  label: "Perfusion %"
+})
+```
+
+```{ojs}
+//| echo: false
+{
+  const cont = 100 - p_fedbatch_s - p_perfusion_s;
+  const valid = cont >= 0;
+  const color = valid ? (Math.abs(cont + p_fedbatch_s + p_perfusion_s - 100) < 1 ? "#27ae60" : "#e67e22") : "#c0392b";
+  return html`<div style="font-size:0.85em; padding:0.3rem 0.5rem; background:#fafafa; border-radius:4px; margin-bottom:0.3rem;">
+    Continuous (auto): <strong style="color:${color}">${Math.max(0,cont)}%</strong>
+    ${!valid ? html` — <span style="color:#c0392b">⚠ reduce Fed-batch or Perfusion</span>` : ''}
+    <span style="float:right; color:${valid?'#888':'#c0392b'}">Sum: ${p_fedbatch_s+p_perfusion_s+Math.max(0,cont)}%</span>
+  </div>`;
+}
+```
+
+```{=html}
+<table style="width:100%; font-size:0.82em; border-collapse:collapse; margin-bottom:0.5rem;">
+<thead><tr style="border-bottom:1px solid #ddd; color:#555;">
+  <th style="padding:3px 4px; text-align:left;">Mode</th>
+  <th style="padding:3px 4px; text-align:left;">Density</th>
+  <th style="padding:3px 4px; text-align:left;">Media use</th>
+  <th style="padding:3px 4px; text-align:left;">Cost implication</th>
+</tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #f0f0f0;">
+  <td style="padding:3px 4px;"><strong>Fed-batch</strong></td>
+  <td style="padding:3px 4px;">5–30 g/L</td>
+  <td style="padding:3px 4px;">1–2×</td>
+  <td style="padding:3px 4px; color:#c0392b;">Higher cost (less dense)</td>
+</tr>
+<tr style="border-bottom:1px solid #f0f0f0;">
+  <td style="padding:3px 4px;"><strong>Perfusion</strong></td>
+  <td style="padding:3px 4px;">30–150 g/L</td>
+  <td style="padding:3px 4px;">1–5×</td>
+  <td style="padding:3px 4px; color:#e67e22;">Medium cost</td>
+</tr>
+<tr>
+  <td style="padding:3px 4px;"><strong>Continuous</strong></td>
+  <td style="padding:3px 4px;">50–200 g/L</td>
+  <td style="padding:3px 4px;">0.5–3×</td>
+  <td style="padding:3px 4px; color:#27ae60;">Lower cost (denser)</td>
+</tr>
+</tbody>
+</table>
+```
+
+*Pure batch (single fill-and-dump) is excluded — not considered commercially viable at scale.*
+
+---
+
+**Blended Product**
+
+```{ojs}
+//| echo: false
+viewof include_blending_s = Inputs.toggle({
+  label: "Show blended product analysis",
+  value: urlBool_s("include_blending", false)
+})
+```
+
+```{=html}
+<div class="blending-only-s">
+```
+
+```{ojs}
+//| echo: false
+viewof blending_share_s = Inputs.range([5, 95], {
+  value: Math.round(urlNum_s("blending_share", 0.25) * 100), step: 5,
+  label: "CM inclusion rate (%)"
+})
+```
+
+*Most commercial products blend cultured cells with plant-based filler. E.g., 25% CM cells + 75% plant protein at ~$3/kg filler. Even if pure cells are expensive, a blended product can be price-competitive.*
+
+```{=html}
+</div>
+```
+
+---
+
+<details>
+<summary>Background parameters held constant in this model</summary>
+
+| Parameter | Value | Why fixed |
+|-----------|-------|-----------|
+| Industry Maturity | 0.5 (neutral) | At 0.5 the maturity factor has zero net effect on probabilities or financing |
+| WACC (cost of capital) | 8–20% range | Typical food/biotech financing range |
+| Asset life | 8–20 years | Standard equipment life range |
+| Plant capacity | 10–40 kTA | Reference commercial scale |
+| CAPEX | Always included | Bioreactor and facility capital costs |
+| Plant overhead | Always included | Labour, maintenance, overhead |
+| GF cost progress | 50% | Midpoint toward industry price targets |
+| Filler cost | $3/kg | Plant protein / mycoprotein estimate |
+
+[Full parameter definitions → Model formulas & metrics](docs.html)
+
+</details>
+
+```{ojs}
+//| echo: false
+// "→ Advanced Model" carry-over link
+{
+  const cont = Math.max(0, 100 - p_fedbatch_s - p_perfusion_s);
+  const p = new URLSearchParams({
+    target_year: target_year_s,
+    p_hydro: (p_hydro_s / 100).toFixed(2),
+    p_recfactors: (p_recfactors_s / 100).toFixed(2),
+    p_fedbatch: (p_fedbatch_s / 100).toFixed(2),
+    p_perfusion: (p_perfusion_s / 100).toFixed(2),
+    p_continuous: (cont / 100).toFixed(2),
+    include_blending: include_blending_s ? 1 : 0,
+    blending_share: (blending_share_s / 100).toFixed(2)
+  });
+  return html`<div style="margin-top:1rem; padding-top:0.8rem; border-top:2px solid #eee;">
+    <a href="index.html?${p.toString()}" style="display:block; text-align:center; padding:0.7rem; background:#2980b9; color:white; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.95rem;">
+      → Advanced Model (carry over settings)
+    </a>
+    <div style="font-size:0.78em; color:#888; margin-top:0.4rem; text-align:center;">All 8 parameters above will be pre-set in the Advanced Model</div>
+  </div>`;
+}
+```
+
+:::
+
+::: {.panel-fill}
+
+```{ojs}
+//| echo: false
+// Build params object for simulation — all background params hardcoded
+simParams_simple = {
+  const cont = Math.max(0, 100 - p_fedbatch_s - p_perfusion_s);
+  const tot = p_fedbatch_s + p_perfusion_s + cont;
+  return {
+    maturity_mean: 0.5,
+    p_hydro_mean: p_hydro_s / 100,
+    p_recfactors_mean: p_recfactors_s / 100,
+    gf_progress: 50,
+    p_fedbatch: p_fedbatch_s / tot,
+    p_perfusion: p_perfusion_s / tot,
+    p_continuous: cont / tot,
+    override_mode_constraints: false,
+    plant_kta_p5: 10, plant_kta_p95: 40,
+    uptime_mean: 0.90,
+    wacc_p5: 0.08, wacc_p95: 0.20,
+    asset_life_lo: 8, asset_life_hi: 20,
+    density_gL_p5: 30, density_gL_p95: 200,
+    media_turnover_p5: 0.5, media_turnover_p95: 3.0,
+    include_capex: true, include_fixed_opex: true, include_downstream: false,
+    cdmo_mode: false, bundled_media: false,
+    bundled_media_p5: 50, bundled_media_p95: 500,
+    cdmo_toll_p5: 4, cdmo_toll_p95: 40
+  };
+}
+```
+
+```{ojs}
+//| echo: false
+results_s = simulate(30000, 42, simParams_simple)
+```
+
+```{ojs}
+//| echo: false
+stats_s = {
+  const uc = results_s.unit_cost;
+  const bs = blending_share_s / 100;
+  const fc = 3.0;
+  const blended = uc.map(c => c * bs + fc * (1 - bs));
+  const pct = (arr, t) => arr.filter(x => x < t).length / arr.length * 100;
+  return {
+    p5: quantile(uc, 0.05), p20: quantile(uc, 0.20),
+    p50: quantile(uc, 0.50), p80: quantile(uc, 0.80), p95: quantile(uc, 0.95),
+    prob_10: pct(uc, 10), prob_25: pct(uc, 25), prob_50: pct(uc, 50), prob_100: pct(uc, 100),
+    bprob_5: pct(blended, 5), bprob_8: pct(blended, 8), bprob_12: pct(blended, 12),
+    bprob_10: pct(blended, 10), bprob_25: pct(blended, 25),
+    blended_p50: quantile(blended, 0.50),
+    blended_p5: quantile(blended, 0.05), blended_p95: quantile(blended, 0.95),
+    bs, n: uc.length
+  };
+}
+```
+
+```{ojs}
+//| echo: false
+Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
+```
+
+### Results
+
+```{ojs}
+//| echo: false
+html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
+All values are <strong>$/kg of pure cultured cell mass (wet weight)</strong> produced in a bioreactor — not a consumer product price. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
+</div>`
+```
+
+```{ojs}
+//| echo: false
+html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+
+<div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
+  <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Median Cost (p50)</h4>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p50)}/kg</h2>
+  <small>Half of simulations above, half below</small>
+  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended: $${stats_s.blended_p50.toFixed(1)}/kg</div>` : ''}
+</div>
+
+<div style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
+  <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Optimistic (p5)</h4>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p5)}/kg</h2>
+  <small>Only 5% of simulations cheaper</small>
+  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p5: $${stats_s.blended_p5.toFixed(1)}/kg</div>` : ''}
+</div>
+
+<div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
+  <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Pessimistic (p95)</h4>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p95)}/kg</h2>
+  <small>95% of simulations cheaper</small>
+  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p95: $${stats_s.blended_p95.toFixed(1)}/kg</div>` : ''}
+</div>
+
+</div>`
+```
+
+### Probability Thresholds
+
+```{ojs}
+//| echo: false
+{
+  function card(thresh, prob, label, color, bprob) {
+    const bc = prob > 30 ? color : '#ddd';
+    const blend = include_blending_s && bprob !== undefined
+      ? `<div style="font-size:0.8em; color:#1a5276; background:#f0f8ff; border-radius:3px; padding:2px 5px; margin-top:4px;">
+           Blended: <strong>${bprob.toFixed(1)}%</strong> chance &lt; $${thresh}/kg
+         </div>` : '';
+    return `<div style="border:2px solid ${bc}; padding:0.9rem; border-radius:8px; text-align:center;">
+      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg)</h5>
+      <h2 style="color:${color}; margin:0.2rem 0;">${prob.toFixed(1)}%</h2>
+      <small style="color:#666;">${label}</small>
+      ${blend}
+    </div>`;
+  }
+  const grid = `<div class="grid" style="grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1.5rem;">
+    ${card(10,  stats_s.prob_10,  'could approach conventional chicken (~$5-10/kg retail)', '#27ae60', stats_s.bprob_10)}
+    ${card(25,  stats_s.prob_25,  'range where premium cultured products may be viable',    '#3498db', stats_s.bprob_25)}
+    ${card(50,  stats_s.prob_50,  'potential niche/specialty market',                       '#f39c12', null)}
+    ${card(100, stats_s.prob_100, 'substantially below current lab-scale costs',             '#e74c3c', null)}
+  </div>`;
+
+  const blendRow = include_blending_s ? `
+    <p style="font-size:0.88em; color:#1a5276; font-weight:500; margin:0.5rem 0 0.3rem;">
+      Blended product (${stats_s.bs*100|0}% CM + ${((1-stats_s.bs)*100)|0}% filler at $3/kg) — consumer-relevant prices:
+    </p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; margin-bottom:1.5rem;">
+      <div style="border:2px solid ${stats_s.bprob_5>20?'#27ae60':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
+        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $5/kg)</h5>
+        <h2 style="color:#27ae60; margin:0.2rem 0;">${stats_s.bprob_5.toFixed(1)}%</h2>
+        <small>competitive with conventional chicken</small>
+      </div>
+      <div style="border:2px solid ${stats_s.bprob_8>30?'#3498db':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
+        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $8/kg)</h5>
+        <h2 style="color:#3498db; margin:0.2rem 0;">${stats_s.bprob_8.toFixed(1)}%</h2>
+        <small>competitive with premium chicken/beef</small>
+      </div>
+      <div style="border:2px solid ${stats_s.bprob_12>50?'#f39c12':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
+        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $12/kg)</h5>
+        <h2 style="color:#f39c12; margin:0.2rem 0;">${stats_s.bprob_12.toFixed(1)}%</h2>
+        <small>affordable specialty market</small>
+      </div>
+    </div>` : '';
+
+  return html([grid + blendRow]);
+}
+```
+
+### Cost Distribution
+
+```{ojs}
+//| echo: false
+{
+  const uc = results_s.unit_cost;
+  const clipVal = Math.min(quantile(uc, 0.98), 200);
+  const clipped = uc.filter(x => x <= clipVal);
+  const p20 = stats_s.p20; const p80 = stats_s.p80;
+
+  const fsBtn = document.createElement("button");
+  fsBtn.textContent = "⛶";
+  fsBtn.title = "Expand to full screen";
+  fsBtn.style.cssText = "position:absolute; top:4px; right:4px; z-index:10; padding:3px 7px; font-size:14px; cursor:pointer; border:1px solid #ccc; border-radius:4px; background:rgba(255,255,255,0.9);";
+
+  function makeChart(w, h) {
+    return Plot_s.plot({
+      width: w, height: h, marginLeft: 60, marginBottom: 45,
+      x: { label: "Pure Cell Mass Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      y: { label: "Frequency", grid: true },
+      marks: [
+        Plot_s.rectY(clipped, Plot_s.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
+        Plot_s.ruleX([stats_s.p5],  {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
+        Plot_s.ruleX([stats_s.p50], {stroke: "blue",  strokeWidth: 3}),
+        Plot_s.ruleX([stats_s.p95], {stroke: "red",   strokeWidth: 2, strokeDasharray: "5,5"}),
+        Plot_s.ruleX([p20], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
+        Plot_s.ruleX([p80], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
+        Plot_s.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        Plot_s.ruleX([25], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        Plot_s.text([
+          {x: stats_s.p5+1.5, y: h*6, text: `p5: $${stats_s.p5.toFixed(0)}`},
+          {x: stats_s.p50+1.5, y: h*7.5, text: `p50: $${stats_s.p50.toFixed(0)}`},
+          {x: stats_s.p95+1.5, y: h*6, text: `p95: $${stats_s.p95.toFixed(0)}`},
+          {x: p20+1.5, y: h*4.5, text: `p20: $${p20.toFixed(0)}`, fill: "#666"},
+          {x: p80+1.5, y: h*4.5, text: `p80: $${p80.toFixed(0)}`, fill: "#666"}
+        ], {x:"x", y:"y", text:"text", fontSize: 11, fill: d => d.fill || "black"})
+      ],
+      title: `Projected ${target_year_s} Cost Distribution`
+    });
+  }
+
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:white; z-index:9500; padding:2rem; box-sizing:border-box;";
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "✕ Close";
+  closeBtn.style.cssText = "position:fixed; top:16px; right:20px; padding:6px 14px; font-size:14px; cursor:pointer; border:1px solid #ccc; border-radius:6px; background:#f8f9fa; z-index:9501;";
+  closeBtn.onclick = () => { overlay.style.display = "none"; };
+  overlay.appendChild(closeBtn);
+  document.addEventListener("keydown", e => { if (e.key==="Escape") overlay.style.display="none"; });
+  fsBtn.onclick = () => {
+    overlay.style.display = "block";
+    while (overlay.children.length > 2) overlay.removeChild(overlay.lastChild);
+    overlay.appendChild(makeChart(Math.min(window.innerWidth-80, 1600), Math.min(window.innerHeight-120, 900)));
+  };
+  document.body.appendChild(overlay);
+
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "position:relative; display:inline-block; width:100%;";
+  wrapper.appendChild(makeChart(780, 360));
+  wrapper.appendChild(fsBtn);
+  return wrapper;
+}
+```
+
+<details>
+<summary>How is this cost calculated?</summary>
+
+$$\text{Unit Cost} = \underbrace{\text{Media}}_{\text{amino acids + nutrients}} + \underbrace{\text{Growth Factors}}_{\text{FGF-2, IGF-1, etc.}} + \underbrace{\text{Other VOC}}_{\text{utilities, consumables}} + \underbrace{\text{CAPEX/kg}}_{\text{bioreactors, annualised}} + \underbrace{\text{Overhead/kg}}_{\text{labour, maintenance}}$$
+
+- **Media cost** depends on cell density (g/L) and media-use multiplier (× of reactor volume), both determined by process mode.
+- **Growth factor cost** depends on quantity (g/kg meat) and price ($/g), with a binary regime switch based on P(GF breakthrough).
+- **CAPEX** is annualised via the Capital Recovery Factor: CRF = r(1+r)^n / ((1+r)^n − 1).
+
+[Full formula documentation → Model formulas & metrics](docs.html)
+
+</details>
+
+```{ojs}
+//| echo: false
+html`<div style="margin-top:1.5rem; padding:0.8rem; background:#f0f8ff; border:1px solid #3498db; border-radius:6px; font-size:0.88em;">
+<strong>Want more control?</strong> The <a href="index.html">Advanced Model</a> exposes all parameters: financing (WACC, asset life), plant capacity, cell density, media-use multiplier, CDMO mode, bundled media pricing, and more.
+<div style="margin-top:0.5rem;">
+<a href="${(() => { const cont=Math.max(0,100-p_fedbatch_s-p_perfusion_s); const p=new URLSearchParams({target_year:target_year_s,p_hydro:(p_hydro_s/100).toFixed(2),p_recfactors:(p_recfactors_s/100).toFixed(2),p_fedbatch:(p_fedbatch_s/100).toFixed(2),p_perfusion:(p_perfusion_s/100).toFixed(2),p_continuous:(cont/100).toFixed(2),include_blending:include_blending_s?1:0,blending_share:(blending_share_s/100).toFixed(2)}); return 'index.html?'+p.toString(); })()}" style="font-weight:600;">→ Open Advanced Model with these settings</a>
+</div>
+</div>`
+```
+
+:::

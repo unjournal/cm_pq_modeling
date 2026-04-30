@@ -32,6 +32,10 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-note}
+**New to this model?** Start with the [Simplest Model →](simple.qmd) — a shorter version with only the biggest levers, line-of-sight explanations, and no jargon. You can carry your settings over to this Advanced Model when you're ready.
+:::
+
 ::: {.callout-warning}
 ## Important: Model Status
 This model is *largely AI-generated* and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. *Do not treat the outputs as authoritative cost estimates.* We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources--how-they-inform-the-model).
