@@ -476,7 +476,7 @@ Higher density means:
 - **Smaller bioreactors** needed for same output
 - **Lower labor** per kg
 
-Current densities: 30-50 g/L (batch), 60-90 g/L (commercial per [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive)), up to 360 g/L in perfusion ([PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/))
+Current densities: 30-50 g/L (fed-batch), 60-90 g/L (commercial per [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive)), up to 360 g/L in perfusion/continuous ([PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/))
 :::
 
 ---
@@ -607,19 +607,20 @@ Key question: Can cultured meat production maintain sterility and consistency wi
 Contamination is a real risk: Per a [2024 industry survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC11681928/), cultivated meat companies reported an average <abbr title="Per PMC 2024: 'Microbiological contamination batch failure rate averaged 11.2% across 11 respondent companies' — higher at commercial scale (19.5% for 6 respondents). Primary vectors: 'improper equipment sterilization' and 'exposure during cell harvest.'">microbiological batch failure rate of 11.2%</abbr> (climbing to 19.5% at commercial scale). Primary contamination vectors included improper equipment sterilization and exposure during cell harvest. By comparison, the biopharmaceutical industry experiences contamination failures in only ~3.2% of batches at commercial facilities. This helps explain why many cultured meat companies have historically relied on pharma-grade equipment, though the trend is shifting: companies like Vow and others are now building custom food-grade bioreactors at substantially lower cost (per a [2025 Lever VC report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive), Vow built a 20,000L bioreactor "well under $1 million," 80% below off-the-shelf costs).
 :::
 
-### Batch vs. Perfusion: Two Operating Modes
+### Fed-Batch, Perfusion, and Continuous: Three Operating Modes
 
-TL;DR: Batch mode (fill, grow, harvest) is simpler and cheaper to operate but limited to ~30-50 g/L cell density. Perfusion mode (continuous fresh media flow) achieves 100-200+ g/L density but costs more in equipment and media volume. The choice maps directly to the <abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">media-use multiplier</abbr> parameter in [our cost model](index.qmd): batch ≈ 1, perfusion ≈ 2–3, media recycling or fed-batch ≈ 0.5–1. Values below 1 are discussed in [the next section](#media-use-mechanisms).
+TL;DR: Fed-batch mode (fill with concentrated nutrient supplements, grow, harvest) achieves 5–30 g/L density at lower cost. Perfusion mode (continuous fresh media flow with cell retention) achieves 30–150+ g/L but uses more media. Continuous mode (also called chemostat-style: continuous feed and harvest) reaches 50–200 g/L with potentially lower media-use multipliers via recycling. The choice maps directly to the <abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. ~1 = fed-batch; >1 = standard perfusion; <1 = continuous with recycling or fed-batch with concentrated feeds.">media-use multiplier</abbr> parameter in [our cost model](index.qmd). Values below 1 are discussed in [the next section](#media-use-mechanisms).
 
 ::: {.callout-note collapse="true"}
-## Details: How batch vs. perfusion works (click to expand)
+## Details: How the three operating modes work (click to expand)
 
-The choice of operating mode is not about different bioreactor *types* — it is about how nutrients are delivered and waste removed within the same basic stirred-tank reactor described above. This choice significantly affects achievable cell density and economics.
+The choice of operating mode is not about different bioreactor *types* — it is about how nutrients are delivered and waste removed within the same basic stirred-tank reactor. This choice significantly affects achievable cell density and economics.
 
-- **<abbr title="Fill the reactor with media, grow cells until nutrients depleted, harvest everything at once">Batch mode</abbr>**: Fill → Grow → Harvest all. Simple but limited density.
-- **<abbr title="Continuously pump fresh media in while removing spent media, keeping cells at optimal conditions indefinitely">Perfusion mode</abbr>**: Continuous flow of fresh media, removing waste while retaining cells. Complex but much higher density.
+- **<abbr title="Fill the reactor with media and concentrated nutrient supplements as needed; grow cells until density peaks; harvest everything at once. 'Fed-batch' = nutrients supplemented during the run, unlike true batch which depletes rapidly.">Fed-batch mode</abbr>**: Fill → Supplement as needed → Grow → Harvest all. Simple to operate; density 5–30 g/L; media multiplier ~1.
+- **<abbr title="Continuously pump fresh media in while removing spent media via a cell-retention device (e.g., ATF filter), keeping cells at optimal conditions. Achieves much higher density but more complex and media-intensive.">Perfusion mode</abbr>**: Continuous flow of fresh media in, spent media out, cells retained. Density 30–150+ g/L; media multiplier ~1–5.
+- **<abbr title="Continuous mode (chemostat-style): simultaneously feed fresh media and continuously harvest both cells and spent media, maintaining a steady-state density. Can achieve 50–200 g/L with aggressive media recycling reducing the effective multiplier below 1.">Continuous mode</abbr>**: Continuous feed and continuous cell harvest. Density 50–200 g/L; media multiplier ~0.5–3 (lower with recycling).
 
-*The diagram compares these two operating modes side-by-side. Batch mode (left) harvests everything at once; perfusion (right) continuously adds fresh media and removes spent media while retaining cells.*
+*The diagram compares two of the three operating modes. Fed-batch (left) harvests everything at once; perfusion (right) continuously adds fresh media and removes spent media while retaining cells. Continuous mode (not shown) simultaneously feeds fresh media and harvests cells to maintain steady-state density.*
 
 ```{=html}
 <svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 280px; margin: 0.5rem auto; display: block;">
@@ -627,7 +628,7 @@ The choice of operating mode is not about different bioreactor *types* — it is
 
   <!-- Batch Mode -->
   <g transform="translate(20, 20)">
-    <text x="130" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Batch Mode</text>
+    <text x="130" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Fed-Batch Mode</text>
 
     <!-- Reactor stages -->
     <rect x="20" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
@@ -648,8 +649,8 @@ The choice of operating mode is not about different bioreactor *types* — it is
 
     <!-- Stats -->
     <text x="130" y="145" text-anchor="middle" font-size="9" fill="#27ae60">✓ Simple operation</text>
-    <text x="130" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ 30-50 g/L max density</text>
-    <text x="130" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">5-10 day cycles</text>
+    <text x="130" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ 5-30 g/L density</text>
+    <text x="130" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">Media multiplier ≈ 1</text>
   </g>
 
   <!-- Divider -->
@@ -693,9 +694,10 @@ The choice of operating mode is not about different bioreactor *types* — it is
 
 The **<abbr title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume">media-use multiplier</abbr>** parameter in [our interactive model](index.qmd) captures this regime, and a few others:
 
-- **Multiplier ≈ 1**: Batch mode (one reactor fill per kg of cells)
-- **Multiplier ≈ 2–3**: Standard perfusion
-- **Multiplier < 1**: Media recycling, fed-batch with concentrated feeds, or harvest-side cell concentration — see [the three mechanisms below](#media-use-mechanisms)
+- **Multiplier ≈ 1**: Fed-batch mode (one reactor fill per kg of cells)
+- **Multiplier ≈ 1–5**: Standard perfusion
+- **Multiplier ≈ 0.5–3**: Continuous mode (lower with media recycling)
+- **Multiplier < 1**: Fed-batch with concentrated feeds, media recycling, or harvest concentration — see [the three mechanisms below](#media-use-mechanisms)
 - **Multiplier 5–10**: Heavily media-intensive perfusion (stress-test region, outside our default)
 :::
 
@@ -742,17 +744,17 @@ Values above 5× remain plausible for heavily media-intensive processes but are 
 :::
 
 ::: {.callout-note collapse="true"}
-## Batch vs Perfusion Trade-offs (click to expand)
+## Fed-Batch, Perfusion, and Continuous Trade-offs (click to expand)
 
-| Factor | Batch Mode | Perfusion Mode |
-|--------|------------|----------------|
-| **<abbr title="Per Humbird 2021: 'an O₂-limited cell density of 195 g/L can be achieved at a perfusion rate of 1.0/d' under optimized conditions">Cell density</abbr>** | 30-50 g/L max | 100-200+ g/L |
-| **Media usage** | Lower total volume (multiplier ≈ 1, or ≈ 0.5–0.9 with fed-batch/recycling) | Higher (multiplier ≈ 2–3 standard, up to 5–10 stress-test) |
-| **Equipment** | Simpler | More complex (pumps, filters) |
-| **Contamination risk** | Lower (closed system) | Higher (more connections) |
-| **Cycle time** | <abbr title="5-10 days applies to fed-batch, where nutrients are supplemented during the run. True batch (no supplementation) would be shorter as cells deplete nutrients rapidly.">5-10 days (fed-batch)</abbr> | Continuous |
+| Factor | Fed-Batch | Perfusion | Continuous |
+|--------|-----------|-----------|------------|
+| **<abbr title="Per Humbird 2021: 'an O₂-limited cell density of 195 g/L can be achieved at a perfusion rate of 1.0/d' under optimized conditions">Cell density</abbr>** | 5–30 g/L | 30–150+ g/L | 50–200 g/L |
+| **Media multiplier** | ~1 (or 0.5–0.9 with concentrated feeds) | ~1–5 standard | ~0.5–3 (lower with recycling) |
+| **Equipment** | Simplest | More complex (ATF pumps, retention filters) | Moderate (continuous feed/harvest pumps) |
+| **Contamination risk** | Lower (closed system, batch cycles) | Higher (more connections, continuous operation) | Moderate |
+| **Cycle time** | 5–10 days per batch | Continuous (weeks–months) | Continuous (steady-state) |
 
-*The batch/perfusion distinction is a simplification. In practice, cell density, media-use multiplier, and recycle fraction are interdependent — higher perfusion density may require additional retention devices (e.g., ATF filters), and media recycling can partially decouple the multiplier from fresh media cost. Our [dashboard model](index.qmd) treats density and the media-use multiplier as separate parameters for simplicity, with the multiplier bundling recycling and harvest concentration (see [Media-use mechanisms](#media-use-mechanisms)); see [Technical Reference](docs.qmd#process-intensities) for how these interact in the cost equations.*
+*These distinctions are simplifications. In practice, density, media-use multiplier, and recycle fraction are interdependent. Our [dashboard model](index.qmd) samples these parameters separately with process-mode-specific distributions; see [Technical Reference](docs.qmd#process-intensities) for how they interact in the cost equations.*
 
 Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch achieves **$37/kg wet cell mass** (or $22/kg with hydrolysates), while perfusion costs **$51/kg wet cell mass** due to higher CAPEX ($23/kg capital charge) and consumables (ATF membranes at $16k each, 20 per bioreactor per year). Perfusion's higher density doesn't always offset equipment costs at current scales. Note: Humbird models generic mammalian cells, not chicken specifically.
 :::

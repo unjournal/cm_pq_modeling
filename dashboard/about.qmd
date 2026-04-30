@@ -34,12 +34,12 @@ The cultured chicken pivotal question asks:
 **Model status (March 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we want, and surface doubts and disagreements — a framework for discussion and comparison, not a definitive cost estimate. We welcome scrutiny and suggestions.
 :::
 
-This model aims to help evaluators and forecasters:
+This model aims to provide a starting framework for evaluators and forecasters to:
 
-1. **Quantify uncertainty** in cost projections
-2. **Identify key drivers** of cost reduction
+1. **Explore uncertainty** in cost projections (not to deliver authoritative estimates)
+2. **Surface key assumptions** about cost drivers — and debate which matter most
 3. **Compare scenarios** based on technology adoption
-4. **Provide a framework** for structured discussion and collaborative refinement
+4. **Anchor discussion and collaborative refinement** — a shared reference point, not a settled answer
 
 ## Model Development
 

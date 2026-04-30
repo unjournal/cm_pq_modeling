@@ -1,6 +1,5 @@
 ---
 title: "Simplest Model"
-subtitle: "A first look at cultured chicken cost — for exploration and understanding"
 format:
   html:
     page-layout: full
@@ -27,17 +26,17 @@ format:
 
 ::: {.callout-warning}
 ## Preliminary model — for exploration only
-This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For more complete analysis with all parameters exposed, use the [Advanced Model](index.qmd).
+This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For a more detailed exploration with many more parameters, use the [Advanced Model](index.qmd).
 :::
 
 ::: {.callout-note collapse="true"}
 ## How to use this page
 
-This Simplest Model exposes only the **biggest levers** on cultured chicken production cost. Each parameter has an inline explanation — no further reading required to understand what you're adjusting.
+This Simplest Model focuses on a few key levers on cultured chicken production cost. Each parameter has an inline explanation — no further reading required to understand what you're adjusting.
 
 Once you've explored here, click **→ Advanced Model** at the bottom of the sidebar to carry your settings over to a fuller parameter set.
 
-**Parameters exposed here:** Projection Year · P(Growth Factor Breakthrough) · P(Hydrolysates adopted) · Process Mode Mix · Blended Product
+**Parameters exposed here:** Projection Year, P(Growth Factor Breakthrough), P(Hydrolysates adopted), Process Mode Mix, Blended Product
 
 **Everything else** (WACC, plant size, cell density, media-use multiplier, asset life, downstream costs) is held at reasonable defaults — see the "Background parameters" section in the sidebar.
 :::
@@ -119,7 +118,13 @@ function scale(arr, s) { return arr.map(v => v * s); }
 // ============================================================
 function simulate(n, seed, params) {
   const rng = mulberry32(seed);
-  const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
+  // Year-based maturity: 0.30 at 2026, 0.50 at 2036, 0.70 at 2050
+  // Later years -> higher industry maturity -> lower CAPEX (via WACC and custom-reactor share)
+  // and higher effective tech-adoption probabilities.
+  const effectiveMaturityMean = params.maturity_mean
+    + (params.target_year ? (params.target_year - 2036) / 14 * 0.20 : 0);
+  const clampedMaturityMean = Math.min(0.85, Math.max(0.15, effectiveMaturityMean));
+  const maturity = sampleBetaMeanStdev(rng, clampedMaturityMean, 0.20, n);
   const plant_kta = sampleLognormalP5P95(rng, params.plant_kta_p5, params.plant_kta_p95, n);
   const uptime = sampleBetaMeanStdev(rng, params.uptime_mean, 0.05, n);
   const output_kgpy = mul(scale(plant_kta, 1e6), uptime);
@@ -243,7 +248,7 @@ html`<style>
 
 ::: {.panel-sidebar}
 
-### Model Parameters
+### Adjustable Parameters
 
 ```{=html}
 <div style="display: flex; gap: 5px; margin-bottom: 0.75rem; position: sticky; top: var(--quarto-navbar-height, 62px); background: white; padding: 0.5rem 0; border-bottom: 1px solid #eee; z-index: 5; margin-top: -0.5rem;">
@@ -300,7 +305,39 @@ viewof p_hydro_s = Inputs.range([0, 100], {
 
 ---
 
-**Process Mode Mix** *(must sum to 100%)*
+**Blended Product** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Show blended product costs: cultured meat mixed with plant-based filler to lower the per-kg cost. The toggle adds a second set of probability/cost cards based on a CM-plus-filler product, which is the form most consumer-facing cultured meat is expected to take.">(?)</abbr>
+
+```{ojs}
+//| echo: false
+viewof include_blending_s = Inputs.toggle({
+  label: "Show blended product analysis",
+  value: urlBool_s("include_blending", false)
+})
+```
+
+```{=html}
+<div class="blending-only-s">
+```
+
+```{ojs}
+//| echo: false
+viewof blending_share_s = Inputs.range([5, 95], {
+  value: Math.round(urlNum_s("blending_share", 0.25) * 100), step: 5,
+  label: "CM inclusion rate (%)"
+})
+```
+
+*Most commercial products blend cultured cells with plant-based filler. E.g., 25% CM cells + 75% plant protein at ~$3/kg filler. Even if pure cells are expensive, a blended product can be price-competitive.*
+
+```{=html}
+</div>
+```
+
+---
+
+**Probability of each process mode**
+
+*Set all three; the simulation normalizes them internally so they always sum to 100%. The indicator below shows whether your raw inputs already total 100%.*
 
 ```{ojs}
 //| echo: false
@@ -312,18 +349,23 @@ viewof p_perfusion_s = Inputs.range([0, 100], {
   value: Math.round(urlNum_s("p_perfusion", 0.50) * 100), step: 5,
   label: "Perfusion %"
 })
+viewof p_continuous_s = Inputs.range([0, 100], {
+  value: Math.round(urlNum_s("p_continuous", 0.30) * 100), step: 5,
+  label: "Continuous %"
+})
 ```
 
 ```{ojs}
 //| echo: false
 {
-  const cont = 100 - p_fedbatch_s - p_perfusion_s;
-  const valid = cont >= 0;
-  const color = valid ? (Math.abs(cont + p_fedbatch_s + p_perfusion_s - 100) < 1 ? "#27ae60" : "#e67e22") : "#c0392b";
+  const sum = p_fedbatch_s + p_perfusion_s + p_continuous_s;
+  const exact = Math.abs(sum - 100) < 1;
+  const color = exact ? "#27ae60" : "#e67e22";
   return html`<div style="font-size:0.85em; padding:0.3rem 0.5rem; background:#fafafa; border-radius:4px; margin-bottom:0.3rem;">
-    Continuous (auto): <strong style="color:${color}">${Math.max(0,cont)}%</strong>
-    ${!valid ? html` — <span style="color:#c0392b">⚠ reduce Fed-batch or Perfusion</span>` : ''}
-    <span style="float:right; color:${valid?'#888':'#c0392b'}">Sum: ${p_fedbatch_s+p_perfusion_s+Math.max(0,cont)}%</span>
+    Sum: <strong style="color:${color}">${sum}%</strong>
+    ${exact
+      ? html` <span style="color:#27ae60;">(adds to 100%)</span>`
+      : html` <span style="color:${color};">— simulation will normalize to 100%</span>`}
   </div>`;
 }
 ```
@@ -363,47 +405,18 @@ viewof p_perfusion_s = Inputs.range([0, 100], {
 
 ---
 
-**Blended Product**
-
-```{ojs}
-//| echo: false
-viewof include_blending_s = Inputs.toggle({
-  label: "Show blended product analysis",
-  value: urlBool_s("include_blending", false)
-})
-```
-
-```{=html}
-<div class="blending-only-s">
-```
-
-```{ojs}
-//| echo: false
-viewof blending_share_s = Inputs.range([5, 95], {
-  value: Math.round(urlNum_s("blending_share", 0.25) * 100), step: 5,
-  label: "CM inclusion rate (%)"
-})
-```
-
-*Most commercial products blend cultured cells with plant-based filler. E.g., 25% CM cells + 75% plant protein at ~$3/kg filler. Even if pure cells are expensive, a blended product can be price-competitive.*
-
-```{=html}
-</div>
-```
-
----
-
 <details>
-<summary>Background parameters held constant in this model</summary>
+<summary><a href="docs.html">Background parameters</a> held constant in this model</summary>
 
 | Parameter | Value | Why fixed |
 |-----------|-------|-----------|
-| Industry Maturity | 0.5 (neutral) | At 0.5 the maturity factor has zero net effect on probabilities or financing |
-| WACC (cost of capital) | 8–20% range | Typical food/biotech financing range |
-| Asset life | 8–20 years | Standard equipment life range |
-| Plant capacity | 10–40 kTA | Reference commercial scale |
-| CAPEX | Always included | Bioreactor and facility capital costs |
-| Plant overhead | Always included | Labour, maintenance, overhead |
+| Industry Maturity | 0.5 (neutral) | At exactly 0.5, the maturity adjustment term (±0.25 × (m−0.5)) is zero — so technology adoption probabilities are set purely by your sliders, and financing costs use the midpoint WACC. The Projection Year slider then nudges the effective maturity toward 0.30 at 2026 (early industry) and 0.70 at 2050 (mature industry). |
+| <abbr title="Weighted Average Cost of Capital: the expected return investors require, blending equity and debt financing costs. Higher WACC = more expensive capital = higher CAPEX per kg.">WACC</abbr> (cost of capital) | 8–20% range | Sampled from lognormal distribution; p5=8%, p95=20%. Food/biotech industry range from Humbird (2021) and CE Delft (2021). |
+| Asset life | 8–20 years (uniform) | Typical bioreactor/facility lifecycle; Risner et al. and Humbird use 10–15 yr. |
+| Plant capacity | 10–40 kTA (lognormal) | Ranges from small-scale (10 kTA) to large (40 kTA) commercial facilities. |
+| CAPEX | Included | Bioreactor and facility capital costs, annualised via CRF. |
+| Fixed overhead | Included. \$1–6/kg at reference 20 kTA scale; scales sub-linearly. | Labour, maintenance, plant overhead. |
+| Downstream costs | Not included (pure cell-mass basis). Downstream costs (scaffolding, texturization) are available in the Advanced Model. | Output here is unstructured cell mass at the bioreactor gate. |
 | GF cost progress | 50% | Midpoint toward industry price targets |
 | Filler cost | $3/kg | Plant protein / mycoprotein estimate |
 
@@ -415,22 +428,22 @@ viewof blending_share_s = Inputs.range([5, 95], {
 //| echo: false
 // "→ Advanced Model" carry-over link
 {
-  const cont = Math.max(0, 100 - p_fedbatch_s - p_perfusion_s);
+  const tot = Math.max(p_fedbatch_s + p_perfusion_s + p_continuous_s, 1);
   const p = new URLSearchParams({
     target_year: target_year_s,
     p_hydro: (p_hydro_s / 100).toFixed(2),
     p_recfactors: (p_recfactors_s / 100).toFixed(2),
-    p_fedbatch: (p_fedbatch_s / 100).toFixed(2),
-    p_perfusion: (p_perfusion_s / 100).toFixed(2),
-    p_continuous: (cont / 100).toFixed(2),
+    p_fedbatch: (p_fedbatch_s / tot).toFixed(2),
+    p_perfusion: (p_perfusion_s / tot).toFixed(2),
+    p_continuous: (p_continuous_s / tot).toFixed(2),
     include_blending: include_blending_s ? 1 : 0,
     blending_share: (blending_share_s / 100).toFixed(2)
   });
   return html`<div style="margin-top:1rem; padding-top:0.8rem; border-top:2px solid #eee;">
     <a href="index.html?${p.toString()}" style="display:block; text-align:center; padding:0.7rem; background:#2980b9; color:white; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.95rem;">
-      → Advanced Model (carry over settings)
+      → Advanced Model (adapt these settings)
     </a>
-    <div style="font-size:0.78em; color:#888; margin-top:0.4rem; text-align:center;">All 8 parameters above will be pre-set in the Advanced Model</div>
+    <div style="font-size:0.78em; color:#888; margin-top:0.4rem; text-align:center;">These parameters will be pre-set in the Advanced Model, where many more parameters become adjustable</div>
   </div>`;
 }
 ```
@@ -443,16 +456,18 @@ viewof blending_share_s = Inputs.range([5, 95], {
 //| echo: false
 // Build params object for simulation — all background params hardcoded
 simParams_simple = {
-  const cont = Math.max(0, 100 - p_fedbatch_s - p_perfusion_s);
-  const tot = p_fedbatch_s + p_perfusion_s + cont;
+  // All three process-mode probabilities are user-set; we normalize internally
+  // so the weights always sum to 1, even if the raw slider values don't sum to 100.
+  const tot = Math.max(p_fedbatch_s + p_perfusion_s + p_continuous_s, 1);
   return {
     maturity_mean: 0.5,
+    target_year: target_year_s,
     p_hydro_mean: p_hydro_s / 100,
     p_recfactors_mean: p_recfactors_s / 100,
     gf_progress: 50,
     p_fedbatch: p_fedbatch_s / tot,
     p_perfusion: p_perfusion_s / tot,
-    p_continuous: cont / tot,
+    p_continuous: p_continuous_s / tot,
     override_mode_constraints: false,
     plant_kta_p5: 10, plant_kta_p95: 40,
     uptime_mean: 0.90,
@@ -542,24 +557,23 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 ```{ojs}
 //| echo: false
 {
-  function card(thresh, prob, label, color, bprob) {
+  // Pure-cell-mass cards: a single set of thresholds. When blending is enabled,
+  // the blended-product probabilities are shown ONLY in the dedicated blend
+  // row below — never embedded inside the pure-cell cards — to avoid showing
+  // overlapping but slightly different threshold sets in the same place.
+  function card(thresh, prob, label, color) {
     const bc = prob > 30 ? color : '#ddd';
-    const blend = include_blending_s && bprob !== undefined
-      ? `<div style="font-size:0.8em; color:#1a5276; background:#f0f8ff; border-radius:3px; padding:2px 5px; margin-top:4px;">
-           Blended: <strong>${bprob.toFixed(1)}%</strong> chance &lt; $${thresh}/kg
-         </div>` : '';
     return `<div style="border:2px solid ${bc}; padding:0.9rem; border-radius:8px; text-align:center;">
       <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg)</h5>
       <h2 style="color:${color}; margin:0.2rem 0;">${prob.toFixed(1)}%</h2>
       <small style="color:#666;">${label}</small>
-      ${blend}
     </div>`;
   }
   const grid = `<div class="grid" style="grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1.5rem;">
-    ${card(10,  stats_s.prob_10,  'could approach conventional chicken (~$5-10/kg retail)', '#27ae60', stats_s.bprob_10)}
-    ${card(25,  stats_s.prob_25,  'range where premium cultured products may be viable',    '#3498db', stats_s.bprob_25)}
-    ${card(50,  stats_s.prob_50,  'potential niche/specialty market',                       '#f39c12', null)}
-    ${card(100, stats_s.prob_100, 'substantially below current lab-scale costs',             '#e74c3c', null)}
+    ${card(10,  stats_s.prob_10,  'could approach conventional chicken (~$5-10/kg retail)', '#27ae60')}
+    ${card(25,  stats_s.prob_25,  'range where premium cultured products may be viable',    '#3498db')}
+    ${card(50,  stats_s.prob_50,  'potential niche/specialty market',                       '#f39c12')}
+    ${card(100, stats_s.prob_100, 'substantially below current lab-scale costs',             '#e74c3c')}
   </div>`;
 
   const blendRow = include_blending_s ? `
@@ -657,20 +671,22 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 $$\text{Unit Cost} = \underbrace{\text{Media}}_{\text{amino acids + nutrients}} + \underbrace{\text{Growth Factors}}_{\text{FGF-2, IGF-1, etc.}} + \underbrace{\text{Other VOC}}_{\text{utilities, consumables}} + \underbrace{\text{CAPEX/kg}}_{\text{bioreactors, annualised}} + \underbrace{\text{Overhead/kg}}_{\text{labour, maintenance}}$$
 
+The model draws **30,000 random samples** for each uncertain parameter (cell density, media price, growth factor quantity/price, reactor costs, asset life, WACC, plant capacity, uptime, etc.) and computes a unit cost for each draw. The histogram above shows the resulting distribution of unit costs; the cards above summarize what fraction of those samples fall below each threshold.
+
 - **Media cost** depends on cell density (g/L) and media-use multiplier (× of reactor volume), both determined by process mode.
 - **Growth factor cost** depends on quantity (g/kg meat) and price ($/g), with a binary regime switch based on P(GF breakthrough).
 - **CAPEX** is annualised via the Capital Recovery Factor: CRF = r(1+r)^n / ((1+r)^n − 1).
 
-[Full formula documentation → Model formulas & metrics](docs.html)
+[Full formula documentation → Model formulas & metrics](docs.html) (the formulas are the same as the Advanced Model — only the background parameters listed in the sidebar are held constant here.)
 
 </details>
 
 ```{ojs}
 //| echo: false
 html`<div style="margin-top:1.5rem; padding:0.8rem; background:#f0f8ff; border:1px solid #3498db; border-radius:6px; font-size:0.88em;">
-<strong>Want more control?</strong> The <a href="index.html">Advanced Model</a> exposes all parameters: financing (WACC, asset life), plant capacity, cell density, media-use multiplier, CDMO mode, bundled media pricing, and more.
+<strong>Want more control?</strong> The <a href="index.html">Advanced Model</a> exposes many more parameters: financing (<abbr title="Weighted Average Cost of Capital: the expected return investors require, blending equity and debt financing costs. Higher WACC = more expensive capital = higher CAPEX per kg.">WACC</abbr>, asset life), plant capacity, cell density, media-use multiplier, CDMO mode, bundled media pricing, and more.
 <div style="margin-top:0.5rem;">
-<a href="${(() => { const cont=Math.max(0,100-p_fedbatch_s-p_perfusion_s); const p=new URLSearchParams({target_year:target_year_s,p_hydro:(p_hydro_s/100).toFixed(2),p_recfactors:(p_recfactors_s/100).toFixed(2),p_fedbatch:(p_fedbatch_s/100).toFixed(2),p_perfusion:(p_perfusion_s/100).toFixed(2),p_continuous:(cont/100).toFixed(2),include_blending:include_blending_s?1:0,blending_share:(blending_share_s/100).toFixed(2)}); return 'index.html?'+p.toString(); })()}" style="font-weight:600;">→ Open Advanced Model with these settings</a>
+<a href="${(() => { const tot=Math.max(p_fedbatch_s+p_perfusion_s+p_continuous_s,1); const p=new URLSearchParams({target_year:target_year_s,p_hydro:(p_hydro_s/100).toFixed(2),p_recfactors:(p_recfactors_s/100).toFixed(2),p_fedbatch:(p_fedbatch_s/tot).toFixed(2),p_perfusion:(p_perfusion_s/tot).toFixed(2),p_continuous:(p_continuous_s/tot).toFixed(2),include_blending:include_blending_s?1:0,blending_share:(blending_share_s/100).toFixed(2)}); return 'index.html?'+p.toString(); })()}" style="font-weight:600;">→ Advanced Model (adapt these settings)</a>
 </div>
 </div>`
 ```

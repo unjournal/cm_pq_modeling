@@ -739,6 +739,12 @@ function simulate(n, seed, params) {
 
   // CAPEX calculation (skipped in CDMO mode — CDMO bears the capital)
   let capex_perkg = new Array(n).fill(0);
+  // Pre-allocate WACC and asset-life sample arrays so they exist for the
+  // tornado chart even when CAPEX is excluded (in those cases they're
+  // sampled here purely for the sensitivity export, with no cost effect).
+  let wacc_samples_out = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
+  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
+  let asset_life_samples_out = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
   if (!params.cdmo_mode && params.include_capex) {
     const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
     const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
@@ -759,10 +765,10 @@ function simulate(n, seed, params) {
       r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]
     );
 
-    let wacc = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
-    wacc = clip(wacc.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
-
-    const asset_life = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
+    // Re-use the pre-sampled wacc/asset_life so the tornado chart has access
+    // to the realized values regardless of CAPEX inclusion.
+    const wacc = wacc_samples_out;
+    const asset_life = asset_life_samples_out;
     const crf_val = wacc.map((w, i) => crf(w, asset_life[i]));
 
     capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
@@ -820,7 +826,9 @@ function simulate(n, seed, params) {
     g_recf_samples: g_recf,
     price_recf_samples: price_recf,
     plant_kta_samples: plant_kta,
-    uptime_samples: uptime
+    uptime_samples: uptime,
+    wacc_samples: wacc_samples_out,
+    asset_life_samples: asset_life_samples_out
   };
 }
 
@@ -952,7 +960,7 @@ viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value
 //| echo: false
 html`<div id="simplified-note" style="display: ${simpleMode ? 'block' : 'none'}; background: #f0f4e8; border-left: 4px solid #5a7a5a; padding: 0.7rem 0.9rem; margin-bottom: 1rem; font-size: 0.82em; line-height: 1.5; border-radius: 0 4px 4px 0;">
 <strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, media-use multiplier) are set to reasonable defaults.
-In our sensitivity analysis, these contribute less than 10% of the variance in cost estimates.
+In the model's sensitivity analysis (which should be interpreted cautiously — it reflects model structure and the parameter ranges we assume, not an empirically validated importance ranking), these contribute less than 10% of the variance in cost estimates.
 <em>Switch off to adjust all parameters.</em>
 </div>`
 ```
@@ -1633,7 +1641,10 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     }
   }, 300);
 
-  return null;
+  // Return an invisible empty element instead of `null` — when an OJS cell
+  // returns null/undefined, the cell renders the literal text "null" in the
+  // output. This is a no-op span used purely for its side effect (URL sync).
+  return html`<span style="display:none;"></span>`;
 }
 ```
 
@@ -2415,6 +2426,8 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     {name: "GF Price ($/g, incl. regime)",       data: results.price_recf_samples,     kind: "mixture"},
     {name: "GF Quantity (g/kg, incl. regime)",   data: results.g_recf_samples,         kind: "mixture"},
     {name: "Industry Maturity (latent — see note)", data: results.maturity_samples,    kind: "latent"},
+    {name: "WACC (financing)",                   data: results.wacc_samples,           kind: "primitive"},
+    {name: "Asset Life (years)",                 data: results.asset_life_samples,     kind: "primitive"},
     {name: "Plant Capacity (kTA)",               data: results.plant_kta_samples,      kind: "primitive"},
     {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
   ];

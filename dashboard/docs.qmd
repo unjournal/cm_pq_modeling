@@ -4,9 +4,42 @@ subtitle: "Equations, Parameters, Sensitivity Analysis, and Code Documentation"
 toc: true
 format:
   html:
+    include-in-header:
+      text: |
+        <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css"/>
+        <style>
+          /* Visually mark <abbr title="..."> as hoverable (matches index page) */
+          abbr[title] { text-decoration: underline dotted; cursor: help; }
+        </style>
     include-after-body:
       text: |
         <script src="https://hypothes.is/embed.js" async></script>
+        <script src="https://unpkg.com/@popperjs/core@2"></script>
+        <script src="https://unpkg.com/tippy.js@6"></script>
+        <script>
+          // Initialise Tippy.js tooltips on every abbr[title] in the page so
+          // hover content is consistent with the dashboard. We move title→
+          // tippy content to avoid the native-browser tooltip duplicating.
+          (function () {
+            function initTooltips() {
+              if (typeof tippy === 'undefined') return;
+              document.querySelectorAll('abbr[title]').forEach(function (el) {
+                if (el._tippy) return;
+                var t = el.getAttribute('title');
+                if (!t) return;
+                el.removeAttribute('title');
+                tippy(el, { content: t, placement: 'bottom', maxWidth: 360, allowHTML: false });
+              });
+            }
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', initTooltips);
+            } else {
+              initTooltips();
+            }
+            // Catch any abbr elements rendered after initial load
+            setTimeout(initTooltips, 1500);
+          })();
+        </script>
 ---
 
 **Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Audio Review (MP3)](model_review_report.mp3)** | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
@@ -42,8 +75,8 @@ This section presents the model structure **top-down**: starting with the final 
 |---|-----------|----------|---------------|
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
 | 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + GFs + Other | — |
-| 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × multiplier × $/L | density (g/L), media-use multiplier, $/L |
-| 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price ($/g) |
+| 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × multiplier × \$/L | density (g/L), media-use multiplier, \$/L |
+| 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price (\$/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
 | 3a | **[CRF](#annualized-capital-costs)** | r(1+r)<sup>n</sup> / ((1+r)<sup>n</sup> &minus; 1) | r=WACC, n=years |
 | 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX<sub>ref</sub> &times; (Q/Q<sub>ref</sub>)<sup>s</sup> | s=0.6-0.9 |
@@ -64,7 +97,7 @@ In **CDMO mode** (togglable in the dashboard), the capital and overhead terms ar
 
 $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CDMO Toll}_{/\text{kg}}}_{\text{contract fee}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
 
-The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. See the [CDMO mode section below](#cdmo-production-model) for a full description.
+The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
 **Output basis:** All costs in this model are expressed as **$/kg of pure cultured cell mass (wet weight)**, not hybrid products, retail products, or dry biomass. This matters when comparing to published TEA figures, some of which report costs for blended/hybrid products. See our [TEA comparison page](compare.qmd) for a systematic breakdown of how published estimates differ in output basis.
@@ -90,6 +123,8 @@ $$\text{VOC} = \text{Media} + \text{Growth Factors} + \text{Other}$$
 
 ::: {.callout-note collapse="true"}
 ## Why no separate "micronutrient" term? (April 2026 change)
+**Note:** even when modeled separately, micronutrient costs are typically <\$1/kg — a minor contributor to total unit cost. The change below is primarily about avoiding double-counting and aligning ranges with the literature, not about a large dollar effect.
+
 Earlier versions of this model carried a separate **food-grade micronutrients** line (vitamins, minerals, trace salts). External review flagged that this double-counted basal media — the model already described media as providing "amino acids, glucose, vitamins" — and that the range (0.1–10 g/kg) was not coherent with the literature. [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) treat vitamin and mineral sourcing as a relatively low-cost issue, while [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) imply roughly 0.15 kg vitamins/minerals per kg wet biomass — orders of magnitude above our old slider. We now fold basal micronutrients into media $/L and reserve any future separate term for **supplemental recombinant proteins** (insulin, transferrin, albumin), which can be sourced from supplier quotes.
 :::
 
