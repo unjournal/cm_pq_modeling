@@ -175,41 +175,57 @@ function toggleParams() {
   }
 }
 
-// Wide sidebar mode: expands the parameters column to ~60% of the page width
-// so users can read the detailed explanations and set parameters comfortably,
-// then click again to return to the narrow default.
+// Wide sidebar: turn the parameters panel into a fixed-position drawer overlay.
+// Using position:fixed avoids all CSS grid conflicts — the sidebar lifts out of
+// the document flow and floats on top. A dimmed backdrop lets users click outside
+// to close. The OJS cells inside still work because the DOM nodes are the same.
 function toggleWideSidebar() {
   const body = document.body;
+  const sidebar = document.querySelector('.panel-sidebar');
+  const backdrop = document.getElementById('params-backdrop');
   const btnV = document.getElementById('vc-wide-params');
   const btnI = document.getElementById('toggle-wide-params');
 
   if (body.classList.contains('sidebar-wide')) {
+    // Close drawer
     body.classList.remove('sidebar-wide');
     const s = document.getElementById('sidebar-wide-style');
     if (s) s.remove();
+    if (backdrop) backdrop.style.display = 'none';
     if (btnV) { btnV.textContent = '⟺ Wide params'; btnV.style.background = '#f8f9fa'; btnV.style.borderColor = '#ccc'; }
     if (btnI) btnI.textContent = '⟺ Wide view';
   } else {
+    // Open drawer: make sidebar a fixed overlay panel
     body.classList.add('sidebar-wide');
     if (!document.getElementById('sidebar-wide-style')) {
       const s = document.createElement('style');
       s.id = 'sidebar-wide-style';
-      // Override Quarto's panel grid so the sidebar takes ~60vw
       s.textContent = `
         body.sidebar-wide .panel-sidebar {
-          min-width: 560px !important;
-          width: 60vw !important;
-          max-width: 60vw !important;
-        }
-        body.sidebar-wide .page-columns,
-        body.sidebar-wide #quarto-content > .page-columns {
-          grid-template-columns: 60vw 1fr !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: min(62vw, 820px) !important;
+          max-width: 92vw !important;
+          height: 100vh !important;
+          max-height: 100vh !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          z-index: 6000 !important;
+          background: white !important;
+          box-shadow: 8px 0 32px rgba(0,0,0,0.22) !important;
+          padding: 1.5rem 2rem 5rem 1.5rem !important;
+          border-right: 3px solid #3498db !important;
+          scrollbar-width: thin !important;
         }
       `;
       document.head.appendChild(s);
     }
+    if (backdrop) backdrop.style.display = 'block';
     if (btnV) { btnV.textContent = '↘ Narrow params'; btnV.style.background = '#e8f0fa'; btnV.style.borderColor = '#3498db'; }
     if (btnI) btnI.textContent = '↘ Narrow view';
+    // Scroll drawer to top when opening
+    if (sidebar) sidebar.scrollTop = 0;
   }
 }
 
@@ -258,6 +274,9 @@ function hideHypothesis() {
   }
 }
 </script>
+
+<!-- Backdrop for wide-sidebar drawer: click to close -->
+<div id="params-backdrop" onclick="toggleWideSidebar()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:5999; cursor:pointer;"></div>
 
 <!-- Fixed floating view controls — LOWER LEFT to avoid Hypothes.is sidebar on the right -->
 <div id="view-controls" style="position: fixed; bottom: 20px; left: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 165px;">
@@ -2559,12 +2578,12 @@ This model was largely AI-generated. We have grounded key parameter ranges in pu
 <a id="micronutrient-change-note"></a>
 ::: {.callout-note collapse="true"}
 ## Model change log — basal micronutrients folded into media (April 2026)
-Earlier versions of this model carried a separate **food-grade micronutrient** cost line (vitamins, minerals, trace elements) with its own adoption toggle, usage range (0.1–10 g/kg), and price range ($0.02–20/g). External review flagged two problems:
+Earlier versions of this model carried a separate **food-grade micronutrient** cost line (vitamins, minerals, trace elements) with its own adoption toggle, usage range (0.1–10 g/kg), and price range (\$0.02–20/g). External review flagged two problems:
 
 1. **Category confusion / double counting.** The page already describes basal media as containing "amino acids, glucose, vitamins," and the model comments described media as "basal media, excluding growth factors." A separate line for vitamins/minerals was therefore adding a second charge for the same inputs.
 2. **Ranges not coherent with the literature.** [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) describe vitamin sourcing as a "less pressing issue" and note required minerals can "generally be obtained relatively inexpensively." Meanwhile [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) report an ACF-medium supplement (vitamins + minerals) at roughly 0.151 kg per kg wet biomass — orders of magnitude above the slider's 0.1–2 g/kg range. So the old slider was not tracking any coherent category.
 
-**What changed:** The separate slider and cost line were removed. Basal vitamins, minerals, and trace salts are now included inside media $/L along with amino acids and glucose, consistent with how the media-cost literature is reported. Supplemental **recombinant proteins** (insulin, transferrin, albumin) remain unmodeled as a standalone line for now; if we reintroduce a separate uncertainty term, it will be repurposed to these proteins where per-g prices and per-kg usage can be sourced.
+**What changed:** The separate slider and cost line were removed. Basal vitamins, minerals, and trace salts are now included inside media \$/L along with amino acids and glucose, consistent with how the media-cost literature is reported. Supplemental **recombinant proteins** (insulin, transferrin, albumin) remain unmodeled as a standalone line for now; if we reintroduce a separate uncertainty term, it will be repurposed to these proteins where per-g prices and per-kg usage can be sourced.
 :::
 
 **Sources that directly informed model structure and parameter ranges:**
