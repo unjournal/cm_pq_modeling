@@ -1204,11 +1204,18 @@ viewof p_continuous = Inputs.range([0, 1], {
 {
   const tot = p_fedbatch + p_perfusion + p_continuous;
   if (tot <= 0) return html``;
+  const rawPct = (tot * 100).toFixed(0);
   const fb = (p_fedbatch / tot * 100).toFixed(0);
   const pf = (p_perfusion / tot * 100).toFixed(0);
   const ct = (p_continuous / tot * 100).toFixed(0);
+  const sumExact = Math.abs(tot - 1) < 0.001;
+  const sumColor = sumExact ? "#27ae60" : "#e67e22";
+  const sumNote = sumExact
+    ? ""
+    : ` — weights sum to ${rawPct}%, normalized to 100% in simulation`;
   return html`<div style="font-size:0.84em; color:#555; margin: -0.2rem 0 0.4rem 0;">
-    Effective: Fed-batch <strong>${fb}%</strong> · Perfusion <strong>${pf}%</strong> · Continuous <strong>${ct}%</strong>
+    <span style="color:${sumColor}; font-weight:600;">Sum: ${rawPct}%${sumNote}</span><br>
+    Using: Fed-batch <strong>${fb}%</strong> · Perfusion <strong>${pf}%</strong> · Continuous <strong>${ct}%</strong>
   </div>`;
 }
 ```
@@ -2251,7 +2258,10 @@ The relative sizes shift dramatically based on technology adoption assumptions.
 
 ### Component Distributions
 
-Individual distributions for each cost driver. **These charts update dynamically** when you change the sidebar parameters. If you adjust plant capacity, the CAPEX and plant-overhead OPEX distributions will shift; if you change technology adoption probabilities, the media and growth factor distributions will change. (Note: some parameters, like plant capacity, primarily affect CAPEX and overhead rather than variable costs like media.)
+<details>
+<summary>Show per-component distributions (click to expand)</summary>
+
+Individual distributions for each cost driver, updating dynamically as you adjust parameters.
 
 ```{ojs}
 //| echo: false
@@ -2329,10 +2339,14 @@ Each mini-histogram shows the distribution for one cost component across 30,000 
 - **Dashed black lines**: 5th and 95th percentiles (90% confidence interval)
 - **Width of distribution**: Uncertainty - wider means more uncertain
 
-These distributions are generated from the simulation using the parameters you set in the sidebar above. When you adjust the sliders, these distributions update accordingly. They are analogous to Squiggle/Guesstimate visualizations -- showing the full range of possible values, not just a point estimate.
+These distributions are generated from the simulation using the parameters you set in the sidebar above. When you adjust the sliders, these distributions update accordingly.
+</details>
+
 </details>
 
 ### Technology Adoption & Process Mode (Realized)
+
+*Shares from the 30,000 Monte Carlo draws above — showing what the simulation actually used given your parameter settings.*
 
 ```{ojs}
 //| echo: false
@@ -2401,56 +2415,44 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
   ];
 
+  // Use absolute swing so all bars point right — easier to read at a glance
   const swings = params.map(p => ({
     name: p.name,
     kind: p.kind,
-    swing: conditionalSwing(p.data, uc, 0.10)
+    swing: Math.abs(conditionalSwing(p.data, uc, 0.10))
   }));
 
-  const sorted = swings
-    .map(s => ({...s, absSwing: Math.abs(s.swing)}))
-    .sort((a, b) => b.absSwing - a.absSwing);
-
-  const maxAbs = Math.max(...sorted.map(s => s.absSwing), 1);
-  const pad = maxAbs * 0.30;
+  const sorted = [...swings].sort((a, b) => b.swing - a.swing);
+  const maxAbs = Math.max(...sorted.map(s => s.swing), 1);
+  const pad = maxAbs * 0.25;
 
   const tornadoPlot = Plot.plot({
     width: 900,
     height: 440,
     marginLeft: 290,
-    marginRight: 100,
+    marginRight: 120,
     x: {
-      label: "Δ mean unit cost ($/kg): top 10% − bottom 10% of parameter",
-      domain: [-maxAbs - pad, maxAbs + pad],
+      label: "Impact on mean unit cost ($/kg) — larger bar = bigger lever",
+      domain: [0, maxAbs + pad],
       grid: true,
       labelOffset: 40,
-      tickFormat: d => (d >= 0 ? "+$" : "−$") + Math.abs(d).toFixed(0)
+      tickFormat: d => "$" + d.toFixed(0)
     },
-    y: {
-      label: null,
-      tickFormat: d => d,
-      tickSize: 0
-    },
-    color: {
-      domain: ["Increases cost", "Decreases cost"],
-      range: ["#e74c3c", "#27ae60"]
-    },
-    style: {
-      fontSize: "13px"
-    },
+    y: { label: null, tickFormat: d => d, tickSize: 0 },
+    style: { fontSize: "13px" },
     marks: [
       Plot.barX(sorted, {
         y: "name",
         x: "swing",
-        fill: d => d.swing > 0 ? "Increases cost" : "Decreases cost",
-        sort: {y: "-x", reduce: d => Math.abs(d)}
+        fill: "#3498db",
+        fillOpacity: 0.75,
+        sort: {y: "-x"}
       }),
-      Plot.ruleX([0], {stroke: "black", strokeWidth: 1}),
       Plot.text(sorted, {
         y: "name",
-        x: d => d.swing > 0 ? d.swing + maxAbs * 0.025 : d.swing - maxAbs * 0.025,
-        text: d => (d.swing > 0 ? "+$" : "−$") + Math.abs(d.swing).toFixed(1) + "/kg",
-        textAnchor: d => d.swing > 0 ? "start" : "end",
+        x: d => d.swing + maxAbs * 0.02,
+        text: d => "$" + d.swing.toFixed(1) + "/kg",
+        textAnchor: "start",
         fontSize: 12,
         fontWeight: 500
       })
@@ -2458,7 +2460,7 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
   });
 
   return html`<div style="font-size: 1em;">
-    <div style="font-weight: normal; font-size: 1.05em; margin-bottom: 0.5rem; color: #333;">Parameter Sensitivity: Dollar Swing in Mean Unit Cost</div>
+    <div style="font-weight: normal; font-size: 1.05em; margin-bottom: 0.5rem; color: #333;">Which parameters matter most? (dollar impact on mean cost)</div>
     ${tornadoPlot}
   </div>`;
 }
