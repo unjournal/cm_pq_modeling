@@ -2210,7 +2210,7 @@ ${modeCard}
 
 ### Sensitivity Analysis (Tornado Chart)
 
-Which parameters have the most impact on the final cost? Each bar shows the **difference in mean unit cost ($/kg)** between simulations where the parameter is in its **top 10%** and simulations where it is in its **bottom 10%**.
+Which parameters have the most impact on the final cost? Each bar shows the **dollar swing** in mean unit cost between simulations where the parameter is in its top 10% versus its bottom 10%. Larger bars = bigger levers on cost.
 
 ```{ojs}
 //| echo: false
@@ -2296,30 +2296,7 @@ Which parameters have the most impact on the final cost? Each bar shows the **di
 }
 ```
 
-<details>
-<summary>How to read this chart — and what changed from the earlier rank-correlation version (click to expand)</summary>
-
-**Scale.** Each bar is the **difference, in $/kg, between the mean unit cost among simulations where the parameter is in its top decile and the mean unit cost among simulations where the parameter is in its bottom decile.** With 30,000 Monte Carlo samples, each tail bin contains ~3,000 simulations. Red (positive) means the parameter increases cost as it increases; green (negative) means it decreases cost.
-
-This is a real-dollar quantity on the same scale as every other cost figure on the page. It replaces an earlier version of this chart that used **Spearman rank correlation** — a unitless number in [-1, 1] — which could tell you the *direction* of a monotonic relationship but not the *magnitude* in any unit comparable to the rest of the model.
-
-**Why three parameters from the old chart were dropped.** The previous chart listed eleven parameters; three of them were double-counting signals that other parameters already carried:
-
-- **L/kg (volume)** was a pure deterministic function of Cell Density × Media-use multiplier — not an independent driver, just a third lens on the same two variables.
-- **Uses Hydrolysates (binary)** chose which lognormal regime Media $/L was sampled from. The continuous Media $/L bar already captures the regime switch *plus* within-regime noise.
-- **Has Cheap GFs (binary)** chose the regime for both GF Price and GF Quantity. Same issue: subsumed into those continuous bars.
-
-**Industry Maturity is a latent driver — do not sum its bar with downstream bars.** Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share. So its bar captures the **total effect** of a shift in maturity propagating through all of those downstream channels, and the samples that sit in its "top decile" are *also* more likely to have cheaper media and cheaper GFs as a consequence. If you add Industry Maturity's bar to Media $/L and GF Price, you will double count.
-
-**What the other bars mean.** The mixture bars (Media $/L, GF Price, GF Quantity) bundle the regime switch with the within-regime lognormal noise — the swing is the combined effect. The primitive bars (Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate) are sampled close to independently, so their swings are close to honest marginal effects over the joint distribution.
-
-**Technical caveats on the dollar-swing statistic.**
-
-- This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and can overlap across correlated parameters (which is why the latent-variable caveat above matters).
-- The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small.
-- Because the statistic is computed on the joint sampling distribution, changing slider values can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.
-- For a fully decomposed analysis (first-order + total-effect Sobol indices) we would need dedicated re-simulation passes, which is plausible follow-up work but overkill given the model is still pre-review.
-</details>
+*Red bars = parameter increases cost as it rises; green bars = decreases cost. Industry Maturity is a latent variable — its bar captures the total bundled effect of correlated improvements, so don't add it to the other bars.* [Full methodology and caveats →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
 
 ### Industry Maturity Deep Dive
 

@@ -1,6 +1,6 @@
 ---
-title: "Model formulas"
-subtitle: "Equations, Parameters, and Code Documentation"
+title: "Model formulas & metrics"
+subtitle: "Equations, Parameters, Sensitivity Analysis, and Code Documentation"
 toc: true
 format:
   html:
@@ -747,6 +747,54 @@ Enabling **Bundled media pricing** in the dashboard (full view → Media Account
 The separable structure is better for the core purpose of this model — identifying which cost reduction pathways matter most. If growth factor breakthroughs are explicitly modeled as a binary switch on a separate cost line, users can directly see how much they shift the cost distribution. In bundled mode, GF improvements are hidden inside the media price, making the model less transparent about what is driving costs.
 
 Separable accounting also better matches the future state of the cultured meat industry, where GF supply chains are likely to become commodity markets analogous to amino acid supply chains — priced and contracted separately from the bulk nutrient broth.
+
+---
+
+## Sensitivity Analysis: Dollar-Swing Metric {#sensitivity-analysis-dollar-swing-metric}
+
+The tornado chart on the dashboard answers: **which parameters move the cost estimate the most?** This section explains exactly what is computed and how to read the result.
+
+### What the bar length means
+
+Each bar is the **difference in mean unit cost ($/kg) between two groups of simulations**:
+
+$$\text{Swing}(x) = \overline{\text{cost}} \;\big|\; x \in \text{top 10\%} \;\;-\;\; \overline{\text{cost}} \;\big|\; x \in \text{bottom 10\%}$$
+
+With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. The result is a real-dollar quantity on the same scale as every other cost figure — so a bar of $+40/kg means: simulations where that parameter is in its top decile have costs $40/kg higher on average than simulations in its bottom decile.
+
+- **Red** (positive swing): parameter increases cost when high
+- **Green** (negative swing): parameter decreases cost when high (e.g., cell density — higher density → lower media per kg)
+
+### Parameter types in the chart
+
+| Type | Examples | Interpretation |
+|------|---------|----------------|
+| *Primitive* | Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate | Sampled approximately independently; swing ≈ a genuine marginal effect |
+| *Mixture* | Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity | Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both |
+| *Latent* | Industry Maturity | Not independent — perturbs P(hydrolysate), P(cheap GFs), WACC, and reactor costs simultaneously |
+
+### The latent-variable caveat (Industry Maturity)
+
+Industry Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share all at once. Its bar therefore captures the **total bundled effect** of a shift in maturity propagating through all those channels.
+
+**Do not add the Maturity bar to Media \$/L and GF Price.** Simulations in Maturity's top decile are also more likely to have cheap hydrolysates and cheap GFs — so those bars already partly overlap with what Maturity's bar is measuring.
+
+### What was removed and why
+
+An earlier version of this chart used **Spearman rank correlation** — a unitless number in [−1, 1] that indicates direction but not magnitude. The current dollar-swing metric is more useful because it is on the same scale as the cost estimates themselves.
+
+Three parameters were also removed from the earlier 11-parameter list because they were derived quantities rather than independent drivers:
+
+- **L/kg (media volume per kg)** = 1000/density × media-use multiplier — a pure deterministic function of the two separate parameters, not an independent source of variation.
+- **Uses Hydrolysates (binary)** chose which lognormal regime Media \$/L was sampled from. The continuous Media \$/L bar already captures the regime switch plus within-regime noise.
+- **Has Cheap GFs (binary)** chose the regime for GF Price and GF Quantity. Same issue: subsumed into those continuous bars.
+
+### Technical caveats
+
+- This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and bars can overlap across correlated parameters.
+- The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small enough to be reliable.
+- Because the statistic is computed on the joint sampling distribution, changing a slider can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.
+- For a fully decomposed variance analysis (first-order + total-effect Sobol indices), dedicated re-simulation passes would be needed. This is feasible future work.
 
 ---
 
