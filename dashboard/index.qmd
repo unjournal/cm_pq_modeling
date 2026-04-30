@@ -1642,24 +1642,37 @@ inhouse_results = {
   return simulate(30000, 42, {...simParams, cdmo_mode: false});
 }
 
-// Calculate statistics
+// Calculate statistics (pure cell and blended product)
 stats = {
   const uc = results.unit_cost;
   const bs = typeof blending_share === "number" ? blending_share : 0.25;
   const fc = typeof filler_cost === "number" ? filler_cost : 3;
   const blended = uc.map(c => c * bs + fc * (1 - bs));
+  const pct = (arr, threshold) => arr.filter(x => x < threshold).length / arr.length * 100;
   return {
     n: uc.length,
     p5: quantile(uc, 0.05),
     p50: quantile(uc, 0.50),
     p95: quantile(uc, 0.95),
-    prob_10: uc.filter(x => x < 10).length / uc.length * 100,
-    prob_25: uc.filter(x => x < 25).length / uc.length * 100,
-    prob_50: uc.filter(x => x < 50).length / uc.length * 100,
-    prob_100: uc.filter(x => x < 100).length / uc.length * 100,
+    // Pure cell thresholds
+    prob_10:  pct(uc, 10),
+    prob_25:  pct(uc, 25),
+    prob_50:  pct(uc, 50),
+    prob_100: pct(uc, 100),
+    // Blended product thresholds (same $/kg price points, but for the blended product)
+    bprob_10:  pct(blended, 10),
+    bprob_25:  pct(blended, 25),
+    bprob_50:  pct(blended, 50),
+    bprob_100: pct(blended, 100),
+    // Consumer-relevant blended thresholds ($5, $8, $12/kg)
+    bprob_5:  pct(blended, 5),
+    bprob_8:  pct(blended, 8),
+    bprob_12: pct(blended, 12),
+    // Summary stats
     blended_p50: quantile(blended, 0.50),
-    blended_p5: quantile(blended, 0.05),
-    blended_p95: quantile(blended, 0.95)
+    blended_p5:  quantile(blended, 0.05),
+    blended_p95: quantile(blended, 0.95),
+    bs, fc
   };
 }
 ```
@@ -2036,37 +2049,63 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. These are the decision-relevant outputs for evaluating whether cultured meat can compete with conventional chicken.
+These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above.
 
 ```{ojs}
 //| echo: false
-html`<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;">
+{
+  // Helper: build one card, optionally with a blended product secondary row
+  function card(threshold, pureProb, label, color, blendProb, bs, fc) {
+    const borderColor = pureProb > 30 ? color : '#ddd';
+    const blendLine = include_blending && blendProb !== undefined
+      ? `<div style="margin-top:4px; font-size:0.82em; color:#1a5276; background:#f0f8ff; border-radius:4px; padding:3px 6px;">
+           <strong>${blendProb.toFixed(1)}%</strong> chance blended product (${Math.round(bs*100)}% CM, $${fc}/kg filler) &lt; $${threshold}/kg
+         </div>`
+      : '';
+    return `<div class="card" style="border: 2px solid ${borderColor}; padding: 1rem; border-radius: 8px; text-align: center;">
+      <h5 style="margin-bottom:0.3rem;">P(Pure cells &lt; $${threshold}/kg)</h5>
+      <h2 style="color: ${color}; margin:0.2rem 0;">${pureProb.toFixed(1)}%</h2>
+      <small style="color:#555;">${label}</small>
+      ${blendLine}
+    </div>`;
+  }
 
-<div class="card" style="border: 2px solid ${stats.prob_10 > 25 ? '#27ae60' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
-<h5>P(Cost < $10/kg)</h5>
-<h2 style="color: #27ae60;">${stats.prob_10.toFixed(1)}%</h2>
-<small>Pure cells competitive with conventional chicken (~$5-10/kg)</small>
-</div>
+  const bs = stats.bs, fc = stats.fc;
+  const grid = `<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.5rem 0;">
+    ${card(10,  stats.prob_10,  'could approach conventional chicken pricing (~$5-10/kg retail)',  '#27ae60', stats.bprob_10,  bs, fc)}
+    ${card(25,  stats.prob_25,  'range where premium cultured products may be viable',              '#3498db', stats.bprob_25,  bs, fc)}
+    ${card(50,  stats.prob_50,  'potential niche/specialty market segment',                         '#f39c12', stats.bprob_50,  bs, fc)}
+    ${card(100, stats.prob_100, 'substantially cheaper than current lab-scale costs',               '#e74c3c', stats.bprob_100, bs, fc)}
+  </div>`;
 
-<div class="card" style="border: 2px solid ${stats.prob_25 > 50 ? '#3498db' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
-<h5>P(Cost < $25/kg)</h5>
-<h2 style="color: #3498db;">${stats.prob_25.toFixed(1)}%</h2>
-<small>Premium product viable</small>
-</div>
+  // When blending is on, also show consumer-relevant blended thresholds
+  const blendRow = include_blending ? `
+    <p style="font-size:0.88em; color:#1a5276; margin:0.5rem 0 0.3rem; font-weight:500;">
+      Blended product (${Math.round(bs*100)}% CM + ${Math.round((1-bs)*100)}% filler at $${fc}/kg) — consumer-relevant price points:
+    </p>
+    <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+      <div class="card" style="border: 2px solid ${stats.bprob_5  > 20 ? '#27ae60' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
+        <h5 style="font-size:0.85em;">P(Blend &lt; $5/kg)</h5>
+        <h2 style="color:#27ae60; margin:0.2rem 0;">${stats.bprob_5.toFixed(1)}%</h2>
+        <small>competitive with conventional chicken</small>
+      </div>
+      <div class="card" style="border: 2px solid ${stats.bprob_8  > 30 ? '#3498db' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
+        <h5 style="font-size:0.85em;">P(Blend &lt; $8/kg)</h5>
+        <h2 style="color:#3498db; margin:0.2rem 0;">${stats.bprob_8.toFixed(1)}%</h2>
+        <small>competitive with premium chicken/beef</small>
+      </div>
+      <div class="card" style="border: 2px solid ${stats.bprob_12 > 50 ? '#f39c12' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
+        <h5 style="font-size:0.85em;">P(Blend &lt; $12/kg)</h5>
+        <h2 style="color:#f39c12; margin:0.2rem 0;">${stats.bprob_12.toFixed(1)}%</h2>
+        <small>affordable specialty market</small>
+      </div>
+    </div>
+    <p style="font-size:0.82em; color:#777; margin-bottom:1rem; font-style:italic;">
+      Key insight: even if pure cell costs remain high ($50-100/kg), a 20-30% CM blended product can still approach conventional chicken pricing — the blend ratio and filler cost ($${fc}/kg) matter as much as cell costs alone.
+    </p>` : '';
 
-<div class="card" style="border: 2px solid ${stats.prob_50 > 50 ? '#f39c12' : '#ddd'}; padding: 1rem; border-radius: 8px; text-align: center;">
-<h5>P(Cost < $50/kg)</h5>
-<h2 style="color: #f39c12;">${stats.prob_50.toFixed(1)}%</h2>
-<small>Specialty/niche market</small>
-</div>
-
-<div class="card" style="border: 2px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center;">
-<h5>P(Cost < $100/kg)</h5>
-<h2 style="color: #e74c3c;">${stats.prob_100.toFixed(1)}%</h2>
-<small>Below early estimates</small>
-</div>
-
-</div>`
+  return html([grid + blendRow]);
+}
 ```
 
 ### Cost Breakdown
