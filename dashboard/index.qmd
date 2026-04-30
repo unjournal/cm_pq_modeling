@@ -159,21 +159,57 @@ function toggleParams() {
   const fill = document.querySelector('.panel-fill');
   if (!sidebar) return;
 
-  // Use computedStyle to detect actual visibility — more reliable than classList check
-  // alone, since both class and inline style can cause display:none.
   const isHidden = window.getComputedStyle(sidebar).display === 'none';
 
   if (isHidden) {
     sidebar.classList.remove('params-hidden');
-    sidebar.style.removeProperty('display');          // explicit removal, not '' assignment
+    sidebar.style.removeProperty('display');
     if (fill) { fill.style.removeProperty('grid-column'); fill.style.removeProperty('width'); }
     if (btn) btn.textContent = '◀ Hide Parameters (expand charts)';
     if (vcBtn) { vcBtn.textContent = '◀ Parameters'; vcBtn.style.background = '#e8f4e8'; vcBtn.style.borderColor = '#5a7a5a'; }
   } else {
-    sidebar.classList.add('params-hidden');           // CSS class has display:none !important
+    sidebar.classList.add('params-hidden');
     if (fill) fill.style.gridColumn = '1 / -1';
     if (btn) btn.textContent = '▶ Show Parameters';
     if (vcBtn) { vcBtn.textContent = '▶ Parameters'; vcBtn.style.background = '#f8f9fa'; vcBtn.style.borderColor = '#ccc'; }
+  }
+}
+
+// Wide sidebar mode: expands the parameters column to ~60% of the page width
+// so users can read the detailed explanations and set parameters comfortably,
+// then click again to return to the narrow default.
+function toggleWideSidebar() {
+  const body = document.body;
+  const btnV = document.getElementById('vc-wide-params');
+  const btnI = document.getElementById('toggle-wide-params');
+
+  if (body.classList.contains('sidebar-wide')) {
+    body.classList.remove('sidebar-wide');
+    const s = document.getElementById('sidebar-wide-style');
+    if (s) s.remove();
+    if (btnV) { btnV.textContent = '⟺ Wide params'; btnV.style.background = '#f8f9fa'; btnV.style.borderColor = '#ccc'; }
+    if (btnI) btnI.textContent = '⟺ Wide view';
+  } else {
+    body.classList.add('sidebar-wide');
+    if (!document.getElementById('sidebar-wide-style')) {
+      const s = document.createElement('style');
+      s.id = 'sidebar-wide-style';
+      // Override Quarto's panel grid so the sidebar takes ~60vw
+      s.textContent = `
+        body.sidebar-wide .panel-sidebar {
+          min-width: 560px !important;
+          width: 60vw !important;
+          max-width: 60vw !important;
+        }
+        body.sidebar-wide .page-columns,
+        body.sidebar-wide #quarto-content > .page-columns {
+          grid-template-columns: 60vw 1fr !important;
+        }
+      `;
+      document.head.appendChild(s);
+    }
+    if (btnV) { btnV.textContent = '↘ Narrow params'; btnV.style.background = '#e8f0fa'; btnV.style.borderColor = '#3498db'; }
+    if (btnI) btnI.textContent = '↘ Narrow view';
   }
 }
 
@@ -223,11 +259,11 @@ function hideHypothesis() {
 }
 </script>
 
-<!-- Fixed floating view controls — lower right -->
-<!-- z-index 10001: must be above Hypothes.is badge (~9999) so clicks reach our buttons -->
-<div id="view-controls" style="position: fixed; bottom: 20px; right: 52px; z-index: 10001; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 160px;">
+<!-- Fixed floating view controls — LOWER LEFT to avoid Hypothes.is sidebar on the right -->
+<div id="view-controls" style="position: fixed; bottom: 20px; left: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 165px;">
   <div style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">View</div>
   <button onclick="toggleParams()" id="vc-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; text-align: left;">◀ Parameters</button>
+  <button onclick="toggleWideSidebar()" id="vc-wide-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">⟺ Wide params</button>
   <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
   <button onclick="toggleHypothesis()" id="vc-hyp" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Annotations</button>
   <button onclick="toggleFullWidth()" id="vc-wide" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">↔ Expand</button>
@@ -702,8 +738,12 @@ function simulate(n, seed, params) {
     cost_downstream: downstream_perkg,
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
-    // Process mode realized shares
-    mode_labels_samples: mode_labels,
+    // Process mode realized shares — stored as scalars (not the full 30k string array)
+    // to keep OJS reactive graph lightweight
+    mode_is_override: mode_labels[0] === "override",
+    pct_fedbatch:  mode_labels.filter(m => m === "fedbatch").length  / n,
+    pct_perfusion: mode_labels.filter(m => m === "perfusion").length / n,
+    pct_continuous: mode_labels.filter(m => m === "continuous").length / n,
     // Input parameters for sensitivity analysis
     maturity_samples: maturity,
     density_samples: density_gL,
@@ -825,9 +865,14 @@ urlBool = function(key, def) {
 ::: {.panel-sidebar}
 
 ```{=html}
-<button id="toggle-params" onclick="toggleParams()" style="width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 6px; background: #e8f4e8; color: #2d4a2d; font-weight: 500;">
-  ◀ Hide Parameters (expand charts)
-</button>
+<div style="display: flex; gap: 6px; margin-bottom: 0.75rem;">
+  <button id="toggle-params" onclick="toggleParams()" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 6px; background: #e8f4e8; color: #2d4a2d; font-weight: 500;">
+    ◀ Hide Parameters
+  </button>
+  <button id="toggle-wide-params" onclick="toggleWideSidebar()" title="Expand sidebar to read explanations in more detail" style="padding: 0.5rem 0.6rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #3498db; border-radius: 6px; background: #f0f8ff; color: #1a5276; font-weight: 500; white-space: nowrap;">
+    ⟺ Wide view
+  </button>
+</div>
 ```
 
 ```{ojs}
@@ -2105,12 +2150,10 @@ These distributions are generated from the simulation using the parameters you s
 ```{ojs}
 //| echo: false
 {
-  const ml = results.mode_labels_samples;
-  const n = ml.length;
-  const isOverride = ml[0] === "override";
-  const pct_fb = isOverride ? null : (ml.filter(m => m === "fedbatch").length / n * 100).toFixed(0);
-  const pct_pf = isOverride ? null : (ml.filter(m => m === "perfusion").length / n * 100).toFixed(0);
-  const pct_ct = isOverride ? null : (ml.filter(m => m === "continuous").length / n * 100).toFixed(0);
+  const isOverride = results.mode_is_override;
+  const pct_fb = (results.pct_fedbatch  * 100).toFixed(0);
+  const pct_pf = (results.pct_perfusion * 100).toFixed(0);
+  const pct_ct = (results.pct_continuous * 100).toFixed(0);
 
   const modeCard = isOverride
     ? html`<div class="card" style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; text-align: center; grid-column: 1 / -1;">
