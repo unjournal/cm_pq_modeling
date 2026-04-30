@@ -235,8 +235,10 @@ function toggleWideSidebar() {
 function initOjsTooltips() {
   if (typeof tippy === 'undefined') return;
   document.querySelectorAll('.panel-sidebar abbr[title], .panel-fill abbr[title]').forEach(function(el) {
-    if (!el._tippy && el.getAttribute('title')) {
-      tippy(el, { content: el.getAttribute('title'), placement: 'bottom', maxWidth: 340, allowHTML: false });
+    const t = el.getAttribute('title');
+    if (!el._tippy && t) {
+      el.removeAttribute('title');  // prevent duplicate native browser tooltip
+      tippy(el, { content: t, placement: 'bottom', maxWidth: 340, allowHTML: false });
     }
   });
 }
