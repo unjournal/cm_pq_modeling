@@ -229,6 +229,15 @@ function toggleWideSidebar() {
   }
 }
 
+function toggleViewControls() {
+  const content = document.getElementById('view-controls-content');
+  const icon = document.getElementById('vc-minimize');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? 'flex' : 'none';
+  if (icon) icon.textContent = isHidden ? '−' : '≡';
+}
+
 function toggleToc() {
   const btn = document.getElementById('toggle-toc') || document.getElementById('vc-toc');
   // Quarto TOC can be in several locations
@@ -278,14 +287,20 @@ function hideHypothesis() {
 <!-- Backdrop for wide-sidebar drawer: click to close -->
 <div id="params-backdrop" onclick="toggleWideSidebar()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:5999; cursor:pointer;"></div>
 
-<!-- Fixed floating view controls — LOWER LEFT to avoid Hypothes.is sidebar on the right -->
-<div id="view-controls" style="position: fixed; bottom: 20px; left: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 6px; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; max-width: 165px;">
-  <div style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">View</div>
-  <button onclick="toggleParams()" id="vc-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; text-align: left;">◀ Parameters</button>
-  <button onclick="toggleWideSidebar()" id="vc-wide-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">⟺ Wide params</button>
-  <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
-  <button onclick="toggleHypothesis()" id="vc-hyp" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Annotations</button>
-  <button onclick="toggleFullWidth()" id="vc-wide" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">↔ Expand</button>
+<!-- Fixed floating view controls — lower RIGHT, elevated 90px above Hypothes.is badge.
+     Collapsible: click the VIEW header row to minimize to a slim bar. -->
+<div id="view-controls" style="position: fixed; bottom: 90px; right: 20px; z-index: 10001; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); font-size: 12px; min-width: 145px; overflow: hidden;">
+  <div onclick="toggleViewControls()" title="Click to expand/collapse" style="display: flex; align-items: center; padding: 6px 9px; cursor: pointer; border-bottom: 1px solid #eee; user-select: none; background: #fafafa;">
+    <span style="font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; flex: 1;">View</span>
+    <span id="vc-minimize" style="font-size: 15px; color: #aaa; line-height: 1;">−</span>
+  </div>
+  <div id="view-controls-content" style="display: flex; flex-direction: column; gap: 5px; padding: 8px 9px;">
+    <button onclick="toggleParams()" id="vc-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 4px; background: #e8f4e8; color: #2d4a2d; text-align: left;">◀ Parameters</button>
+    <button onclick="toggleWideSidebar()" id="vc-wide-params" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">⟺ Wide params</button>
+    <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
+    <button onclick="toggleHypothesis()" id="vc-hyp" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Annotations</button>
+    <button onclick="toggleFullWidth()" id="vc-wide" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">↔ Expand</button>
+  </div>
 </div>
 
 <style>
