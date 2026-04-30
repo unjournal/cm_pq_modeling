@@ -250,6 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (sidebar) obs.observe(sidebar, { childList: true, subtree: true });
 });
 
+// Reset all parameters: clear URL state and reload (most reliable approach,
+// since OJS viewof inputs can't be reset reliably from plain JS)
+function resetAllDefaults() {
+  window.location.href = window.location.pathname + window.location.hash;
+}
+
 function toggleViewControls() {
   const content = document.getElementById('view-controls-content');
   const icon = document.getElementById('vc-minimize');
@@ -920,12 +926,15 @@ urlBool = function(key, def) {
 ::: {.panel-sidebar}
 
 ```{=html}
-<div style="display: flex; gap: 6px; margin-bottom: 0.75rem; position: sticky; top: 0; background: white; padding: 0.5rem 0 0.5rem; border-bottom: 1px solid #eee; z-index: 5; margin-top: -0.5rem;">
-  <button id="toggle-params" onclick="toggleParams()" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 6px; background: #e8f4e8; color: #2d4a2d; font-weight: 500;">
-    ◀ Hide Parameters
+<div style="display: flex; gap: 5px; margin-bottom: 0.75rem; position: sticky; top: 0; background: white; padding: 0.5rem 0 0.5rem; border-bottom: 1px solid #eee; z-index: 5; margin-top: -0.5rem; flex-wrap: wrap;">
+  <button id="toggle-params" onclick="toggleParams()" style="flex: 1; min-width: 90px; padding: 0.5rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #5a7a5a; border-radius: 6px; background: #e8f4e8; color: #2d4a2d; font-weight: 500;">
+    ◀ Hide
   </button>
-  <button id="toggle-wide-params" onclick="toggleWideSidebar()" title="Expand sidebar to read explanations in more detail" style="padding: 0.5rem 0.6rem; font-size: 0.85rem; cursor: pointer; border: 1px solid #3498db; border-radius: 6px; background: #f0f8ff; color: #1a5276; font-weight: 500; white-space: nowrap;">
-    ⟺ Wide view
+  <button id="toggle-wide-params" onclick="toggleWideSidebar()" title="Expand sidebar for detailed reading" style="padding: 0.5rem 0.5rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #3498db; border-radius: 6px; background: #f0f8ff; color: #1a5276; font-weight: 500; white-space: nowrap;">
+    ⟺ Wide
+  </button>
+  <button id="reset-all-btn" onclick="resetAllDefaults()" title="Reset every slider and toggle back to its default value" style="padding: 0.5rem 0.5rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #c0392b; border-radius: 6px; background: #fef9f9; color: #922b21; font-weight: 500; white-space: nowrap;">
+    ↺ Reset all
   </button>
 </div>
 ```
@@ -1398,13 +1407,45 @@ viewof asset_life_hi = Inputs.range([10, 30], {
   label: "Asset Life High (years)"
 })
 ```
+```{ojs}
+//| echo: false
+{
+  // Reactive diagnostic: show CAPEX share and explain why WACC might seem insensitive
+  const capexMean = mean(results.cost_capex);
+  const totalMean = mean(results.unit_cost);
+  const capexPct = totalMean > 0 ? (capexMean / totalMean * 100).toFixed(0) : 0;
+  const isOff = !include_capex && !simpleMode;
+  const isCDMO = cdmo_mode;
+
+  let msg = '';
+  let color = '#27ae60';
+  if (isOff) {
+    msg = 'CAPEX is currently excluded — financing parameters have no effect. Re-enable in Model Structure above.';
+    color = '#c0392b';
+  } else if (isCDMO) {
+    msg = 'CDMO mode is on — the CDMO toll replaces CAPEX/WACC. These financing sliders have no effect.';
+    color = '#e67e22';
+  } else if (capexPct < 15) {
+    msg = `CAPEX is only ${capexPct}% of mean total cost right now — media costs dominate (often driven by fed-batch process mode). Large WACC changes will cause small visible shifts. Try reducing the fed-batch weight above to increase CAPEX sensitivity.`;
+    color = '#e67e22';
+  } else {
+    msg = `CAPEX = ${capexPct}% of mean total cost. Changes to WACC and Asset Life will have visible effects.`;
+    color = '#27ae60';
+  }
+
+  return html`<div style="font-size:0.82em; margin: 0.25rem 0 0.4rem; padding:0.4rem 0.7rem; background:#fafafa; border-left:3px solid ${color}; border-radius:0 4px 4px 0; line-height:1.5;">
+    ${msg}
+  </div>`;
+}
+```
+
 <details><summary>What are WACC and Asset Life? (click to expand)</summary>
 
-**WACC (Weighted Average Cost of Capital):** The blended rate of return required by debt and equity investors, used to annualize capital costs via the Capital Recovery Factor (CRF). A WACC of 8% is typical for established food manufacturing; 20%+ reflects the high risk premium investors demand for an unproven technology. The simulation samples WACC from a lognormal distribution between these bounds, further adjusted by the maturity factor.
+*WACC (Weighted Average Cost of Capital):* The blended rate of return required by debt and equity investors, used to annualize capital costs via the Capital Recovery Factor (CRF). A WACC of 8% is typical for established food manufacturing; 20%+ reflects the high risk premium investors demand for an unproven technology. The simulation samples WACC from a lognormal distribution between these bounds, further adjusted by the maturity factor.
 
-**Asset Life:** How many years bioreactor and facility equipment is depreciated over. Shorter life (8 years) means higher annual capital charges; longer life (20 years) spreads costs but assumes equipment remains productive. The range reflects uncertainty about equipment durability in a novel industry.
+*Asset Life:* How many years bioreactor and facility equipment is depreciated over. Shorter life (8 years) means higher annual capital charges; longer life (20 years) spreads costs but assumes equipment remains productive.
 
-These two parameters together determine the **Capital Recovery Factor**: CRF = r(1+r)^n / ((1+r)^n - 1), where r = WACC and n = asset life in years.
+These two parameters together determine the **Capital Recovery Factor** (<abbr title="CRF = r(1+r)^n / ((1+r)^n - 1), where r = WACC and n = asset life in years. A higher WACC or shorter asset life means larger annual payments to service the capital, which increases cost/kg.">CRF</abbr>).
 </details>
 
 ```{=html}
