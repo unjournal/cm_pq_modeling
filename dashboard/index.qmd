@@ -1820,35 +1820,84 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
   const uc = results.unit_cost;
   const clipVal = Math.min(quantile(uc, 0.98), 200);
   const clipped = uc.filter(x => x <= clipVal);
+  const p20 = quantile(uc, 0.20);
+  const p80 = quantile(uc, 0.80);
 
-  return Plot.plot({
-    width: 800,
-    height: 400,
-    marginLeft: 60,
-    marginBottom: 50,
-    x: {
-      label: "Pure Cell Mass Cost ($/kg, wet weight)",
-      domain: [0, clipVal * 1.05]
-    },
-    y: {
-      label: "Frequency",
-      grid: true
-    },
-    marks: [
-      Plot.rectY(clipped, Plot.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
-      Plot.ruleX([stats.p5], {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
-      Plot.ruleX([stats.p50], {stroke: "blue", strokeWidth: 3}),
-      Plot.ruleX([stats.p95], {stroke: "red", strokeWidth: 2, strokeDasharray: "5,5"}),
-      Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
-      Plot.ruleX([25], {stroke: "orange", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
-      Plot.text([
-        {x: stats.p5 + 2, y: 2500, text: `p5: $${stats.p5.toFixed(1)}`},
-        {x: stats.p50 + 2, y: 3000, text: `p50: $${stats.p50.toFixed(1)}`},
-        {x: stats.p95 + 2, y: 2500, text: `p95: $${stats.p95.toFixed(1)}`}
-      ], {x: "x", y: "y", text: "text", fontSize: 12})
-    ],
-    title: `Projected ${target_year} Cultured Chicken Production Cost Distribution`
-  })
+  // Helper: build the distribution chart at a given pixel width/height
+  function makeDistChart(w, h, fontSize) {
+    const yLabel1 = Math.round(h * 6.0);
+    const yLabel2 = Math.round(h * 7.5);
+    return Plot.plot({
+      width: w,
+      height: h,
+      marginLeft: 60,
+      marginBottom: 50,
+      x: { label: "Pure Cell Mass Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      y: { label: "Frequency", grid: true },
+      style: { fontSize: fontSize || 13 },
+      marks: [
+        Plot.rectY(clipped, Plot.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
+        // p5 / p50 / p95 coloured lines
+        Plot.ruleX([stats.p5],  {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
+        Plot.ruleX([stats.p50], {stroke: "blue",  strokeWidth: 3}),
+        Plot.ruleX([stats.p95], {stroke: "red",   strokeWidth: 2, strokeDasharray: "5,5"}),
+        // p20 / p80 grey dashed
+        Plot.ruleX([p20], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
+        Plot.ruleX([p80], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
+        // Reference cost thresholds
+        Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        Plot.ruleX([25], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        // Labels
+        Plot.text([
+          {x: stats.p5  + 1.5, y: yLabel1, text: `p5: $${stats.p5.toFixed(1)}`},
+          {x: stats.p50 + 1.5, y: yLabel2, text: `p50: $${stats.p50.toFixed(1)}`},
+          {x: stats.p95 + 1.5, y: yLabel1, text: `p95: $${stats.p95.toFixed(1)}`},
+          {x: p20 + 1.5, y: Math.round(h * 4.5), text: `p20: $${p20.toFixed(1)}`, fill: "#666"},
+          {x: p80 + 1.5, y: Math.round(h * 4.5), text: `p80: $${p80.toFixed(1)}`, fill: "#666"}
+        ], {x: "x", y: "y", text: "text", fontSize: (fontSize || 12) - 1, fill: d => d.fill || "black"})
+      ],
+      title: `Projected ${target_year} Cultured Chicken Production Cost Distribution`
+    });
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "position:relative; display:inline-block; width:100%;";
+
+  // Fullscreen expand button
+  const fsBtn = document.createElement("button");
+  fsBtn.textContent = "⛶";
+  fsBtn.title = "Expand to full screen (press Escape to close)";
+  fsBtn.style.cssText = "position:absolute; top:6px; right:6px; z-index:10; padding:3px 7px; font-size:15px; cursor:pointer; border:1px solid #ccc; border-radius:4px; background:rgba(255,255,255,0.9); line-height:1;";
+
+  // Fullscreen overlay
+  const overlay = document.createElement("div");
+  overlay.id = "dist-chart-overlay";
+  overlay.style.cssText = "display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:white; z-index:9500; padding:2rem; box-sizing:border-box; overflow:auto;";
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "✕ Close";
+  closeBtn.style.cssText = "position:fixed; top:16px; right:20px; padding:6px 14px; font-size:14px; cursor:pointer; border:1px solid #ccc; border-radius:6px; background:#f8f9fa; z-index:9501;";
+  closeBtn.onclick = () => { overlay.style.display = "none"; };
+  overlay.appendChild(closeBtn);
+
+  // Keyboard close
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && overlay.style.display !== "none") overlay.style.display = "none";
+  });
+
+  fsBtn.onclick = () => {
+    overlay.style.display = "block";
+    // Build large chart at near-full viewport size
+    const w = Math.min(window.innerWidth - 80, 1600);
+    const h = Math.min(window.innerHeight - 120, 900);
+    // Clear old chart
+    while (overlay.children.length > 2) overlay.removeChild(overlay.lastChild);
+    overlay.appendChild(makeDistChart(w, h, 14));
+  };
+
+  document.body.appendChild(overlay);
+  wrapper.appendChild(makeDistChart(800, 400, 12));
+  wrapper.appendChild(fsBtn);
+  return wrapper;
 }
 ```
 
