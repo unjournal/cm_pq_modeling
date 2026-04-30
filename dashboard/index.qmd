@@ -932,6 +932,7 @@ html`<style>
   .override-mode-only { display: ${override_mode_constraints ? 'block' : 'none'}; }
   .separable-only     { display: ${bundled_media ? 'none' : 'block'}; }
   .bundled-only       { display: ${bundled_media ? 'block' : 'none'}; }
+  .blending-only      { display: ${include_blending ? 'block' : 'none'}; }
 </style>`
 ```
 
@@ -942,23 +943,25 @@ html`<style>
 viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: urlBool("include_blending", false)})
 ```
 
+```{=html}
+<div class="blending-only">
+```
+
 ```{ojs}
 //| echo: false
 viewof blending_share = Inputs.range([0.05, 1.0], {
     value: urlNum("blending_share", 0.25), step: 0.05,
-    label: "CM inclusion rate (%)",
-    disabled: !include_blending
+    label: "CM inclusion rate (%)"
   })
 viewof filler_cost = Inputs.range([1, 10], {
     value: urlNum("filler_cost", 3), step: 0.5,
-    label: "Filler cost ($/kg)",
-    disabled: !include_blending
+    label: "Filler cost ($/kg)"
   })
 ```
 
-<details><summary>What is blended product cost?</summary>
-Most cultivated meat products in development are hybrids — e.g., 10-30% cultured cells blended with plant-based filler. Toggle on to see estimated blended ingredient cost alongside pure cell cost. Default: 25% CM inclusion, $3/kg filler (plant protein / mycoprotein).
-</details>
+```{=html}
+</div>
+```
 
 ```{=html}
 <div class="full-mode-only">
