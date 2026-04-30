@@ -58,6 +58,8 @@ The model estimates **unit production cost** ($/kg) by summing four components u
 
 $$\boxed{\text{Unit Cost} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CAPEX}_{/\text{kg}}}_{\text{capital}} + \underbrace{\text{Fixed OPEX}_{/\text{kg}}}_{\text{overhead}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
 
+<abbr title="Variable Operating Costs: inputs that scale directly with production volume — media, growth factors, utilities, consumables. Includes basal media (amino acids, glucose, vitamins) and recombinant growth factors (FGF-2, IGF-1, TGF-β).">VOC</abbr> · <abbr title="Capital Expenditure: one-time cost of bioreactors and facilities, annualised over the asset life using the Capital Recovery Factor (CRF = r(1+r)^n / ((1+r)^n - 1), where r=WACC and n=asset life in years).">CAPEX</abbr> · <abbr title="Fixed Operating Expenditure per plant: labour, maintenance, and overhead that scale sub-linearly with plant size (larger plants have lower per-kg overhead). Called 'fixed' because it doesn't vary with each batch, but it does vary across plant sizes.">Fixed OPEX</abbr>
+
 In **CDMO mode** (togglable in the dashboard), the capital and overhead terms are replaced by a contract toll fee:
 
 $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \underbrace{\text{CDMO Toll}_{/\text{kg}}}_{\text{contract fee}} + \underbrace{\text{Downstream}_{/\text{kg}}}_{\text{optional}}}$$
@@ -117,7 +119,7 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 | Scenario | Price range ($/L) | What it means | Source |
 |----------|-------------------|---------------|--------|
 | With hydrolysates | <abbr title="Source: O'Neill et al. 2021 review of serum-free media costs; corroborated by Believer Meats (Nature Food 2024) reporting $0.63/L media at scale, and a 2025 industry report noting companies achieving '$1 per liter or less'">$0.20 – $1.20</abbr> | Amino acids from digested plant/yeast proteins | [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678), [Believer 2024](https://www.nature.com/articles/s43016-024-01022-w) |
-| Pharma-grade amino acids | $1.00 – $4.00 | Individual purified amino acids | [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
+| Pharma-grade amino acids | <abbr title="Revised downward April 2026 from Humbird's $1-4/L: GFI amino acid supplier report (2025) found Humbird's amino acid prices 2-10x too high. Since amino acids dominate basal media cost (~60-80%), this substantially lowers the pharma range.">$0.50 – $2.50</abbr> | Individual purified amino acids | [GFI amino acid report 2025](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/) |
 
 Hydrolysates cost less because they're produced from commodity feedstocks via enzymatic digestion, rather than synthetic chemistry or purification.
 
@@ -221,14 +223,14 @@ In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by d
 
 | Parameter | Range | Source |
 |-----------|-------|--------|
-| Quantity | 0.0005 – 0.02 g/kg | Higher usage due to degradation |
+| Quantity | 0.001 – 0.006 g/kg | Humbird formulation across plausible media-use range; no breakthrough-driven usage reduction |
 | Price | $500 – $50,000/g | Current FGF-2 ~$50,000/g, TGF-β up to $1M/g ([GFI analysis](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/)) |
 
 **"Cheap" regime (breakthrough achieved):**
 
 | Parameter | Range | Source |
 |-----------|-------|--------|
-| Quantity | 0.0001 – 0.005 g/kg | Lower usage (thermostable, recycling) |
+| Quantity | 0.0005 – 0.002 g/kg | ≈3× usage reduction from thermostable variants, autocrine lines, recycling |
 | Price | $1 – $100/g | [GFI industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) — studies suggest $4/g achievable |
 
 **Why binary, not continuous?** The breakthrough technologies are **substitutes**:
@@ -483,8 +485,9 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Food-grade micronutrients](#micronutrient-costs) | 65% | 0.20 | Reduces micronutrient $/g by ~90% | <abbr title="Food-grade micronutrients include: vitamins (B12, biotin, folic acid, etc.), minerals (iron, zinc, selenium, copper), and trace elements — sourced from supplement/feed supply chains at ~$0.02-2/g rather than pharma-grade at ~$0.50-20/g. See Sigma-Aldrich catalog vs. commodity vitamin suppliers.">Food-grade vitamins, minerals, and trace elements</abbr> vs. <abbr title="Pharma-grade micronutrients are ultra-pure (>99.9%) with certificates of analysis, manufactured under GMP conditions. Examples: pharma-grade transferrin (~$100/g), pharma-grade B12 (~$5/g) vs. food-grade B12 (~$0.05/g).">pharma-grade</abbr> |
 | [Scalable GF technology](learn.qmd#step-5-growth-factors--a-key-cost-driver) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
+
+*Note: an earlier version of this table included a "Food-grade micronutrients" adoption parameter (65% base prob). This was removed — vitamins, minerals, and trace salts are now folded into basal media $/L. See the [model change log](index.html#micronutrient-change-note) for the full rationale.*
 
 ### Process Intensities
 

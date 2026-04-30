@@ -229,6 +229,25 @@ function toggleWideSidebar() {
   }
 }
 
+// Re-initialise Tippy tooltips for abbr[title] elements added by OJS
+// (OJS renders after Quarto's DOMContentLoaded Tippy pass, so abbr elements
+// inside OJS html`` templates are missed on first pass).
+function initOjsTooltips() {
+  if (typeof tippy === 'undefined') return;
+  document.querySelectorAll('.panel-sidebar abbr[title], .panel-fill abbr[title]').forEach(function(el) {
+    if (!el._tippy && el.getAttribute('title')) {
+      tippy(el, { content: el.getAttribute('title'), placement: 'bottom', maxWidth: 340, allowHTML: false });
+    }
+  });
+}
+setTimeout(initOjsTooltips, 2500);  // first pass after OJS settles
+// Re-run whenever sidebar content changes (OJS re-renders on slider change)
+document.addEventListener('DOMContentLoaded', function() {
+  var obs = new MutationObserver(function() { initOjsTooltips(); });
+  var sidebar = document.querySelector('.panel-sidebar');
+  if (sidebar) obs.observe(sidebar, { childList: true, subtree: true });
+});
+
 function toggleViewControls() {
   const content = document.getElementById('view-controls-content');
   const icon = document.getElementById('vc-minimize');
