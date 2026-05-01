@@ -1210,21 +1210,21 @@ The model adjusts maturity expectations based on years from 2024.
 
 ---
 
-**Process Mode Mix**
+**Probability of Each Process Mode** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="Each slider sets the relative probability that a randomly drawn simulated plant operates in that mode. The three values are normalized internally so they always sum to 100% — so only their ratios matter. E.g., Fed-batch 0.2, Perfusion 0.5, Continuous 0.3 means 20% of simulated plants use fed-batch, 50% perfusion, 30% continuous.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
 viewof p_fedbatch = Inputs.range([0, 1], {
   value: urlNum("p_fedbatch", 0.20), step: 0.05,
-  label: html`Fed-batch weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Low density (5–30 g/L), moderate media use (1–2×). Semi-continuous: nutrient-concentrated feeds added periodically. Less efficient than perfusion.">(?)</abbr>`
+  label: html`P(Fed-batch) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Low density (5–30 g/L), moderate media use (1–2×). Nutrient-concentrated feeds added periodically. Simpler to operate but lower cell density than perfusion.">(?)</abbr>`
 })
 viewof p_perfusion = Inputs.range([0, 1], {
   value: urlNum("p_perfusion", 0.50), step: 0.05,
-  label: html`Perfusion weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Medium-high density (30–150 g/L), higher media throughput (1–5×). Continuous media exchange with cell retention. Currently the industry standard for high-density CM production.">(?)</abbr>`
+  label: html`P(Perfusion) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Medium-high density (30–150 g/L), higher media throughput (1–5×). Continuous media exchange with cell retention. Currently the industry standard for high-density CM production.">(?)</abbr>`
 })
 viewof p_continuous = Inputs.range([0, 1], {
   value: urlNum("p_continuous", 0.30), step: 0.05,
-  label: html`Continuous weight <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Highest density (50–200 g/L), efficient media use (0.5–3×). Near-steady-state operation; cells grown and harvested continuously with optimized recycling.">(?)</abbr>`
+  label: html`P(Continuous) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Highest density (50–200 g/L), efficient media use (0.5–3×). Near-steady-state operation; cells grown and harvested continuously with optimized recycling.">(?)</abbr>`
 })
 ```
 
@@ -1750,8 +1750,10 @@ results = simulate(30000, 42, simParams)
 
 // Comparison run: when CDMO mode is on, also run the in-house baseline
 // (same seed so VOC components are paired; only capital structure differs)
+// Returns an invisible span (not null) when CDMO is off — returning null
+// causes OJS to render the literal text "null" in the document.
 inhouse_results = {
-  if (!cdmo_mode) return null;
+  if (!cdmo_mode) return html`<span style="display:none;"></span>`;
   return simulate(30000, 42, {...simParams, cdmo_mode: false});
 }
 
