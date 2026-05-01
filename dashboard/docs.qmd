@@ -60,7 +60,7 @@ This document provides complete technical documentation for the cultured chicken
 - [Parameter Definitions](#parameter-definitions) — All inputs with distributions, ranges, and source citations
 - [Code Reference](#code-reference) — Implementation details and links to source code ([JavaScript in index.qmd](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd), [Python reference](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)). A historical Squiggle implementation exists but is no longer synced with the dashboard — see the note in the [Code Reference section](#code-reference).
 - [Limitations](#limitations) — Known caveats, simplifications, and recommendations for use
-- **New:** [TEA Comparison](compare.qmd) — Side-by-side breakdown of published cost analyses
+- [TEA Comparison](compare.qmd) — Side-by-side breakdown of published cost analyses
 
 ---
 

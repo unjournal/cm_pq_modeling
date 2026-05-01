@@ -33,7 +33,7 @@ format:
 ---
 
 ::: {.callout-note}
-**New to this model?** Start with the [Simplest Model →](simple.qmd) — a shorter version with only the biggest levers, line-of-sight explanations, and no jargon. You can carry your settings over to this Advanced Model when you're ready.
+**New to this model?** Start with the [Simplest Model →](simple.qmd) — a shorter version focusing on some key levers with line-of-sight explanations. You can carry your settings over to this Advanced Model when you're ready.
 :::
 
 ::: {.callout-warning}
@@ -1005,7 +1005,7 @@ html`<style>
 
 ```{ojs}
 //| echo: false
-viewof include_blending = Inputs.toggle({label: "Show blended product cost", value: urlBool("include_blending", false)})
+viewof include_blending = Inputs.toggle({label: html`Show blended/hybrid product cost <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Most near-term cultured meat products will blend cells with plant-based filler to reduce cost. Enable this to see what a product at your chosen CM inclusion rate would cost — and whether it could compete with conventional chicken. The blended cost = (pure cell cost × CM share) + (filler cost × plant share).">(?)</abbr>`, value: urlBool("include_blending", false)})
 ```
 
 ```{=html}
@@ -1194,7 +1194,7 @@ viewof maturity = Inputs.range([0.1, 0.9], {
 })
 ```
 <details><summary>What is this?</summary>
-A latent factor (0=nascent, 1=mature) that affects all technology adoption, reactor costs, and financing. High maturity = correlated improvements.
+A latent factor (0=nascent, 1=mature) that correlates technology adoption, reactor costs, and financing. High maturity = correlated improvements across all three. [Full explanation and stress-test guidance →](#industry-maturity-deep-dive)
 </details>
 
 ---
@@ -1354,11 +1354,15 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 <div class="separable-only">
 ```
 
+::: {.callout-note appearance="minimal" icon=false}
+<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes.
+:::
+
 ```{ojs}
 //| echo: false
 viewof p_recfactors = Inputs.range([0.1, 0.9], {
   value: urlNum("p_recfactors", 0.5), step: 0.05,
-  label: "P(Scalable Growth Factor (GF) technology)"
+  label: html`P(Scalable <abbr style="cursor:help;text-decoration:underline dotted;" title="Growth Factor — signaling proteins like FGF-2, IGF-1, TGF-β that tell cells to proliferate. Currently the most expensive media component.">Growth Factor (GF)</abbr> technology)`
 })
 ```
 
@@ -1515,7 +1519,7 @@ viewof asset_life_hi = Inputs.range([10, 30], {
 
 *WACC (Weighted Average Cost of Capital):* The blended rate of return required by debt and equity investors, used to annualize capital costs via the Capital Recovery Factor (CRF). A WACC of 8% is typical for established food manufacturing; 20%+ reflects the high risk premium investors demand for an unproven technology. The simulation samples WACC from a lognormal distribution between these bounds, further adjusted by the maturity factor.
 
-*Asset Life:* How many years bioreactor and facility equipment is depreciated over. Shorter life (8 years) means higher annual capital charges; longer life (20 years) spreads costs but assumes equipment remains productive.
+*Asset Life:* How many years bioreactor and facility equipment is depreciated over. These two sliders define a **uniform distribution** over the plausible range — not a single fixed value. The simulation draws a different asset life for each of the 30,000 Monte Carlo runs. Shorter life (8 years) means higher annual capital charges; longer life (20 years) spreads costs but assumes equipment remains productive. To set a specific value, set both sliders to the same number.
 
 These two parameters together determine the **Capital Recovery Factor** (<abbr title="CRF = r(1+r)^n / ((1+r)^n - 1), where r = WACC and n = asset life in years. A higher WACC or shorter asset life means larger annual payments to service the capital, which increases cost/kg.">CRF</abbr>).
 </details>
@@ -1526,7 +1530,7 @@ These two parameters together determine the **Capital Recovery Factor** (<abbr t
 
 ---
 
-**Cell Density / Media-Use Override**
+**Cell Density / Media-Use Override** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="In the default model, cell density is not a free slider — it is sampled automatically from mode-specific ranges (fed-batch: 5–30 g/L; perfusion: 30–150 g/L; continuous: 50–200 g/L) based on the process mode probabilities above. This reflects the fact that density is physically determined by operating mode, not independently chosen. Enable 'Override' below to set density ranges directly — useful if you have a specific bioreactor configuration in mind.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
@@ -1803,7 +1807,7 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated <strong>manufacturing cost per kg of cultured chicken cell biomass</strong> (<span title="Wet weight, at the CM gate: the mass of cells as harvested from the bioreactor — including ~70-80% water, the standard output basis used in TEAs (Humbird 2021, Pasitka 2024). Includes: media, growth factors, bioreactor capital (annualised), plant overhead, utilities. Excludes: texturization, scaffolding, blending with plant-based fillers, packaging, distribution. This is the same accounting object as 'edible kg before mixture' used on the beliefs form — wet cell mass at harvest IS the edible component at this stage. For comparison: Humbird reports $37/kg; Pasitka $13.75/kg (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product. See TEA Comparison for details." style="text-decoration: underline dotted; cursor: help;">wet weight, at harvest &#9432;</span>) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the factory-gate manufacturing cost — not a consumer product price or retail cost. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
+<strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Wet weight, at the CM gate: the mass of cells as harvested from the bioreactor — including ~70-80% water, the standard output basis used in TEAs (Humbird 2021, Pasitka 2024). Includes: media, growth factors, bioreactor capital (annualised), plant overhead, utilities. Excludes: texturization, scaffolding, blending with plant-based fillers, packaging, distribution. This is the same accounting object as 'edible kg before mixture' used on the beliefs form — wet cell mass at harvest IS the edible component at this stage. For comparison: Humbird reports $37/kg; Pasitka $13.75/kg (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product. See TEA Comparison for details." style="text-decoration: underline dotted; cursor: help;">wet weight, at harvest &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the factory-gate manufacturing cost — not a consumer product price or retail cost. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix.">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
@@ -2232,7 +2236,7 @@ These percentages answer: "What's the chance that production costs fall below ke
 
 ### Cost Breakdown
 
-**Where does the cost come from?** This chart shows the average contribution of each cost component across all simulations. The largest bars are the cost drivers to focus on — these are where technological progress or parameter uncertainty has the most impact.
+**Where does the cost come from?** This chart shows the **mean** contribution of each cost component across all 30,000 simulations (mean, not median — skewed components like growth factors will appear larger here than at the median). The largest bars are the cost drivers to focus on — these are where technological progress or parameter uncertainty has the most impact.
 
 ```{ojs}
 //| echo: false
@@ -2828,7 +2832,8 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 **What changed:** The separate slider and cost line were removed. Basal vitamins, minerals, and trace salts are now included inside media \$/L along with amino acids and glucose, consistent with how the media-cost literature is reported. Supplemental **recombinant proteins** (insulin, transferrin, albumin) remain unmodeled as a standalone line for now; if we reintroduce a separate uncertainty term, it will be repurposed to these proteins where per-g prices and per-kg usage can be sourced.
 :::
 
-**Sources that directly informed model structure and parameter ranges:**
+<details>
+<summary>Sources that directly informed model structure and parameter ranges (click to expand)</summary>
 
 | Source | What it informed in the model | How |
 |--------|------|-----|
@@ -2839,7 +2844,10 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 | [GFI recombinant-protein cost analysis (2023)](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) | **Growth-factor quantity range (tightened April 2026)** | Reproduces Humbird formulation (FGF 0.1 mg/L, TGFβ 0.002 mg/L) and cost-competitive media-use assumption (8–13 L/kg); drives the revised 0.0005–0.006 g/kg quantity range |
 | [GFI State of Industry (2024)](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) | Growth factor cost targets, technology status | Informed GF price regime bounds and adoption probability defaults |
 
-**Sources cited for context but NOT directly integrated into parameter values:**
+</details>
+
+<details>
+<summary>Sources cited for context but not directly integrated into parameter values (click to expand)</summary>
 
 | Source | Relevance |
 |--------|-----------|
@@ -2849,7 +2857,10 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 | [Lever VC (2025)](https://www.levervc.com/) | Industry claims on cell density (60-90 g/L) — cited as context for density range upper bound |
 | [The Unjournal evaluations](https://unjournal.pubpub.org/pub/evalsumlimitedmeadprod/) | Independent evaluation of RP forecasting paper — informed our project framing |
 
-**Parameters where source grounding is weakest** (review priority):
+</details>
+
+<details>
+<summary>Parameters where source grounding is weakest — review priority (click to expand)</summary>
 
 - Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
 - Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. The remaining uncertainty lives in the **$/g** of growth factors, not in the grams/kg.
@@ -2858,3 +2869,4 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 - Plant factor (1.5-3.5×) — standard engineering multiplier range, not CM-specific
 
 See the [Technical Documentation](docs.qmd) for detailed parameter definitions and the expandable details under each slider for parameter-specific discussion.
+</details>
