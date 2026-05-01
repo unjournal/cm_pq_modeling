@@ -19,6 +19,8 @@ website:
         href: docs.qmd
       - text: "Discuss"
         href: discuss.qmd
+      - text: "Limits/Critique"
+        href: limits.qmd
       - text: "About"
         href: about.qmd
     right:

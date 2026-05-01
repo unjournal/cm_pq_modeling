@@ -1,0 +1,126 @@
+---
+title: "Model Limits & Critique"
+subtitle: "An external methodological review — what the model gets right, what it doesn't, and what we're doing about it"
+---
+
+::: {.callout-note}
+This review was conducted in early 2026 based on the model and form as they existed at that time. Both have since been updated — some issues below are already addressed; others are work in progress. The full source report is on GitHub: [CM_model_deep-research-report.md](https://github.com/unjournal/cm_pq_modeling/blob/main/critique_discussion/CM_model_deep-research-report.md).
+:::
+
+The reviewer's bottom line:
+
+> *"The project is already good enough to support productive discussion, but not yet good enough to serve as the authoritative modeling-and-elicitation backbone for coordinated expert convergence."*
+
+We agree. This model is designed to support structured exploration and deliberation — not to produce a single authoritative posterior. The limitations below are real, and we name them rather than paper over them.
+
+---
+
+## What the model and process already do well
+
+- **Public and transparent** — code, formulas, and parameter choices are all exposed and annotatable via [Hypothesis](https://hypothes.is/)
+- **Uncertainty-aware** — Monte Carlo simulation with explicit distributions rather than point estimates
+- **Explicitly caveated** — documentation notes the static snapshot structure, missing geography, and ad hoc dependence
+- **Linked to deliberation** — designed for a [workshop](https://uj-cm-workshop.netlify.app/) where beliefs are elicited before and after evidence review
+- **Discussion-connected** — GitHub Discussions, Hypothesis annotations, and participant forms feed back into the model
+
+---
+
+## Key structural issues in the model
+
+### Target quantity: "edible kg" vs "wet-weight cell mass at harvest"
+
+**Issue.** The model estimates the cost of pure cultured chicken cell biomass (wet weight, at harvest) — factory-gate, before texturisation or blending. The [workshop beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) asks for "average production cost per edible kg of cultured chicken meat." These are the same accounting object (harvested wet cell mass = the edible component before any downstream processing), but the wording difference created potential for semantic confusion.
+
+**Status: Addressed.** Both the beliefs form and the About page now carry an explicit accounting boundary note.
+
+---
+
+### Missing supplemental recombinant proteins (albumin, transferrin, insulin) {#supplemental-proteins}
+
+**Issue.** The model's "growth factors" parameter covers FGF-2, IGF, TGF-β and similar signaling proteins. Albumin, transferrin, and insulin — three other recombinant proteins widely used in cell culture — are not yet separately modeled. According to GFI's 2023 analysis:
+
+- Albumin is expected to account for ~96.6% of anticipated recombinant protein production volume in CM
+- Transferrin ~2.4%, insulin ~1%
+- Together, under optimistic (efficient media) conditions: ~$1/kg contribution
+- Under pessimistic conditions: potentially $5–50/kg — larger than several currently-modeled items
+
+**Status: In progress.** The [expert distribution section of the beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) (field E4) now asks participants to estimate total albumin + transferrin + insulin cost per kg. These elicited estimates will inform adding a "supplemental proteins" cost component to the main model.
+
+---
+
+### Dependence structure: the single "maturity" factor
+
+**Issue.** The model uses one latent "maturity" variable to correlate technology adoption rates, financing costs (WACC), and reactor choice. This prevents absurd combinations but asks one synthetic dimension to stand in for sector maturity, supply-chain development, regulatory learning, and financing all at once — creating potential hidden coupling and double-counting.
+
+Better practice would use at least three separate latent factors:
+
+1. Technical bioprocess maturity
+2. Supply-chain / input maturity
+3. Financing / regulatory maturity
+
+...with user-selectable correlation among them, making the dependence structure itself an object of scrutiny.
+
+**Status: Planned.** Multi-factor dependence is on the roadmap. A first step: offer three correlation modes — independent, sector-coupled (current), and strongly coupled — so users can see whether headline results are robust to the assumption.
+
+---
+
+### Sensitivity analysis: dollar-swing ranking, not variance decomposition {#sensitivity-methods}
+
+**Issue.** The tornado chart shows how much the mean cost changes when each parameter moves from its 10th to 90th percentile — a conditional-mean dollar-swing statistic. This is **not** a Sobol variance decomposition: bars for correlated parameters can overlap and should not be summed. An earlier version of the simplified-view text incorrectly implied these parameters "contribute less than 10% of the variance."
+
+A proper global sensitivity analysis (Sobol first-order and total-effect indices) would answer a fundamentally different question: what fraction of output variance is explained by each input, accounting for nonlinear and interaction effects?
+
+**Status: Source corrected; Sobol planned.** The source text now accurately describes the chart as a "conditional-mean swing statistic, not a variance decomposition." Adding a proper global sensitivity mode is planned once the methodology is better understood.
+
+---
+
+## Elicitation design issues
+
+### Form depth: lightweight survey, not full distribution elicitation
+
+**Issue.** The focal question asks for a median and optional 80% credible interval. Formal expert elicitation protocols (Sheffield Elicitation Framework, Cooke's Classical Model) recommend eliciting full probability distributions per quantity, with calibration training, piloting, and revision rounds.
+
+**Status: Partially addressed.** The Expert Distribution Mode section of the beliefs form asks for p10/median/p90 for five key model parameters (basal media $/L, growth factor price, growth factor dosage, and supplemental protein costs). For richer distributions, [Metaculus](https://www.metaculus.com/c/unjournal/38815/) is linked. A more rigorous follow-up process is planned if interest and resources allow — see [Interested in going further?](#going-further) below.
+
+---
+
+### Mixed expert types: subgroup reporting needed
+
+**Issue.** The workshop mixes TEA authors, industry operators, bioprocess researchers, evaluators, and AW stakeholders. Good-practice elicitation recommends reporting subgroup beliefs separately before any pooled synthesis — subgroup disagreement is information, not noise.
+
+**Status: Committed.** The beliefs form now uses nine expertise categories (TEA author, bioprocess researcher, industry operator, etc.) enabling subgroup comparison. We commit to reporting subgroup distributions separately in the workshop synthesis.
+
+---
+
+### No formal calibration training
+
+**Issue.** Formal expert elicitation includes training on cognitive biases in probability estimation — anchoring, overconfidence, availability — with practice questions and feedback. This workshop does not include this: participants are not paid, time is limited, and there is no trained facilitator running a formal protocol.
+
+**Status: Noted; future option.** The beliefs form asks whether participants have done formal elicitation training before, and whether they'd be interested in a more rigorous process in future.
+
+---
+
+## What the workshop itself is designed to do
+
+The workshop is a deliberation exercise — not primarily an aggregation exercise. The design (pre-workshop beliefs → evidence review → live discussion → post-workshop belief update) is the right structure for collective learning even with a simpler elicitation instrument. The value of having TEA authors, industry operators, and evaluators in structured disagreement is not diminished by the form being a survey.
+
+What the workshop cannot do: generate a calibrated posterior that stands on its own as an authoritative estimate of CM_01. For that, we would need the full formal apparatus described below.
+
+---
+
+## Interested in going further? {#going-further}
+
+If there is enough interest from participants — and if we secure resources — we would design a follow-up exercise with:
+
+- **Calibration training** — practice questions with known answers, bias feedback
+- **Full distribution elicitation** — chips-and-bins or quartile method for each key parameter
+- **Individual-before-group** — beliefs elicited privately before any group interaction
+- **Subgroup comparison** — separate posteriors for TEA specialists, operators, evaluators
+- **Compensation** — paid time for serious engagement
+- **Trained facilitator** — in structured expert elicitation (e.g., SHELF protocol)
+
+If you're interested in participating in or helping lead this, please say so in the [beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) ("About You" section) or email [contact@unjournal.org](mailto:contact@unjournal.org).
+
+---
+
+*This model is an [Unjournal](https://unjournal.org) Pivotal Questions project. The Unjournal commissions and publicizes expert evaluations of impactful research to improve how evidence informs funding and policy decisions.*

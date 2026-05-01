@@ -37,8 +37,14 @@ format:
 :::
 
 ::: {.callout-warning}
-## Important: Model Status
-This model is *largely AI-generated* and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. *Do not treat the outputs as authoritative cost estimates.* We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources--how-they-inform-the-model).
+## Important: Model Status & Limitations
+This model is *largely AI-generated* and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
+
+**An external methodological review identified several structural limitations** — including the ad hoc dependence structure, missing supplemental protein costs (albumin/transferrin/insulin), and the sensitivity chart being a dollar-swing ranking rather than a variance decomposition. We are addressing these incrementally.
+
+**[Read the full critique and our responses → Limits/Critique](limits.html)**
+
+We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources--how-they-inform-the-model).
 :::
 
 ::: {.callout-note collapse="true"}
