@@ -519,7 +519,7 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-All values are <strong>$/kg of pure cultured cell mass (wet weight)</strong> produced in a bioreactor — not a consumer product price. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+All values are <strong>manufacturing cost per kg of cultured chicken cell biomass (wet weight, at harvest)</strong> — the factory-gate cost, not a consumer product price. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
 </div>`
 ```
@@ -620,7 +620,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
   function makeChart(w, h) {
     return Plot_s.plot({
       width: w, height: h, marginLeft: 60, marginBottom: 45,
-      x: { label: "Pure Cell Mass Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      x: { label: "Cell Biomass Manufacturing Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       marks: [
         Plot_s.rectY(clipped, Plot_s.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),

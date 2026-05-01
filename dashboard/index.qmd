@@ -960,7 +960,7 @@ viewof simpleMode = Inputs.toggle({label: "Simplified view (recommended)", value
 //| echo: false
 html`<div id="simplified-note" style="display: ${simpleMode ? 'block' : 'none'}; background: #f0f4e8; border-left: 4px solid #5a7a5a; padding: 0.7rem 0.9rem; margin-bottom: 1rem; font-size: 0.82em; line-height: 1.5; border-radius: 0 4px 4px 0;">
 <strong>Simplified view:</strong> Less pivotal parameters (plant capacity, uptime, financing costs, media-use multiplier) are set to reasonable defaults.
-In the model's sensitivity analysis (which should be interpreted cautiously — it reflects model structure and the parameter ranges we assume, not an empirically validated importance ranking), these contribute less than 10% of the variance in cost estimates.
+In our dollar-impact sensitivity analysis (tornado chart), each of these individually shifts the mean cost by a relatively small amount — typically under $15/kg — compared to $50–150+/kg for cell density and growth factor uncertainty. Note: this is a conditional-mean swing statistic, not a variance decomposition; see the tornado chart below for the full ranking.
 <em>Switch off to adjust all parameters.</em>
 </div>`
 ```
@@ -1747,7 +1747,7 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated <strong>production cost per kilogram of pure cultured chicken cells</strong> (<span title="Wet weight = the mass of cells as harvested from the bioreactor, including water content (~70-80%). This is the standard output basis used in most TEAs (Humbird 2021, Pasitka 2024). It does NOT include downstream processing into structured products, blending with plant-based ingredients, or retail margins. For comparison: Humbird reports $37/kg wet cell mass; Pasitka reports $13.75/kg wet cell mass (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product, not pure cell mass. See our TEA Comparison page for details." style="text-decoration: underline dotted; cursor: help;">wet weight, unprocessed &#9432;</span>) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the cost to produce cell mass in a bioreactor — not the cost of a consumer product, and not retail price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
+<strong>What these numbers represent:</strong> Simulated <strong>manufacturing cost per kg of cultured chicken cell biomass</strong> (<span title="Wet weight, at the CM gate: the mass of cells as harvested from the bioreactor — including ~70-80% water, the standard output basis used in TEAs (Humbird 2021, Pasitka 2024). Includes: media, growth factors, bioreactor capital (annualised), plant overhead, utilities. Excludes: texturization, scaffolding, blending with plant-based fillers, packaging, distribution. This is the same accounting object as 'edible kg before mixture' used on the beliefs form — wet cell mass at harvest IS the edible component at this stage. For comparison: Humbird reports $37/kg; Pasitka $13.75/kg (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product. See TEA Comparison for details." style="text-decoration: underline dotted; cursor: help;">wet weight, at harvest &#9432;</span>) in <strong>${target_year}</strong>, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is the factory-gate manufacturing cost — not a consumer product price or retail cost. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix.">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
@@ -1762,7 +1762,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Median Pure Cell Mass Cost (p50)</h4>
 <h2 style="margin: 0.5rem 0;">$${Math.round(stats.p50)}/kg</h2>
-<small>$/kg pure cell mass (wet weight) — half of simulations above, half below</small>
+<small>$/kg cell biomass (wet weight, at harvest) — half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
@@ -1855,7 +1855,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         downstream: +mean(results.cost_downstream).toFixed(2)
       },
       notes: {
-        units: "USD per kg of pure cultured cell mass, wet weight",
+        units: "USD per kg of cultured chicken cell biomass, wet weight at harvest",
         simulation_seed: 42,
         monte_carlo_samples: 30000
       }
@@ -1929,7 +1929,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
       height: h,
       marginLeft: 60,
       marginBottom: 50,
-      x: { label: "Pure Cell Mass Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      x: { label: "Cell Biomass Manufacturing Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       style: { fontSize: fontSize || 13 },
       marks: [
@@ -2049,7 +2049,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
     height: 340,
     marginLeft: 60,
     marginBottom: 50,
-    x: {label: "Production Cost ($/kg, wet weight)", domain: [0, clipVal * 1.02]},
+    x: {label: "Manufacturing Cost ($/kg, wet weight at harvest)", domain: [0, clipVal * 1.02]},
     y: {label: "Frequency", grid: true},
     color: {
       domain: ["In-House", "CDMO"],
@@ -2432,11 +2432,18 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
   ];
 
-  // Use absolute swing so all bars point right — easier to read at a glance
-  const swings = params.map(p => ({
+  // Compute signed swings: positive = high param → higher cost (red); negative = high param → lower cost (green)
+  const swingsRaw = params.map(p => ({
     name: p.name,
     kind: p.kind,
-    swing: Math.abs(conditionalSwing(p.data, uc, 0.10))
+    rawSwing: conditionalSwing(p.data, uc, 0.10)
+  }));
+  const swings = swingsRaw.map(s => ({
+    name: s.name,
+    kind: s.kind,
+    swing: Math.abs(s.rawSwing),
+    // Red: high value raises cost; Green: high value lowers cost
+    fill: s.rawSwing >= 0 ? "#c0392b" : "#27ae60"
   }));
 
   const sorted = [...swings].sort((a, b) => b.swing - a.swing);
@@ -2449,7 +2456,7 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     marginLeft: 290,
     marginRight: 120,
     x: {
-      label: "Impact on mean unit cost ($/kg) — larger bar = bigger lever",
+      label: "Dollar swing in mean unit cost ($/kg) — larger bar = bigger lever on cost",
       domain: [0, maxAbs + pad],
       grid: true,
       labelOffset: 40,
@@ -2461,8 +2468,8 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
       Plot.barX(sorted, {
         y: "name",
         x: "swing",
-        fill: "#3498db",
-        fillOpacity: 0.75,
+        fill: d => d.fill,
+        fillOpacity: 0.80,
         sort: {y: "-x"}
       }),
       Plot.text(sorted, {
@@ -2483,7 +2490,7 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
 }
 ```
 
-*Red bars = parameter increases cost as it rises; green bars = decreases cost. Industry Maturity is a latent variable — its bar captures the total bundled effect of correlated improvements, so don't add it to the other bars.* [Full methodology and caveats →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
+*Red bars: when this parameter is high, cost is higher (a cost driver). Green bars: when high, cost is lower (a cost reducer). Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is NOT a variance decomposition — bars for correlated parameters can overlap and should not be summed. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
 
 ### Industry Maturity Deep Dive
 

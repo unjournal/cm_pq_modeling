@@ -100,7 +100,15 @@ $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \
 The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
-**Output basis:** All costs in this model are expressed as **$/kg of pure cultured cell mass (wet weight)**, not hybrid products, retail products, or dry biomass. This matters when comparing to published TEA figures, some of which report costs for blended/hybrid products. See our [TEA comparison page](compare.qmd) for a systematic breakdown of how published estimates differ in output basis.
+**Output basis — the CM-gate manufacturing cost:** All costs are expressed as **manufacturing cost per kg of cultured chicken cell biomass (wet weight, at harvest)**. This is the factory-gate cost at the point where cells are separated from spent media — before texturization, blending, packaging, or distribution.
+
+**Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities.
+
+**Excludes:** Texturization/scaffolding, blending with plant-based ingredients, packaging, distribution, R&D amortization, regulatory costs.
+
+**Alignment with other surfaces:** This is the same accounting object as "edible kg before mixture" in the workshop beliefs form — at harvest, wet-weight cell biomass *is* the edible component (nothing non-edible has been added). It is also what we mean by "average production cost at commercial scale" on the Metaculus questions.
+
+See our [TEA comparison page](compare.qmd) for how this compares to published TEA figures, which often differ in output basis (hybrid products, dry weight, retail price).
 :::
 
 <details>
