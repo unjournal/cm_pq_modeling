@@ -709,8 +709,24 @@ function simulate(n, seed, params) {
   const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
   const cost_recf = mul(g_recf, price_recf);
 
-  // Other variable costs
-  const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
+  // Supplemental recombinant proteins: albumin, transferrin, insulin
+  // These are distinct from growth factors (FGF/IGF/TGF-β) — they are structural/survival
+  // proteins used as media additives, not signalling molecules. GFI 2024 supply-chain
+  // analysis projects albumin alone to be 96.6% of anticipated recombinant protein
+  // production volume for CM. Cost depends on whether food-grade production at scale
+  // (recombinant albumin from yeast, etc.) replaces pharma-grade sourcing.
+  // Cheap regime: food-grade recombinant at scale → p5=$0.03/kg, p95=$0.60/kg cell mass
+  // Exp. regime:  pharma-grade → p5=$0.50/kg, p95=$4.00/kg cell mass
+  let p_supp = sampleBetaMeanStdev(rng, params.p_supp_protein_mean, 0.12, n);
+  p_supp = clip(add(p_supp, scale(maturity.map(m => m - 0.5), 0.20)), 0, 1);
+  const is_supp_cheap = p_supp.map(p => rng() < p);
+  const supp_cheap_cost = sampleLognormalP5P95(rng, 0.03, 0.60, n);
+  const supp_exp_cost   = sampleLognormalP5P95(rng, 0.50, 4.00, n);
+  const cost_supp_protein = is_supp_cheap.map((c, i) => c ? supp_cheap_cost[i] : supp_exp_cost[i]);
+
+  // Other variable costs (utilities, consumables, small-molecule additives)
+  // Reduced from p5=0.5/p95=5.0 — supplemental proteins now have their own term above
+  const other_var = sampleLognormalP5P95(rng, 0.30, 3.0, n);
 
   // Bundled media override (advanced full-view mode): replaces the separable basal+GF
   // structure with a single complete-medium $/L figure, matching the convention used in
@@ -726,8 +742,8 @@ function simulate(n, seed, params) {
     media_cost_L_eff = complete_media_L;
   }
 
-  // VOC total (micronutrients folded into cost_media_eff)
-  const voc = add(add(cost_media_eff, cost_recf_eff), other_var);
+  // VOC total: media + growth factors + supplemental proteins + other
+  const voc = add(add(add(cost_media_eff, cost_recf_eff), cost_supp_protein), other_var);
 
   // CDMO mode: replace CAPEX + Fixed OPEX with a contract toll fee ($/kg)
   // The toll covers the CDMO's amortized capital, labor, overhead, and margin.
@@ -802,6 +818,7 @@ function simulate(n, seed, params) {
     unit_cost,
     cost_media: cost_media_eff,
     cost_recf: cost_recf_eff,
+    cost_supp_protein,
     cost_other_var: other_var,
     cost_capex: capex_perkg,
     cost_fixed: fixed_perkg,
@@ -1270,6 +1287,8 @@ viewof reset_adoption = Inputs.button("↺ Reset adoption defaults", {
     viewof p_recfactors.dispatchEvent(new Event("input", {bubbles: true}));
     viewof gf_progress.value = 50;
     viewof gf_progress.dispatchEvent(new Event("input", {bubbles: true}));
+    viewof p_supp_protein.value = 0.70;
+    viewof p_supp_protein.dispatchEvent(new Event("input", {bubbles: true}));
   }
 })
 ```
@@ -1398,6 +1417,34 @@ The probability slider represents whether **at least one** of these technology a
 ```{=html}
 </div>
 ```
+
+---
+
+**Supplemental Recombinant Proteins** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Albumin, transferrin, and insulin — used as media additives to support cell survival and growth. Distinct from growth factors (FGF/IGF/TGF-β). GFI 2024 projects albumin alone as 96.6% of anticipated CM recombinant protein production volume. Currently priced at pharma-grade ($10-200/g); food-grade recombinant production (from yeast) could reduce this dramatically.">(?)</abbr>
+
+```{ojs}
+//| echo: false
+viewof p_supp_protein = Inputs.range([0.20, 0.95], {
+  value: urlNum("p_supp_protein", 0.70), step: 0.05,
+  label: html`P(Albumin/transferrin/insulin affordable by ${target_year}) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Probability that food-grade recombinant production (from yeast, bacteria, or plant systems) brings albumin + transferrin + insulin costs to under ~$1/g by the target year, making per-kg-cell-mass contribution below ~$0.50/kg. Without breakthrough: pharma-grade sourcing could add $0.50-4/kg. Default 70%: considered more tractable than GF breakthrough because albumin at scale is closer to an engineering problem than a discovery problem.">(?)</abbr>`
+})
+```
+
+<details><summary>About supplemental proteins and cost ranges (click to expand)</summary>
+
+**Albumin, transferrin, and insulin** are media additives — structural/survival proteins distinct from growth factors. They are widely used in serum-free cell culture but rarely modeled explicitly in CM TEAs (usually bundled into "other VOC" or media cost).
+
+Per GFI's 2024 supply-chain analysis, albumin is expected to represent ~97% of anticipated recombinant protein production volume for CM. At typical cell-culture concentrations (~1 mg/mL albumin) and the model's L/kg range, the per-kg cost contribution is:
+
+| Sourcing | Albumin price | Contribution to cell mass cost |
+|----------|--------------|-------------------------------|
+| Food-grade recombinant (yeast) | $0.10–1/g | ~$0.03–0.50/kg |
+| Pharma-grade recombinant | $5–50/g | ~$0.50–4/kg |
+| Albumin-free formulation | $0/g | ~$0/kg |
+
+Insulin and transferrin are used at much lower concentrations and contribute <$0.05/kg in all scenarios.
+
+</details>
 
 ```{=html}
 <div class="full-mode-only">
@@ -1595,7 +1642,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
     p_fedbatch: 0.20, p_perfusion: 0.50, p_continuous: 0.30,
     override_mode_constraints: false,
-    p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50,
+    p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50, p_supp_protein: 0.70,
     wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
     density_lo: 30, density_hi: 200,
     media_turnover_lo: 0.5, media_turnover_hi: 3.0
@@ -1608,7 +1655,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     bundled_media, bundled_media_p5, bundled_media_p95,
     plant_capacity, uptime, maturity, target_year,
     p_fedbatch, p_perfusion, p_continuous, override_mode_constraints,
-    p_hydro, p_recfactors, gf_progress,
+    p_hydro, p_recfactors, gf_progress, p_supp_protein,
     wacc_lo, wacc_hi, asset_life_lo, asset_life_hi,
     density_lo, density_hi, media_turnover_lo, media_turnover_hi
   };
@@ -1666,6 +1713,7 @@ simParams = {
     maturity_mean: adjustedMaturity,
     p_hydro_mean: p_hydro,
     p_recfactors_mean: p_recfactors,
+    p_supp_protein_mean: simpleMode ? 0.70 : p_supp_protein,
     wacc_p5: simpleMode ? 0.08 : wacc_lo / 100,
     wacc_p95: simpleMode ? 0.20 : wacc_hi / 100,
     asset_life_lo: simpleMode ? 8 : asset_life_lo,
@@ -1812,7 +1860,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   function downloadCSV() {
-    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream"];
+    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_supp_protein", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream"];
     const rows = [cols.join(",")];
     const n = results.unit_cost.length;
     for (let i = 0; i < n; i++) {
@@ -1848,6 +1896,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
       component_means_per_kg: {
         media: +mean(results.cost_media).toFixed(2),
         growth_factors: +mean(results.cost_recf).toFixed(2),
+        supplemental_proteins: +mean(results.cost_supp_protein).toFixed(2),
         other_voc: +mean(results.cost_other_var).toFixed(2),
         capex_annualized: +mean(results.cost_capex).toFixed(2),
         fixed_opex: +mean(results.cost_fixed).toFixed(2),
@@ -2182,9 +2231,10 @@ These percentages answer: "What's the chance that production costs fall below ke
 {
   const mediaLabel = bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)";
   const allComponents = [
-    {name: mediaLabel,               value: mean(results.cost_media),        color: "#27ae60"},
-    {name: "Growth Factors",         value: mean(results.cost_recf),          color: "#9b59b6"},
-    {name: "Other VOC",              value: mean(results.cost_other_var),     color: "#7f8c8d"},
+    {name: mediaLabel,               value: mean(results.cost_media),          color: "#27ae60"},
+    {name: "Growth Factors",         value: mean(results.cost_recf),           color: "#9b59b6"},
+    {name: "Supplemental Proteins",  value: mean(results.cost_supp_protein),   color: "#e67e22"},
+    {name: "Other VOC",              value: mean(results.cost_other_var),      color: "#7f8c8d"},
     {name: "CAPEX (annualized)",     value: mean(results.cost_capex),         color: "#e74c3c"},
     {name: "Plant overhead OPEX",    value: mean(results.cost_fixed),         color: "#f39c12"},
     {name: "CDMO Toll",              value: mean(results.cost_cdmo_toll),     color: "#e67e22"},
@@ -2293,6 +2343,7 @@ function formatCost(val) {
   const allComponents = [
     {name: bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
     {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
+    {name: "Supplemental Proteins (albumin/transferrin/insulin)", data: results.cost_supp_protein, color: "#e67e22"},
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
     {name: "Plant overhead OPEX", data: results.cost_fixed, color: "#f39c12"},
@@ -2496,9 +2547,21 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
 
 The **maturity factor** is a continuous variable ranging from 0 (nascent industry) to 1 (fully mature) that correlates multiple model inputs. It is not binary — intermediate values represent partial industry development. Higher maturity means:
 
-- Higher technology adoption rates
-- Lower reactor costs (more custom/food-grade)
+- Higher technology adoption rates (hydrolysates, scalable GFs, affordable supplemental proteins)
+- Lower reactor costs (more custom/food-grade equipment)
 - Lower financing costs (WACC)
+
+::: {.callout-warning appearance="minimal"}
+**Correlation structure caveat (important for interpretation):** The model uses a single shared latent factor to induce correlation across technology adoption, reactor costs, and financing. This is an *ad hoc modelling convenience* — not an empirically calibrated copula. The specific sensitivity coefficients (e.g., ±0.25 shifts to adoption probabilities, ±0.03 shifts to WACC) and the choice of a single dimension are choices made for tractability, not derived from data.
+
+**What this means for interpretation:**
+- Scenarios where all dimensions co-move together (high maturity = everything goes well; low maturity = everything is hard) will be overrepresented relative to a fully independent model
+- Scenarios where, say, bioprocess technology matures rapidly but financing remains difficult are partly suppressed
+- **Stress test:** Set the maturity slider to 0.1 (pessimistic) and 0.9 (optimistic) and compare — the difference captures the full correlated scenario range. Then check whether P(cost < $25/kg) changes materially
+- The alternative — modeling technology adoption, reactor costs, and financing as fully *independent* — can be approximated by setting maturity to exactly 0.5 and reading the adoption probabilities as unconditional (no maturity adjustment)
+
+We plan to offer explicit alternative correlation modes (independent / coupled) in a future update.
+:::
 
 ```{ojs}
 //| echo: false
