@@ -461,7 +461,7 @@ Per the same report, production COGS for cell mass are claimed to be "$10-15/kg,
 ::: {.callout-tip collapse="true"}
 ## Why Cell Density is So Important (click to expand)
 
-**<abbr title="Grams of cells per liter of media — higher is better for cost efficiency">Cell density</abbr>** is one of the most important parameters for cost:
+**<abbr title="Grams of cells per liter of media — higher is better for cost efficiency">Cell density</abbr>** is one of the most important parameters for cost. Note: density is measured in wet-weight (g/L); water content at harvest is typically ~75–90% depending on cell line, process, and post-harvest separation — we use 80% as a reference. Published TEAs often don't state this assumption explicitly, which can make cost comparisons subtly inconsistent.
 
 | Density | Media needed for 1 kg meat | Relative media cost | Est. media cost/kg (at $1/L) |
 |---------|---------------------------|---------------|------|
@@ -864,21 +864,42 @@ Believer Meats, the company behind the Pasitka et al. 2024 chicken-specific TEA,
 :::
 
 ::: {.callout-note collapse="true"}
-## How Does $/L Convert to $/kg Meat? (click to expand)
+## How Does $/L Convert to $/kg Biomass? (click to expand)
 
-To convert media cost per liter to cost per kg of meat, you need to know the **cell density**:
+To convert media cost per liter to cost per kg of cell biomass, you need to know the **cell density** and **media turnover**:
 
-$$\text{Media cost per kg} = \frac{\text{Media cost per L} \times 1000}{\text{Cell density (g/L)}}$$
+$$\text{Media cost per kg} = \frac{\text{Media cost (\\$/L)} \times 1000}{\text{Cell density (g/L)}} \times \text{turnover multiplier}$$
 
-| Cell Density | Media at $1/L | Media at $0.50/L |
-|-------------|---------------|------------------|
-| 50 g/L | $20/kg meat | $10/kg meat |
-| 100 g/L | $10/kg meat | $5/kg meat |
-| 200 g/L | $5/kg meat | $2.50/kg meat |
+| Cell Density | Turnover | Media at $1/L | Media at $0.50/L |
+|-------------|----------|---------------|------------------|
+| 30 g/L (fed-batch) | 1.0× | $33/kg | $17/kg |
+| 60 g/L (perfusion) | 1.5× | $25/kg | $12.5/kg |
+| 150 g/L (high-density perfusion) | 1.0× | $6.7/kg | $3.3/kg |
+| 200 g/L (continuous) | 0.8× | $4/kg | $2/kg |
 
-This is why cell density is so important — it's the denominator that determines how much media you need per kg of output.
+This is why **cell density matters far more than media formulation price** in the cost calculation. Halving the $/L has the same effect as doubling the density.
 
-Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densities in published studies, though hydrolysate performance can vary depending on source, lot, and formulation. The cost difference is substantial, but performance equivalence should not be assumed across all cell types and conditions without validation.
+**Important caveat — $/L is not enough:** A $0.20/L formulation with low nutrient density may not outperform a $0.50/L formulation that is more nutrient-dense, because cells may need to consume *more* volume of the dilute medium per kg of output. The economically meaningful metric is **$/kg of cell biomass produced**, not $/L. TEAs that report only $/L without stating their assumed density and media consumption rate are hard to compare directly.
+
+Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densities in published studies, though hydrolysate performance can vary depending on source, lot, and formulation.
+:::
+
+::: {.callout-note collapse="true"}
+## Feed Conversion Efficiency — An Underappreciated Cost Driver (click to expand)
+
+Most CM cost models — including this one — focus on (a) the price of media per liter, (b) how many liters of media are needed per kg of output, and (c) growth factor costs. What they largely ignore is **feed conversion efficiency**: how efficiently cells convert nutrient inputs (glucose, amino acids) into cell biomass.
+
+**Why this matters at scale:** At low volumes, growth factors and media formulation dominate costs. At industrial scale with cheap commodity inputs, the limiting cost becomes the mass of amino acids and glucose needed to produce a kg of biomass. If cells convert inputs inefficiently (say, 5–10% kcal efficiency), the commodity cost of glucose and amino acids alone could set a meaningful floor on production costs, regardless of how cheap the formulation is per liter.
+
+**The metric:** Feed conversion can be expressed as:
+- **kcal:kcal** — kilocalories of cell biomass produced per kilocalorie of nutrient input
+- **DW:DW** — grams of dry-weight cell biomass per gram of dry-weight nutrient consumed
+
+Published values for mammalian cell cultures in bioreactors are not widely reported, but conversion efficiencies are generally lower than for microbial fermentation. Understanding this matters because a 5% efficient process needs 20× more nutrient mass than a 100% efficient one — and at commercial volumes, the commodity cost of those nutrients is non-trivial.
+
+**What's missing from the model:** This model does not currently include a feed conversion efficiency parameter. The media cost calculation implicitly captures *some* of this through the L/kg × $/L calculation, but it doesn't separate nutrient density from water content and doesn't let you reason about the amino-acid and glucose commodity cost floor directly.
+
+**We'd value expert input** on expected feed conversion ratios for chicken cells at commercial scale, and whether this should be incorporated into the cost model. See the [beliefs form](https://uj-cm-workshop.netlify.app/beliefs#expert-mode) Expert Distribution section (E7) for a discussion prompt.
 :::
 
 ::: {.callout-tip}
