@@ -42,7 +42,7 @@ format:
         </script>
 ---
 
-**Return to:** [Interactive Cost Model](index.qmd) | **New to this topic?** [How Cultured Chicken is Made](learn.qmd) | **[Audio Review (MP3)](model_review_report.mp3)** | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
+**Return to:** [Interactive Cost Model](index.qmd) | [How Cultured Chicken is Made](learn.qmd) | **[Audio Overview (MP3)](model_review_report.mp3)** | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
 
 ::: {.callout-note collapse="true"}
 ## Feedback & Annotations
@@ -130,8 +130,8 @@ VOC is the sum of three input categories:
 $$\text{VOC} = \text{Media} + \text{Growth Factors} + \text{Other}$$
 
 ::: {.callout-note collapse="true"}
-## Why no separate "micronutrient" term? (April 2026 change)
-**Note:** even when modeled separately, micronutrient costs are typically <\$1/kg — a minor contributor to total unit cost. The change below is primarily about avoiding double-counting and aligning ranges with the literature, not about a large dollar effect.
+## Why no separate micronutrient term?
+**Note:** even when modeled separately, micronutrient costs are typically <\$1/kg — a minor contributor that doesn't move the total much. The change below is primarily about avoiding double-counting and aligning with the literature. *(Updated April 2026.)*
 
 Earlier versions of this model carried a separate **food-grade micronutrients** line (vitamins, minerals, trace salts). External review flagged that this double-counted basal media — the model already described media as providing "amino acids, glucose, vitamins" — and that the range (0.1–10 g/kg) was not coherent with the literature. [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) treat vitamin and mineral sourcing as a relatively low-cost issue, while [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) imply roughly 0.15 kg vitamins/minerals per kg wet biomass — orders of magnitude above our old slider. We now fold basal micronutrients into media $/L and reserve any future separate term for **supplemental recombinant proteins** (insulin, transferrin, albumin), which can be sourced from supplier quotes.
 :::
@@ -321,39 +321,15 @@ $$\text{CRF} = \frac{r \cdot (1+r)^n}{(1+r)^n - 1}$$
 - $n$ = asset life in years — how long the equipment lasts
 
 <details>
-<summary>What is CRF? (Intuitive explanation)</summary>
+<summary>What is CRF? (Brief explanation)</summary>
 
-**Capital Recovery Factor** answers: "If I borrow $X at interest rate $r$ for $n$ years, what annual payment covers both principal and interest?"
+CRF converts a one-time capital cost into an equivalent annual payment — the "annual rent" on your facility. Higher financing cost (WACC) or shorter asset life → higher CRF → higher $/kg. See [Wikipedia: Capital recovery factor](https://en.wikipedia.org/wiki/Capital_recovery_factor) for derivation.
 
-**Intuition:** Think of CRF as the "annual rent" you pay on capital. If you buy a $100M facility:
-
-- At CRF = 10%, you pay $10M/year
-- At CRF = 20%, you pay $20M/year
-
-CRF is always higher than just "1/asset_life" because you're also paying interest, not just depreciation.
-
-**Why does the formula look so complicated?**
-
-The formula $\text{CRF} = \frac{r(1+r)^n}{(1+r)^n - 1}$ comes from the math of constant payments over time. Here's the intuition:
-
-1. If you borrowed $100 at 10% interest for 1 year, you'd owe $110 at the end → CRF = 110% (or 1.10)
-2. If you could pay over 2 years with equal payments, each payment is smaller, but you pay more total interest → CRF ≈ 58%
-3. As the loan period gets longer, each payment shrinks, but the total interest paid grows
-4. The formula balances these two effects to give you the constant annual payment
-
-**Numerical example:** At r=10%, n=15 years:
-- CRF = 0.10 × (1.10)^15 / ((1.10)^15 - 1) = 0.10 × 4.18 / 3.18 = **13.1%**
-- A $100M facility costs $13.1M/year to finance
-
-**Why does CRF matter?** It converts a one-time construction cost into an annual charge that gets divided across all kg produced. Higher CRF = higher $/kg.
-
-| WACC ($r$) | Asset Life ($n$) | CRF | Annual payment on $100M | Source context |
-|------------|------------------|-----|------------------------|----------------|
-| 10% | 15 years | 13.1% | $13.1M/year | Established food company financing |
-| 15% | 10 years | 19.9% | $19.9M/year | Growth-stage company |
-| 20% | 8 years | 26.1% | $26.1M/year | Early-stage / high-risk ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)) |
-
-Higher WACC or shorter asset life → higher annual capital charge → higher $/kg.
+| WACC ($r$) | Asset Life ($n$) | CRF | Annual payment on $100M |
+|------------|------------------|-----|------------------------|
+| 10% | 15 years | 13.1% | $13.1M/year |
+| 15% | 10 years | 19.9% | $19.9M/year |
+| 20% | 8 years | 26.1% | $26.1M/year ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)) |
 
 </details>
 
@@ -478,8 +454,7 @@ The maturity factor captures this "worlds come in bundles" intuition without req
 3. **Parsimony**: Specifying a full correlation matrix (hydrolysates × GFs × reactors × WACC) would require ~10 pairwise correlations with no empirical data to calibrate them.
 
 **Sensitivity check:** Users can explore partially-correlated scenarios by:
-- Setting maturity high but technology probabilities low (tests "scale-up succeeds, tech fails")
-- Setting maturity low but one technology probability high (tests "isolated breakthrough")
+<ul><li>Setting maturity high but technology probabilities low (tests "scale-up succeeds, tech fails")</li><li>Setting maturity low but one technology probability high (tests "isolated breakthrough")</li></ul>
 
 This manual exploration partially compensates for the model's correlation structure.
 

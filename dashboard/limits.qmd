@@ -75,13 +75,23 @@ Better practice would use at least three separate latent factors:
 
 ---
 
-### Sensitivity analysis: dollar-swing ranking, not variance decomposition {#sensitivity-methods}
+### Parameter grounding: empirically informed but not always documented {#parameter-grounding}
 
-**Issue.** The tornado chart shows how much the mean cost changes when each parameter moves from its 10th to 90th percentile — a conditional-mean dollar-swing statistic. This is **not** a Sobol variance decomposition: bars for correlated parameters can overlap and should not be summed. An earlier version of the simplified-view text incorrectly implied these parameters "contribute less than 10% of the variance."
+**Issue.** The model's parameters draw on published TEA literature, GFI research, and supplier data — but the linkage from source evidence to distribution shape is not always made explicit. A reader cannot always tell whether a given distribution reflects a specific study, a range across studies, or a calibration judgment.
+
+**Status: Ongoing.** We reference key sources where we can (GFI amino acid report, Pasitka et al., Humbird 2021, Rethink Priorities). More systematic documentation of evidence–distribution mappings is on the roadmap. In the meantime, the beliefs form invites expert participants to provide their own distributions, which will be compared against model defaults.
+
+---
+
+## Sensitivity analysis caveats {#sensitivity-methods}
+
+The tornado chart is a useful exploration tool, but it has well-defined limitations.
+
+**Limitation.** The chart shows how much the mean cost changes when each parameter moves from its 10th to 90th percentile — a conditional-mean dollar-swing statistic. This is **not** a Sobol variance decomposition: bars for correlated parameters can overlap and should not be summed. An earlier version of the simplified-view text incorrectly implied these parameters "contribute less than 10% of the variance."
 
 A proper global sensitivity analysis (Sobol first-order and total-effect indices) would answer a fundamentally different question: what fraction of output variance is explained by each input, accounting for nonlinear and interaction effects?
 
-**Status: Source corrected; Sobol planned.** The source text now accurately describes the chart as a "conditional-mean swing statistic, not a variance decomposition." Adding a proper global sensitivity mode is planned once the methodology is better understood.
+**Status: Source corrected; Sobol planned.** The source text now accurately describes the chart as a "conditional-mean swing statistic, not a variance decomposition." A proper global sensitivity mode is planned when the methodology is better understood. The chart nonetheless offers a practical, readable guide to which sliders move the dial most.
 
 ---
 
