@@ -1,6 +1,6 @@
 ---
 title: "Model Limits & Critique"
-subtitle: "A methodological review — what the model gets right, what it doesn't, and what we're doing about it"
+subtitle: "A structured AI critique and response — what the model gets right, what it doesn't, and what we're doing about it"
 format:
   html:
     include-after-body:
@@ -15,7 +15,7 @@ The full prompt and response are on GitHub: [CM_model_deep-research-report.md](h
 :::
 
 ::: {.callout-note}
-**The Unjournal team's assessment:** We've reviewed this critique carefully and it generally holds water. The structural issues it identifies — output definition inconsistency, the ad hoc correlation structure, sensitivity analysis caveats, and beliefs-form alignment — are genuine and worth addressing, and we have acted on several of them. A few suggestions appear to have overlooked elements we've already incorporated into the model. Other suggestions go beyond our current bandwidth, but we'd like to follow up on them given the right resources, expertise, and participant willingness. We'll be asking workshop participants directly about their interest in contributing to these improvements.
+**The Unjournal team's assessment:** We've been reviewing this critique and so far it generally holds water. The structural issues it identifies — output definition inconsistency, the ad hoc correlation structure, sensitivity analysis caveats, and beliefs-form alignment — are genuine and worth addressing, and we have acted on several of them. A few suggestions appear to have overlooked elements we've already incorporated into the model. Other suggestions go beyond our current bandwidth, but we'd like to follow up on them given the right resources, expertise, and participant willingness. We'll be asking workshop participants directly about their interest in contributing to these improvements.
 :::
 
 The reviewer's bottom line:
@@ -134,4 +134,4 @@ If you're interested in participating in or helping lead this, please say so in 
 
 ---
 
-*This model is an [Unjournal](https://unjournal.org) Pivotal Questions project. The Unjournal commissions and publicizes expert evaluations of impactful research to improve how evidence informs funding and policy decisions.*
+*This model is part of [The Unjournal](https://unjournal.org)'s Pivotal Questions initiative. The Unjournal commissions and publicizes expert evaluations of impactful research to improve how evidence informs funding and policy decisions.*
