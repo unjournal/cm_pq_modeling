@@ -477,6 +477,16 @@ Higher density means:
 - **Lower labor** per kg
 
 Current densities: 30-50 g/L (fed-batch), 60-90 g/L (commercial per [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive)), up to 360 g/L in perfusion/continuous ([PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/))
+
+::: {.callout-warning collapse="true"}
+## Caveat: $/L and cell density are not independent (click to expand)
+
+The table above assumes media cost per liter ($/L) stays constant as density increases. In practice, this may not hold — particularly in nutrient-depleted fed-batch systems. Cell density in fed-batch mode is ultimately limited by how many grams of nutrients cells can extract from the available media volume; achieving higher densities requires proportionally richer (and more expensive) formulations. The per-kg cost benefit of higher density can therefore be partially offset by the richer media needed to sustain it.
+
+In perfusion mode this coupling is weaker: fresh media is continuously supplied, so density is limited more by oxygen transfer and shear stress than by nutrient depletion per se. In continuous mode it varies with the recycling fraction.
+
+**The practical implication:** combining very low $/L with very high density in the same cost scenario may overstate savings. Our [cost model](index.qmd) samples these as somewhat independent parameters within process-mode-specific ranges — a simplification flagged on the [model limits page](limits.qmd#parameter-grounding). In the beliefs form we ask for **total media cost per kg of biomass** ($/kg) rather than $/L and density separately, precisely because these aren't independent — a knowledgeable respondent will naturally integrate the interaction.
+:::
 :::
 
 ---
@@ -770,7 +780,9 @@ Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): fed-batch
 Media composition isn't sequential — it's used throughout the production process (in seed train and production bioreactors). We cover it separately because understanding media costs is essential for understanding overall economics.
 :::
 
-Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components ordered by approximate share of total media cost at production scale:
+Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components ordered by approximate share of total media cost at production scale.
+
+**Note on the interaction with cell density:** Media cost per liter ($/L) and cell density (g/L) are connected — they are not parameters you can optimise independently. Richer media formulations are often needed to sustain higher cell densities, because cells in denser cultures consume proportionally more amino acids, glucose, and other nutrients. The economically meaningful unit is therefore **media cost per kg of cells produced** ($/kg), which reflects both $/L and the litres consumed per kg output. See the [cell density section above](#why-cell-density-is-so-important) and the [model limits page](limits.qmd#parameter-grounding) for further discussion.
 
 | Component | % of Media Cost | Function | Key Cost Driver |
 |-----------|----------------|----------|-----------------|
