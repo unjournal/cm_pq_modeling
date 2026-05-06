@@ -1,6 +1,11 @@
 ---
 title: "Script: How Cultured Meat is Made"
 subtitle: "Text of the audio overview — read, annotate, or suggest edits via Hypothes.is"
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
 ---
 
 ::: {.callout-note}
