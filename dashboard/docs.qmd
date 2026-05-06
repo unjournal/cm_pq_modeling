@@ -863,7 +863,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 4. **Limited contamination modeling** — No batch failure or contamination event distributions.
 
-5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and cycle time) are treated as independent.
+5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
 
 ### Recommendations for Use
 

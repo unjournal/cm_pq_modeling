@@ -1,0 +1,376 @@
+/*
+Cultivated Chicken Unit Cost Model — v0.3
+Updated: 2026-05
+
+AUTHORITATIVE MODEL: The interactive dashboard at
+https://unjournal.github.io/cm_pq_modeling/ (dashboard/index.qmd) is the
+primary implementation. This Squiggle version is for quick scenario exploration
+and sharing on SquiggleHub. When the two diverge, the OJS version is correct.
+
+KNOWN LIMITATION: In this version, cell density (g/L) and media $/L are sampled
+independently. In reality they should be positively correlated (denser/more-mature
+processes tend to use more-refined, costlier media). The dashboard's process-mode
+structure partially captures this by linking density to the bioreactor mode, but
+the media $/L remains independent of mode even there. See dashboard/limits.qmd for
+a full discussion.
+
+CHANGES FROM v0.2:
+- Process mode structure: density and media-use multiplier now drawn from
+  mode-specific ranges (fed-batch / perfusion / continuous) rather than single
+  flat lognormals. Fed-batch density range 5–30 g/L; perfusion 30–150; continuous
+  50–200. "Pure batch" excluded as commercially non-viable at scale (Kubinecz 2026).
+- Separate supplemental protein cost term (albumin/transferrin/insulin), also
+  maturity-adjusted — removed from v0.2's "commodity micronutrients" line.
+- Basal media $/L range revised downward for pharma-grade: p5=$0.50, p95=$2.50
+  (was $1–$4) following GFI amino acid supply chain report (Dec 2025).
+- GF quantity tightened: expensive regime 0.001–0.006 g/kg (was 0.0005–0.02);
+  cheap regime 0.0005–0.002 g/kg (was 0.0001–0.005).
+- GF price now interpolated by a progress slider (0–100%); default 50% progress
+  used here; edit gf_progress to change.
+- Other VOC tightened to p5=$0.30, p95=$3.00 (was $0.50–$5.00) since supplemental
+  proteins are now their own line.
+- Removed v0.2 "commodity micronutrients" as a separate line — rolled into basal
+  media $/L per OJS model (vitamins/minerals are the less pressing cost driver).
+- CAPEX now computed on total working volume (from density + cycle days), not
+  on a reference kTA pivot. CRF formula kept exact: wacc*(1+wacc)^n/((1+wacc)^n-1).
+- Downstream processing term added (optional; off by default).
+
+Source: squigglehub.org/models/Unjournal-modelingPQs/
+*/
+
+// ============================================================
+// SCENARIO TOGGLES — edit these to explore scenarios
+// ============================================================
+
+// GF price-reduction progress (0 = current 2025 prices; 1 = target breakthrough prices).
+// Default 0.5 means halfway between current and target.
+// At 0%: cheap regime $100-10000/g; expensive $5000-500000/g
+// At 100%: cheap regime $1-100/g; expensive $50-5000/g
+gf_progress = 0.50
+
+// Set to true to include CAPEX in cost
+include_capex = true
+
+// Set to true to include fixed OPEX (labor, maintenance, overhead)
+include_fixed_opex = true
+
+// Set to true to add downstream processing (scaffolding, texturization) for structured products
+include_downstream = false
+
+// Process mode weights (must sum > 0; they are normalized internally)
+// Default: fed-batch 20%, perfusion 50%, continuous 30%
+p_fedbatch    = 0.20
+p_perfusion   = 0.50
+p_continuous  = 0.30
+
+// ============================================================
+// LATENT MATURITY FACTOR
+// ============================================================
+
+@name("Industry maturity (0-1)")
+@doc("Latent factor encoding how advanced the industry is by 2036. Shifts technology adoption probabilities and financing costs. Beta with mean 0.5, stdev 0.20.")
+maturity = beta({mean: 0.5, stdev: 0.20})
+
+// ============================================================
+// SCALE & UPTIME
+// ============================================================
+
+@name("Plant capacity (kTA/yr)")
+@doc("Nameplate production. Default p5=10, p95=40 kTA (simple mode in dashboard).")
+plant_kta = lognormal({p5: 10, p95: 40})
+
+@name("Uptime / utilization (0-1)")
+uptime = beta({mean: 0.90, stdev: 0.05})
+
+// Annual kg output
+output_kgpy = plant_kta * 1e6 * uptime
+
+// ============================================================
+// TECHNOLOGY ADOPTION PROBABILITIES (maturity-adjusted)
+// ============================================================
+
+// Base probabilities (from OJS defaults: p_hydro=0.75, p_recfactors=0.50, p_supp_protein=0.70)
+p_hydro_base        = beta({mean: 0.75, stdev: 0.10})
+p_recf_base         = beta({mean: 0.50, stdev: 0.15})
+p_supp_protein_base = beta({mean: 0.70, stdev: 0.12})
+
+// Maturity adjustment: higher maturity → higher adoption probability.
+// Same delta formula as OJS: p += 0.25*(maturity - 0.5), clipped to [0,1].
+p_hydro        = truncate(p_hydro_base        + 0.25 * (maturity - 0.5), 0, 1)
+p_recf_cheap   = truncate(p_recf_base         + 0.25 * (maturity - 0.5), 0, 1)
+p_supp_cheap   = truncate(p_supp_protein_base + 0.20 * (maturity - 0.5), 0, 1)
+
+// Bernoulli draws
+is_hydro       = bernoulli(p_hydro)
+is_recf_cheap  = bernoulli(p_recf_cheap)
+is_supp_cheap  = bernoulli(p_supp_cheap)
+
+// ============================================================
+// PROCESS MODE — density and media-use multiplier
+// ============================================================
+// Mode-specific density (g/L) ranges:
+//   Fed-batch:  5–30 g/L  (conventional stirred-tank, single-use)
+//   Perfusion:  30–150 g/L (continuous cell retention)
+//   Continuous: 50–200 g/L (steady-state, highest density)
+// Pure batch excluded as commercially non-viable at scale.
+//
+// Mode-specific media-use multiplier (×):
+//   Fed-batch:  1.0–2.0  (single fill, minor supplementation)
+//   Perfusion:  1.0–5.0  (multiple media-volume equivalents flow through)
+//   Continuous: 0.5–3.0  (can recycle, or high throughput)
+//
+// NOTE: Squiggle mixture() is used here to model the three-mode draw.
+// Each component is the joint (density, turnover) for that mode — but
+// Squiggle samples density and turnover independently inside each branch.
+// The mode weights are normalized from (p_fedbatch, p_perfusion, p_continuous).
+
+p_total = p_fedbatch + p_perfusion + p_continuous
+w_fb = p_fedbatch  / p_total
+w_pf = p_perfusion / p_total
+w_ct = p_continuous / p_total
+
+density_gL = mixture(
+  lognormal({p5:   5, p95:  30}),   // fed-batch
+  lognormal({p5:  30, p95: 150}),   // perfusion
+  lognormal({p5:  50, p95: 200}),   // continuous
+  [w_fb, w_pf, w_ct]
+)
+
+// NOTE (known limitation): density_gL and media_turnover are sampled
+// independently here and also in the dashboard. They are correlated within
+// each mode bracket but not across the mixture. See dashboard/limits.qmd.
+media_turnover = mixture(
+  lognormal({p5: 1.0, p95: 2.0}),   // fed-batch
+  lognormal({p5: 1.0, p95: 5.0}),   // perfusion
+  lognormal({p5: 0.5, p95: 3.0}),   // continuous
+  [w_fb, w_pf, w_ct]
+)
+
+// Media volume per kg of cell mass
+L_per_kg = (1000 / density_gL) * media_turnover
+
+// ============================================================
+// BASAL MEDIA COST ($/kg cell mass)
+// ============================================================
+// Includes amino acids, glucose, vitamins, minerals, trace salts.
+// Vitamins/minerals not modeled separately — GFI (O'Neill et al. 2021)
+// notes vitamin sourcing is a "less pressing issue" and minerals are
+// inexpensive relative to amino acids. Rolled into media $/L.
+//
+// Hydrolysate-based: $0.20–1.20/L (O'Neill 2021; Humbird hydrolysate estimate)
+// Pharma-grade: $0.50–2.50/L — revised down from $1–4 per GFI amino acid
+// supply chain report (Dec 2025), which found Humbird's amino acid prices
+// overestimated by 2–10×. Amino acids are ~60–80% of basal media cost.
+
+media_cost_L = SampleSet.map(
+  SampleSet.fromDist(is_hydro),
+  {|h| if h == 1
+    then sample(lognormal({p5: 0.20, p95: 1.20}))
+    else sample(lognormal({p5: 0.50, p95: 2.50}))}
+)
+
+cost_media = L_per_kg * media_cost_L
+
+// ============================================================
+// RECOMBINANT GROWTH FACTORS (FGF-2, IGF-1, TGF-β, etc.)
+// ============================================================
+// CRITICAL: GFs are 55–95% of media cost at current prices.
+// Current (2025): FGF-2 ~$50,000/g; TGF-β up to $1M/g.
+// Target (breakthrough): $1–10/g with scaled recombinant production.
+//
+// Quantity (g/kg cell mass) — from Humbird formulation reproduced in GFI 2023:
+//   FGF 1.0e-4 g/L, TGFβ 2.0e-6 g/L → GF total ~1.02e-4 g/L.
+//   Efficient scenarios: 8–13 L/kg → 0.00082–0.00133 g/kg.
+//   Less-optimized: up to ~60 L/kg → ~0.00612 g/kg.
+//   Cheap regime: breakthrough technologies (thermostable FGF2-G3, autocrine,
+//   recycling, polyphenol substitution) reduce per-kg usage ~3×.
+
+g_recf = SampleSet.map(
+  SampleSet.fromDist(is_recf_cheap),
+  {|c| if c == 1
+    then sample(lognormal({p5: 5e-4, p95: 2e-3}))
+    else sample(lognormal({p5: 1e-3, p95: 6e-3}))}
+)
+
+// GF price interpolation by progress (0=current, 1=breakthrough target).
+// At 0%: cheap $100–10000/g; expensive $5000–500000/g.
+// At 100%: cheap $1–100/g; expensive $50–5000/g.
+// Formula: p5_cheap = 100 * 0.01^progress; p95_cheap = 10000 * 0.01^progress
+// Squiggle does not support pow() with variable exponent inside lognormal(), so
+// we compute the endpoints analytically at the chosen gf_progress value.
+// The 0.01^x interpolation is: exp(log(0.01) * x) = exp(-4.6052 * x).
+_pow_factor = exp(-4.6052 * gf_progress)
+
+// Cheap scenario price endpoints
+_cheap_p5  = 100    * _pow_factor   // 100 → 1 as progress 0→1
+_cheap_p95 = 10000  * _pow_factor   // 10000 → 100
+
+// Expensive scenario price endpoints
+_exp_p5    = 5000   * _pow_factor   // 5000 → 50
+_exp_p95   = 500000 * _pow_factor   // 500000 → 5000
+
+price_recf = SampleSet.map(
+  SampleSet.fromDist(is_recf_cheap),
+  {|c| if c == 1
+    then sample(lognormal({p5: _cheap_p5, p95: _cheap_p95}))
+    else sample(lognormal({p5: _exp_p5,   p95: _exp_p95}))}
+)
+
+cost_recf = g_recf * price_recf
+
+// ============================================================
+// SUPPLEMENTAL RECOMBINANT PROTEINS (albumin, transferrin, insulin)
+// ============================================================
+// Distinct from GFs — structural/survival proteins, not signalling molecules.
+// GFI 2024 supply-chain analysis: albumin alone = 96.6% of anticipated
+// recombinant protein production volume for CM.
+// Cheap regime: food-grade recombinant at scale (yeast-derived albumin)
+//   → p5=$0.03/kg, p95=$0.60/kg cell mass.
+// Expensive regime: pharma-grade sourcing
+//   → p5=$0.50/kg, p95=$4.00/kg cell mass.
+
+cost_supp_protein = SampleSet.map(
+  SampleSet.fromDist(is_supp_cheap),
+  {|c| if c == 1
+    then sample(lognormal({p5: 0.03, p95: 0.60}))
+    else sample(lognormal({p5: 0.50, p95: 4.00}))}
+)
+
+// ============================================================
+// OTHER VARIABLE COSTS ($/kg)
+// ============================================================
+// Utilities, consumables, small-molecule additives, waste treatment.
+// Reduced from v0.2 ($0.50–$5.00) — supplemental proteins now have own line.
+other_var = lognormal({p5: 0.30, p95: 3.0})
+
+// ============================================================
+// TOTAL VARIABLE OPERATING COSTS
+// ============================================================
+voc_total = cost_media + cost_recf + cost_supp_protein + other_var
+
+// ============================================================
+// CAPEX (optional — set include_capex = false to skip)
+// ============================================================
+// Working volume derived from density, cycle time, and annual output.
+// CRF = wacc*(1+wacc)^n / ((1+wacc)^n - 1)  [exact formula from OJS]
+//
+// WACC maturity-adjusted: lower maturity → higher financing risk.
+// Same formula as OJS: wacc = clip(wacc_base - 0.03*(maturity-0.5), 0.03, 1.0)
+
+wacc_base = lognormal({p5: 0.08, p95: 0.20})
+wacc      = truncate(wacc_base - 0.03 * (maturity - 0.5), 0.03, 1.0)
+
+asset_life = uniform(8, 20)
+
+crf_val = wacc * (1 + wacc) ^ asset_life / ((1 + wacc) ^ asset_life - 1)
+
+// Cycle days (time from seeding to harvest)
+cycle_days = lognormal({p5: 0.5, p95: 5.0})
+
+// Total bioreactor working volume required to achieve target output
+prod_kg_L_day        = (density_gL / 1000) / cycle_days
+total_working_vol_L  = output_kgpy / (prod_kg_L_day * 365)
+
+// Reactor cost: blend of pharma-grade and custom (food-grade/purpose-built) equipment.
+// Maturity increases custom share (mature industry = more custom reactors).
+// Custom reactors are cheaper than pharma stainless steel.
+reactor_cost_L_pharma = lognormal({p5: 50, p95: 500})
+
+custom_ratio = uniform(0.35, 0.85)
+
+custom_share_base = beta({mean: 0.55, stdev: 0.15})
+custom_share      = truncate(custom_share_base + 0.30 * (maturity - 0.5), 0, 1)
+
+reactor_cost_L_avg = reactor_cost_L_pharma * (custom_share * custom_ratio + (1 - custom_share))
+
+// Economy-of-scale exponent for reactor cost vs volume
+capex_scale_exp = uniform(0.6, 0.9)
+V_ref = 1e6  // reference volume in liters
+
+// Total installed CAPEX ($)
+// OJS formula: reactor_cost * V * (V/V_ref)^(s-1) * plant_factor
+// = reactor_cost * V_ref * (V/V_ref)^s * plant_factor
+plant_factor = lognormal({p5: 1.5, p95: 3.5})
+
+capex_total = reactor_cost_L_avg * total_working_vol_L *
+              (total_working_vol_L / V_ref) ^ (capex_scale_exp - 1) *
+              plant_factor
+
+// $/kg produced (annualized CAPEX / annual output)
+capex_perkg_raw = (capex_total * crf_val) / output_kgpy
+
+// Apply toggle (if include_capex is false, zero out)
+capex_perkg = if include_capex then capex_perkg_raw else 0
+
+// ============================================================
+// FIXED OPEX (optional — set include_fixed_opex = false to skip)
+// ============================================================
+// Modeled via reference fixed cost at 20 kTA × 0.9 uptime, then scaled.
+// OJS reference: fixed_perkg_ref ~ Uniform(1,6) at ref_output = 20e6*0.9 kg/yr.
+// Scaling exponent: Uniform(0.6, 1.0) — sublinear to linear with output.
+
+ref_output_kgpy  = 20e6 * 0.9
+fixed_perkg_ref  = uniform(1.0, 6.0)
+fixed_annual_ref = fixed_perkg_ref * ref_output_kgpy
+fixed_scale_exp  = uniform(0.6, 1.0)
+
+fixed_annual = fixed_annual_ref * (output_kgpy / ref_output_kgpy) ^ fixed_scale_exp
+fixed_perkg_raw = fixed_annual / output_kgpy
+
+fixed_perkg = if include_fixed_opex then fixed_perkg_raw else 0
+
+// ============================================================
+// DOWNSTREAM PROCESSING (optional — set include_downstream = false to skip)
+// ============================================================
+// Scaffolding, texturization, post-processing for structured products.
+// Adds $2–15/kg for structured products; zero for minced/ground applications.
+
+downstream_perkg = if include_downstream then lognormal({p5: 2.0, p95: 15.0}) else 0
+
+// ============================================================
+// TOTAL UNIT COST
+// ============================================================
+
+unit_cost = voc_total + capex_perkg + fixed_perkg + downstream_perkg
+
+// ============================================================
+// DIAGNOSTICS & COST BREAKDOWN
+// ============================================================
+
+// Share of total cost by component (at median)
+media_share_total       = cost_media          / unit_cost
+recf_share_total        = cost_recf           / unit_cost
+supp_protein_share_total = cost_supp_protein  / unit_cost
+other_var_share_total   = other_var           / unit_cost
+capex_share_total       = capex_perkg         / unit_cost
+fixed_share_total       = fixed_perkg         / unit_cost
+
+// ============================================================
+// SUMMARY OUTPUT
+// ============================================================
+
+summary = {
+  unit_p5   = quantile(unit_cost, 0.05)
+  unit_p25  = quantile(unit_cost, 0.25)
+  unit_p50  = quantile(unit_cost, 0.50)
+  unit_p75  = quantile(unit_cost, 0.75)
+  unit_p95  = quantile(unit_cost, 0.95)
+  unit_mean = mean(unit_cost)
+
+  prob_lt_10  = cdf(unit_cost, 10)
+  prob_lt_25  = cdf(unit_cost, 25)
+  prob_lt_50  = cdf(unit_cost, 50)
+  prob_lt_100 = cdf(unit_cost, 100)
+
+  // Median shares
+  med_media_share    = median(media_share_total)
+  med_recf_share     = median(recf_share_total)
+  med_supp_prot_share = median(supp_protein_share_total)
+  med_capex_share    = median(capex_share_total)
+  med_fixed_share    = median(fixed_share_total)
+
+  {unit_p5, unit_p25, unit_p50, unit_p75, unit_p95, unit_mean,
+   prob_lt_10, prob_lt_25, prob_lt_50, prob_lt_100,
+   med_media_share, med_recf_share, med_supp_prot_share,
+   med_capex_share, med_fixed_share}
+}

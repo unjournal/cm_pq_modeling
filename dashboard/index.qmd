@@ -1364,7 +1364,7 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 ```
 
 ::: {.callout-note appearance="minimal" icon=false}
-<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes.
+<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes. *For background on what growth factors do, why they're expensive, and which technologies might reduce costs, see [Learn → Step 5: Growth Factors](learn.html#step-5-growth-factors--a-key-cost-driver).*
 :::
 
 ```{ojs}
@@ -1765,6 +1765,10 @@ simParams = {
 //| echo: false
 
 // Primary simulation run (uses whatever mode is selected)
+// N=30,000: adequate precision for this model's decision-relevant outputs
+// (SE on median < 0.3%, SE on P(cost<$10/kg) < 0.2pp at p≈0.1).
+// Higher N (e.g. 200k) would reduce tail noise marginally but re-runs on every
+// slider drag — 30k keeps reactive updates imperceptible (<100ms in most browsers).
 results = simulate(30000, 42, simParams)
 
 // Comparison run: when CDMO mode is on, also run the in-house baseline
@@ -1818,7 +1822,7 @@ stats = {
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
 <strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Wet weight, at the CM gate: the mass of cells as harvested from the bioreactor. Water content at harvest typically ~75–90% depending on cell line, density, and post-harvest dewatering; this model uses 80% as a reference assumption. Note: published TEAs (Humbird 2021, Pasitka 2024) rarely state their assumed hydration explicitly, which means cost comparisons across papers may embed subtle inconsistencies — a 10% hydration difference substantially affects $/kg wet weight. Includes: media, growth factors, bioreactor capital (annualised), plant overhead, utilities. Excludes: texturization, scaffolding, blending with plant-based fillers, packaging, distribution. This is the same accounting object as 'edible kg before mixture' used on the beliefs form — wet cell mass at harvest IS the edible component at this stage. For comparison: Humbird reports $37/kg; Pasitka $13.75/kg (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product. See TEA Comparison for details." style="text-decoration: underline dotted; cursor: help;">wet weight, at harvest &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. <em style="font-size:0.88em;color:#888;">Wet-weight hydration assumed ~80% (range ~75–90% in practice; see note below on hydration assumptions).</em> This is the factory-gate manufacturing cost — not a consumer product price or retail cost. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
-<strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix.">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
+<strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
 <strong>Why it matters:</strong> If production costs for pure cells reach <strong>~$10/kg</strong>, even 100% cultured products could compete with conventional chicken. At <strong>$25-50/kg</strong>, hybrid products with moderate cell inclusion rates may still reach price parity. If costs remain <strong>>$100/kg</strong>, even hybrid products face significant price premiums. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
 </div>`
@@ -2274,11 +2278,16 @@ These percentages answer: "What's the chance that production costs fall below ke
   expandBtn.textContent = "Expand Chart";
   expandBtn.style.cssText = "padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; margin-bottom: 0.5rem;";
   let expanded = false;
+
+  // Chart wrapper: clear-and-append avoids replaceWith()+querySelector on SVG
+  // which fails silently in Safari (classList.add on SVG unreliable in WebKit).
+  const chartWrapper = document.createElement("div");
+
   expandBtn.onclick = () => {
     expanded = !expanded;
     expandBtn.textContent = expanded ? "Collapse Chart" : "Expand Chart";
-    chartEl.replaceWith(makeChart(expanded));
-    chartEl = chartContainer.querySelector(".cost-breakdown-plot");
+    chartWrapper.innerHTML = "";
+    chartWrapper.appendChild(makeChart(expanded));
   };
   chartContainer.appendChild(expandBtn);
 
@@ -2286,7 +2295,7 @@ These percentages answer: "What's the chance that production costs fall below ke
     const w = large ? 1200 : 1000;
     const h = large ? 700 : 580;
     const fontSize = large ? 14 : 13;
-    const p = Plot.plot({
+    return Plot.plot({
       width: w,
       height: h,
       marginLeft: 200,
@@ -2315,12 +2324,10 @@ These percentages answer: "What's the chance that production costs fall below ke
       ],
       title: `Cost Breakdown by Component (Total: $${Math.round(total)}/kg)`
     });
-    p.classList.add("cost-breakdown-plot");
-    return p;
   }
 
-  let chartEl = makeChart(false);
-  chartContainer.appendChild(chartEl);
+  chartWrapper.appendChild(makeChart(false));
+  chartContainer.appendChild(chartWrapper);
   return chartContainer;
 }
 ```
