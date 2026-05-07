@@ -32,8 +32,16 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+```{=html}
+<div style="margin:6px 0 10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+  <a href="#adjustable-parameters" style="display:inline-block; padding:6px 14px; background:#2d4a2d; color:white; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">↓ Go to parameters</a>
+  <a href="simple.html" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;">Simplest Model →</a>
+</div>
+```
+
 ::: {.callout-note collapse="true"}
-**New to this model?** Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusing on some key levers with line-of-sight explanations. You can carry your settings over to this Advanced Model when you're ready.
+## New to this model?
+Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusing on some key levers with line-of-sight explanations. You can carry your settings over to this Advanced Model when you're ready.
 :::
 
 ```{=html}
@@ -1337,9 +1345,9 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 ::: {.callout-note appearance="minimal" icon=false collapse=false}
 **Basal media** = the bulk nutrient broth cells grow in (water + amino acids + glucose + salts + vitamins) — *everything except* the expensive recombinant growth factors, which we model on a separate line. **Hydrolysates** are cheap enzymatically-digested plant or yeast proteins; they replace the *purified pharmaceutical-grade amino acids* (vegan but ~10× more expensive) that dominate Humbird's basal-media cost.
 
-**Note on $/L vs $/kg output:** The model uses $/L as an internal parameter, but the economically meaningful unit is **$/kg of cell biomass produced** — which equals ($/L) × (L consumed per kg output). L per kg = 1000/density(g/L) × media_turnover_multiplier. At the model's default settings (~60 g/L median density, 1.5× turnover), this is ~25 L/kg: a $0.70/L hydrolysate medium costs ~$17.5/kg output; a $1.25/L pharma-grade medium costs ~$31/kg. At 200 g/L perfusion with 1.0× turnover (~5 L/kg), the same formulations cost $3.5/kg and $6.25/kg respectively — illustrating why cell density matters far more than formulation price at high-density processes. The "Media" bar in the cost breakdown chart already shows this $/kg result directly.
+**Note on \$/L vs \$/kg output:** The model uses \$/L as an internal parameter, but the economically meaningful unit is **\$/kg of cell biomass produced** — which equals (\$/L) × (L consumed per kg output). L per kg = 1000/density(g/L) × media_turnover_multiplier. At the model's default settings (~60 g/L median density, 1.5× turnover), this is ~25 L/kg: a \$0.70/L hydrolysate medium costs ~\$17.5/kg output; a \$1.25/L pharma-grade medium costs ~\$31/kg. At 200 g/L perfusion with 1.0× turnover (~5 L/kg), the same formulations cost \$3.5/kg and \$6.25/kg respectively — illustrating why cell density matters far more than formulation price at high-density processes. The "Media" bar in the cost breakdown chart already shows this \$/kg result directly.
 
-**Note on correlation with density:** $/L and cell density (g/L) are not fully independent — richer media is often needed to sustain higher densities, particularly in fed-batch systems where cells deplete the available nutrient pool. Combining a very low $/L with a very high density assumption in the same scenario may therefore overstate cost savings. The model partially addresses this via process-mode-specific density ranges, but does not impose explicit correlation between $/L and density within a given mode. See [Model Limits](limits.qmd#parameter-grounding) for discussion.
+**Note on correlation with density:** \$/L and cell density (g/L) are not fully independent — richer media is often needed to sustain higher densities, particularly in fed-batch systems where cells deplete the available nutrient pool. Combining a very low $/L with a very high density assumption in the same scenario may therefore overstate cost savings. The model partially addresses this via process-mode-specific density ranges, but does not impose explicit correlation between $/L and density within a given mode. See [Model Limits](limits.qmd#parameter-grounding) for discussion.
 :::
 <details><summary>What is this? (click to expand)</summary>
 
@@ -1418,7 +1426,8 @@ viewof gf_progress = Inputs.range([0, 100], {
 
 ---
 
-**What triggers the "cheap" scenario? (Key breakthroughs)**
+<details>
+<summary><strong>What triggers the "cheap" scenario? (Key breakthroughs)</strong></summary>
 
 The probability slider represents whether **at least one** of these technology approaches succeeds at commercial scale by the projection year:
 
@@ -1446,9 +1455,10 @@ The probability slider represents whether **at least one** of these technology a
 
 **Where the quantity range comes from.** GFI's 2023 recombinant-protein cost analysis reproduces the Humbird medium formulation with FGF at 0.1 mg/L and TGFβ at 0.002 mg/L — about 0.102 mg/L of true growth factors combined. GFI's efficient-future scenarios assume roughly 8–13 L media per kg meat; less-optimized processes may use up to ~60 L/kg. Multiplying through gives ≈**0.0008–0.006 g true GF/kg** as the defensible cited range, with Pasitka et al. (2024)'s empirical ACF chicken process landing at ~0.00187 g/kg — comfortably inside this band. An earlier version of this model used 0.0001–0.02 g/kg, which was too broad on both tails.
 
-**This is a pivotal uncertainty.** The [GFI 2024 State of the Industry report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) identifies growth factor cost reduction as one of the top technical challenges. Note that tightening the quantity range means the **price** regime is now doing more of the work in the tornado — the swing in cost comes primarily from the $/g uncertainty, not the g/kg uncertainty.
+**This is a pivotal uncertainty.** The [GFI 2024 State of the Industry report](https://gfi.org/resource/cultivated-meat-eggs-and-dairy-state-of-the-industry-report/) identifies growth factor cost reduction as one of the top technical challenges. Note that tightening the quantity range means the **price** regime is now doing more of the work in the tornado — the swing in cost comes primarily from the \$/g uncertainty, not the g/kg uncertainty.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
+</details>
 </details>
 
 ```{=html}
