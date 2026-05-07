@@ -258,6 +258,8 @@ html`<style>
   <button onclick="window.location.href=window.location.pathname" title="Reset all to defaults" style="padding:0.4rem 0.5rem; font-size:0.82rem; cursor:pointer; border:1px solid #c0392b; border-radius:6px; background:#fef9f9; color:#922b21; font-weight:500;">
     ↺ Reset
   </button>
+  <button onclick="document.querySelectorAll('details').forEach(function(d){d.setAttribute('open','')})" title="Expand all sections" style="padding:0.4rem 0.4rem; font-size:0.82rem; cursor:pointer; border:1px solid #aaa; border-radius:6px; background:#f9f9f9; color:#555;">▼ All</button>
+  <button onclick="document.querySelectorAll('details[open]').forEach(function(d){d.removeAttribute('open')})" title="Collapse all sections" style="padding:0.4rem 0.4rem; font-size:0.82rem; cursor:pointer; border:1px solid #aaa; border-radius:6px; background:#f9f9f9; color:#555;">▲ All</button>
 </div>
 ```
 

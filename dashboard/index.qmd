@@ -271,6 +271,13 @@ function resetAllDefaults() {
   window.location.href = window.location.pathname + window.location.hash;
 }
 
+function collapseAllDetails() {
+  document.querySelectorAll('details[open]').forEach(function(d) { d.removeAttribute('open'); });
+}
+function expandAllDetails() {
+  document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+}
+
 function toggleViewControls() {
   const content = document.getElementById('view-controls-content');
   const icon = document.getElementById('vc-minimize');
@@ -342,6 +349,9 @@ function hideHypothesis() {
     <button onclick="toggleToc()" id="vc-toc" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Contents</button>
     <button onclick="toggleHypothesis()" id="vc-hyp" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▷ Annotations</button>
     <button onclick="toggleFullWidth()" id="vc-wide" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">↔ Expand</button>
+    <hr style="margin: 3px 0; border-color: #eee;">
+    <button onclick="collapseAllDetails()" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▲ Collapse all</button>
+    <button onclick="expandAllDetails()" style="padding: 5px 8px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; text-align: left;">▼ Expand all</button>
   </div>
 </div>
 
@@ -976,6 +986,8 @@ urlBool = function(key, def) {
   <button id="reset-all-btn" onclick="resetAllDefaults()" title="Reset every slider and toggle back to its default value" style="padding: 0.5rem 0.5rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #c0392b; border-radius: 6px; background: #fef9f9; color: #922b21; font-weight: 500; white-space: nowrap;">
     ↺ Reset all
   </button>
+  <button onclick="expandAllDetails()" title="Expand all parameter detail sections" style="padding: 0.5rem 0.4rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #aaa; border-radius: 6px; background: #f9f9f9; color: #555; white-space: nowrap;">▼ All</button>
+  <button onclick="collapseAllDetails()" title="Collapse all parameter detail sections" style="padding: 0.5rem 0.4rem; font-size: 0.82rem; cursor: pointer; border: 1px solid #aaa; border-radius: 6px; background: #f9f9f9; color: #555; white-space: nowrap;">▲ All</button>
 </div>
 ```
 

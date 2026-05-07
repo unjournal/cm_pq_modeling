@@ -1,0 +1,320 @@
+/* Custom styles for Cultured Meat Cost Model Dashboard */
+
+/* Increase spacing between sections */
+.accordion-panel {
+    margin-bottom: 1rem;
+}
+
+.sidebar .accordion {
+    font-size: 0.9rem;
+}
+
+/* Make value boxes more prominent */
+.value-box {
+    min-height: 120px;
+}
+
+/* Better card spacing */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+/* Header styling */
+.display-5 {
+    color: #1a365d;
+}
+
+/* Improve sidebar readability */
+.sidebar h4 {
+    color: #2d3748;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.sidebar h5 {
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+/* Tab content spacing */
+.tab-content {
+    padding: 1.5rem 0;
+}
+
+/* Better accordion styling */
+.accordion-button {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+}
+
+.accordion-body {
+    font-size: 0.85rem;
+    background-color: #f8f9fa;
+}
+
+/* Process explainer code block */
+.accordion-body pre {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+}
+
+/* Probability cards styling */
+.prob-card .card-header {
+    font-weight: 600;
+}
+
+/* Footer styling */
+footer, .footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 2rem;
+    margin-top: 3rem;
+}
+
+/* Make plots larger on desktop */
+@media (min-width: 992px) {
+    .shiny-plot-output {
+        min-height: 400px;
+    }
+}
+
+/* Improve table readability in markdown */
+.tab-pane table {
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.tab-pane th, .tab-pane td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-pane th {
+    background-color: #f7fafc;
+    font-weight: 600;
+}
+
+/* Feedback prompt styling */
+.feedback-prompt {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin: 2rem 0;
+}
+
+.feedback-prompt h4 {
+    color: white;
+    margin-bottom: 0.75rem;
+}
+
+.feedback-prompt a {
+    color: #faf089;
+}
+
+/* Hypothesis sidebar hint */
+.hypothesis-hint {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* Make Hypothesis sidebar narrower */
+.annotator-frame {
+    width: 280px !important;
+    max-width: 280px !important;
+}
+
+/* Hypothesis collapsed state - show minimal indicator */
+.annotator-frame.annotator-collapsed {
+    width: 30px !important;
+}
+
+/* Reduce hypothesis sidebar impact on content */
+body.hypothesis-sidebar-open {
+    margin-right: 290px;
+}
+
+/* CSS-based instant tooltips for technical terms */
+abbr[title] {
+  text-decoration: underline dotted #0d6efd;
+  text-underline-offset: 3px;
+  cursor: help;
+  position: relative;
+  font-style: normal;
+}
+abbr[title]:hover {
+  text-decoration: underline solid #0d6efd;
+  background-color: #e7f1ff;
+}
+/* Instant tooltip that appears on hover */
+abbr[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2c3e50;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 300px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-bottom: 8px;
+  text-align: left;
+  font-weight: normal;
+}
+/* Arrow pointing down */
+abbr[title]::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #2c3e50;
+  margin-bottom: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  z-index: 1001;
+}
+abbr[title]:hover::after,
+abbr[title]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Make sidebar explainers wider when expanded */
+.panel-sidebar details {
+    position: relative;
+}
+
+.panel-sidebar details[open] {
+    position: relative;
+    z-index: 100;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+}
+
+/* For larger screens, expand even more */
+@media (min-width: 768px) {
+    .panel-sidebar details[open] {
+        width: 450px;
+        max-width: 90vw;
+    }
+}
+
+.panel-sidebar details summary {
+    cursor: pointer;
+    color: #3182ce;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.panel-sidebar details summary:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.panel-sidebar details > *:not(summary) {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 0.5rem;
+    background: #f7fafc;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.panel-sidebar details table {
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+/* Make Observable Inputs.button() reset buttons more prominent.
+   Default OJS buttons render as low-contrast dark-on-dark in the cosmo theme.
+   We use a broad selector because the OJS button can be wrapped in
+   .cell-output, .cell-output-display, or appear as a bare form depending on
+   how the chunk is rendered. Specificity bumped via :where() + !important. */
+.cell-output-display form button,
+.cell-output form button,
+.cell form button,
+.observablehq form button,
+form > button.observablehq-button,
+form button[type="submit"]:not(.btn),
+.cell-output-display form input[type="button"],
+.cell-output form input[type="button"],
+.cell form input[type="button"],
+.cell-output-display form input[type="submit"],
+.cell-output form input[type="submit"],
+.cell form input[type="submit"] {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    border: 2px solid #0a58ca !important;
+    padding: 0.55rem 1.2rem !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3) !important;
+    transition: background-color 0.15s, box-shadow 0.15s, transform 0.05s !important;
+    text-shadow: none !important;
+    margin: 0.25rem 0 !important;
+    min-height: 2.2rem !important;
+    line-height: 1.2 !important;
+}
+.cell-output-display form button:hover,
+.cell-output form button:hover,
+.cell form button:hover,
+.observablehq form button:hover,
+.cell-output-display form input[type="button"]:hover,
+.cell form input[type="button"]:hover,
+.cell-output-display form input[type="submit"]:hover,
+.cell form input[type="submit"]:hover {
+    background-color: #0a58ca !important;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4) !important;
+}
+.cell-output-display form button:active,
+.cell-output form button:active,
+.cell form button:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 2px rgba(13, 110, 253, 0.25) !important;
+}
+
+.panel-sidebar details th,
+.panel-sidebar details td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Wrapper to make reset buttons visually distinct from sliders above. */
+.reset-button-row {
+    margin: 0.5rem 0 0.75rem 0;
+    padding: 0.5rem;
+    background: #eef4ff;
+    border-left: 3px solid #0d6efd;
+    border-radius: 4px;
+}
+.reset-button-row form {
+    margin: 0 !important;
+}

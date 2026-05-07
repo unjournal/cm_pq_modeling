@@ -41,6 +41,20 @@ format:
     toc-depth: 3
     code-fold: true
     code-tools: true
+    include-in-header:
+      text: |
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Don't inject on index/simple — they have dedicated controls in the sidebar/VIEW panel
+          var path = window.location.pathname;
+          if (/\/(index\.html?)?(\?.*)?$/.test(path) || /\/simple\.html/.test(path)) return;
+          var bar = document.createElement('div');
+          bar.style.cssText = 'position:fixed;bottom:20px;left:16px;z-index:9000;display:flex;flex-direction:column;gap:4px;';
+          bar.innerHTML = '<button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.setAttribute(\'open\',\'\')})" title="Expand all folds" style="padding:4px 9px;font-size:11px;cursor:pointer;border:1px solid #aaa;border-radius:5px;background:white;color:#555;opacity:0.85;box-shadow:0 1px 4px rgba(0,0,0,0.12);">▼ Expand all</button>'
+                        + '<button onclick="document.querySelectorAll(\'details[open]\').forEach(function(d){d.removeAttribute(\'open\')})" title="Collapse all folds" style="padding:4px 9px;font-size:11px;cursor:pointer;border:1px solid #aaa;border-radius:5px;background:white;color:#555;opacity:0.85;box-shadow:0 1px 4px rgba(0,0,0,0.12);">▲ Collapse all</button>';
+          document.body.appendChild(bar);
+        });
+        </script>
 
 execute:
   freeze: auto
