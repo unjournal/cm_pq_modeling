@@ -587,6 +587,12 @@ function sampleGamma(rng, shape) {
 
 // Sample from beta given mean/stdev
 function sampleBetaMeanStdev(rng, mean, stdev, n) {
+  // Guard: Beta is undefined at the boundaries (mean=0 or mean=1).
+  // betaFromMeanStdev returns NaN params → sampleBeta returns NaN →
+  // rng() < NaN is always false, silently flipping boolean outcomes.
+  // E.g. p_recf_mean=1.0 (slider at 100%) → all treated as expensive GF.
+  if (mean <= 0) return new Array(n).fill(0);
+  if (mean >= 1) return new Array(n).fill(1);
   const [a, b] = betaFromMeanStdev(mean, stdev);
   const samples = new Array(n);
   for (let i = 0; i < n; i++) {
