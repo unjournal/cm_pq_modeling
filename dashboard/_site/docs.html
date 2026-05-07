@@ -388,6 +388,15 @@ window.Quarto = {
   <li><a href="#maturity-factor" id="toc-maturity-factor" class="nav-link" data-scroll-target="#maturity-factor">4. Technology Adoption &amp; Maturity</a></li>
   <li><a href="#monte-carlo-simulation" id="toc-monte-carlo-simulation" class="nav-link" data-scroll-target="#monte-carlo-simulation">5. Monte Carlo Simulation</a></li>
   </ul></li>
+  <li><a href="#expert-priors" id="toc-expert-priors" class="nav-link" data-scroll-target="#expert-priors">Expert Priors: Customizing Uncertainty Ranges</a>
+  <ul class="collapse">
+  <li><a href="#what-the-models-built-in-ranges-represent" id="toc-what-the-models-built-in-ranges-represent" class="nav-link" data-scroll-target="#what-the-models-built-in-ranges-represent">What the model’s built-in ranges represent</a></li>
+  <li><a href="#what-p10-p90-means" id="toc-what-p10-p90-means" class="nav-link" data-scroll-target="#what-p10-p90-means">What p10 / p90 means</a></li>
+  <li><a href="#illustrated-examples" id="toc-illustrated-examples" class="nav-link" data-scroll-target="#illustrated-examples">Illustrated examples</a></li>
+  <li><a href="#how-the-distribution-is-constructed" id="toc-how-the-distribution-is-constructed" class="nav-link" data-scroll-target="#how-the-distribution-is-constructed">How the distribution is constructed</a></li>
+  <li><a href="#interaction-with-other-sliders" id="toc-interaction-with-other-sliders" class="nav-link" data-scroll-target="#interaction-with-other-sliders">Interaction with other sliders</a></li>
+  <li><a href="#connection-to-the-beliefs-form" id="toc-connection-to-the-beliefs-form" class="nav-link" data-scroll-target="#connection-to-the-beliefs-form">Connection to the beliefs form</a></li>
+  </ul></li>
   <li><a href="#parameter-definitions" id="toc-parameter-definitions" class="nav-link" data-scroll-target="#parameter-definitions">Parameter Definitions</a>
   <ul class="collapse">
   <li><a href="#basic-parameters" id="toc-basic-parameters" class="nav-link" data-scroll-target="#basic-parameters">Basic Parameters</a></li>
@@ -1226,6 +1235,188 @@ Setting maturity low but one technology probability high (tests “isolated brea
 <hr>
 </section>
 
+<section id="expert-priors" class="level2">
+<h2 class="anchored" data-anchor-id="expert-priors">Expert Priors: Customizing Uncertainty Ranges</h2>
+<p>The Simplest Model includes a collapsible “Set my own uncertainty ranges” panel that lets you override the model’s built-in distributions for the three biggest cost drivers. This section explains what that means and how to use it.</p>
+<section id="what-the-models-built-in-ranges-represent" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-models-built-in-ranges-represent">What the model’s built-in ranges represent</h3>
+<p>Every parameter in the model is drawn from a probability distribution — not a single number. For example, cell culture media cost is drawn from a lognormal distribution with p5 ≈ $0.5/L and p95 ≈ $2.5/L (for pharma-grade media). These ranges come from the published TEA literature and represent the <em>developers’ uncertainty</em> about where costs currently are and where they’ll be by 2036.</p>
+<p>But you may have a very different view. An industry expert who has negotiated media contracts might know costs are reliably in a narrower range. A skeptic might think the uncertainty is far wider. <strong>The expert priors feature lets you substitute your own ranges.</strong></p>
+</section>
+<section id="what-p10-p90-means" class="level3">
+<h3 class="anchored" data-anchor-id="what-p10-p90-means">What p10 / p90 means</h3>
+<p>When you enter a p10 and p90 for a parameter, you’re saying:</p>
+<blockquote class="blockquote">
+<p>“I think there’s only a 10% chance the true value will be <em>below</em> my p10, and only a 10% chance it will be <em>above</em> my p90.”</p>
+</blockquote>
+<p>In other words, your <strong>80% credible interval</strong> — you’d be genuinely surprised if the outcome fell outside this range. This is the same format the <a href="https://uj-cm-workshop.netlify.app/beliefs.html">beliefs form</a> uses for CM_13, CM_14, and CM_16.</p>
+</section>
+<section id="illustrated-examples" class="level3">
+<h3 class="anchored" data-anchor-id="illustrated-examples">Illustrated examples</h3>
+<p><strong>Example: Cell density (g/L)</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Expert type</th>
+<th>p10</th>
+<th>p90</th>
+<th>What it implies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Optimistic TEA view</td>
+<td>25</td>
+<td>120</td>
+<td>Perfusion-scale densities are achievable</td>
+</tr>
+<tr class="even">
+<td>Conservative operator</td>
+<td>5</td>
+<td>35</td>
+<td>Fed-batch dominates; density gains are slow</td>
+</tr>
+<tr class="odd">
+<td>Model default (mixed modes)</td>
+<td>~7</td>
+<td>~110</td>
+<td>Weighted by process mode probabilities</td>
+</tr>
+</tbody>
+</table>
+<p>Setting a higher p10 and p90 shifts the entire cost distribution down — more liters needed per kg of output → lower media cost and smaller required bioreactor volume.</p>
+<p><strong>Example: Media cost ($/kg biomass)</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Expert type</th>
+<th>p10</th>
+<th>p90</th>
+<th>What it implies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hydrolysate optimist</td>
+<td>3</td>
+<td>30</td>
+<td>Cheap protein hydrolysates dominate</td>
+</tr>
+<tr class="even">
+<td>Pharma-grade pessimist</td>
+<td>20</td>
+<td>200</td>
+<td>High-purity media remains necessary</td>
+</tr>
+<tr class="odd">
+<td>Model default</td>
+<td>~5</td>
+<td>~120</td>
+<td>Regime-weighted by hydrolysate slider</td>
+</tr>
+</tbody>
+</table>
+<p>Note: specifying media cost $/kg directly <em>bypasses the hydrolysate slider</em> — you’re asserting your net belief about the combined media cost, whatever the reason.</p>
+<p><strong>Example: Growth factor cost ($/kg biomass)</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Expert type</th>
+<th>p10</th>
+<th>p90</th>
+<th>What it implies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Breakthrough optimist</td>
+<td>0.5</td>
+<td>10</td>
+<td>Autocrine lines or fermentation GFs work</td>
+</tr>
+<tr class="even">
+<td>Current-tech pessimist</td>
+<td>15</td>
+<td>200</td>
+<td>No scalable cheap GF route by 2036</td>
+</tr>
+<tr class="odd">
+<td>Model default</td>
+<td>depends on GF slider</td>
+<td>—</td>
+<td>Weighted by P(breakthrough) slider</td>
+</tr>
+</tbody>
+</table>
+<p>Setting GF cost $/kg directly <em>bypasses the breakthrough probability slider</em> — you’re asserting your overall cost view, combining your probability of a breakthrough with what costs look like in each regime.</p>
+</section>
+<section id="how-the-distribution-is-constructed" class="level3">
+<h3 class="anchored" data-anchor-id="how-the-distribution-is-constructed">How the distribution is constructed</h3>
+<p>Your p10 and p90 define a <strong>lognormal distribution</strong>. Lognormal is the right shape for costs: it’s always positive, right-skewed (a small probability of very high costs), and multiplicative uncertainty compounds naturally. The model uses:</p>
+<p><span class="math display">\[\mu = \frac{\ln(p_{10}) + \ln(p_{90})}{2}, \quad \sigma = \frac{\ln(p_{90}) - \ln(p_{10})}{2 \times 1.28}\]</span></p>
+<p>where 1.28 is the 90th percentile of the standard normal. The median of your distribution is <span class="math inline">\(e^\mu = \sqrt{p_{10} \times p_{90}}\)</span> — the geometric mean of your bounds.</p>
+</section>
+<section id="interaction-with-other-sliders" class="level3">
+<h3 class="anchored" data-anchor-id="interaction-with-other-sliders">Interaction with other sliders</h3>
+<p>When you override a cost driver:</p>
+<ul>
+<li><strong>Media cost $/kg override</strong> — replaces the entire media cost calculation; the hydrolysate slider and density slider no longer affect media cost (cell density still affects CAPEX through bioreactor volume)</li>
+<li><strong>GF cost $/kg override</strong> — replaces the entire GF cost calculation; the GF breakthrough slider no longer affects GF cost</li>
+<li><strong>Cell density override</strong> — replaces all process-mode-specific density sampling; still affects both media cost (through L/kg) and CAPEX (through bioreactor volume); mode distribution still affects media turnover</li>
+</ul>
+<p>Overrides stack: you can set all three simultaneously to see what <em>your specific combination of beliefs</em> implies for the overall cost distribution.</p>
+</section>
+<section id="connection-to-the-beliefs-form" class="level3">
+<h3 class="anchored" data-anchor-id="connection-to-the-beliefs-form">Connection to the beliefs form</h3>
+<p>These three parameters correspond directly to beliefs form questions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Override parameter</th>
+<th>Beliefs form question</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Media cost $/kg biomass</td>
+<td>CM_14: cell media cost per kg CM output</td>
+</tr>
+<tr class="even">
+<td>GF cost $/kg biomass</td>
+<td>CM_13: growth factor cost per kg of biomass</td>
+</tr>
+<tr class="odd">
+<td>Cell density g/L</td>
+<td>CM_16: achievable cell density in a 20,000-L bioreactor</td>
+</tr>
+</tbody>
+</table>
+<p>If you’ve already filled in the beliefs form with a median and 80% CI for these questions, you can enter those same numbers here to see what they imply for the full cost distribution — closing the loop between elicitation and model exploration.</p>
+<hr>
+</section>
+</section>
 <section id="parameter-definitions" class="level2">
 <h2 class="anchored" data-anchor-id="parameter-definitions">Parameter Definitions</h2>
 <p>This section defines all model inputs. Each parameter links back to where it appears in the <a href="#model-formulas">cost equations</a>.</p>
@@ -3059,430 +3250,512 @@ P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.5), 0, 1)
 <span id="cb1-477"><a href="#cb1-477" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-478"><a href="#cb1-478" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-479"><a href="#cb1-479" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-480"><a href="#cb1-480" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter Definitions {#parameter-definitions}</span></span>
+<span id="cb1-480"><a href="#cb1-480" aria-hidden="true" tabindex="-1"></a><span class="fu">## Expert Priors: Customizing Uncertainty Ranges {#expert-priors}</span></span>
 <span id="cb1-481"><a href="#cb1-481" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-482"><a href="#cb1-482" aria-hidden="true" tabindex="-1"></a>This section defines all model inputs. Each parameter links back to where it appears in the <span class="co">[</span><span class="ot">cost equations</span><span class="co">](#model-formulas)</span>.</span>
+<span id="cb1-482"><a href="#cb1-482" aria-hidden="true" tabindex="-1"></a>The Simplest Model includes a collapsible "Set my own uncertainty ranges" panel that lets you override the model's built-in distributions for the three biggest cost drivers. This section explains what that means and how to use it.</span>
 <span id="cb1-483"><a href="#cb1-483" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-484"><a href="#cb1-484" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basic Parameters</span></span>
+<span id="cb1-484"><a href="#cb1-484" aria-hidden="true" tabindex="-1"></a><span class="fu">### What the model's built-in ranges represent</span></span>
 <span id="cb1-485"><a href="#cb1-485" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-486"><a href="#cb1-486" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Symbol <span class="pp">|</span> Distribution <span class="pp">|</span> Default <span class="pp">|</span> Unit <span class="pp">|</span> Used in <span class="pp">|</span></span>
-<span id="cb1-487"><a href="#cb1-487" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------|--------------|---------|------|---------|</span></span>
-<span id="cb1-488"><a href="#cb1-488" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Plant capacity <span class="pp">|</span> $Q$ <span class="pp">|</span> Lognormal(p5, p95) <span class="pp">|</span> 5–50 <span class="pp">|</span> kTA/year <span class="pp">|</span> <span class="co">[</span><span class="ot">CAPEX/kg</span><span class="co">](#annualized-capital-costs)</span>, Fixed OPEX <span class="pp">|</span></span>
-<span id="cb1-489"><a href="#cb1-489" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Utilization <span class="pp">|</span> $u$ <span class="pp">|</span> Beta(mean, sd) <span class="pp">|</span> 0.90 <span class="pp">|</span> fraction <span class="pp">|</span> Annual output = $Q \times u$ <span class="pp">|</span></span>
-<span id="cb1-490"><a href="#cb1-490" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Maturity index <span class="pp">|</span> $m$ <span class="pp">|</span> Beta(mean, sd) <span class="pp">|</span> 0.50 <span class="pp">|</span> 0–1 <span class="pp">|</span> <span class="co">[</span><span class="ot">Technology adoption</span><span class="co">](#maturity-factor)</span>, WACC adjustment <span class="pp">|</span></span>
+<span id="cb1-486"><a href="#cb1-486" aria-hidden="true" tabindex="-1"></a>Every parameter in the model is drawn from a probability distribution — not a single number. For example, cell culture media cost is drawn from a lognormal distribution with p5 ≈ $0.5/L and p95 ≈ $2.5/L (for pharma-grade media). These ranges come from the published TEA literature and represent the *developers' uncertainty* about where costs currently are and where they'll be by 2036.</span>
+<span id="cb1-487"><a href="#cb1-487" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-488"><a href="#cb1-488" aria-hidden="true" tabindex="-1"></a>But you may have a very different view. An industry expert who has negotiated media contracts might know costs are reliably in a narrower range. A skeptic might think the uncertainty is far wider. **The expert priors feature lets you substitute your own ranges.**</span>
+<span id="cb1-489"><a href="#cb1-489" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-490"><a href="#cb1-490" aria-hidden="true" tabindex="-1"></a><span class="fu">### What p10 / p90 means</span></span>
 <span id="cb1-491"><a href="#cb1-491" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-492"><a href="#cb1-492" aria-hidden="true" tabindex="-1"></a>**Why these distributions?**</span>
+<span id="cb1-492"><a href="#cb1-492" aria-hidden="true" tabindex="-1"></a>When you enter a p10 and p90 for a parameter, you're saying:</span>
 <span id="cb1-493"><a href="#cb1-493" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-494"><a href="#cb1-494" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Lognormal** for plant capacity: Capacity is positive and right-skewed (most plants are medium-sized, few are very large). Lognormal naturally captures this. The p5/p95 parameterization lets us specify "90% of plants are between 5 and 50 kTA."</span>
-<span id="cb1-495"><a href="#cb1-495" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Beta** for utilization and maturity: Both are bounded between 0 and 1. Beta distributions are flexible for modeling proportions and can be parameterized with mean/stdev.</span>
-<span id="cb1-496"><a href="#cb1-496" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-497"><a href="#cb1-497" aria-hidden="true" tabindex="-1"></a>These choices follow standard practice in techno-economic assessments (<span class="co">[</span><span class="ot">Humbird 2021</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span>, <span class="co">[</span><span class="ot">Risner et al. 2021</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span>). Humbird 2021 uses lognormal distributions for cost inputs and triangular distributions for some parameters; we use lognormal throughout for positive-valued quantities because it avoids the sharp bounds of triangular distributions. The **Bernoulli** draws for technology adoption (hydrolysates, food-grade, cheap GFs) reflect discrete yes/no events rather than continuous uncertainty — see <span class="co">[</span><span class="ot">Section 4</span><span class="co">](#maturity-factor)</span> for details.</span>
-<span id="cb1-498"><a href="#cb1-498" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-499"><a href="#cb1-499" aria-hidden="true" tabindex="-1"></a><span class="fu">### Technology Adoption</span></span>
-<span id="cb1-500"><a href="#cb1-500" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-501"><a href="#cb1-501" aria-hidden="true" tabindex="-1"></a>Each technology has a base adoption probability, adjusted by the <span class="co">[</span><span class="ot">maturity factor</span><span class="co">](#maturity-factor)</span>:</span>
-<span id="cb1-502"><a href="#cb1-502" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-503"><a href="#cb1-503" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-504"><a href="#cb1-504" aria-hidden="true" tabindex="-1"></a>P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.5), 0, 1)</span>
-<span id="cb1-505"><a href="#cb1-505" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb1-506"><a href="#cb1-506" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-507"><a href="#cb1-507" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Technology <span class="pp">|</span> Base Prob <span class="pp">|</span> $k$ <span class="pp">|</span> Effect on cost <span class="pp">|</span> Notes <span class="pp">|</span></span>
-<span id="cb1-508"><a href="#cb1-508" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-----------|-----|----------------|-------|</span></span>
-<span id="cb1-509"><a href="#cb1-509" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">Hydrolysates</span><span class="co">](learn.qmd#hydrolysates-the-big-win-for-amino-acids)</span> <span class="pp">|</span> 75% <span class="pp">|</span> 0.25 <span class="pp">|</span> Reduces media $/L by ~70% <span class="pp">|</span> Plant/yeast protein digests replace purified amino acids <span class="pp">|</span></span>
-<span id="cb1-510"><a href="#cb1-510" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">Scalable GF technology</span><span class="co">](learn.qmd#step-5-growth-factors--a-key-cost-driver)</span> <span class="pp">|</span> 50% <span class="pp">|</span> 0.25 <span class="pp">|</span> Switches to "cheap" GF prices (<span class="co">[</span><span class="ot">see price tables</span><span class="co">](#gf-scenarios)</span>) <span class="pp">|</span> Any breakthrough: autocrine, plant farming, precision fermentation. See <span class="co">[</span><span class="ot">binary toggle rationale</span><span class="co">](#the-binary-cheap-vs-expensive-toggle)</span> <span class="pp">|</span></span>
+<span id="cb1-494"><a href="#cb1-494" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; "I think there's only a 10% chance the true value will be *below* my p10, and only a 10% chance it will be *above* my p90."</span></span>
+<span id="cb1-495"><a href="#cb1-495" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-496"><a href="#cb1-496" aria-hidden="true" tabindex="-1"></a>In other words, your **80% credible interval** — you'd be genuinely surprised if the outcome fell outside this range. This is the same format the <span class="co">[</span><span class="ot">beliefs form</span><span class="co">](https://uj-cm-workshop.netlify.app/beliefs.html)</span> uses for CM_13, CM_14, and CM_16.</span>
+<span id="cb1-497"><a href="#cb1-497" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-498"><a href="#cb1-498" aria-hidden="true" tabindex="-1"></a><span class="fu">### Illustrated examples</span></span>
+<span id="cb1-499"><a href="#cb1-499" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-500"><a href="#cb1-500" aria-hidden="true" tabindex="-1"></a>**Example: Cell density (g/L)**</span>
+<span id="cb1-501"><a href="#cb1-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-502"><a href="#cb1-502" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Expert type <span class="pp">|</span> p10 <span class="pp">|</span> p90 <span class="pp">|</span> What it implies <span class="pp">|</span></span>
+<span id="cb1-503"><a href="#cb1-503" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------------|-----|-----|-----------------|</span></span>
+<span id="cb1-504"><a href="#cb1-504" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Optimistic TEA view <span class="pp">|</span> 25 <span class="pp">|</span> 120 <span class="pp">|</span> Perfusion-scale densities are achievable <span class="pp">|</span></span>
+<span id="cb1-505"><a href="#cb1-505" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Conservative operator <span class="pp">|</span> 5 <span class="pp">|</span> 35 <span class="pp">|</span> Fed-batch dominates; density gains are slow <span class="pp">|</span></span>
+<span id="cb1-506"><a href="#cb1-506" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Model default (mixed modes) <span class="pp">|</span> ~7 <span class="pp">|</span> ~110 <span class="pp">|</span> Weighted by process mode probabilities <span class="pp">|</span></span>
+<span id="cb1-507"><a href="#cb1-507" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-508"><a href="#cb1-508" aria-hidden="true" tabindex="-1"></a>Setting a higher p10 and p90 shifts the entire cost distribution down — more liters needed per kg of output → lower media cost and smaller required bioreactor volume.</span>
+<span id="cb1-509"><a href="#cb1-509" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-510"><a href="#cb1-510" aria-hidden="true" tabindex="-1"></a>**Example: Media cost ($/kg biomass)**</span>
 <span id="cb1-511"><a href="#cb1-511" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-512"><a href="#cb1-512" aria-hidden="true" tabindex="-1"></a>*Note: an earlier version of this table included a "Food-grade micronutrients" adoption parameter (65% base prob). This was removed — vitamins, minerals, and trace salts are now folded into basal media $/L. See the [model change log](index.html#micronutrient-change-note) for the full rationale.*</span>
-<span id="cb1-513"><a href="#cb1-513" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-514"><a href="#cb1-514" aria-hidden="true" tabindex="-1"></a><span class="fu">### Process Intensities</span></span>
-<span id="cb1-515"><a href="#cb1-515" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-516"><a href="#cb1-516" aria-hidden="true" tabindex="-1"></a>These parameters determine how much media is needed per kg of meat. They feed directly into the <span class="co">[</span><span class="ot">Media Cost equation</span><span class="co">](#variable-operating-costs-voc)</span>:</span>
+<span id="cb1-512"><a href="#cb1-512" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Expert type <span class="pp">|</span> p10 <span class="pp">|</span> p90 <span class="pp">|</span> What it implies <span class="pp">|</span></span>
+<span id="cb1-513"><a href="#cb1-513" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------------|-----|-----|-----------------|</span></span>
+<span id="cb1-514"><a href="#cb1-514" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Hydrolysate optimist <span class="pp">|</span> 3 <span class="pp">|</span> 30 <span class="pp">|</span> Cheap protein hydrolysates dominate <span class="pp">|</span></span>
+<span id="cb1-515"><a href="#cb1-515" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pharma-grade pessimist <span class="pp">|</span> 20 <span class="pp">|</span> 200 <span class="pp">|</span> High-purity media remains necessary <span class="pp">|</span></span>
+<span id="cb1-516"><a href="#cb1-516" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Model default <span class="pp">|</span> ~5 <span class="pp">|</span> ~120 <span class="pp">|</span> Regime-weighted by hydrolysate slider <span class="pp">|</span></span>
 <span id="cb1-517"><a href="#cb1-517" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-518"><a href="#cb1-518" aria-hidden="true" tabindex="-1"></a>$$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{media-use multiplier} \times \text{price per L}$$</span>
+<span id="cb1-518"><a href="#cb1-518" aria-hidden="true" tabindex="-1"></a>Note: specifying media cost $/kg directly *bypasses the hydrolysate slider* — you're asserting your net belief about the combined media cost, whatever the reason.</span>
 <span id="cb1-519"><a href="#cb1-519" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-520"><a href="#cb1-520" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Range (p5–p95) <span class="pp">|</span> Unit <span class="pp">|</span> Definition <span class="pp">|</span> Where in cost equation <span class="pp">|</span></span>
-<span id="cb1-521"><a href="#cb1-521" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|----------------|------|------------|----------------------|</span></span>
-<span id="cb1-522"><a href="#cb1-522" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cell density <span class="pp">|</span> 30–200 <span class="pp">|</span> g/L <span class="pp">|</span> Final biomass concentration at harvest <span class="pp">|</span> Denominator of $\frac{1000}{\text{density}}$ — higher density → fewer liters per kg <span class="pp">|</span></span>
-<span id="cb1-523"><a href="#cb1-523" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cycle time <span class="pp">|</span> 0.5–5 <span class="pp">|</span> days <span class="pp">|</span> Duration of one production batch <span class="pp">|</span> Affects annual throughput (and thus CAPEX/kg via $/kg = CAPEX × CRF / output), not media cost directly <span class="pp">|</span></span>
-<span id="cb1-524"><a href="#cb1-524" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Media-use multiplier <span class="pp">|</span> **0.5–3.0** (was 1–10 before April 2026) <span class="pp">|</span> × <span class="pp">|</span> Net fresh media consumed per kg of cells, divided by the nominal reactor-fill volume (<span class="in">`1000/density`</span>) <span class="pp">|</span> Multiplier on liters/kg — see change log below <span class="pp">|</span></span>
-<span id="cb1-525"><a href="#cb1-525" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-526"><a href="#cb1-526" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
-<span id="cb1-527"><a href="#cb1-527" aria-hidden="true" tabindex="-1"></a><span class="fu">## Media-use multiplier: rename, range change, and what values below 1 mean (April 2026)</span></span>
-<span id="cb1-528"><a href="#cb1-528" aria-hidden="true" tabindex="-1"></a>**What changed.** The parameter previously labeled "Media turnover" with a default p5–p95 range of 1–10× was renamed to "Media-use multiplier" and narrowed to **0.5–3.0×**. The internal code variable is still <span class="in">`media_turnover`</span> for git-history stability, but the user-facing name and semantics are new.</span>
+<span id="cb1-520"><a href="#cb1-520" aria-hidden="true" tabindex="-1"></a>**Example: Growth factor cost ($/kg biomass)**</span>
+<span id="cb1-521"><a href="#cb1-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-522"><a href="#cb1-522" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Expert type <span class="pp">|</span> p10 <span class="pp">|</span> p90 <span class="pp">|</span> What it implies <span class="pp">|</span></span>
+<span id="cb1-523"><a href="#cb1-523" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------------|-----|-----|-----------------|</span></span>
+<span id="cb1-524"><a href="#cb1-524" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Breakthrough optimist <span class="pp">|</span> 0.5 <span class="pp">|</span> 10 <span class="pp">|</span> Autocrine lines or fermentation GFs work <span class="pp">|</span></span>
+<span id="cb1-525"><a href="#cb1-525" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Current-tech pessimist <span class="pp">|</span> 15 <span class="pp">|</span> 200 <span class="pp">|</span> No scalable cheap GF route by 2036 <span class="pp">|</span></span>
+<span id="cb1-526"><a href="#cb1-526" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Model default <span class="pp">|</span> depends on GF slider <span class="pp">|</span> — <span class="pp">|</span> Weighted by P(breakthrough) slider <span class="pp">|</span></span>
+<span id="cb1-527"><a href="#cb1-527" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-528"><a href="#cb1-528" aria-hidden="true" tabindex="-1"></a>Setting GF cost $/kg directly *bypasses the breakthrough probability slider* — you're asserting your overall cost view, combining your probability of a breakthrough with what costs look like in each regime.</span>
 <span id="cb1-529"><a href="#cb1-529" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-530"><a href="#cb1-530" aria-hidden="true" tabindex="-1"></a>**Why the rename.** "Turnover" in biology/lab usage literally means "how many times the media was changed," which implies a hard floor at 1. The cost model, however, uses the parameter as a bundled *effective media-use ratio* that includes real mechanisms producing values below 1 — media recycling, fed-batch with concentrated feeds, and harvest-side cell concentration. "Media-use multiplier" signals the bundling and makes sub-1 values physically coherent rather than nonsensical. See <span class="co">[</span><span class="ot">Learn: media-use mechanisms</span><span class="co">](learn.qmd#media-use-mechanisms)</span> for the full walkthrough of the three mechanisms.</span>
+<span id="cb1-530"><a href="#cb1-530" aria-hidden="true" tabindex="-1"></a><span class="fu">### How the distribution is constructed</span></span>
 <span id="cb1-531"><a href="#cb1-531" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-532"><a href="#cb1-532" aria-hidden="true" tabindex="-1"></a>**Why the range change.** GFI's 2023 recombinant-protein report assumes 8–13 L media per kg of meat as its cost-competitive target. At 60–90 g/L cell density, the nominal reactor-fill volume is 11.1–16.7 L/kg, which back-solves to a multiplier of **≈0.48–1.17**. The old floor of 1.0 mechanically excluded the lower end of the GFI range regardless of how high density was pushed — the dashboard simply could not represent the "cost-competitive future" scenario. The new floor of 0.5 fixes that.</span>
+<span id="cb1-532"><a href="#cb1-532" aria-hidden="true" tabindex="-1"></a>Your p10 and p90 define a **lognormal distribution**. Lognormal is the right shape for costs: it's always positive, right-skewed (a small probability of very high costs), and multiplicative uncertainty compounds naturally. The model uses:</span>
 <span id="cb1-533"><a href="#cb1-533" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-534"><a href="#cb1-534" aria-hidden="true" tabindex="-1"></a>Values in the 5–10× region remain conceivable for heavily media-intensive processes but are now a stress-test region rather than the default sampled range.</span>
+<span id="cb1-534"><a href="#cb1-534" aria-hidden="true" tabindex="-1"></a>$$\mu = \frac{\ln(p_{10}) + \ln(p_{90})}{2}, \quad \sigma = \frac{\ln(p_{90}) - \ln(p_{10})}{2 \times 1.28}$$</span>
 <span id="cb1-535"><a href="#cb1-535" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-536"><a href="#cb1-536" aria-hidden="true" tabindex="-1"></a>**Legacy name.** The <span class="in">`media_turnover`</span> variable in <span class="co">[</span><span class="ot">`simulate()`</span><span class="co">](index.qmd)</span> still uses the old name because renaming it would churn all the sensitivity-analysis wiring for no behavioral benefit. Treat <span class="in">`media_turnover`</span> as a legacy identifier for the media-use multiplier.</span>
-<span id="cb1-537"><a href="#cb1-537" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb1-538"><a href="#cb1-538" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-539"><a href="#cb1-539" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basal micronutrients (vitamins / minerals / trace salts) {#micronutrient-costs}</span></span>
-<span id="cb1-540"><a href="#cb1-540" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-541"><a href="#cb1-541" aria-hidden="true" tabindex="-1"></a>**Not modeled as a separate line item.** Basal vitamins, minerals, and trace salts are included inside media $/L along with amino acids and glucose. See the callout under <span class="co">[</span><span class="ot">Section 2 (VOC)</span><span class="co">](#variable-operating-costs-voc)</span> for why the previous standalone "food-grade micronutrients" term was removed, and the <span class="co">[</span><span class="ot">model change log on the main page</span><span class="co">](index.qmd#micronutrient-change-note)</span> for the full rationale.</span>
-<span id="cb1-542"><a href="#cb1-542" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-543"><a href="#cb1-543" aria-hidden="true" tabindex="-1"></a>**If/when we add a separate uncertainty term in this slot**, it will be repurposed to **supplemental recombinant proteins** — insulin, transferrin, and possibly albumin — which have defensible per-g prices (supplier quotes) and per-kg usage levels in the literature. These are distinct from the growth factors (FGF-2, IGF-1, TGF-β) modeled in the <span class="co">[</span><span class="ot">GF section</span><span class="co">](#growth-factor-cost)</span>.</span>
-<span id="cb1-544"><a href="#cb1-544" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-545"><a href="#cb1-545" aria-hidden="true" tabindex="-1"></a><span class="fu">### Growth Factor Price Scenarios {#gf-scenarios}</span></span>
-<span id="cb1-546"><a href="#cb1-546" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-547"><a href="#cb1-547" aria-hidden="true" tabindex="-1"></a>These parameters feed into the <span class="co">[</span><span class="ot">GF Cost equation</span><span class="co">](#how-gf-cost-feeds-into-total-cost)</span>: GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).</span>
-<span id="cb1-548"><a href="#cb1-548" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-549"><a href="#cb1-549" aria-hidden="true" tabindex="-1"></a>The model uses two discrete price scenarios, selected by a Bernoulli draw (see <span class="co">[</span><span class="ot">why binary</span><span class="co">](#the-binary-cheap-vs-expensive-toggle)</span> above):</span>
-<span id="cb1-550"><a href="#cb1-550" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-551"><a href="#cb1-551" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scenario <span class="pp">|</span> Quantity (g/kg) <span class="pp">|</span> Price ($/g) <span class="pp">|</span> What it represents <span class="pp">|</span> Source <span class="pp">|</span></span>
-<span id="cb1-552"><a href="#cb1-552" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|----------------|-------------|-------------------|--------|</span></span>
-<span id="cb1-553"><a href="#cb1-553" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Scalable tech achieved** <span class="pp">|</span> 0.0005 – 0.002 <span class="pp">|</span> $1 – $100 <span class="pp">|</span> At least one breakthrough reaches commercial scale; usage reduced ~3× via thermostable variants / autocrine / recycling <span class="pp">|</span> <span class="co">[</span><span class="ot">GFI 2024 targets</span><span class="co">](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/)</span> <span class="pp">|</span></span>
-<span id="cb1-554"><a href="#cb1-554" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Limited progress** <span class="pp">|</span> 0.001 – 0.006 <span class="pp">|</span> $500 – $50,000 <span class="pp">|</span> Humbird formulation (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × 8–60 L/kg media use, no step-change <span class="pp">|</span> <span class="co">[</span><span class="ot">GFI 2023 recombinant-protein report</span><span class="co">](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)</span>; <span class="co">[</span><span class="ot">Humbird 2021</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> <span class="pp">|</span></span>
-<span id="cb1-555"><a href="#cb1-555" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-556"><a href="#cb1-556" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
-<span id="cb1-557"><a href="#cb1-557" aria-hidden="true" tabindex="-1"></a><span class="fu">## How the quantity range was derived (April 2026 revision)</span></span>
-<span id="cb1-558"><a href="#cb1-558" aria-hidden="true" tabindex="-1"></a>Earlier model versions used a very broad 0.0001–0.02 g/kg range with no specific citation. That range was tightened to align with primary sources:</span>
+<span id="cb1-536"><a href="#cb1-536" aria-hidden="true" tabindex="-1"></a>where 1.28 is the 90th percentile of the standard normal. The median of your distribution is $e^\mu = \sqrt{p_{10} \times p_{90}}$ — the geometric mean of your bounds.</span>
+<span id="cb1-537"><a href="#cb1-537" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-538"><a href="#cb1-538" aria-hidden="true" tabindex="-1"></a><span class="fu">### Interaction with other sliders</span></span>
+<span id="cb1-539"><a href="#cb1-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-540"><a href="#cb1-540" aria-hidden="true" tabindex="-1"></a>When you override a cost driver:</span>
+<span id="cb1-541"><a href="#cb1-541" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-542"><a href="#cb1-542" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Media cost $/kg override** — replaces the entire media cost calculation; the hydrolysate slider and density slider no longer affect media cost (cell density still affects CAPEX through bioreactor volume)</span>
+<span id="cb1-543"><a href="#cb1-543" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**GF cost $/kg override** — replaces the entire GF cost calculation; the GF breakthrough slider no longer affects GF cost</span>
+<span id="cb1-544"><a href="#cb1-544" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Cell density override** — replaces all process-mode-specific density sampling; still affects both media cost (through L/kg) and CAPEX (through bioreactor volume); mode distribution still affects media turnover</span>
+<span id="cb1-545"><a href="#cb1-545" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-546"><a href="#cb1-546" aria-hidden="true" tabindex="-1"></a>Overrides stack: you can set all three simultaneously to see what *your specific combination of beliefs* implies for the overall cost distribution.</span>
+<span id="cb1-547"><a href="#cb1-547" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-548"><a href="#cb1-548" aria-hidden="true" tabindex="-1"></a><span class="fu">### Connection to the beliefs form</span></span>
+<span id="cb1-549"><a href="#cb1-549" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-550"><a href="#cb1-550" aria-hidden="true" tabindex="-1"></a>These three parameters correspond directly to beliefs form questions:</span>
+<span id="cb1-551"><a href="#cb1-551" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-552"><a href="#cb1-552" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Override parameter <span class="pp">|</span> Beliefs form question <span class="pp">|</span></span>
+<span id="cb1-553"><a href="#cb1-553" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb1-554"><a href="#cb1-554" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Media cost $/kg biomass <span class="pp">|</span> CM_14: cell media cost per kg CM output <span class="pp">|</span></span>
+<span id="cb1-555"><a href="#cb1-555" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> GF cost $/kg biomass <span class="pp">|</span> CM_13: growth factor cost per kg of biomass <span class="pp">|</span></span>
+<span id="cb1-556"><a href="#cb1-556" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cell density g/L <span class="pp">|</span> CM_16: achievable cell density in a 20,000-L bioreactor <span class="pp">|</span></span>
+<span id="cb1-557"><a href="#cb1-557" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-558"><a href="#cb1-558" aria-hidden="true" tabindex="-1"></a>If you've already filled in the beliefs form with a median and 80% CI for these questions, you can enter those same numbers here to see what they imply for the full cost distribution — closing the loop between elicitation and model exploration.</span>
 <span id="cb1-559"><a href="#cb1-559" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-560"><a href="#cb1-560" aria-hidden="true" tabindex="-1"></a>**Humbird formulation** (as reproduced in <span class="co">[</span><span class="ot">GFI 2023 recombinant-protein analysis</span><span class="co">](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)</span>):</span>
-<span id="cb1-561"><a href="#cb1-561" aria-hidden="true" tabindex="-1"></a>$$\underbrace{1.0 \times 10^{-4}\ \text{g/L}}_{\text{FGF}} + \underbrace{2.0 \times 10^{-6}\ \text{g/L}}_{\text{TGF}\beta} \approx 1.02 \times 10^{-4}\ \text{g/L true GF}$$</span>
-<span id="cb1-562"><a href="#cb1-562" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-563"><a href="#cb1-563" aria-hidden="true" tabindex="-1"></a>**Media-use assumptions** from the same report and the cell-density × media-use-multiplier math on the main page:</span>
-<span id="cb1-564"><a href="#cb1-564" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-565"><a href="#cb1-565" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Media use (L/kg) <span class="pp">|</span> True-GF quantity (g/kg) <span class="pp">|</span></span>
-<span id="cb1-566"><a href="#cb1-566" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb1-567"><a href="#cb1-567" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 8 L/kg (GFI efficient-future scenario low) <span class="pp">|</span> ≈0.00082 <span class="pp">|</span></span>
-<span id="cb1-568"><a href="#cb1-568" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 13 L/kg (GFI efficient-future scenario high) <span class="pp">|</span> ≈0.00133 <span class="pp">|</span></span>
-<span id="cb1-569"><a href="#cb1-569" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 60 L/kg (less-optimized, e.g. 30 g/L density × 1.8× media-use multiplier) <span class="pp">|</span> ≈0.00612 <span class="pp">|</span></span>
-<span id="cb1-570"><a href="#cb1-570" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-571"><a href="#cb1-571" aria-hidden="true" tabindex="-1"></a>**Empirical cross-check.** <span class="co">[</span><span class="ot">Pasitka et al. (2024)</span><span class="co">](https://www.nature.com/articles/s43016-024-01022-w)</span>'s ACF chicken TEA implies ≈0.00187 g growth factor/kg wet biomass, which sits comfortably inside this band.</span>
-<span id="cb1-572"><a href="#cb1-572" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-573"><a href="#cb1-573" aria-hidden="true" tabindex="-1"></a>**The "cheap" regime** (0.0005–0.002 g/kg) models approximately a 3× usage reduction beyond the Humbird baseline, reflecting thermostable FGF2-G3 variants (longer half-life → less replenishment), autocrine cell lines (cells producing their own FGF), recycling systems, and polyphenol substitution.</span>
-<span id="cb1-574"><a href="#cb1-574" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-575"><a href="#cb1-575" aria-hidden="true" tabindex="-1"></a>**The "expensive" regime** (0.001–0.006 g/kg) is the Humbird formulation across the plausible media-use range, with no breakthrough-driven usage reduction.</span>
-<span id="cb1-576"><a href="#cb1-576" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-577"><a href="#cb1-577" aria-hidden="true" tabindex="-1"></a>**Outside the default.** Values of 0.01–0.02 g/kg remain conceivable for wildly less-optimized processes (much more complex media formulations, much higher media use), but are no longer part of the default sampled range and should be treated as a stress test.</span>
-<span id="cb1-578"><a href="#cb1-578" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb1-579"><a href="#cb1-579" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-580"><a href="#cb1-580" aria-hidden="true" tabindex="-1"></a>**Why different quantities too?** Breakthrough technologies often reduce both price and required amount:</span>
-<span id="cb1-581"><a href="#cb1-581" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-582"><a href="#cb1-582" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Thermostable variants** (e.g., <span class="co">[</span><span class="ot">FGF2-G3 from Enantis</span><span class="co">](https://www.enantis.com/)</span>) have 20-day half-life vs. hours, reducing dosing frequency</span>
-<span id="cb1-583"><a href="#cb1-583" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Autocrine lines** produce GFs continuously, maintaining optimal concentrations</span>
-<span id="cb1-584"><a href="#cb1-584" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Recycling systems** recover GFs from spent media</span>
-<span id="cb1-585"><a href="#cb1-585" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-586"><a href="#cb1-586" aria-hidden="true" tabindex="-1"></a>**Breakthrough technologies (any one could trigger "cheap"):**</span>
-<span id="cb1-587"><a href="#cb1-587" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-588"><a href="#cb1-588" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Technology <span class="pp">|</span> Mechanism <span class="pp">|</span> Current status <span class="pp">|</span> Target price <span class="pp">|</span></span>
-<span id="cb1-589"><a href="#cb1-589" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-----------|----------------|--------------|</span></span>
-<span id="cb1-590"><a href="#cb1-590" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Autocrine cell lines <span class="pp">|</span> Cells engineered to produce own FGF2 <span class="pp">|</span> <span class="co">[</span><span class="ot">Proof of concept</span><span class="co">](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/)</span> <span class="pp">|</span> ~$0/g <span class="pp">|</span></span>
-<span id="cb1-591"><a href="#cb1-591" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Plant molecular farming <span class="pp">|</span> GFs expressed in tobacco, rice <span class="pp">|</span> Pilot scale <span class="pp">|</span> $1–10/g <span class="pp">|</span></span>
-<span id="cb1-592"><a href="#cb1-592" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Precision fermentation <span class="pp">|</span> Microbial production at scale <span class="pp">|</span> Scaling up <span class="pp">|</span> $10–100/g <span class="pp">|</span></span>
-<span id="cb1-593"><a href="#cb1-593" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Small molecule substitutes <span class="pp">|</span> Chemicals that activate GF receptors <span class="pp">|</span> Research <span class="pp">|</span> &lt;$1/g <span class="pp">|</span></span>
-<span id="cb1-594"><a href="#cb1-594" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-595"><a href="#cb1-595" aria-hidden="true" tabindex="-1"></a><span class="fu">### Capital Cost Parameters {#capex-parameters}</span></span>
-<span id="cb1-596"><a href="#cb1-596" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-597"><a href="#cb1-597" aria-hidden="true" tabindex="-1"></a>This section explains how capital costs (bioreactors, facilities) are calculated. The key equation is:</span>
-<span id="cb1-598"><a href="#cb1-598" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-599"><a href="#cb1-599" aria-hidden="true" tabindex="-1"></a>$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output}}$$</span>
-<span id="cb1-600"><a href="#cb1-600" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-601"><a href="#cb1-601" aria-hidden="true" tabindex="-1"></a>Where Total CAPEX depends on plant size and equipment type, and CRF converts a lump sum to annual payments (see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> for the CRF formula).</span>
-<span id="cb1-602"><a href="#cb1-602" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-603"><a href="#cb1-603" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Reference Scale: Why 20 kTA? {#reference-scale}</span></span>
-<span id="cb1-604"><a href="#cb1-604" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-605"><a href="#cb1-605" aria-hidden="true" tabindex="-1"></a>**kTA = kilo-tonnes per annum (thousands of metric tons per year).** So 20 kTA = 20,000 tonnes/year of cultured meat output. For context, a single large conventional chicken processing plant handles ~200 kTA, so 20 kTA is a modest commercial facility.</span>
-<span id="cb1-606"><a href="#cb1-606" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-607"><a href="#cb1-607" aria-hidden="true" tabindex="-1"></a>The model defines CAPEX at a **reference scale of 20 kTA**, then adjusts for actual plant size using economies of scale. We use 20 kTA because:</span>
-<span id="cb1-608"><a href="#cb1-608" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-609"><a href="#cb1-609" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>It matches the scale in <span class="co">[</span><span class="ot">Risner et al. (2021)</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span>, enabling direct comparison</span>
-<span id="cb1-610"><a href="#cb1-610" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>It represents a plausible first commercial-scale facility (current pilots are &lt;1 kTA)</span>
-<span id="cb1-611"><a href="#cb1-611" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Published cost estimates are most reliable around this scale — extrapolating far beyond it introduces large uncertainty</span>
-<span id="cb1-612"><a href="#cb1-612" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-613"><a href="#cb1-613" aria-hidden="true" tabindex="-1"></a>**How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the <span class="co">[</span><span class="ot">economies of scale formula below</span><span class="co">](#economies-of-scale-the-k-sim-qs-relationship)</span>. This is standard practice in chemical engineering cost estimation ("factored estimation" or "Lang factor" method).</span>
-<span id="cb1-614"><a href="#cb1-614" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-615"><a href="#cb1-615" aria-hidden="true" tabindex="-1"></a>**Why pharma-grade appears here:** The baseline CAPEX parameter ($5-25/kg capacity) is anchored to published estimates that assume pharmaceutical-grade equipment (316L stainless steel, full cleaning validation). Most TEAs use pharma-grade as the starting point because that is what current facilities use. The model then applies a **custom reactor ratio** (0.35-0.85) to simulate the cost reduction if food-grade equipment is adopted instead — so pharma-grade is the pessimistic baseline, not an assumption about the future.</span>
-<span id="cb1-616"><a href="#cb1-616" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-617"><a href="#cb1-617" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Economies of Scale: The $K \sim Q^s$ Relationship</span></span>
-<span id="cb1-618"><a href="#cb1-618" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-619"><a href="#cb1-619" aria-hidden="true" tabindex="-1"></a>Capital costs don't scale linearly with capacity. A plant 10× larger doesn't cost 10× more — it benefits from **economies of scale**:</span>
+<span id="cb1-560"><a href="#cb1-560" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-561"><a href="#cb1-561" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-562"><a href="#cb1-562" aria-hidden="true" tabindex="-1"></a><span class="fu">## Parameter Definitions {#parameter-definitions}</span></span>
+<span id="cb1-563"><a href="#cb1-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-564"><a href="#cb1-564" aria-hidden="true" tabindex="-1"></a>This section defines all model inputs. Each parameter links back to where it appears in the <span class="co">[</span><span class="ot">cost equations</span><span class="co">](#model-formulas)</span>.</span>
+<span id="cb1-565"><a href="#cb1-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-566"><a href="#cb1-566" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basic Parameters</span></span>
+<span id="cb1-567"><a href="#cb1-567" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-568"><a href="#cb1-568" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Symbol <span class="pp">|</span> Distribution <span class="pp">|</span> Default <span class="pp">|</span> Unit <span class="pp">|</span> Used in <span class="pp">|</span></span>
+<span id="cb1-569"><a href="#cb1-569" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------|--------------|---------|------|---------|</span></span>
+<span id="cb1-570"><a href="#cb1-570" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Plant capacity <span class="pp">|</span> $Q$ <span class="pp">|</span> Lognormal(p5, p95) <span class="pp">|</span> 5–50 <span class="pp">|</span> kTA/year <span class="pp">|</span> <span class="co">[</span><span class="ot">CAPEX/kg</span><span class="co">](#annualized-capital-costs)</span>, Fixed OPEX <span class="pp">|</span></span>
+<span id="cb1-571"><a href="#cb1-571" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Utilization <span class="pp">|</span> $u$ <span class="pp">|</span> Beta(mean, sd) <span class="pp">|</span> 0.90 <span class="pp">|</span> fraction <span class="pp">|</span> Annual output = $Q \times u$ <span class="pp">|</span></span>
+<span id="cb1-572"><a href="#cb1-572" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Maturity index <span class="pp">|</span> $m$ <span class="pp">|</span> Beta(mean, sd) <span class="pp">|</span> 0.50 <span class="pp">|</span> 0–1 <span class="pp">|</span> <span class="co">[</span><span class="ot">Technology adoption</span><span class="co">](#maturity-factor)</span>, WACC adjustment <span class="pp">|</span></span>
+<span id="cb1-573"><a href="#cb1-573" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-574"><a href="#cb1-574" aria-hidden="true" tabindex="-1"></a>**Why these distributions?**</span>
+<span id="cb1-575"><a href="#cb1-575" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-576"><a href="#cb1-576" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Lognormal** for plant capacity: Capacity is positive and right-skewed (most plants are medium-sized, few are very large). Lognormal naturally captures this. The p5/p95 parameterization lets us specify "90% of plants are between 5 and 50 kTA."</span>
+<span id="cb1-577"><a href="#cb1-577" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Beta** for utilization and maturity: Both are bounded between 0 and 1. Beta distributions are flexible for modeling proportions and can be parameterized with mean/stdev.</span>
+<span id="cb1-578"><a href="#cb1-578" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-579"><a href="#cb1-579" aria-hidden="true" tabindex="-1"></a>These choices follow standard practice in techno-economic assessments (<span class="co">[</span><span class="ot">Humbird 2021</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span>, <span class="co">[</span><span class="ot">Risner et al. 2021</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span>). Humbird 2021 uses lognormal distributions for cost inputs and triangular distributions for some parameters; we use lognormal throughout for positive-valued quantities because it avoids the sharp bounds of triangular distributions. The **Bernoulli** draws for technology adoption (hydrolysates, food-grade, cheap GFs) reflect discrete yes/no events rather than continuous uncertainty — see <span class="co">[</span><span class="ot">Section 4</span><span class="co">](#maturity-factor)</span> for details.</span>
+<span id="cb1-580"><a href="#cb1-580" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-581"><a href="#cb1-581" aria-hidden="true" tabindex="-1"></a><span class="fu">### Technology Adoption</span></span>
+<span id="cb1-582"><a href="#cb1-582" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-583"><a href="#cb1-583" aria-hidden="true" tabindex="-1"></a>Each technology has a base adoption probability, adjusted by the <span class="co">[</span><span class="ot">maturity factor</span><span class="co">](#maturity-factor)</span>:</span>
+<span id="cb1-584"><a href="#cb1-584" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-585"><a href="#cb1-585" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-586"><a href="#cb1-586" aria-hidden="true" tabindex="-1"></a>P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.5), 0, 1)</span>
+<span id="cb1-587"><a href="#cb1-587" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb1-588"><a href="#cb1-588" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-589"><a href="#cb1-589" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Technology <span class="pp">|</span> Base Prob <span class="pp">|</span> $k$ <span class="pp">|</span> Effect on cost <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb1-590"><a href="#cb1-590" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-----------|-----|----------------|-------|</span></span>
+<span id="cb1-591"><a href="#cb1-591" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">Hydrolysates</span><span class="co">](learn.qmd#hydrolysates-the-big-win-for-amino-acids)</span> <span class="pp">|</span> 75% <span class="pp">|</span> 0.25 <span class="pp">|</span> Reduces media $/L by ~70% <span class="pp">|</span> Plant/yeast protein digests replace purified amino acids <span class="pp">|</span></span>
+<span id="cb1-592"><a href="#cb1-592" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">Scalable GF technology</span><span class="co">](learn.qmd#step-5-growth-factors--a-key-cost-driver)</span> <span class="pp">|</span> 50% <span class="pp">|</span> 0.25 <span class="pp">|</span> Switches to "cheap" GF prices (<span class="co">[</span><span class="ot">see price tables</span><span class="co">](#gf-scenarios)</span>) <span class="pp">|</span> Any breakthrough: autocrine, plant farming, precision fermentation. See <span class="co">[</span><span class="ot">binary toggle rationale</span><span class="co">](#the-binary-cheap-vs-expensive-toggle)</span> <span class="pp">|</span></span>
+<span id="cb1-593"><a href="#cb1-593" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-594"><a href="#cb1-594" aria-hidden="true" tabindex="-1"></a>*Note: an earlier version of this table included a "Food-grade micronutrients" adoption parameter (65% base prob). This was removed — vitamins, minerals, and trace salts are now folded into basal media $/L. See the [model change log](index.html#micronutrient-change-note) for the full rationale.*</span>
+<span id="cb1-595"><a href="#cb1-595" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-596"><a href="#cb1-596" aria-hidden="true" tabindex="-1"></a><span class="fu">### Process Intensities</span></span>
+<span id="cb1-597"><a href="#cb1-597" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-598"><a href="#cb1-598" aria-hidden="true" tabindex="-1"></a>These parameters determine how much media is needed per kg of meat. They feed directly into the <span class="co">[</span><span class="ot">Media Cost equation</span><span class="co">](#variable-operating-costs-voc)</span>:</span>
+<span id="cb1-599"><a href="#cb1-599" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-600"><a href="#cb1-600" aria-hidden="true" tabindex="-1"></a>$$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{media-use multiplier} \times \text{price per L}$$</span>
+<span id="cb1-601"><a href="#cb1-601" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-602"><a href="#cb1-602" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Range (p5–p95) <span class="pp">|</span> Unit <span class="pp">|</span> Definition <span class="pp">|</span> Where in cost equation <span class="pp">|</span></span>
+<span id="cb1-603"><a href="#cb1-603" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|----------------|------|------------|----------------------|</span></span>
+<span id="cb1-604"><a href="#cb1-604" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cell density <span class="pp">|</span> 30–200 <span class="pp">|</span> g/L <span class="pp">|</span> Final biomass concentration at harvest <span class="pp">|</span> Denominator of $\frac{1000}{\text{density}}$ — higher density → fewer liters per kg <span class="pp">|</span></span>
+<span id="cb1-605"><a href="#cb1-605" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cycle time <span class="pp">|</span> 0.5–5 <span class="pp">|</span> days <span class="pp">|</span> Duration of one production batch <span class="pp">|</span> Affects annual throughput (and thus CAPEX/kg via $/kg = CAPEX × CRF / output), not media cost directly <span class="pp">|</span></span>
+<span id="cb1-606"><a href="#cb1-606" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Media-use multiplier <span class="pp">|</span> **0.5–3.0** (was 1–10 before April 2026) <span class="pp">|</span> × <span class="pp">|</span> Net fresh media consumed per kg of cells, divided by the nominal reactor-fill volume (<span class="in">`1000/density`</span>) <span class="pp">|</span> Multiplier on liters/kg — see change log below <span class="pp">|</span></span>
+<span id="cb1-607"><a href="#cb1-607" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-608"><a href="#cb1-608" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
+<span id="cb1-609"><a href="#cb1-609" aria-hidden="true" tabindex="-1"></a><span class="fu">## Media-use multiplier: rename, range change, and what values below 1 mean (April 2026)</span></span>
+<span id="cb1-610"><a href="#cb1-610" aria-hidden="true" tabindex="-1"></a>**What changed.** The parameter previously labeled "Media turnover" with a default p5–p95 range of 1–10× was renamed to "Media-use multiplier" and narrowed to **0.5–3.0×**. The internal code variable is still <span class="in">`media_turnover`</span> for git-history stability, but the user-facing name and semantics are new.</span>
+<span id="cb1-611"><a href="#cb1-611" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-612"><a href="#cb1-612" aria-hidden="true" tabindex="-1"></a>**Why the rename.** "Turnover" in biology/lab usage literally means "how many times the media was changed," which implies a hard floor at 1. The cost model, however, uses the parameter as a bundled *effective media-use ratio* that includes real mechanisms producing values below 1 — media recycling, fed-batch with concentrated feeds, and harvest-side cell concentration. "Media-use multiplier" signals the bundling and makes sub-1 values physically coherent rather than nonsensical. See <span class="co">[</span><span class="ot">Learn: media-use mechanisms</span><span class="co">](learn.qmd#media-use-mechanisms)</span> for the full walkthrough of the three mechanisms.</span>
+<span id="cb1-613"><a href="#cb1-613" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-614"><a href="#cb1-614" aria-hidden="true" tabindex="-1"></a>**Why the range change.** GFI's 2023 recombinant-protein report assumes 8–13 L media per kg of meat as its cost-competitive target. At 60–90 g/L cell density, the nominal reactor-fill volume is 11.1–16.7 L/kg, which back-solves to a multiplier of **≈0.48–1.17**. The old floor of 1.0 mechanically excluded the lower end of the GFI range regardless of how high density was pushed — the dashboard simply could not represent the "cost-competitive future" scenario. The new floor of 0.5 fixes that.</span>
+<span id="cb1-615"><a href="#cb1-615" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-616"><a href="#cb1-616" aria-hidden="true" tabindex="-1"></a>Values in the 5–10× region remain conceivable for heavily media-intensive processes but are now a stress-test region rather than the default sampled range.</span>
+<span id="cb1-617"><a href="#cb1-617" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-618"><a href="#cb1-618" aria-hidden="true" tabindex="-1"></a>**Legacy name.** The <span class="in">`media_turnover`</span> variable in <span class="co">[</span><span class="ot">`simulate()`</span><span class="co">](index.qmd)</span> still uses the old name because renaming it would churn all the sensitivity-analysis wiring for no behavioral benefit. Treat <span class="in">`media_turnover`</span> as a legacy identifier for the media-use multiplier.</span>
+<span id="cb1-619"><a href="#cb1-619" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb1-620"><a href="#cb1-620" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-621"><a href="#cb1-621" aria-hidden="true" tabindex="-1"></a>$$\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times \left(\frac{Q}{Q_{\text{ref}}}\right)^s$$</span>
+<span id="cb1-621"><a href="#cb1-621" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basal micronutrients (vitamins / minerals / trace salts) {#micronutrient-costs}</span></span>
 <span id="cb1-622"><a href="#cb1-622" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-623"><a href="#cb1-623" aria-hidden="true" tabindex="-1"></a>Where:</span>
+<span id="cb1-623"><a href="#cb1-623" aria-hidden="true" tabindex="-1"></a>**Not modeled as a separate line item.** Basal vitamins, minerals, and trace salts are included inside media $/L along with amino acids and glucose. See the callout under <span class="co">[</span><span class="ot">Section 2 (VOC)</span><span class="co">](#variable-operating-costs-voc)</span> for why the previous standalone "food-grade micronutrients" term was removed, and the <span class="co">[</span><span class="ot">model change log on the main page</span><span class="co">](index.qmd#micronutrient-change-note)</span> for the full rationale.</span>
 <span id="cb1-624"><a href="#cb1-624" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-625"><a href="#cb1-625" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$K$ = total capital cost (we use $K$ as shorthand for CAPEX)</span>
-<span id="cb1-626"><a href="#cb1-626" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$Q$ = plant capacity; $Q_{\text{ref}}$ = reference capacity (20 kTA)</span>
-<span id="cb1-627"><a href="#cb1-627" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$s$ = scale exponent (0.6–0.9)</span>
+<span id="cb1-625"><a href="#cb1-625" aria-hidden="true" tabindex="-1"></a>**If/when we add a separate uncertainty term in this slot**, it will be repurposed to **supplemental recombinant proteins** — insulin, transferrin, and possibly albumin — which have defensible per-g prices (supplier quotes) and per-kg usage levels in the literature. These are distinct from the growth factors (FGF-2, IGF-1, TGF-β) modeled in the <span class="co">[</span><span class="ot">GF section</span><span class="co">](#growth-factor-cost)</span>.</span>
+<span id="cb1-626"><a href="#cb1-626" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-627"><a href="#cb1-627" aria-hidden="true" tabindex="-1"></a><span class="fu">### Growth Factor Price Scenarios {#gf-scenarios}</span></span>
 <span id="cb1-628"><a href="#cb1-628" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-629"><a href="#cb1-629" aria-hidden="true" tabindex="-1"></a>**What the exponent means:**</span>
+<span id="cb1-629"><a href="#cb1-629" aria-hidden="true" tabindex="-1"></a>These parameters feed into the <span class="co">[</span><span class="ot">GF Cost equation</span><span class="co">](#how-gf-cost-feeds-into-total-cost)</span>: GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).</span>
 <span id="cb1-630"><a href="#cb1-630" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-631"><a href="#cb1-631" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scale exponent $s$ <span class="pp">|</span> If capacity doubles... <span class="pp">|</span> Example industries <span class="pp">|</span></span>
-<span id="cb1-632"><a href="#cb1-632" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------------------|------------------------|-------------------|</span></span>
-<span id="cb1-633"><a href="#cb1-633" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1.0 <span class="pp">|</span> CAPEX doubles (no economies) <span class="pp">|</span> Modular, containerized systems <span class="pp">|</span></span>
-<span id="cb1-634"><a href="#cb1-634" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 0.7 <span class="pp">|</span> CAPEX increases 62% <span class="pp">|</span> Chemical plants, refineries <span class="pp">|</span></span>
-<span id="cb1-635"><a href="#cb1-635" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 0.6 <span class="pp">|</span> CAPEX increases 52% <span class="pp">|</span> Power plants, large bioreactors <span class="pp">|</span></span>
-<span id="cb1-636"><a href="#cb1-636" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-637"><a href="#cb1-637" aria-hidden="true" tabindex="-1"></a>The range 0.6–0.9 reflects uncertainty about whether cultured meat will achieve chemical-industry economies (0.6) or remain more modular (0.9).</span>
-<span id="cb1-638"><a href="#cb1-638" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-639"><a href="#cb1-639" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Pharma-Grade vs. Food-Grade Equipment</span></span>
-<span id="cb1-640"><a href="#cb1-640" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-641"><a href="#cb1-641" aria-hidden="true" tabindex="-1"></a>**Why this matters for CAPEX:** The cultured meat industry emerged from pharmaceutical cell culture, which uses expensive equipment designed for injectable drugs. A key cost question is whether the industry can transition to simpler, cheaper food-grade equipment.</span>
-<span id="cb1-642"><a href="#cb1-642" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-643"><a href="#cb1-643" aria-hidden="true" tabindex="-1"></a>This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation — pharma-grade equipment costs 2–10× more than food-grade, and the **custom reactor ratio** parameter captures this uncertainty.</span>
+<span id="cb1-631"><a href="#cb1-631" aria-hidden="true" tabindex="-1"></a>The model uses two discrete price scenarios, selected by a Bernoulli draw (see <span class="co">[</span><span class="ot">why binary</span><span class="co">](#the-binary-cheap-vs-expensive-toggle)</span> above):</span>
+<span id="cb1-632"><a href="#cb1-632" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-633"><a href="#cb1-633" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scenario <span class="pp">|</span> Quantity (g/kg) <span class="pp">|</span> Price ($/g) <span class="pp">|</span> What it represents <span class="pp">|</span> Source <span class="pp">|</span></span>
+<span id="cb1-634"><a href="#cb1-634" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|----------------|-------------|-------------------|--------|</span></span>
+<span id="cb1-635"><a href="#cb1-635" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Scalable tech achieved** <span class="pp">|</span> 0.0005 – 0.002 <span class="pp">|</span> $1 – $100 <span class="pp">|</span> At least one breakthrough reaches commercial scale; usage reduced ~3× via thermostable variants / autocrine / recycling <span class="pp">|</span> <span class="co">[</span><span class="ot">GFI 2024 targets</span><span class="co">](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/)</span> <span class="pp">|</span></span>
+<span id="cb1-636"><a href="#cb1-636" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Limited progress** <span class="pp">|</span> 0.001 – 0.006 <span class="pp">|</span> $500 – $50,000 <span class="pp">|</span> Humbird formulation (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × 8–60 L/kg media use, no step-change <span class="pp">|</span> <span class="co">[</span><span class="ot">GFI 2023 recombinant-protein report</span><span class="co">](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)</span>; <span class="co">[</span><span class="ot">Humbird 2021</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> <span class="pp">|</span></span>
+<span id="cb1-637"><a href="#cb1-637" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-638"><a href="#cb1-638" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
+<span id="cb1-639"><a href="#cb1-639" aria-hidden="true" tabindex="-1"></a><span class="fu">## How the quantity range was derived (April 2026 revision)</span></span>
+<span id="cb1-640"><a href="#cb1-640" aria-hidden="true" tabindex="-1"></a>Earlier model versions used a very broad 0.0001–0.02 g/kg range with no specific citation. That range was tightened to align with primary sources:</span>
+<span id="cb1-641"><a href="#cb1-641" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-642"><a href="#cb1-642" aria-hidden="true" tabindex="-1"></a>**Humbird formulation** (as reproduced in <span class="co">[</span><span class="ot">GFI 2023 recombinant-protein analysis</span><span class="co">](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf)</span>):</span>
+<span id="cb1-643"><a href="#cb1-643" aria-hidden="true" tabindex="-1"></a>$$\underbrace{1.0 \times 10^{-4}\ \text{g/L}}_{\text{FGF}} + \underbrace{2.0 \times 10^{-6}\ \text{g/L}}_{\text{TGF}\beta} \approx 1.02 \times 10^{-4}\ \text{g/L true GF}$$</span>
 <span id="cb1-644"><a href="#cb1-644" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-645"><a href="#cb1-645" aria-hidden="true" tabindex="-1"></a>**Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:</span>
+<span id="cb1-645"><a href="#cb1-645" aria-hidden="true" tabindex="-1"></a>**Media-use assumptions** from the same report and the cell-density × media-use-multiplier math on the main page:</span>
 <span id="cb1-646"><a href="#cb1-646" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-647"><a href="#cb1-647" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>316L stainless steel, electropolished surfaces</span>
-<span id="cb1-648"><a href="#cb1-648" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Extensive validation, documentation (GMP compliance)</span>
-<span id="cb1-649"><a href="#cb1-649" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Designed for injectable drug production</span>
-<span id="cb1-650"><a href="#cb1-650" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Cost: **$50–500 per liter** installed capacity — typical pharmaceutical bioreactors cost <span class="co">[</span><span class="ot">£250,000+ for standard units</span><span class="co">](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/)</span></span>
-<span id="cb1-651"><a href="#cb1-651" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-652"><a href="#cb1-652" aria-hidden="true" tabindex="-1"></a>**Food-grade** (or "custom") equipment is simpler:</span>
-<span id="cb1-653"><a href="#cb1-653" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-654"><a href="#cb1-654" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Standard stainless steel (304 or food-grade 316) — <span class="co">[</span><span class="ot">304 can replace pharma-required 316 for food operations</span><span class="co">](https://gfi.org/solutions/novel-bioreactor-technologies/)</span></span>
-<span id="cb1-655"><a href="#cb1-655" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Less stringent validation (GRAS vs. pharmaceutical purity)</span>
-<span id="cb1-656"><a href="#cb1-656" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Similar to brewing or dairy equipment</span>
-<span id="cb1-657"><a href="#cb1-657" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Target cost: **$10–50 per liter** — Meatly's <span class="co">[</span><span class="ot">320L pilot bioreactor costs ~£12,500</span><span class="co">](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/)</span> (~$39/L), comparable to <span class="co">[</span><span class="ot">beer brewing ($5–15/L)</span><span class="co">](https://www.brewersassociation.org/)</span></span>
+<span id="cb1-647"><a href="#cb1-647" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Media use (L/kg) <span class="pp">|</span> True-GF quantity (g/kg) <span class="pp">|</span></span>
+<span id="cb1-648"><a href="#cb1-648" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb1-649"><a href="#cb1-649" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 8 L/kg (GFI efficient-future scenario low) <span class="pp">|</span> ≈0.00082 <span class="pp">|</span></span>
+<span id="cb1-650"><a href="#cb1-650" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 13 L/kg (GFI efficient-future scenario high) <span class="pp">|</span> ≈0.00133 <span class="pp">|</span></span>
+<span id="cb1-651"><a href="#cb1-651" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 60 L/kg (less-optimized, e.g. 30 g/L density × 1.8× media-use multiplier) <span class="pp">|</span> ≈0.00612 <span class="pp">|</span></span>
+<span id="cb1-652"><a href="#cb1-652" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-653"><a href="#cb1-653" aria-hidden="true" tabindex="-1"></a>**Empirical cross-check.** <span class="co">[</span><span class="ot">Pasitka et al. (2024)</span><span class="co">](https://www.nature.com/articles/s43016-024-01022-w)</span>'s ACF chicken TEA implies ≈0.00187 g growth factor/kg wet biomass, which sits comfortably inside this band.</span>
+<span id="cb1-654"><a href="#cb1-654" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-655"><a href="#cb1-655" aria-hidden="true" tabindex="-1"></a>**The "cheap" regime** (0.0005–0.002 g/kg) models approximately a 3× usage reduction beyond the Humbird baseline, reflecting thermostable FGF2-G3 variants (longer half-life → less replenishment), autocrine cell lines (cells producing their own FGF), recycling systems, and polyphenol substitution.</span>
+<span id="cb1-656"><a href="#cb1-656" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-657"><a href="#cb1-657" aria-hidden="true" tabindex="-1"></a>**The "expensive" regime** (0.001–0.006 g/kg) is the Humbird formulation across the plausible media-use range, with no breakthrough-driven usage reduction.</span>
 <span id="cb1-658"><a href="#cb1-658" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-659"><a href="#cb1-659" aria-hidden="true" tabindex="-1"></a>The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.</span>
-<span id="cb1-660"><a href="#cb1-660" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-661"><a href="#cb1-661" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Range <span class="pp">|</span> Definition <span class="pp">|</span> Equation <span class="pp">|</span></span>
-<span id="cb1-662"><a href="#cb1-662" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|-------|------------|----------|</span></span>
-<span id="cb1-663"><a href="#cb1-663" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> WACC <span class="pp">|</span> 8–20% <span class="pp">|</span> Weighted average cost of capital <span class="pp">|</span> $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> <span class="pp">|</span></span>
-<span id="cb1-664"><a href="#cb1-664" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Asset life <span class="pp">|</span> 8–20 years <span class="pp">|</span> Equipment depreciation period for bioreactors, buildings, and support facilities <span class="pp">|</span> $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> <span class="pp">|</span></span>
-<span id="cb1-665"><a href="#cb1-665" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scale exponent <span class="pp">|</span> 0.6–0.9 <span class="pp">|</span> Economies of scale power (how much CAPEX grows as plant capacity increases) <span class="pp">|</span> $s$ in $\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see <span class="co">[</span><span class="ot">economies of scale section</span><span class="co">](#economies-of-scale-the-k-sim-qs-relationship)</span>. Note: $s$ (scale exponent) is distinct from $r$ (WACC) used in the CRF formula. <span class="pp">|</span></span>
-<span id="cb1-666"><a href="#cb1-666" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pharma-grade CAPEX <span class="pp">|</span> \$5–25 / kg capacity <span class="pp">|</span> Base capital cost at 20 kTA <span class="pp">|</span> $\text{CAPEX}_{\text{ref}}$ in scaling equation <span class="pp">|</span></span>
-<span id="cb1-667"><a href="#cb1-667" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Custom reactor ratio <span class="pp">|</span> 0.35–0.85 <span class="pp">|</span> Food-grade ÷ pharma-grade cost <span class="pp">|</span> Multiplier on $\text{CAPEX}_{\text{ref}}$ when using food-grade <span class="pp">|</span></span>
-<span id="cb1-668"><a href="#cb1-668" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-669"><a href="#cb1-669" aria-hidden="true" tabindex="-1"></a><span class="fu">#### WACC Justification</span></span>
-<span id="cb1-670"><a href="#cb1-670" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-671"><a href="#cb1-671" aria-hidden="true" tabindex="-1"></a>**WACC (Weighted Average Cost of Capital)** represents the blended cost of debt and equity financing. Our 8–20% range reflects:</span>
-<span id="cb1-672"><a href="#cb1-672" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-673"><a href="#cb1-673" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Benchmark <span class="pp">|</span> Typical WACC <span class="pp">|</span> Source <span class="pp">|</span></span>
-<span id="cb1-674"><a href="#cb1-674" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------------|--------|</span></span>
-<span id="cb1-675"><a href="#cb1-675" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Established food companies (Tyson, JBS) <span class="pp">|</span> 6–10% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Per Damodaran (NYU Stern): food processing industry average WACC ~7-9% as of 2024. Large food companies benefit from stable cash flows and low risk premiums."</span><span class="dt">&gt;</span>Industry averages (Damodaran)<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span> <span class="pp">|</span></span>
-<span id="cb1-676"><a href="#cb1-676" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Biotech startups (pre-revenue) <span class="pp">|</span> 15–25% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Venture capital typically targets 20-30% IRR. For pre-revenue biotech, discount rates of 15-25% are standard in DCF valuations. See Metrick </span><span class="er">&amp;</span><span class="st"> Yasuda (2021), Venture Capital and the Finance of Innovation."</span><span class="dt">&gt;</span>VC expected returns<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span> <span class="pp">|</span></span>
-<span id="cb1-677"><a href="#cb1-677" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cultured meat companies <span class="pp">|</span> 12–20% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Humbird (2021) uses 10% WACC as baseline for his TEA analysis but notes this is 'optimistic for a startup company.' CE Delft (2021) uses 7-12% for mature scenarios. Our range of 8-20% spans from optimistic mature-industry to realistic early-stage."</span><span class="dt">&gt;</span>Humbird (2021)<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span>, <span class="co">[</span><span class="ot">CE Delft (2021)</span><span class="co">](https://cedelft.eu/publications/tea-of-cultivated-meat/)</span> <span class="pp">|</span></span>
+<span id="cb1-659"><a href="#cb1-659" aria-hidden="true" tabindex="-1"></a>**Outside the default.** Values of 0.01–0.02 g/kg remain conceivable for wildly less-optimized processes (much more complex media formulations, much higher media use), but are no longer part of the default sampled range and should be treated as a stress test.</span>
+<span id="cb1-660"><a href="#cb1-660" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-661"><a href="#cb1-661" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-662"><a href="#cb1-662" aria-hidden="true" tabindex="-1"></a>**Why different quantities too?** Breakthrough technologies often reduce both price and required amount:</span>
+<span id="cb1-663"><a href="#cb1-663" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-664"><a href="#cb1-664" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Thermostable variants** (e.g., <span class="co">[</span><span class="ot">FGF2-G3 from Enantis</span><span class="co">](https://www.enantis.com/)</span>) have 20-day half-life vs. hours, reducing dosing frequency</span>
+<span id="cb1-665"><a href="#cb1-665" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Autocrine lines** produce GFs continuously, maintaining optimal concentrations</span>
+<span id="cb1-666"><a href="#cb1-666" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Recycling systems** recover GFs from spent media</span>
+<span id="cb1-667"><a href="#cb1-667" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-668"><a href="#cb1-668" aria-hidden="true" tabindex="-1"></a>**Breakthrough technologies (any one could trigger "cheap"):**</span>
+<span id="cb1-669"><a href="#cb1-669" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-670"><a href="#cb1-670" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Technology <span class="pp">|</span> Mechanism <span class="pp">|</span> Current status <span class="pp">|</span> Target price <span class="pp">|</span></span>
+<span id="cb1-671"><a href="#cb1-671" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|-----------|----------------|--------------|</span></span>
+<span id="cb1-672"><a href="#cb1-672" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Autocrine cell lines <span class="pp">|</span> Cells engineered to produce own FGF2 <span class="pp">|</span> <span class="co">[</span><span class="ot">Proof of concept</span><span class="co">](https://pmc.ncbi.nlm.nih.gov/articles/PMC10153192/)</span> <span class="pp">|</span> ~$0/g <span class="pp">|</span></span>
+<span id="cb1-673"><a href="#cb1-673" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Plant molecular farming <span class="pp">|</span> GFs expressed in tobacco, rice <span class="pp">|</span> Pilot scale <span class="pp">|</span> $1–10/g <span class="pp">|</span></span>
+<span id="cb1-674"><a href="#cb1-674" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Precision fermentation <span class="pp">|</span> Microbial production at scale <span class="pp">|</span> Scaling up <span class="pp">|</span> $10–100/g <span class="pp">|</span></span>
+<span id="cb1-675"><a href="#cb1-675" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Small molecule substitutes <span class="pp">|</span> Chemicals that activate GF receptors <span class="pp">|</span> Research <span class="pp">|</span> &lt;$1/g <span class="pp">|</span></span>
+<span id="cb1-676"><a href="#cb1-676" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-677"><a href="#cb1-677" aria-hidden="true" tabindex="-1"></a><span class="fu">### Capital Cost Parameters {#capex-parameters}</span></span>
 <span id="cb1-678"><a href="#cb1-678" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-679"><a href="#cb1-679" aria-hidden="true" tabindex="-1"></a>**Why the range is wide:** The low end (8%) assumes the industry matures to food-company norms -- stable revenue, proven unit economics, low technology risk. The high end (20%) reflects today's reality: most cultured meat companies are venture-backed with no revenue, unproven at scale, and facing regulatory uncertainty. As the industry matures (<span class="co">[</span><span class="ot">higher $m$</span><span class="co">](#maturity-factor)</span>), WACC should decline toward food-industry norms. Our 8-20% range brackets both <span class="co">[</span><span class="ot">Humbird's 10% baseline</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> and <span class="co">[</span><span class="ot">CE Delft's 7-12% range</span><span class="co">](https://cedelft.eu/publications/tea-of-cultivated-meat/)</span>.</span>
+<span id="cb1-679"><a href="#cb1-679" aria-hidden="true" tabindex="-1"></a>This section explains how capital costs (bioreactors, facilities) are calculated. The key equation is:</span>
 <span id="cb1-680"><a href="#cb1-680" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-681"><a href="#cb1-681" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-681"><a href="#cb1-681" aria-hidden="true" tabindex="-1"></a>$$\text{CAPEX}_{/\text{kg}} = \frac{\text{Total CAPEX} \times \text{CRF}}{\text{Annual Output}}$$</span>
 <span id="cb1-682"><a href="#cb1-682" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-683"><a href="#cb1-683" aria-hidden="true" tabindex="-1"></a><span class="fu">## CDMO Production Model {#cdmo-production-model}</span></span>
+<span id="cb1-683"><a href="#cb1-683" aria-hidden="true" tabindex="-1"></a>Where Total CAPEX depends on plant size and equipment type, and CRF converts a lump sum to annual payments (see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> for the CRF formula).</span>
 <span id="cb1-684"><a href="#cb1-684" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-685"><a href="#cb1-685" aria-hidden="true" tabindex="-1"></a>A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies, charging a per-unit toll fee. The dashboard includes a CDMO mode toggle that replaces in-house CAPEX and Fixed OPEX with a sampled toll fee.</span>
+<span id="cb1-685"><a href="#cb1-685" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Reference Scale: Why 20 kTA? {#reference-scale}</span></span>
 <span id="cb1-686"><a href="#cb1-686" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-687"><a href="#cb1-687" aria-hidden="true" tabindex="-1"></a><span class="fu">### When CDMO mode changes the cost equation</span></span>
+<span id="cb1-687"><a href="#cb1-687" aria-hidden="true" tabindex="-1"></a>**kTA = kilo-tonnes per annum (thousands of metric tons per year).** So 20 kTA = 20,000 tonnes/year of cultured meat output. For context, a single large conventional chicken processing plant handles ~200 kTA, so 20 kTA is a modest commercial facility.</span>
 <span id="cb1-688"><a href="#cb1-688" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-689"><a href="#cb1-689" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> CAPEX/kg <span class="pp">|</span> Fixed OPEX/kg <span class="pp">|</span> CDMO Toll/kg <span class="pp">|</span></span>
-<span id="cb1-690"><a href="#cb1-690" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|----------|--------------|--------------|</span></span>
-<span id="cb1-691"><a href="#cb1-691" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> In-House (default) <span class="pp">|</span> Sampled from in-house model <span class="pp">|</span> Sampled from in-house model <span class="pp">|</span> 0 <span class="pp">|</span></span>
-<span id="cb1-692"><a href="#cb1-692" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CDMO mode <span class="pp">|</span> 0 <span class="pp">|</span> 0 <span class="pp">|</span> Sampled from lognormal(p5, p95) <span class="pp">|</span></span>
-<span id="cb1-693"><a href="#cb1-693" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-694"><a href="#cb1-694" aria-hidden="true" tabindex="-1"></a>VOC (media, growth factors, other variable), downstream, and all technology adoption assumptions remain unchanged.</span>
-<span id="cb1-695"><a href="#cb1-695" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-696"><a href="#cb1-696" aria-hidden="true" tabindex="-1"></a><span class="fu">### CDMO Toll Parameter</span></span>
-<span id="cb1-697"><a href="#cb1-697" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-698"><a href="#cb1-698" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Symbol <span class="pp">|</span> Distribution <span class="pp">|</span> Default <span class="pp">|</span> Unit <span class="pp">|</span> Notes <span class="pp">|</span></span>
-<span id="cb1-699"><a href="#cb1-699" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------|--------------|---------|------|-------|</span></span>
-<span id="cb1-700"><a href="#cb1-700" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CDMO Toll <span class="pp">|</span> — <span class="pp">|</span> Lognormal(p5, p95) <span class="pp">|</span> p5=4, p95=40 <span class="pp">|</span> $/kg <span class="pp">|</span> Covers CDMO's CAPEX, fixed costs, and margin <span class="pp">|</span></span>
-<span id="cb1-701"><a href="#cb1-701" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-702"><a href="#cb1-702" aria-hidden="true" tabindex="-1"></a>**Interpretation of the default range:**</span>
-<span id="cb1-703"><a href="#cb1-703" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-704"><a href="#cb1-704" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Toll ($/kg) <span class="pp">|</span> Scenario <span class="pp">|</span></span>
-<span id="cb1-705"><a href="#cb1-705" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------------|----------|</span></span>
-<span id="cb1-706"><a href="#cb1-706" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$4 (p5) <span class="pp">|</span> Efficient food-grade CDMO, high multi-client utilization (~80-90%), thin margin <span class="pp">|</span></span>
-<span id="cb1-707"><a href="#cb1-707" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$12 (typical) <span class="pp">|</span> CDMO serving several clients, food-grade equipment, ~25-35% margin over cost <span class="pp">|</span></span>
-<span id="cb1-708"><a href="#cb1-708" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$40 (p95) <span class="pp">|</span> Pharma-adjacent CDMO, low utilization, high quality premiums and margin <span class="pp">|</span></span>
-<span id="cb1-709"><a href="#cb1-709" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-710"><a href="#cb1-710" aria-hidden="true" tabindex="-1"></a>For reference, in-house CAPEX + Fixed OPEX in the default model spans roughly $3–25/kg (median ~$8/kg at 50% maturity). The CDMO toll range is set wider to account for the additional uncertainty about whether CDMO pricing develops favorably for the cultured meat sector.</span>
-<span id="cb1-711"><a href="#cb1-711" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-712"><a href="#cb1-712" aria-hidden="true" tabindex="-1"></a><span class="fu">### When CDMO might be cheaper</span></span>
-<span id="cb1-713"><a href="#cb1-713" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-714"><a href="#cb1-714" aria-hidden="true" tabindex="-1"></a>The comparison chart in the dashboard shows the full distribution difference. In general:</span>
-<span id="cb1-715"><a href="#cb1-715" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-716"><a href="#cb1-716" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **in-house CAPEX is high** (early-stage, pharma-grade, low maturity): CDMO can be cheaper if the CDMO captures scale economies across multiple clients</span>
-<span id="cb1-717"><a href="#cb1-717" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **plant capacity is small** (scale diseconomies hit the in-house model harder than a shared CDMO): CDMO wins</span>
-<span id="cb1-718"><a href="#cb1-718" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **in-house CAPEX is low** (mature industry, food-grade equipment, large scale): in-house tends to be cheaper because it avoids the CDMO's margin</span>
-<span id="cb1-719"><a href="#cb1-719" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-720"><a href="#cb1-720" aria-hidden="true" tabindex="-1"></a><span class="fu">### Limitations of the CDMO model</span></span>
-<span id="cb1-721"><a href="#cb1-721" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-722"><a href="#cb1-722" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**No maturity adjustment on toll**: In the current implementation, the CDMO toll is sampled independently of the maturity factor. In reality, CDMO pricing would likely become more competitive as the industry matures and more providers enter the market. This could be added in a future version.</span>
-<span id="cb1-723"><a href="#cb1-723" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**No IP/process risk modeling**: CDMOs require sharing cell lines and media formulations, which may be a competitive disadvantage. This risk is not modeled.</span>
-<span id="cb1-724"><a href="#cb1-724" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**No utilization feedback**: In-house utilization is an explicit parameter; CDMO utilization is implicit in the toll range. The two are not directly comparable.</span>
-<span id="cb1-725"><a href="#cb1-725" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-726"><a href="#cb1-726" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-727"><a href="#cb1-727" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-728"><a href="#cb1-728" aria-hidden="true" tabindex="-1"></a><span class="fu">## Process Mode {#process-mode}</span></span>
-<span id="cb1-729"><a href="#cb1-729" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-730"><a href="#cb1-730" aria-hidden="true" tabindex="-1"></a>The model draws a bioreactor process mode for each Monte Carlo simulation, then samples cell density and media-use multiplier from that mode's physical range. This prevents incoherent parameter combinations that the previous unconstrained approach allowed (e.g., 200 g/L density with batch-like media use, which is biologically impossible).</span>
-<span id="cb1-731"><a href="#cb1-731" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-732"><a href="#cb1-732" aria-hidden="true" tabindex="-1"></a>**Pure batch is excluded** — not commercially viable at scale for cultured meat (expert reviewer feedback, April 2026).</span>
+<span id="cb1-689"><a href="#cb1-689" aria-hidden="true" tabindex="-1"></a>The model defines CAPEX at a **reference scale of 20 kTA**, then adjusts for actual plant size using economies of scale. We use 20 kTA because:</span>
+<span id="cb1-690"><a href="#cb1-690" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-691"><a href="#cb1-691" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>It matches the scale in <span class="co">[</span><span class="ot">Risner et al. (2021)</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span>, enabling direct comparison</span>
+<span id="cb1-692"><a href="#cb1-692" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>It represents a plausible first commercial-scale facility (current pilots are &lt;1 kTA)</span>
+<span id="cb1-693"><a href="#cb1-693" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Published cost estimates are most reliable around this scale — extrapolating far beyond it introduces large uncertainty</span>
+<span id="cb1-694"><a href="#cb1-694" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-695"><a href="#cb1-695" aria-hidden="true" tabindex="-1"></a>**How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the <span class="co">[</span><span class="ot">economies of scale formula below</span><span class="co">](#economies-of-scale-the-k-sim-qs-relationship)</span>. This is standard practice in chemical engineering cost estimation ("factored estimation" or "Lang factor" method).</span>
+<span id="cb1-696"><a href="#cb1-696" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-697"><a href="#cb1-697" aria-hidden="true" tabindex="-1"></a>**Why pharma-grade appears here:** The baseline CAPEX parameter ($5-25/kg capacity) is anchored to published estimates that assume pharmaceutical-grade equipment (316L stainless steel, full cleaning validation). Most TEAs use pharma-grade as the starting point because that is what current facilities use. The model then applies a **custom reactor ratio** (0.35-0.85) to simulate the cost reduction if food-grade equipment is adopted instead — so pharma-grade is the pessimistic baseline, not an assumption about the future.</span>
+<span id="cb1-698"><a href="#cb1-698" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-699"><a href="#cb1-699" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Economies of Scale: The $K \sim Q^s$ Relationship</span></span>
+<span id="cb1-700"><a href="#cb1-700" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-701"><a href="#cb1-701" aria-hidden="true" tabindex="-1"></a>Capital costs don't scale linearly with capacity. A plant 10× larger doesn't cost 10× more — it benefits from **economies of scale**:</span>
+<span id="cb1-702"><a href="#cb1-702" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-703"><a href="#cb1-703" aria-hidden="true" tabindex="-1"></a>$$\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times \left(\frac{Q}{Q_{\text{ref}}}\right)^s$$</span>
+<span id="cb1-704"><a href="#cb1-704" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-705"><a href="#cb1-705" aria-hidden="true" tabindex="-1"></a>Where:</span>
+<span id="cb1-706"><a href="#cb1-706" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-707"><a href="#cb1-707" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$K$ = total capital cost (we use $K$ as shorthand for CAPEX)</span>
+<span id="cb1-708"><a href="#cb1-708" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$Q$ = plant capacity; $Q_{\text{ref}}$ = reference capacity (20 kTA)</span>
+<span id="cb1-709"><a href="#cb1-709" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$s$ = scale exponent (0.6–0.9)</span>
+<span id="cb1-710"><a href="#cb1-710" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-711"><a href="#cb1-711" aria-hidden="true" tabindex="-1"></a>**What the exponent means:**</span>
+<span id="cb1-712"><a href="#cb1-712" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-713"><a href="#cb1-713" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scale exponent $s$ <span class="pp">|</span> If capacity doubles... <span class="pp">|</span> Example industries <span class="pp">|</span></span>
+<span id="cb1-714"><a href="#cb1-714" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------------------|------------------------|-------------------|</span></span>
+<span id="cb1-715"><a href="#cb1-715" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1.0 <span class="pp">|</span> CAPEX doubles (no economies) <span class="pp">|</span> Modular, containerized systems <span class="pp">|</span></span>
+<span id="cb1-716"><a href="#cb1-716" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 0.7 <span class="pp">|</span> CAPEX increases 62% <span class="pp">|</span> Chemical plants, refineries <span class="pp">|</span></span>
+<span id="cb1-717"><a href="#cb1-717" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 0.6 <span class="pp">|</span> CAPEX increases 52% <span class="pp">|</span> Power plants, large bioreactors <span class="pp">|</span></span>
+<span id="cb1-718"><a href="#cb1-718" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-719"><a href="#cb1-719" aria-hidden="true" tabindex="-1"></a>The range 0.6–0.9 reflects uncertainty about whether cultured meat will achieve chemical-industry economies (0.6) or remain more modular (0.9).</span>
+<span id="cb1-720"><a href="#cb1-720" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-721"><a href="#cb1-721" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Pharma-Grade vs. Food-Grade Equipment</span></span>
+<span id="cb1-722"><a href="#cb1-722" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-723"><a href="#cb1-723" aria-hidden="true" tabindex="-1"></a>**Why this matters for CAPEX:** The cultured meat industry emerged from pharmaceutical cell culture, which uses expensive equipment designed for injectable drugs. A key cost question is whether the industry can transition to simpler, cheaper food-grade equipment.</span>
+<span id="cb1-724"><a href="#cb1-724" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-725"><a href="#cb1-725" aria-hidden="true" tabindex="-1"></a>This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation — pharma-grade equipment costs 2–10× more than food-grade, and the **custom reactor ratio** parameter captures this uncertainty.</span>
+<span id="cb1-726"><a href="#cb1-726" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-727"><a href="#cb1-727" aria-hidden="true" tabindex="-1"></a>**Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:</span>
+<span id="cb1-728"><a href="#cb1-728" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-729"><a href="#cb1-729" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>316L stainless steel, electropolished surfaces</span>
+<span id="cb1-730"><a href="#cb1-730" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Extensive validation, documentation (GMP compliance)</span>
+<span id="cb1-731"><a href="#cb1-731" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Designed for injectable drug production</span>
+<span id="cb1-732"><a href="#cb1-732" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Cost: **$50–500 per liter** installed capacity — typical pharmaceutical bioreactors cost <span class="co">[</span><span class="ot">£250,000+ for standard units</span><span class="co">](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/)</span></span>
 <span id="cb1-733"><a href="#cb1-733" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-734"><a href="#cb1-734" aria-hidden="true" tabindex="-1"></a><span class="fu">### Mode-Specific Parameter Ranges</span></span>
+<span id="cb1-734"><a href="#cb1-734" aria-hidden="true" tabindex="-1"></a>**Food-grade** (or "custom") equipment is simpler:</span>
 <span id="cb1-735"><a href="#cb1-735" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-736"><a href="#cb1-736" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Default weight <span class="pp">|</span> Density (g/L) p5–p95 <span class="pp">|</span> Media-use multiplier p5–p95 <span class="pp">|</span> Rationale <span class="pp">|</span></span>
-<span id="cb1-737"><a href="#cb1-737" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------------|---------------------|----------------------------|-----------|</span></span>
-<span id="cb1-738"><a href="#cb1-738" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Fed-batch <span class="pp">|</span> 20% <span class="pp">|</span> 5–30 <span class="pp">|</span> 1.0–2.0× <span class="pp">|</span> Periodic concentrated nutrient addition; lower achievable density <span class="pp">|</span></span>
-<span id="cb1-739"><a href="#cb1-739" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Perfusion <span class="pp">|</span> 50% <span class="pp">|</span> 30–150 <span class="pp">|</span> 1.0–5.0× <span class="pp">|</span> Continuous media exchange with cell retention; higher density, higher throughput <span class="pp">|</span></span>
-<span id="cb1-740"><a href="#cb1-740" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Continuous <span class="pp">|</span> 30% <span class="pp">|</span> 50–200 <span class="pp">|</span> 0.5–3.0× <span class="pp">|</span> Near-steady-state with recycling; highest densities <span class="pp">|</span></span>
-<span id="cb1-741"><a href="#cb1-741" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-742"><a href="#cb1-742" aria-hidden="true" tabindex="-1"></a>Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. The **Override process mode constraints** toggle (full view) bypasses mode-based sampling and restores the manual density and media-use sliders for expert use.</span>
-<span id="cb1-743"><a href="#cb1-743" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-744"><a href="#cb1-744" aria-hidden="true" tabindex="-1"></a>**Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. This is more physically realistic — fed-batch is genuinely more media-intensive. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.</span>
-<span id="cb1-745"><a href="#cb1-745" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-746"><a href="#cb1-746" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-747"><a href="#cb1-747" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-748"><a href="#cb1-748" aria-hidden="true" tabindex="-1"></a><span class="fu">## Bundled Media Pricing {#bundled-media-pricing}</span></span>
-<span id="cb1-749"><a href="#cb1-749" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-750"><a href="#cb1-750" aria-hidden="true" tabindex="-1"></a>Published TEAs use two different accounting conventions for media costs. Understanding the difference is critical when comparing model outputs to the literature.</span>
-<span id="cb1-751"><a href="#cb1-751" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-752"><a href="#cb1-752" aria-hidden="true" tabindex="-1"></a><span class="fu">### Two Conventions</span></span>
-<span id="cb1-753"><a href="#cb1-753" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-754"><a href="#cb1-754" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Convention <span class="pp">|</span> What "media $/L" includes <span class="pp">|</span> Example sources <span class="pp">|</span> When to use <span class="pp">|</span></span>
-<span id="cb1-755"><a href="#cb1-755" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|--------------------------|-----------------|-------------|</span></span>
-<span id="cb1-756"><a href="#cb1-756" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Separable** (default) <span class="pp">|</span> Basal media only (amino acids, glucose, vitamins) — GFs on separate $/g line <span class="pp">|</span> This model, GFI cost analyses <span class="pp">|</span> Reasoning about future cost reduction; GF breakthrough affects a visible separate line <span class="pp">|</span></span>
-<span id="cb1-757"><a href="#cb1-757" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Bundled** <span class="pp">|</span> Complete media including all growth factors <span class="pp">|</span> Humbird 2021, most research-grade TEAs <span class="pp">|</span> Comparing to published figures; current-state benchmarking <span class="pp">|</span></span>
-<span id="cb1-758"><a href="#cb1-758" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-759"><a href="#cb1-759" aria-hidden="true" tabindex="-1"></a><span class="fu">### How to Use the Bundled Toggle</span></span>
+<span id="cb1-736"><a href="#cb1-736" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Standard stainless steel (304 or food-grade 316) — <span class="co">[</span><span class="ot">304 can replace pharma-required 316 for food operations</span><span class="co">](https://gfi.org/solutions/novel-bioreactor-technologies/)</span></span>
+<span id="cb1-737"><a href="#cb1-737" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Less stringent validation (GRAS vs. pharmaceutical purity)</span>
+<span id="cb1-738"><a href="#cb1-738" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Similar to brewing or dairy equipment</span>
+<span id="cb1-739"><a href="#cb1-739" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Target cost: **$10–50 per liter** — Meatly's <span class="co">[</span><span class="ot">320L pilot bioreactor costs ~£12,500</span><span class="co">](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/)</span> (~$39/L), comparable to <span class="co">[</span><span class="ot">beer brewing ($5–15/L)</span><span class="co">](https://www.brewersassociation.org/)</span></span>
+<span id="cb1-740"><a href="#cb1-740" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-741"><a href="#cb1-741" aria-hidden="true" tabindex="-1"></a>The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.</span>
+<span id="cb1-742"><a href="#cb1-742" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-743"><a href="#cb1-743" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Range <span class="pp">|</span> Definition <span class="pp">|</span> Equation <span class="pp">|</span></span>
+<span id="cb1-744"><a href="#cb1-744" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|-------|------------|----------|</span></span>
+<span id="cb1-745"><a href="#cb1-745" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> WACC <span class="pp">|</span> 8–20% <span class="pp">|</span> Weighted average cost of capital <span class="pp">|</span> $r$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> <span class="pp">|</span></span>
+<span id="cb1-746"><a href="#cb1-746" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Asset life <span class="pp">|</span> 8–20 years <span class="pp">|</span> Equipment depreciation period for bioreactors, buildings, and support facilities <span class="pp">|</span> $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see <span class="co">[</span><span class="ot">Section 3</span><span class="co">](#annualized-capital-costs)</span> <span class="pp">|</span></span>
+<span id="cb1-747"><a href="#cb1-747" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Scale exponent <span class="pp">|</span> 0.6–0.9 <span class="pp">|</span> Economies of scale power (how much CAPEX grows as plant capacity increases) <span class="pp">|</span> $s$ in $\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see <span class="co">[</span><span class="ot">economies of scale section</span><span class="co">](#economies-of-scale-the-k-sim-qs-relationship)</span>. Note: $s$ (scale exponent) is distinct from $r$ (WACC) used in the CRF formula. <span class="pp">|</span></span>
+<span id="cb1-748"><a href="#cb1-748" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Pharma-grade CAPEX <span class="pp">|</span> \$5–25 / kg capacity <span class="pp">|</span> Base capital cost at 20 kTA <span class="pp">|</span> $\text{CAPEX}_{\text{ref}}$ in scaling equation <span class="pp">|</span></span>
+<span id="cb1-749"><a href="#cb1-749" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Custom reactor ratio <span class="pp">|</span> 0.35–0.85 <span class="pp">|</span> Food-grade ÷ pharma-grade cost <span class="pp">|</span> Multiplier on $\text{CAPEX}_{\text{ref}}$ when using food-grade <span class="pp">|</span></span>
+<span id="cb1-750"><a href="#cb1-750" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-751"><a href="#cb1-751" aria-hidden="true" tabindex="-1"></a><span class="fu">#### WACC Justification</span></span>
+<span id="cb1-752"><a href="#cb1-752" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-753"><a href="#cb1-753" aria-hidden="true" tabindex="-1"></a>**WACC (Weighted Average Cost of Capital)** represents the blended cost of debt and equity financing. Our 8–20% range reflects:</span>
+<span id="cb1-754"><a href="#cb1-754" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-755"><a href="#cb1-755" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Benchmark <span class="pp">|</span> Typical WACC <span class="pp">|</span> Source <span class="pp">|</span></span>
+<span id="cb1-756"><a href="#cb1-756" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------------|--------|</span></span>
+<span id="cb1-757"><a href="#cb1-757" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Established food companies (Tyson, JBS) <span class="pp">|</span> 6–10% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Per Damodaran (NYU Stern): food processing industry average WACC ~7-9% as of 2024. Large food companies benefit from stable cash flows and low risk premiums."</span><span class="dt">&gt;</span>Industry averages (Damodaran)<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span> <span class="pp">|</span></span>
+<span id="cb1-758"><a href="#cb1-758" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Biotech startups (pre-revenue) <span class="pp">|</span> 15–25% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Venture capital typically targets 20-30% IRR. For pre-revenue biotech, discount rates of 15-25% are standard in DCF valuations. See Metrick </span><span class="er">&amp;</span><span class="st"> Yasuda (2021), Venture Capital and the Finance of Innovation."</span><span class="dt">&gt;</span>VC expected returns<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span> <span class="pp">|</span></span>
+<span id="cb1-759"><a href="#cb1-759" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cultured meat companies <span class="pp">|</span> 12–20% <span class="pp">|</span> <span class="dt">&lt;</span><span class="kw">abbr</span><span class="ot"> title</span><span class="op">=</span><span class="st">"Humbird (2021) uses 10% WACC as baseline for his TEA analysis but notes this is 'optimistic for a startup company.' CE Delft (2021) uses 7-12% for mature scenarios. Our range of 8-20% spans from optimistic mature-industry to realistic early-stage."</span><span class="dt">&gt;</span>Humbird (2021)<span class="dt">&lt;/</span><span class="kw">abbr</span><span class="dt">&gt;</span>, <span class="co">[</span><span class="ot">CE Delft (2021)</span><span class="co">](https://cedelft.eu/publications/tea-of-cultivated-meat/)</span> <span class="pp">|</span></span>
 <span id="cb1-760"><a href="#cb1-760" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-761"><a href="#cb1-761" aria-hidden="true" tabindex="-1"></a>Enabling **Bundled media pricing** in the dashboard (full view → Media Accounting):</span>
+<span id="cb1-761"><a href="#cb1-761" aria-hidden="true" tabindex="-1"></a>**Why the range is wide:** The low end (8%) assumes the industry matures to food-company norms -- stable revenue, proven unit economics, low technology risk. The high end (20%) reflects today's reality: most cultured meat companies are venture-backed with no revenue, unproven at scale, and facing regulatory uncertainty. As the industry matures (<span class="co">[</span><span class="ot">higher $m$</span><span class="co">](#maturity-factor)</span>), WACC should decline toward food-industry norms. Our 8-20% range brackets both <span class="co">[</span><span class="ot">Humbird's 10% baseline</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> and <span class="co">[</span><span class="ot">CE Delft's 7-12% range</span><span class="co">](https://cedelft.eu/publications/tea-of-cultivated-meat/)</span>.</span>
 <span id="cb1-762"><a href="#cb1-762" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-763"><a href="#cb1-763" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Replaces the separable basal-media $/L and GF $/g lines with a single **complete media $/L** parameter</span>
-<span id="cb1-764"><a href="#cb1-764" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Default range: **$50–$500/L** — reflecting current research-grade complete media with pharma-grade GFs</span>
-<span id="cb1-765"><a href="#cb1-765" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>GF probability and progress sliders are hidden (bundled into the media price)</span>
-<span id="cb1-766"><a href="#cb1-766" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The cost breakdown shows "Complete Media (incl. GFs)" instead of separate Media and GF bars</span>
-<span id="cb1-767"><a href="#cb1-767" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-768"><a href="#cb1-768" aria-hidden="true" tabindex="-1"></a>**For 2036 projection work:** the $50–500/L default is appropriate for current-state benchmarking. For a 2036 projection, lower the range significantly (e.g., p5=$5, p95=$100) to reflect anticipated GF cost reductions bundled into the complete medium price.</span>
-<span id="cb1-769"><a href="#cb1-769" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-770"><a href="#cb1-770" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why We Default to Separable</span></span>
-<span id="cb1-771"><a href="#cb1-771" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-772"><a href="#cb1-772" aria-hidden="true" tabindex="-1"></a>The separable structure is better for the core purpose of this model — identifying which cost reduction pathways matter most. If growth factor breakthroughs are explicitly modeled as a binary switch on a separate cost line, users can directly see how much they shift the cost distribution. In bundled mode, GF improvements are hidden inside the media price, making the model less transparent about what is driving costs.</span>
-<span id="cb1-773"><a href="#cb1-773" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-774"><a href="#cb1-774" aria-hidden="true" tabindex="-1"></a>Separable accounting also better matches the future state of the cultured meat industry, where GF supply chains are likely to become commodity markets analogous to amino acid supply chains — priced and contracted separately from the bulk nutrient broth.</span>
+<span id="cb1-763"><a href="#cb1-763" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-764"><a href="#cb1-764" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-765"><a href="#cb1-765" aria-hidden="true" tabindex="-1"></a><span class="fu">## CDMO Production Model {#cdmo-production-model}</span></span>
+<span id="cb1-766"><a href="#cb1-766" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-767"><a href="#cb1-767" aria-hidden="true" tabindex="-1"></a>A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies, charging a per-unit toll fee. The dashboard includes a CDMO mode toggle that replaces in-house CAPEX and Fixed OPEX with a sampled toll fee.</span>
+<span id="cb1-768"><a href="#cb1-768" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-769"><a href="#cb1-769" aria-hidden="true" tabindex="-1"></a><span class="fu">### When CDMO mode changes the cost equation</span></span>
+<span id="cb1-770"><a href="#cb1-770" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-771"><a href="#cb1-771" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> CAPEX/kg <span class="pp">|</span> Fixed OPEX/kg <span class="pp">|</span> CDMO Toll/kg <span class="pp">|</span></span>
+<span id="cb1-772"><a href="#cb1-772" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|----------|--------------|--------------|</span></span>
+<span id="cb1-773"><a href="#cb1-773" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> In-House (default) <span class="pp">|</span> Sampled from in-house model <span class="pp">|</span> Sampled from in-house model <span class="pp">|</span> 0 <span class="pp">|</span></span>
+<span id="cb1-774"><a href="#cb1-774" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CDMO mode <span class="pp">|</span> 0 <span class="pp">|</span> 0 <span class="pp">|</span> Sampled from lognormal(p5, p95) <span class="pp">|</span></span>
 <span id="cb1-775"><a href="#cb1-775" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-776"><a href="#cb1-776" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-776"><a href="#cb1-776" aria-hidden="true" tabindex="-1"></a>VOC (media, growth factors, other variable), downstream, and all technology adoption assumptions remain unchanged.</span>
 <span id="cb1-777"><a href="#cb1-777" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-778"><a href="#cb1-778" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sensitivity Analysis: Dollar-Swing Metric {#sensitivity-analysis-dollar-swing-metric}</span></span>
+<span id="cb1-778"><a href="#cb1-778" aria-hidden="true" tabindex="-1"></a><span class="fu">### CDMO Toll Parameter</span></span>
 <span id="cb1-779"><a href="#cb1-779" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-780"><a href="#cb1-780" aria-hidden="true" tabindex="-1"></a>The tornado chart on the dashboard answers: **which parameters move the cost estimate the most?** This section explains exactly what is computed and how to read the result.</span>
-<span id="cb1-781"><a href="#cb1-781" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-782"><a href="#cb1-782" aria-hidden="true" tabindex="-1"></a><span class="fu">### What the bar length means</span></span>
+<span id="cb1-780"><a href="#cb1-780" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Symbol <span class="pp">|</span> Distribution <span class="pp">|</span> Default <span class="pp">|</span> Unit <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb1-781"><a href="#cb1-781" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------|--------------|---------|------|-------|</span></span>
+<span id="cb1-782"><a href="#cb1-782" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CDMO Toll <span class="pp">|</span> — <span class="pp">|</span> Lognormal(p5, p95) <span class="pp">|</span> p5=4, p95=40 <span class="pp">|</span> $/kg <span class="pp">|</span> Covers CDMO's CAPEX, fixed costs, and margin <span class="pp">|</span></span>
 <span id="cb1-783"><a href="#cb1-783" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-784"><a href="#cb1-784" aria-hidden="true" tabindex="-1"></a>Each bar is the **difference in mean unit cost ($/kg) between two groups of simulations**:</span>
+<span id="cb1-784"><a href="#cb1-784" aria-hidden="true" tabindex="-1"></a>**Interpretation of the default range:**</span>
 <span id="cb1-785"><a href="#cb1-785" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-786"><a href="#cb1-786" aria-hidden="true" tabindex="-1"></a>$$\text{Swing}(x) = \overline{\text{cost}} \;\big|\; x \in \text{top 10\%} \;\;-\;\; \overline{\text{cost}} \;\big|\; x \in \text{bottom 10\%}$$</span>
-<span id="cb1-787"><a href="#cb1-787" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-788"><a href="#cb1-788" aria-hidden="true" tabindex="-1"></a>With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. The result is a real-dollar quantity on the same scale as every other cost figure — so a bar of $+40/kg means: simulations where that parameter is in its top decile have costs $40/kg higher on average than simulations in its bottom decile.</span>
-<span id="cb1-789"><a href="#cb1-789" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-790"><a href="#cb1-790" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Red** (positive swing): parameter increases cost when high</span>
-<span id="cb1-791"><a href="#cb1-791" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Green** (negative swing): parameter decreases cost when high (e.g., cell density — higher density → lower media per kg)</span>
-<span id="cb1-792"><a href="#cb1-792" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-793"><a href="#cb1-793" aria-hidden="true" tabindex="-1"></a><span class="fu">### Parameter types in the chart</span></span>
-<span id="cb1-794"><a href="#cb1-794" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-795"><a href="#cb1-795" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Type <span class="pp">|</span> Examples <span class="pp">|</span> Interpretation <span class="pp">|</span></span>
-<span id="cb1-796"><a href="#cb1-796" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|----------------|</span></span>
-<span id="cb1-797"><a href="#cb1-797" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Primitive* <span class="pp">|</span> Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate <span class="pp">|</span> Sampled approximately independently; swing ≈ a genuine marginal effect <span class="pp">|</span></span>
-<span id="cb1-798"><a href="#cb1-798" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Mixture* <span class="pp">|</span> Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity <span class="pp">|</span> Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both <span class="pp">|</span></span>
-<span id="cb1-799"><a href="#cb1-799" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Latent* <span class="pp">|</span> Industry Maturity <span class="pp">|</span> Not independent — perturbs P(hydrolysate), P(cheap GFs), WACC, and reactor costs simultaneously <span class="pp">|</span></span>
-<span id="cb1-800"><a href="#cb1-800" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-801"><a href="#cb1-801" aria-hidden="true" tabindex="-1"></a><span class="fu">### The latent-variable caveat (Industry Maturity)</span></span>
-<span id="cb1-802"><a href="#cb1-802" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-803"><a href="#cb1-803" aria-hidden="true" tabindex="-1"></a>Industry Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share all at once. Its bar therefore captures the **total bundled effect** of a shift in maturity propagating through all those channels.</span>
-<span id="cb1-804"><a href="#cb1-804" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-805"><a href="#cb1-805" aria-hidden="true" tabindex="-1"></a>**Do not add the Maturity bar to Media \$/L and GF Price.** Simulations in Maturity's top decile are also more likely to have cheap hydrolysates and cheap GFs — so those bars already partly overlap with what Maturity's bar is measuring.</span>
-<span id="cb1-806"><a href="#cb1-806" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-807"><a href="#cb1-807" aria-hidden="true" tabindex="-1"></a><span class="fu">### What was removed and why</span></span>
-<span id="cb1-808"><a href="#cb1-808" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-809"><a href="#cb1-809" aria-hidden="true" tabindex="-1"></a>An earlier version of this chart used **Spearman rank correlation** — a unitless number in <span class="co">[</span><span class="ot">−1, 1</span><span class="co">]</span> that indicates direction but not magnitude. The current dollar-swing metric is more useful because it is on the same scale as the cost estimates themselves.</span>
-<span id="cb1-810"><a href="#cb1-810" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-811"><a href="#cb1-811" aria-hidden="true" tabindex="-1"></a>Three parameters were also removed from the earlier 11-parameter list because they were derived quantities rather than independent drivers:</span>
-<span id="cb1-812"><a href="#cb1-812" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-813"><a href="#cb1-813" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**L/kg (media volume per kg)** = 1000/density × media-use multiplier — a pure deterministic function of the two separate parameters, not an independent source of variation.</span>
-<span id="cb1-814"><a href="#cb1-814" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Uses Hydrolysates (binary)** chose which lognormal regime Media \$/L was sampled from. The continuous Media \$/L bar already captures the regime switch plus within-regime noise.</span>
-<span id="cb1-815"><a href="#cb1-815" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Has Cheap GFs (binary)** chose the regime for GF Price and GF Quantity. Same issue: subsumed into those continuous bars.</span>
-<span id="cb1-816"><a href="#cb1-816" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-817"><a href="#cb1-817" aria-hidden="true" tabindex="-1"></a><span class="fu">### Technical caveats</span></span>
-<span id="cb1-818"><a href="#cb1-818" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-819"><a href="#cb1-819" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and bars can overlap across correlated parameters.</span>
-<span id="cb1-820"><a href="#cb1-820" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small enough to be reliable.</span>
-<span id="cb1-821"><a href="#cb1-821" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Because the statistic is computed on the joint sampling distribution, changing a slider can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.</span>
-<span id="cb1-822"><a href="#cb1-822" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For a fully decomposed variance analysis (first-order + total-effect Sobol indices), dedicated re-simulation passes would be needed. This is feasible future work.</span>
+<span id="cb1-786"><a href="#cb1-786" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Toll ($/kg) <span class="pp">|</span> Scenario <span class="pp">|</span></span>
+<span id="cb1-787"><a href="#cb1-787" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------------|----------|</span></span>
+<span id="cb1-788"><a href="#cb1-788" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$4 (p5) <span class="pp">|</span> Efficient food-grade CDMO, high multi-client utilization (~80-90%), thin margin <span class="pp">|</span></span>
+<span id="cb1-789"><a href="#cb1-789" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$12 (typical) <span class="pp">|</span> CDMO serving several clients, food-grade equipment, ~25-35% margin over cost <span class="pp">|</span></span>
+<span id="cb1-790"><a href="#cb1-790" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ~$40 (p95) <span class="pp">|</span> Pharma-adjacent CDMO, low utilization, high quality premiums and margin <span class="pp">|</span></span>
+<span id="cb1-791"><a href="#cb1-791" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-792"><a href="#cb1-792" aria-hidden="true" tabindex="-1"></a>For reference, in-house CAPEX + Fixed OPEX in the default model spans roughly $3–25/kg (median ~$8/kg at 50% maturity). The CDMO toll range is set wider to account for the additional uncertainty about whether CDMO pricing develops favorably for the cultured meat sector.</span>
+<span id="cb1-793"><a href="#cb1-793" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-794"><a href="#cb1-794" aria-hidden="true" tabindex="-1"></a><span class="fu">### When CDMO might be cheaper</span></span>
+<span id="cb1-795"><a href="#cb1-795" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-796"><a href="#cb1-796" aria-hidden="true" tabindex="-1"></a>The comparison chart in the dashboard shows the full distribution difference. In general:</span>
+<span id="cb1-797"><a href="#cb1-797" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-798"><a href="#cb1-798" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **in-house CAPEX is high** (early-stage, pharma-grade, low maturity): CDMO can be cheaper if the CDMO captures scale economies across multiple clients</span>
+<span id="cb1-799"><a href="#cb1-799" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **plant capacity is small** (scale diseconomies hit the in-house model harder than a shared CDMO): CDMO wins</span>
+<span id="cb1-800"><a href="#cb1-800" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When **in-house CAPEX is low** (mature industry, food-grade equipment, large scale): in-house tends to be cheaper because it avoids the CDMO's margin</span>
+<span id="cb1-801"><a href="#cb1-801" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-802"><a href="#cb1-802" aria-hidden="true" tabindex="-1"></a><span class="fu">### Limitations of the CDMO model</span></span>
+<span id="cb1-803"><a href="#cb1-803" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-804"><a href="#cb1-804" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**No maturity adjustment on toll**: In the current implementation, the CDMO toll is sampled independently of the maturity factor. In reality, CDMO pricing would likely become more competitive as the industry matures and more providers enter the market. This could be added in a future version.</span>
+<span id="cb1-805"><a href="#cb1-805" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**No IP/process risk modeling**: CDMOs require sharing cell lines and media formulations, which may be a competitive disadvantage. This risk is not modeled.</span>
+<span id="cb1-806"><a href="#cb1-806" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**No utilization feedback**: In-house utilization is an explicit parameter; CDMO utilization is implicit in the toll range. The two are not directly comparable.</span>
+<span id="cb1-807"><a href="#cb1-807" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-808"><a href="#cb1-808" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-809"><a href="#cb1-809" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-810"><a href="#cb1-810" aria-hidden="true" tabindex="-1"></a><span class="fu">## Process Mode {#process-mode}</span></span>
+<span id="cb1-811"><a href="#cb1-811" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-812"><a href="#cb1-812" aria-hidden="true" tabindex="-1"></a>The model draws a bioreactor process mode for each Monte Carlo simulation, then samples cell density and media-use multiplier from that mode's physical range. This prevents incoherent parameter combinations that the previous unconstrained approach allowed (e.g., 200 g/L density with batch-like media use, which is biologically impossible).</span>
+<span id="cb1-813"><a href="#cb1-813" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-814"><a href="#cb1-814" aria-hidden="true" tabindex="-1"></a>**Pure batch is excluded** — not commercially viable at scale for cultured meat (expert reviewer feedback, April 2026).</span>
+<span id="cb1-815"><a href="#cb1-815" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-816"><a href="#cb1-816" aria-hidden="true" tabindex="-1"></a><span class="fu">### Mode-Specific Parameter Ranges</span></span>
+<span id="cb1-817"><a href="#cb1-817" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-818"><a href="#cb1-818" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Default weight <span class="pp">|</span> Density (g/L) p5–p95 <span class="pp">|</span> Media-use multiplier p5–p95 <span class="pp">|</span> Rationale <span class="pp">|</span></span>
+<span id="cb1-819"><a href="#cb1-819" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------------|---------------------|----------------------------|-----------|</span></span>
+<span id="cb1-820"><a href="#cb1-820" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Fed-batch <span class="pp">|</span> 20% <span class="pp">|</span> 5–30 <span class="pp">|</span> 1.0–2.0× <span class="pp">|</span> Periodic concentrated nutrient addition; lower achievable density <span class="pp">|</span></span>
+<span id="cb1-821"><a href="#cb1-821" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Perfusion <span class="pp">|</span> 50% <span class="pp">|</span> 30–150 <span class="pp">|</span> 1.0–5.0× <span class="pp">|</span> Continuous media exchange with cell retention; higher density, higher throughput <span class="pp">|</span></span>
+<span id="cb1-822"><a href="#cb1-822" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Continuous <span class="pp">|</span> 30% <span class="pp">|</span> 50–200 <span class="pp">|</span> 0.5–3.0× <span class="pp">|</span> Near-steady-state with recycling; highest densities <span class="pp">|</span></span>
 <span id="cb1-823"><a href="#cb1-823" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-824"><a href="#cb1-824" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-824"><a href="#cb1-824" aria-hidden="true" tabindex="-1"></a>Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. The **Override process mode constraints** toggle (full view) bypasses mode-based sampling and restores the manual density and media-use sliders for expert use.</span>
 <span id="cb1-825"><a href="#cb1-825" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-826"><a href="#cb1-826" aria-hidden="true" tabindex="-1"></a><span class="fu">## Code Reference {#code-reference}</span></span>
+<span id="cb1-826"><a href="#cb1-826" aria-hidden="true" tabindex="-1"></a>**Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. This is more physically realistic — fed-batch is genuinely more media-intensive. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.</span>
 <span id="cb1-827"><a href="#cb1-827" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-828"><a href="#cb1-828" aria-hidden="true" tabindex="-1"></a>The full model implementation is available in multiple formats:</span>
+<span id="cb1-828"><a href="#cb1-828" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-829"><a href="#cb1-829" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-830"><a href="#cb1-830" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Format <span class="pp">|</span> Location <span class="pp">|</span> Notes <span class="pp">|</span></span>
-<span id="cb1-831"><a href="#cb1-831" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|----------|-------|</span></span>
-<span id="cb1-832"><a href="#cb1-832" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **JavaScript** (interactive) <span class="pp">|</span> Embedded in <span class="co">[</span><span class="ot">dashboard</span><span class="co">](index.qmd)</span> <span class="pp">|</span> Primary implementation — the authoritative version <span class="pp">|</span></span>
-<span id="cb1-833"><a href="#cb1-833" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Python** (reference) <span class="pp">|</span> <span class="co">[</span><span class="ot">dashboard/model.py</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)</span> <span class="pp">|</span> Standalone script; kept for reference but not used by the dashboard <span class="pp">|</span></span>
-<span id="cb1-834"><a href="#cb1-834" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-835"><a href="#cb1-835" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
-<span id="cb1-836"><a href="#cb1-836" aria-hidden="true" tabindex="-1"></a><span class="fu">## Note on the earlier Squiggle implementation</span></span>
-<span id="cb1-837"><a href="#cb1-837" aria-hidden="true" tabindex="-1"></a>An earlier Squiggle version of a related cost model exists at <span class="co">[</span><span class="ot">`models/cm_cost_v0.2.squiggle`</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/models/cm_cost_v0.2.squiggle)</span> and on <span class="co">[</span><span class="ot">Squiggle Hub</span><span class="co">](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)</span>. **It is not currently synced with this dashboard** — parameter ranges, the technology-adoption structure, the micronutrient revision (April 2026), the growth-factor quantity tightening (April 2026), and the dollar-swing sensitivity analysis all diverge between the two. Treat the Squiggle version as a historical snapshot, not an equivalent reference implementation. Re-syncing the Squiggle model with the dashboard parameters is on the project TODO list but has not yet been done.</span>
-<span id="cb1-838"><a href="#cb1-838" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb1-839"><a href="#cb1-839" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-840"><a href="#cb1-840" aria-hidden="true" tabindex="-1"></a><span class="fu">### Key Functions</span></span>
-<span id="cb1-841"><a href="#cb1-841" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-842"><a href="#cb1-842" aria-hidden="true" tabindex="-1"></a>The JavaScript implementation includes:</span>
-<span id="cb1-843"><a href="#cb1-843" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-844"><a href="#cb1-844" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`simulate(n, seed, params)`</span> — Main Monte Carlo loop</span>
-<span id="cb1-845"><a href="#cb1-845" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sampleLognormalP5P95(rng, p5, p95, n)`</span> — Sample from lognormal given percentiles</span>
-<span id="cb1-846"><a href="#cb1-846" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sampleBetaMeanStdev(rng, mean, sd, n)`</span> — Sample from beta distribution</span>
-<span id="cb1-847"><a href="#cb1-847" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`crf(wacc, years)`</span> — Capital Recovery Factor calculation</span>
-<span id="cb1-848"><a href="#cb1-848" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`spearmanCorr(x, y)`</span> — Rank correlation for sensitivity analysis</span>
+<span id="cb1-830"><a href="#cb1-830" aria-hidden="true" tabindex="-1"></a><span class="fu">## Bundled Media Pricing {#bundled-media-pricing}</span></span>
+<span id="cb1-831"><a href="#cb1-831" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-832"><a href="#cb1-832" aria-hidden="true" tabindex="-1"></a>Published TEAs use two different accounting conventions for media costs. Understanding the difference is critical when comparing model outputs to the literature.</span>
+<span id="cb1-833"><a href="#cb1-833" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-834"><a href="#cb1-834" aria-hidden="true" tabindex="-1"></a><span class="fu">### Two Conventions</span></span>
+<span id="cb1-835"><a href="#cb1-835" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-836"><a href="#cb1-836" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Convention <span class="pp">|</span> What "media $/L" includes <span class="pp">|</span> Example sources <span class="pp">|</span> When to use <span class="pp">|</span></span>
+<span id="cb1-837"><a href="#cb1-837" aria-hidden="true" tabindex="-1"></a><span class="pp">|------------|--------------------------|-----------------|-------------|</span></span>
+<span id="cb1-838"><a href="#cb1-838" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Separable** (default) <span class="pp">|</span> Basal media only (amino acids, glucose, vitamins) — GFs on separate $/g line <span class="pp">|</span> This model, GFI cost analyses <span class="pp">|</span> Reasoning about future cost reduction; GF breakthrough affects a visible separate line <span class="pp">|</span></span>
+<span id="cb1-839"><a href="#cb1-839" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Bundled** <span class="pp">|</span> Complete media including all growth factors <span class="pp">|</span> Humbird 2021, most research-grade TEAs <span class="pp">|</span> Comparing to published figures; current-state benchmarking <span class="pp">|</span></span>
+<span id="cb1-840"><a href="#cb1-840" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-841"><a href="#cb1-841" aria-hidden="true" tabindex="-1"></a><span class="fu">### How to Use the Bundled Toggle</span></span>
+<span id="cb1-842"><a href="#cb1-842" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-843"><a href="#cb1-843" aria-hidden="true" tabindex="-1"></a>Enabling **Bundled media pricing** in the dashboard (full view → Media Accounting):</span>
+<span id="cb1-844"><a href="#cb1-844" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-845"><a href="#cb1-845" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Replaces the separable basal-media $/L and GF $/g lines with a single **complete media $/L** parameter</span>
+<span id="cb1-846"><a href="#cb1-846" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Default range: **$50–$500/L** — reflecting current research-grade complete media with pharma-grade GFs</span>
+<span id="cb1-847"><a href="#cb1-847" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>GF probability and progress sliders are hidden (bundled into the media price)</span>
+<span id="cb1-848"><a href="#cb1-848" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The cost breakdown shows "Complete Media (incl. GFs)" instead of separate Media and GF bars</span>
 <span id="cb1-849"><a href="#cb1-849" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-850"><a href="#cb1-850" aria-hidden="true" tabindex="-1"></a>View the <span class="co">[</span><span class="ot">page source</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd)</span> for the complete implementation.</span>
+<span id="cb1-850"><a href="#cb1-850" aria-hidden="true" tabindex="-1"></a>**For 2036 projection work:** the $50–500/L default is appropriate for current-state benchmarking. For a 2036 projection, lower the range significantly (e.g., p5=$5, p95=$100) to reflect anticipated GF cost reductions bundled into the complete medium price.</span>
 <span id="cb1-851"><a href="#cb1-851" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-852"><a href="#cb1-852" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-852"><a href="#cb1-852" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why We Default to Separable</span></span>
 <span id="cb1-853"><a href="#cb1-853" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-854"><a href="#cb1-854" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations {#limitations}</span></span>
+<span id="cb1-854"><a href="#cb1-854" aria-hidden="true" tabindex="-1"></a>The separable structure is better for the core purpose of this model — identifying which cost reduction pathways matter most. If growth factor breakthroughs are explicitly modeled as a binary switch on a separate cost line, users can directly see how much they shift the cost distribution. In bundled mode, GF improvements are hidden inside the media price, making the model less transparent about what is driving costs.</span>
 <span id="cb1-855"><a href="#cb1-855" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-856"><a href="#cb1-856" aria-hidden="true" tabindex="-1"></a><span class="fu">### Known Limitations</span></span>
+<span id="cb1-856"><a href="#cb1-856" aria-hidden="true" tabindex="-1"></a>Separable accounting also better matches the future state of the cultured meat industry, where GF supply chains are likely to become commodity markets analogous to amino acid supply chains — priced and contracted separately from the bulk nutrient broth.</span>
 <span id="cb1-857"><a href="#cb1-857" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-858"><a href="#cb1-858" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.</span>
+<span id="cb1-858"><a href="#cb1-858" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb1-859"><a href="#cb1-859" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-860"><a href="#cb1-860" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).</span>
+<span id="cb1-860"><a href="#cb1-860" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sensitivity Analysis: Dollar-Swing Metric {#sensitivity-analysis-dollar-swing-metric}</span></span>
 <span id="cb1-861"><a href="#cb1-861" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-862"><a href="#cb1-862" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.</span>
+<span id="cb1-862"><a href="#cb1-862" aria-hidden="true" tabindex="-1"></a>The tornado chart on the dashboard answers: **which parameters move the cost estimate the most?** This section explains exactly what is computed and how to read the result.</span>
 <span id="cb1-863"><a href="#cb1-863" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-864"><a href="#cb1-864" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Limited contamination modeling** — No batch failure or contamination event distributions.</span>
+<span id="cb1-864"><a href="#cb1-864" aria-hidden="true" tabindex="-1"></a><span class="fu">### What the bar length means</span></span>
 <span id="cb1-865"><a href="#cb1-865" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-866"><a href="#cb1-866" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See <span class="co">[</span><span class="ot">Model Limits</span><span class="co">](limits.qmd#parameter-grounding)</span> for the specific case of basal media cost and cell density.</span>
+<span id="cb1-866"><a href="#cb1-866" aria-hidden="true" tabindex="-1"></a>Each bar is the **difference in mean unit cost ($/kg) between two groups of simulations**:</span>
 <span id="cb1-867"><a href="#cb1-867" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-868"><a href="#cb1-868" aria-hidden="true" tabindex="-1"></a><span class="fu">### Recommendations for Use</span></span>
+<span id="cb1-868"><a href="#cb1-868" aria-hidden="true" tabindex="-1"></a>$$\text{Swing}(x) = \overline{\text{cost}} \;\big|\; x \in \text{top 10\%} \;\;-\;\; \overline{\text{cost}} \;\big|\; x \in \text{bottom 10\%}$$</span>
 <span id="cb1-869"><a href="#cb1-869" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-870"><a href="#cb1-870" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Recommendation <span class="pp">|</span> What it means <span class="pp">|</span> Why <span class="pp">|</span></span>
-<span id="cb1-871"><a href="#cb1-871" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------------|---------------|-----|</span></span>
-<span id="cb1-872"><a href="#cb1-872" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Use for **relative comparisons** <span class="pp">|</span> Compare scenarios (e.g., "Cheap GF tech reduces costs by 40%") rather than absolute predictions ("Costs will be $8.50/kg") <span class="pp">|</span> When parameters are uncertain, the *difference* between scenarios is more stable than the absolute baseline — see <span class="co">[</span><span class="ot">example below</span><span class="co">](#what-relative-comparisons-means-in-practice)</span> <span class="pp">|</span></span>
-<span id="cb1-873"><a href="#cb1-873" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Focus on **probability thresholds** <span class="pp">|</span> Ask "What's P(cost &lt; $10/kg)?" not "What's the expected cost?" <span class="pp">|</span> Probabilities integrate over uncertainty and map to decisions ("Is this worth pursuing?") <span class="pp">|</span></span>
-<span id="cb1-874"><a href="#cb1-874" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Validate parameters** with experts <span class="pp">|</span> Before publishing, check that ranges match current industry knowledge <span class="pp">|</span> Published literature lags industry by 1–3 years; some parameters (GF costs) change rapidly <span class="pp">|</span></span>
-<span id="cb1-875"><a href="#cb1-875" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Report uncertainty ranges** <span class="pp">|</span> Always show 90% CI, not just median <span class="pp">|</span> Wide intervals reflect genuine uncertainty; suppressing them gives false confidence <span class="pp">|</span></span>
-<span id="cb1-876"><a href="#cb1-876" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Explore correlated scenarios** <span class="pp">|</span> Use the <span class="co">[</span><span class="ot">maturity slider</span><span class="co">](#maturity-factor)</span> to see "good world" vs "bad world" bundles <span class="pp">|</span> Technologies, financing, and supply chains often develop together — though some breakthroughs (e.g., GF biotech) may be partially independent of others (e.g., bioreactor manufacturing). See <span class="co">[</span><span class="ot">correlation assumptions</span><span class="co">](#could-technologies-develop-independently)</span> for discussion <span class="pp">|</span></span>
-<span id="cb1-877"><a href="#cb1-877" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-878"><a href="#cb1-878" aria-hidden="true" tabindex="-1"></a><span class="fu">#### What "relative comparisons" means in practice {#what-relative-comparisons-means-in-practice}</span></span>
-<span id="cb1-879"><a href="#cb1-879" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-880"><a href="#cb1-880" aria-hidden="true" tabindex="-1"></a>✅ **Good use:** "Achieving 150 g/L cell density instead of 50 g/L would reduce costs by 40–60%"</span>
-<span id="cb1-881"><a href="#cb1-881" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-882"><a href="#cb1-882" aria-hidden="true" tabindex="-1"></a>❌ **Risky use:** "Cultured chicken will cost $8.50/kg by 2030"</span>
-<span id="cb1-883"><a href="#cb1-883" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-884"><a href="#cb1-884" aria-hidden="true" tabindex="-1"></a>The model is better at estimating *how much* a technology improvement helps than *what the final cost will be*, because relative effects are less sensitive to baseline assumptions.</span>
-<span id="cb1-885"><a href="#cb1-885" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-886"><a href="#cb1-886" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-887"><a href="#cb1-887" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-888"><a href="#cb1-888" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sources</span></span>
-<span id="cb1-889"><a href="#cb1-889" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-890"><a href="#cb1-890" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Risner et al. (2021) - UC Davis ACBM Calculator</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span> — Original academic cost model</span>
-<span id="cb1-891"><a href="#cb1-891" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Humbird (2021) - Scale-Up Economics</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> — Independent TEA analysis</span>
-<span id="cb1-892"><a href="#cb1-892" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Good Food Institute - State of the Industry Reports</span><span class="co">](https://gfi.org)</span> — Annual industry overview</span>
-<span id="cb1-893"><a href="#cb1-893" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">The Unjournal - Cultured Meat Evaluations</span><span class="co">](https://unjournal.org)</span> — Independent research evaluations</span>
+<span id="cb1-870"><a href="#cb1-870" aria-hidden="true" tabindex="-1"></a>With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. The result is a real-dollar quantity on the same scale as every other cost figure — so a bar of $+40/kg means: simulations where that parameter is in its top decile have costs $40/kg higher on average than simulations in its bottom decile.</span>
+<span id="cb1-871"><a href="#cb1-871" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-872"><a href="#cb1-872" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Red** (positive swing): parameter increases cost when high</span>
+<span id="cb1-873"><a href="#cb1-873" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Green** (negative swing): parameter decreases cost when high (e.g., cell density — higher density → lower media per kg)</span>
+<span id="cb1-874"><a href="#cb1-874" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-875"><a href="#cb1-875" aria-hidden="true" tabindex="-1"></a><span class="fu">### Parameter types in the chart</span></span>
+<span id="cb1-876"><a href="#cb1-876" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-877"><a href="#cb1-877" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Type <span class="pp">|</span> Examples <span class="pp">|</span> Interpretation <span class="pp">|</span></span>
+<span id="cb1-878"><a href="#cb1-878" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|----------------|</span></span>
+<span id="cb1-879"><a href="#cb1-879" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Primitive* <span class="pp">|</span> Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate <span class="pp">|</span> Sampled approximately independently; swing ≈ a genuine marginal effect <span class="pp">|</span></span>
+<span id="cb1-880"><a href="#cb1-880" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Mixture* <span class="pp">|</span> Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity <span class="pp">|</span> Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both <span class="pp">|</span></span>
+<span id="cb1-881"><a href="#cb1-881" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> *Latent* <span class="pp">|</span> Industry Maturity <span class="pp">|</span> Not independent — perturbs P(hydrolysate), P(cheap GFs), WACC, and reactor costs simultaneously <span class="pp">|</span></span>
+<span id="cb1-882"><a href="#cb1-882" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-883"><a href="#cb1-883" aria-hidden="true" tabindex="-1"></a><span class="fu">### The latent-variable caveat (Industry Maturity)</span></span>
+<span id="cb1-884"><a href="#cb1-884" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-885"><a href="#cb1-885" aria-hidden="true" tabindex="-1"></a>Industry Maturity is not sampled independently of the other parameters in the chart. It perturbs P(hydrolysate adoption), P(cheap GFs), WACC, and the custom-reactor share all at once. Its bar therefore captures the **total bundled effect** of a shift in maturity propagating through all those channels.</span>
+<span id="cb1-886"><a href="#cb1-886" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-887"><a href="#cb1-887" aria-hidden="true" tabindex="-1"></a>**Do not add the Maturity bar to Media \$/L and GF Price.** Simulations in Maturity's top decile are also more likely to have cheap hydrolysates and cheap GFs — so those bars already partly overlap with what Maturity's bar is measuring.</span>
+<span id="cb1-888"><a href="#cb1-888" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-889"><a href="#cb1-889" aria-hidden="true" tabindex="-1"></a><span class="fu">### What was removed and why</span></span>
+<span id="cb1-890"><a href="#cb1-890" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-891"><a href="#cb1-891" aria-hidden="true" tabindex="-1"></a>An earlier version of this chart used **Spearman rank correlation** — a unitless number in <span class="co">[</span><span class="ot">−1, 1</span><span class="co">]</span> that indicates direction but not magnitude. The current dollar-swing metric is more useful because it is on the same scale as the cost estimates themselves.</span>
+<span id="cb1-892"><a href="#cb1-892" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-893"><a href="#cb1-893" aria-hidden="true" tabindex="-1"></a>Three parameters were also removed from the earlier 11-parameter list because they were derived quantities rather than independent drivers:</span>
 <span id="cb1-894"><a href="#cb1-894" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-895"><a href="#cb1-895" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb1-896"><a href="#cb1-896" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-897"><a href="#cb1-897" aria-hidden="true" tabindex="-1"></a><span class="fu">## Changelog</span></span>
+<span id="cb1-895"><a href="#cb1-895" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**L/kg (media volume per kg)** = 1000/density × media-use multiplier — a pure deterministic function of the two separate parameters, not an independent source of variation.</span>
+<span id="cb1-896"><a href="#cb1-896" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Uses Hydrolysates (binary)** chose which lognormal regime Media \$/L was sampled from. The continuous Media \$/L bar already captures the regime switch plus within-regime noise.</span>
+<span id="cb1-897"><a href="#cb1-897" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Has Cheap GFs (binary)** chose the regime for GF Price and GF Quantity. Same issue: subsumed into those continuous bars.</span>
 <span id="cb1-898"><a href="#cb1-898" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-899"><a href="#cb1-899" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Version <span class="pp">|</span> Date <span class="pp">|</span> Changes <span class="pp">|</span></span>
-<span id="cb1-900"><a href="#cb1-900" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|------|---------|</span></span>
-<span id="cb1-901"><a href="#cb1-901" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.3 <span class="pp">|</span> 2026-02 <span class="pp">|</span> Separated Learn page, consolidated technical docs <span class="pp">|</span></span>
-<span id="cb1-902"><a href="#cb1-902" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.2 <span class="pp">|</span> 2026-02 <span class="pp">|</span> Explicit scale/uptime, beta distributions, maturity factor <span class="pp">|</span></span>
-<span id="cb1-903"><a href="#cb1-903" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.1 <span class="pp">|</span> 2026-01 <span class="pp">|</span> Initial Squiggle model based on UC Davis <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb1-899"><a href="#cb1-899" aria-hidden="true" tabindex="-1"></a><span class="fu">### Technical caveats</span></span>
+<span id="cb1-900"><a href="#cb1-900" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-901"><a href="#cb1-901" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and bars can overlap across correlated parameters.</span>
+<span id="cb1-902"><a href="#cb1-902" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small enough to be reliable.</span>
+<span id="cb1-903"><a href="#cb1-903" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Because the statistic is computed on the joint sampling distribution, changing a slider can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.</span>
+<span id="cb1-904"><a href="#cb1-904" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>For a fully decomposed variance analysis (first-order + total-effect Sobol indices), dedicated re-simulation passes would be needed. This is feasible future work.</span>
+<span id="cb1-905"><a href="#cb1-905" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-906"><a href="#cb1-906" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-907"><a href="#cb1-907" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-908"><a href="#cb1-908" aria-hidden="true" tabindex="-1"></a><span class="fu">## Code Reference {#code-reference}</span></span>
+<span id="cb1-909"><a href="#cb1-909" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-910"><a href="#cb1-910" aria-hidden="true" tabindex="-1"></a>The full model implementation is available in multiple formats:</span>
+<span id="cb1-911"><a href="#cb1-911" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-912"><a href="#cb1-912" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Format <span class="pp">|</span> Location <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb1-913"><a href="#cb1-913" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|----------|-------|</span></span>
+<span id="cb1-914"><a href="#cb1-914" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **JavaScript** (interactive) <span class="pp">|</span> Embedded in <span class="co">[</span><span class="ot">dashboard</span><span class="co">](index.qmd)</span> <span class="pp">|</span> Primary implementation — the authoritative version <span class="pp">|</span></span>
+<span id="cb1-915"><a href="#cb1-915" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Python** (reference) <span class="pp">|</span> <span class="co">[</span><span class="ot">dashboard/model.py</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py)</span> <span class="pp">|</span> Standalone script; kept for reference but not used by the dashboard <span class="pp">|</span></span>
+<span id="cb1-916"><a href="#cb1-916" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-917"><a href="#cb1-917" aria-hidden="true" tabindex="-1"></a>::: {.callout-note collapse="true"}</span>
+<span id="cb1-918"><a href="#cb1-918" aria-hidden="true" tabindex="-1"></a><span class="fu">## Note on the earlier Squiggle implementation</span></span>
+<span id="cb1-919"><a href="#cb1-919" aria-hidden="true" tabindex="-1"></a>An earlier Squiggle version of a related cost model exists at <span class="co">[</span><span class="ot">`models/cm_cost_v0.2.squiggle`</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/models/cm_cost_v0.2.squiggle)</span> and on <span class="co">[</span><span class="ot">Squiggle Hub</span><span class="co">](https://squigglehub.org/models/Unjournal-modelingPQs/cultured_meat_improved_by_squiggle_improve)</span>. **It is not currently synced with this dashboard** — parameter ranges, the technology-adoption structure, the micronutrient revision (April 2026), the growth-factor quantity tightening (April 2026), and the dollar-swing sensitivity analysis all diverge between the two. Treat the Squiggle version as a historical snapshot, not an equivalent reference implementation. Re-syncing the Squiggle model with the dashboard parameters is on the project TODO list but has not yet been done.</span>
+<span id="cb1-920"><a href="#cb1-920" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb1-921"><a href="#cb1-921" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-922"><a href="#cb1-922" aria-hidden="true" tabindex="-1"></a><span class="fu">### Key Functions</span></span>
+<span id="cb1-923"><a href="#cb1-923" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-924"><a href="#cb1-924" aria-hidden="true" tabindex="-1"></a>The JavaScript implementation includes:</span>
+<span id="cb1-925"><a href="#cb1-925" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-926"><a href="#cb1-926" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`simulate(n, seed, params)`</span> — Main Monte Carlo loop</span>
+<span id="cb1-927"><a href="#cb1-927" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sampleLognormalP5P95(rng, p5, p95, n)`</span> — Sample from lognormal given percentiles</span>
+<span id="cb1-928"><a href="#cb1-928" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sampleBetaMeanStdev(rng, mean, sd, n)`</span> — Sample from beta distribution</span>
+<span id="cb1-929"><a href="#cb1-929" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`crf(wacc, years)`</span> — Capital Recovery Factor calculation</span>
+<span id="cb1-930"><a href="#cb1-930" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`spearmanCorr(x, y)`</span> — Rank correlation for sensitivity analysis</span>
+<span id="cb1-931"><a href="#cb1-931" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-932"><a href="#cb1-932" aria-hidden="true" tabindex="-1"></a>View the <span class="co">[</span><span class="ot">page source</span><span class="co">](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd)</span> for the complete implementation.</span>
+<span id="cb1-933"><a href="#cb1-933" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-934"><a href="#cb1-934" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-935"><a href="#cb1-935" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-936"><a href="#cb1-936" aria-hidden="true" tabindex="-1"></a><span class="fu">## Limitations {#limitations}</span></span>
+<span id="cb1-937"><a href="#cb1-937" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-938"><a href="#cb1-938" aria-hidden="true" tabindex="-1"></a><span class="fu">### Known Limitations</span></span>
+<span id="cb1-939"><a href="#cb1-939" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-940"><a href="#cb1-940" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.</span>
+<span id="cb1-941"><a href="#cb1-941" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-942"><a href="#cb1-942" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).</span>
+<span id="cb1-943"><a href="#cb1-943" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-944"><a href="#cb1-944" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.</span>
+<span id="cb1-945"><a href="#cb1-945" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-946"><a href="#cb1-946" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Limited contamination modeling** — No batch failure or contamination event distributions.</span>
+<span id="cb1-947"><a href="#cb1-947" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-948"><a href="#cb1-948" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See <span class="co">[</span><span class="ot">Model Limits</span><span class="co">](limits.qmd#parameter-grounding)</span> for the specific case of basal media cost and cell density.</span>
+<span id="cb1-949"><a href="#cb1-949" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-950"><a href="#cb1-950" aria-hidden="true" tabindex="-1"></a><span class="fu">### Recommendations for Use</span></span>
+<span id="cb1-951"><a href="#cb1-951" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-952"><a href="#cb1-952" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Recommendation <span class="pp">|</span> What it means <span class="pp">|</span> Why <span class="pp">|</span></span>
+<span id="cb1-953"><a href="#cb1-953" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------------|---------------|-----|</span></span>
+<span id="cb1-954"><a href="#cb1-954" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Use for **relative comparisons** <span class="pp">|</span> Compare scenarios (e.g., "Cheap GF tech reduces costs by 40%") rather than absolute predictions ("Costs will be $8.50/kg") <span class="pp">|</span> When parameters are uncertain, the *difference* between scenarios is more stable than the absolute baseline — see <span class="co">[</span><span class="ot">example below</span><span class="co">](#what-relative-comparisons-means-in-practice)</span> <span class="pp">|</span></span>
+<span id="cb1-955"><a href="#cb1-955" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Focus on **probability thresholds** <span class="pp">|</span> Ask "What's P(cost &lt; $10/kg)?" not "What's the expected cost?" <span class="pp">|</span> Probabilities integrate over uncertainty and map to decisions ("Is this worth pursuing?") <span class="pp">|</span></span>
+<span id="cb1-956"><a href="#cb1-956" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Validate parameters** with experts <span class="pp">|</span> Before publishing, check that ranges match current industry knowledge <span class="pp">|</span> Published literature lags industry by 1–3 years; some parameters (GF costs) change rapidly <span class="pp">|</span></span>
+<span id="cb1-957"><a href="#cb1-957" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Report uncertainty ranges** <span class="pp">|</span> Always show 90% CI, not just median <span class="pp">|</span> Wide intervals reflect genuine uncertainty; suppressing them gives false confidence <span class="pp">|</span></span>
+<span id="cb1-958"><a href="#cb1-958" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Explore correlated scenarios** <span class="pp">|</span> Use the <span class="co">[</span><span class="ot">maturity slider</span><span class="co">](#maturity-factor)</span> to see "good world" vs "bad world" bundles <span class="pp">|</span> Technologies, financing, and supply chains often develop together — though some breakthroughs (e.g., GF biotech) may be partially independent of others (e.g., bioreactor manufacturing). See <span class="co">[</span><span class="ot">correlation assumptions</span><span class="co">](#could-technologies-develop-independently)</span> for discussion <span class="pp">|</span></span>
+<span id="cb1-959"><a href="#cb1-959" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-960"><a href="#cb1-960" aria-hidden="true" tabindex="-1"></a><span class="fu">#### What "relative comparisons" means in practice {#what-relative-comparisons-means-in-practice}</span></span>
+<span id="cb1-961"><a href="#cb1-961" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-962"><a href="#cb1-962" aria-hidden="true" tabindex="-1"></a>✅ **Good use:** "Achieving 150 g/L cell density instead of 50 g/L would reduce costs by 40–60%"</span>
+<span id="cb1-963"><a href="#cb1-963" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-964"><a href="#cb1-964" aria-hidden="true" tabindex="-1"></a>❌ **Risky use:** "Cultured chicken will cost $8.50/kg by 2030"</span>
+<span id="cb1-965"><a href="#cb1-965" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-966"><a href="#cb1-966" aria-hidden="true" tabindex="-1"></a>The model is better at estimating *how much* a technology improvement helps than *what the final cost will be*, because relative effects are less sensitive to baseline assumptions.</span>
+<span id="cb1-967"><a href="#cb1-967" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-968"><a href="#cb1-968" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-969"><a href="#cb1-969" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-970"><a href="#cb1-970" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sources</span></span>
+<span id="cb1-971"><a href="#cb1-971" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-972"><a href="#cb1-972" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Risner et al. (2021) - UC Davis ACBM Calculator</span><span class="co">](https://www.mdpi.com/2304-8158/10/1/3)</span> — Original academic cost model</span>
+<span id="cb1-973"><a href="#cb1-973" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Humbird (2021) - Scale-Up Economics</span><span class="co">](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)</span> — Independent TEA analysis</span>
+<span id="cb1-974"><a href="#cb1-974" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Good Food Institute - State of the Industry Reports</span><span class="co">](https://gfi.org)</span> — Annual industry overview</span>
+<span id="cb1-975"><a href="#cb1-975" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">The Unjournal - Cultured Meat Evaluations</span><span class="co">](https://unjournal.org)</span> — Independent research evaluations</span>
+<span id="cb1-976"><a href="#cb1-976" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-977"><a href="#cb1-977" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-978"><a href="#cb1-978" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-979"><a href="#cb1-979" aria-hidden="true" tabindex="-1"></a><span class="fu">## Changelog</span></span>
+<span id="cb1-980"><a href="#cb1-980" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-981"><a href="#cb1-981" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Version <span class="pp">|</span> Date <span class="pp">|</span> Changes <span class="pp">|</span></span>
+<span id="cb1-982"><a href="#cb1-982" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|------|---------|</span></span>
+<span id="cb1-983"><a href="#cb1-983" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.3 <span class="pp">|</span> 2026-02 <span class="pp">|</span> Separated Learn page, consolidated technical docs <span class="pp">|</span></span>
+<span id="cb1-984"><a href="#cb1-984" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.2 <span class="pp">|</span> 2026-02 <span class="pp">|</span> Explicit scale/uptime, beta distributions, maturity factor <span class="pp">|</span></span>
+<span id="cb1-985"><a href="#cb1-985" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> v0.1 <span class="pp">|</span> 2026-01 <span class="pp">|</span> Initial Squiggle model based on UC Davis <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer">

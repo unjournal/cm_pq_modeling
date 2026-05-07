@@ -477,6 +477,88 @@ This produces the histograms and probability thresholds shown in the dashboard.
 
 ---
 
+## Expert Priors: Customizing Uncertainty Ranges {#expert-priors}
+
+The Simplest Model includes a collapsible "Set my own uncertainty ranges" panel that lets you override the model's built-in distributions for the three biggest cost drivers. This section explains what that means and how to use it.
+
+### What the model's built-in ranges represent
+
+Every parameter in the model is drawn from a probability distribution — not a single number. For example, cell culture media cost is drawn from a lognormal distribution with p5 ≈ $0.5/L and p95 ≈ $2.5/L (for pharma-grade media). These ranges come from the published TEA literature and represent the *developers' uncertainty* about where costs currently are and where they'll be by 2036.
+
+But you may have a very different view. An industry expert who has negotiated media contracts might know costs are reliably in a narrower range. A skeptic might think the uncertainty is far wider. **The expert priors feature lets you substitute your own ranges.**
+
+### What p10 / p90 means
+
+When you enter a p10 and p90 for a parameter, you're saying:
+
+> "I think there's only a 10% chance the true value will be *below* my p10, and only a 10% chance it will be *above* my p90."
+
+In other words, your **80% credible interval** — you'd be genuinely surprised if the outcome fell outside this range. This is the same format the [beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) uses for CM_13, CM_14, and CM_16.
+
+### Illustrated examples
+
+**Example: Cell density (g/L)**
+
+| Expert type | p10 | p90 | What it implies |
+|-------------|-----|-----|-----------------|
+| Optimistic TEA view | 25 | 120 | Perfusion-scale densities are achievable |
+| Conservative operator | 5 | 35 | Fed-batch dominates; density gains are slow |
+| Model default (mixed modes) | ~7 | ~110 | Weighted by process mode probabilities |
+
+Setting a higher p10 and p90 shifts the entire cost distribution down — more liters needed per kg of output → lower media cost and smaller required bioreactor volume.
+
+**Example: Media cost ($/kg biomass)**
+
+| Expert type | p10 | p90 | What it implies |
+|-------------|-----|-----|-----------------|
+| Hydrolysate optimist | 3 | 30 | Cheap protein hydrolysates dominate |
+| Pharma-grade pessimist | 20 | 200 | High-purity media remains necessary |
+| Model default | ~5 | ~120 | Regime-weighted by hydrolysate slider |
+
+Note: specifying media cost $/kg directly *bypasses the hydrolysate slider* — you're asserting your net belief about the combined media cost, whatever the reason.
+
+**Example: Growth factor cost ($/kg biomass)**
+
+| Expert type | p10 | p90 | What it implies |
+|-------------|-----|-----|-----------------|
+| Breakthrough optimist | 0.5 | 10 | Autocrine lines or fermentation GFs work |
+| Current-tech pessimist | 15 | 200 | No scalable cheap GF route by 2036 |
+| Model default | depends on GF slider | — | Weighted by P(breakthrough) slider |
+
+Setting GF cost $/kg directly *bypasses the breakthrough probability slider* — you're asserting your overall cost view, combining your probability of a breakthrough with what costs look like in each regime.
+
+### How the distribution is constructed
+
+Your p10 and p90 define a **lognormal distribution**. Lognormal is the right shape for costs: it's always positive, right-skewed (a small probability of very high costs), and multiplicative uncertainty compounds naturally. The model uses:
+
+$$\mu = \frac{\ln(p_{10}) + \ln(p_{90})}{2}, \quad \sigma = \frac{\ln(p_{90}) - \ln(p_{10})}{2 \times 1.28}$$
+
+where 1.28 is the 90th percentile of the standard normal. The median of your distribution is $e^\mu = \sqrt{p_{10} \times p_{90}}$ — the geometric mean of your bounds.
+
+### Interaction with other sliders
+
+When you override a cost driver:
+
+- **Media cost $/kg override** — replaces the entire media cost calculation; the hydrolysate slider and density slider no longer affect media cost (cell density still affects CAPEX through bioreactor volume)
+- **GF cost $/kg override** — replaces the entire GF cost calculation; the GF breakthrough slider no longer affects GF cost
+- **Cell density override** — replaces all process-mode-specific density sampling; still affects both media cost (through L/kg) and CAPEX (through bioreactor volume); mode distribution still affects media turnover
+
+Overrides stack: you can set all three simultaneously to see what *your specific combination of beliefs* implies for the overall cost distribution.
+
+### Connection to the beliefs form
+
+These three parameters correspond directly to beliefs form questions:
+
+| Override parameter | Beliefs form question |
+|---|---|
+| Media cost $/kg biomass | CM_14: cell media cost per kg CM output |
+| GF cost $/kg biomass | CM_13: growth factor cost per kg of biomass |
+| Cell density g/L | CM_16: achievable cell density in a 20,000-L bioreactor |
+
+If you've already filled in the beliefs form with a median and 80% CI for these questions, you can enter those same numbers here to see what they imply for the full cost distribution — closing the loop between elicitation and model exploration.
+
+---
+
 ## Parameter Definitions {#parameter-definitions}
 
 This section defines all model inputs. Each parameter links back to where it appears in the [cost equations](#model-formulas).
