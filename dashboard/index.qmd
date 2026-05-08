@@ -538,6 +538,16 @@ function sampleLognormalP5P95(rng, p5, p95, n) {
   return samples;
 }
 
+// Like sampleLognormalP5P95 but takes an 80% CI (p10/p90) — matches the beliefs form.
+function sampleLognormalP10P90(rng, p10, p90, n) {
+  const Z_90 = 1.2815515655446004;
+  const mu = (Math.log(p10) + Math.log(p90)) / 2;
+  const sigma = (Math.log(p90) - Math.log(p10)) / (2 * Z_90);
+  const samples = new Array(n);
+  for (let i = 0; i < n; i++) samples[i] = Math.exp(mu + sigma * boxMuller(rng));
+  return samples;
+}
+
 // Sample uniform
 function sampleUniform(rng, lo, hi, n) {
   const samples = new Array(n);
@@ -684,6 +694,11 @@ function simulate(n, seed, params) {
       m === "fedbatch" ? t_fb[i] : m === "perfusion" ? t_pf[i] : t_ct[i]);
   }
 
+  // Expert prior override: cell density — must precede L_per_kg so CAPEX also sees it
+  if (params.ep_density_p10 && params.ep_density_p90 && params.ep_density_p10 < params.ep_density_p90) {
+    density_gL = sampleLognormalP10P90(rng, params.ep_density_p10, params.ep_density_p90, n);
+  }
+
   const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
   // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
@@ -775,6 +790,15 @@ function simulate(n, seed, params) {
     cost_media_eff  = mul(L_per_kg, complete_media_L);
     cost_recf_eff   = new Array(n).fill(0);
     media_cost_L_eff = complete_media_L;
+  }
+
+  // Expert prior overrides: applied after bundled-media so they work in both modes.
+  // These bypass the regime-switching logic and express direct beliefs in $/kg biomass.
+  if (params.ep_media_p10 && params.ep_media_p90 && params.ep_media_p10 < params.ep_media_p90) {
+    cost_media_eff = sampleLognormalP10P90(rng, params.ep_media_p10, params.ep_media_p90, n);
+  }
+  if (params.ep_gf_p10 && params.ep_gf_p90 && params.ep_gf_p10 < params.ep_gf_p90) {
+    cost_recf_eff = sampleLognormalP10P90(rng, params.ep_gf_p10, params.ep_gf_p90, n);
   }
 
   // VOC total: media + growth factors + supplemental proteins + other
@@ -1742,6 +1766,95 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
 }
 ```
 
+```{ojs}
+//| echo: false
+// Expert priors — collapsible panel for the three biggest cost drivers
+viewof expert_priors_adv = {
+  const inp = (name, placeholder, step) => {
+    const el = document.createElement('input');
+    Object.assign(el, {type:'number', name, min:0, step, placeholder});
+    el.style.cssText = 'width:72px;padding:3px 5px;border:1px solid #b0c8c0;border-radius:4px;font-size:0.77rem;';
+    el.addEventListener('input', () => container.dispatchEvent(new Event('input', {bubbles:true})));
+    return el;
+  };
+  const resetBtn = (targets) => {
+    const b = document.createElement('button');
+    b.type='button'; b.textContent='✕'; b.title='Clear — revert to model default';
+    b.style.cssText='padding:2px 6px;font-size:0.7rem;border:1px solid #ccc;border-radius:4px;background:#f9f9f9;color:#999;cursor:pointer;align-self:flex-end;';
+    b.onclick = () => {
+      targets.forEach(n => { const el=container.querySelector(`[name=${n}]`); if(el) el.value=''; });
+      container.dispatchEvent(new Event('input', {bubbles:true}));
+    };
+    return b;
+  };
+  const row = (labelText, hint, names, placeholders, steps) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
+    const head = document.createElement('div');
+    head.style.cssText='display:flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;color:#2d4a2d;';
+    head.innerHTML = labelText + `<span title="${hint}" style="font-size:0.65rem;color:#aaa;cursor:help;border-bottom:1px dotted #ccc;">(?)</span>`;
+    const inputs = document.createElement('div');
+    inputs.style.cssText='display:flex;gap:8px;align-items:flex-end;';
+    names.forEach((name, i) => {
+      const col = document.createElement('div');
+      col.style.cssText='display:flex;flex-direction:column;gap:1px;';
+      const lbl = document.createElement('div'); lbl.style.cssText='font-size:0.62rem;color:#888;';
+      lbl.textContent = i===0 ? 'p10 — optimistic' : 'p90 — pessimistic';
+      col.append(lbl, inp(name, placeholders[i], steps[i]));
+      inputs.appendChild(col);
+    });
+    inputs.appendChild(resetBtn(names));
+    wrap.append(head, inputs);
+    return wrap;
+  };
+  const container = document.createElement('div');
+  const details = document.createElement('details');
+  details.style.cssText='border:1.5px solid #3498db;border-radius:6px;overflow:hidden;margin:10px 0 4px;';
+  const summary = document.createElement('summary');
+  summary.style.cssText='padding:7px 10px;background:#f0f8ff;cursor:pointer;font-size:0.82rem;font-weight:600;color:#1a5276;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;';
+  summary.innerHTML = '◧ Set my own uncertainty ranges <span style="font-size:0.68rem;font-weight:400;color:#888;margin-left:auto;" title="Override the model\'s built-in uncertainty ranges for the three biggest cost drivers with your own 80% credible intervals (p10/p90) — the same format as the beliefs form (CM_13, CM_14, CM_16). Overrides apply after bundled-media mode; leave blank to use defaults.">(?)</span>';
+  const body = document.createElement('div');
+  body.style.cssText='padding:10px 12px;display:flex;flex-direction:column;gap:10px;';
+  const intro = document.createElement('p');
+  intro.style.cssText='margin:0;font-size:0.71rem;color:#555;line-height:1.45;';
+  intro.innerHTML='Override built-in ranges with your <strong>80% credible interval</strong> for each key driver. Leave blank to use model defaults. <a href="docs.html#expert-priors" style="color:#3498db;" target="_blank">How this works →</a>';
+  const activeNote = document.createElement('div');
+  activeNote.id='ep-adv-active-note';
+  activeNote.style.cssText='display:none;font-size:0.68rem;color:#c0392b;font-weight:600;padding:2px 4px;background:#fef9f9;border-radius:3px;';
+  activeNote.textContent='⚠ Custom ranges active — results reflect your priors';
+  body.append(
+    intro, activeNote,
+    row('Media cost ($/kg biomass)',
+        'Total cell culture media cost per kg of harvested cell biomass. Overrides the $/L × L/kg calculation — applies in both standard and bundled-media modes. Connects to CM_14 in the beliefs form. Default model range roughly p10≈5, p90≈120.',
+        ['media_p10','media_p90'], ['e.g. 5','e.g. 80'], [1,5]),
+    row('Growth factor cost ($/kg biomass)',
+        'Total growth factor cost per kg of biomass. Bypasses the breakthrough regime switch — express your net belief directly. Connects to CM_13. Default range varies with the GF slider.',
+        ['gf_p10','gf_p90'], ['e.g. 2','e.g. 60'], [0.5,5]),
+    row('Cell density (g/L at harvest)',
+        'Wet-weight cell density at bioreactor harvest. Overrides mode-specific defaults; also affects bioreactor volume and CAPEX. Connects to CM_16. Default ranges: fed-batch ≈5–30, perfusion ≈30–150, continuous ≈50–200.',
+        ['density_p10','density_p90'], ['e.g. 8','e.g. 60'], [1,5])
+  );
+  details.append(summary, body);
+  container.appendChild(details);
+  container.addEventListener('input', () => {
+    const anyActive = ['media_p10','gf_p10','density_p10'].some(n => container.querySelector(`[name=${n}]`)?.value !== '');
+    activeNote.style.display = anyActive ? 'block' : 'none';
+  });
+  function getVal(name) {
+    const v = parseFloat(container.querySelector(`[name=${name}]`)?.value);
+    return isNaN(v) || v <= 0 ? null : v;
+  }
+  Object.defineProperty(container, 'value', {
+    get: () => ({
+      media_p10: getVal('media_p10'), media_p90: getVal('media_p90'),
+      gf_p10: getVal('gf_p10'), gf_p90: getVal('gf_p90'),
+      density_p10: getVal('density_p10'), density_p90: getVal('density_p90')
+    })
+  });
+  return container;
+}
+```
+
 :::
 
 ::: {.panel-fill}
@@ -1784,7 +1897,14 @@ simParams = {
     // Bundled media (full view only)
     bundled_media: simpleMode ? false : bundled_media,
     bundled_media_p5: bundled_media_p5,
-    bundled_media_p95: bundled_media_p95
+    bundled_media_p95: bundled_media_p95,
+    // Expert prior overrides — null means use model defaults
+    ep_media_p10: expert_priors_adv.media_p10,
+    ep_media_p90: expert_priors_adv.media_p90,
+    ep_gf_p10: expert_priors_adv.gf_p10,
+    ep_gf_p90: expert_priors_adv.gf_p90,
+    ep_density_p10: expert_priors_adv.density_p10,
+    ep_density_p90: expert_priors_adv.density_p90
   };
 }
 ```
