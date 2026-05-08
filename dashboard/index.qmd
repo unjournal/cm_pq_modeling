@@ -1250,13 +1250,15 @@ viewof maturity = Inputs.range([0.1, 0.9], {
 
 A synthetic latent variable (0 = nascent, 1 = mature) that correlates technology adoption, reactor costs, and financing. **Not calibrated to observed historical trajectories** — the slider represents your assumption about where the industry lands, not a fitted rate of change.
 
-| Slider setting | Rough interpretation |
-|---|---|
-| 0.1–0.2 | Minimal progress from 2024 — pharma-grade inputs, expensive GFs, high financing risk |
-| 0.3–0.4 | Slow progress — some adoption but major cost drivers remain expensive |
-| **0.5** | **Continuation of current trajectory** — broadly consistent with the pace of progress observed 2020–2024, extrapolated to 2036 |
-| 0.6–0.7 | Accelerated progress — multiple cost-reduction technologies reaching commercial scale |
-| 0.8–0.9 | Optimistic convergence — most pathways succeed by 2036 |
+| Slider | Rough interpretation | Implied annual cost reduction in expensive inputs (GFs + media) |
+|---|---|---|
+| 0.1–0.2 | Industry largely stalls — pharma-grade inputs, expensive GFs, high financing risk | ~0–3%/yr — worse than most biotech supply chains |
+| 0.3–0.4 | Slow progress — some adoption but major cost drivers remain expensive | ~4–7%/yr |
+| **0.5** | **Continuation of current trajectory** — pace observed 2020–2025, extrapolated to 2036 | **~7–12%/yr** — consistent with GFI 2025 amino acid data (~10%/yr for that input) |
+| 0.6–0.7 | Accelerated progress — multiple technologies reaching commercial scale | ~12–18%/yr |
+| 0.8–0.9 | Optimistic convergence — most pathways succeed by 2036 | ~18–25%/yr — "solar PV level" |
+
+*Note: "expensive inputs" = growth factors + amino acid media, which dominate variable cost. The implied rate is approximate — the slider controls correlated adoption probabilities, not a single learning rate. GFI's Dec 2025 amino acid data (Humbird's 2021 prices appear 2–10× too high vs current quotes, implying ~10–20%/yr for that component) provides the main empirical anchor.*
 
 **To approximate "today's conditions" (minimal technical progress):** set maturity to 0.1 and target year to 2026. Note that even then the parameter ranges reflect forward projections — the model has no explicitly calibrated 2024 cost baseline.
 
