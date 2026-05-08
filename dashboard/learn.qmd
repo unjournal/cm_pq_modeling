@@ -4,9 +4,35 @@ subtitle: "A Deep Dive into Cellular Agriculture Production"
 toc: true
 format:
   html:
+    include-in-header:
+      text: |
+        <style>
+          .hyp-force-hidden .annotator-frame,
+          .hyp-force-hidden .hypothesis-sidebar,
+          .hyp-force-hidden iframe[src*="hypothes.is"] {
+            display: none !important; visibility: hidden !important; pointer-events: none !important;
+          }
+        </style>
     include-after-body:
       text: |
         <script src="https://hypothes.is/embed.js" async></script>
+        <script>
+        function expandAllDetails() {
+          document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+        }
+        function collapseAllDetails() {
+          document.querySelectorAll('details[open]').forEach(function(d) { d.removeAttribute('open'); });
+        }
+        function toggleHypothesis() {
+          var hidden = document.body.classList.contains('hyp-force-hidden');
+          document.body.classList.toggle('hyp-force-hidden', !hidden);
+        }
+        </script>
+        <div style="position:fixed;bottom:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:4px;">
+          <button onclick="expandAllDetails()" style="padding:5px 10px;font-size:12px;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#f8f9fa;">▼ Expand all</button>
+          <button onclick="collapseAllDetails()" style="padding:5px 10px;font-size:12px;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#f8f9fa;">▲ Collapse all</button>
+          <button onclick="toggleHypothesis()" style="padding:5px 10px;font-size:12px;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#f8f9fa;">▷ Annotations</button>
+        </div>
 ---
 
 ::: {.callout-note collapse="true"}

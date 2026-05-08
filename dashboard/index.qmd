@@ -86,40 +86,14 @@ We're organizing an online expert workshop (late April / early May 2026) to dig 
 <script>
 function toggleHypothesis() {
   const btn = document.getElementById('toggle-hypothesis') || document.getElementById('vc-hyp');
-  // Hypothesis creates a sidebar with class 'hypothesis-sidebar' or as an annotator frame
-  // Try multiple selectors to find the sidebar
-  const selectors = [
-    '.hypothesis-sidebar',
-    '.annotator-frame',
-    'hypothesis-sidebar',
-    '[class*="hypothesis"][class*="sidebar"]',
-    'iframe[src*="hypothes.is"]'
-  ];
-
-  let frame = null;
-  for (const sel of selectors) {
-    frame = document.querySelector(sel);
-    if (frame) break;
-  }
-
-  if (frame) {
-    if (frame.style.display === 'none' || frame.classList.contains('hypothesis-hidden')) {
-      frame.style.display = '';
-      frame.classList.remove('hypothesis-hidden');
-      btn.textContent = 'Hide Annotations Sidebar';
-    } else {
-      frame.style.display = 'none';
-      frame.classList.add('hypothesis-hidden');
-      btn.textContent = 'Show Annotations Sidebar';
-    }
+  // Track state via body class (avoids checking Hypothesis's internal display/transform state)
+  const hidden = document.body.classList.contains('hyp-force-hidden');
+  if (hidden) {
+    document.body.classList.remove('hyp-force-hidden');
+    if (btn) btn.textContent = '◉ Annotations';
   } else {
-    // If we can't find the sidebar, it may not be loaded yet
-    // Try using Hypothesis API if available
-    if (window.hypothesisConfig) {
-      console.log('Hypothesis config found but sidebar element not located');
-    }
-    btn.textContent = 'Sidebar not found';
-    setTimeout(() => { btn.textContent = 'Hide Annotations Sidebar'; }, 2000);
+    document.body.classList.add('hyp-force-hidden');
+    if (btn) btn.textContent = '▷ Annotations';
   }
 }
 
@@ -322,22 +296,9 @@ function toggleToc() {
 }
 
 function hideHypothesis() {
+  document.body.classList.add('hyp-force-hidden');
   const btn = document.getElementById('toggle-hypothesis') || document.getElementById('vc-hyp');
-  const selectors = [
-    '.hypothesis-sidebar',
-    '.annotator-frame',
-    'hypothesis-sidebar',
-    '[class*="hypothesis"][class*="sidebar"]'
-  ];
-  for (const sel of selectors) {
-    const frame = document.querySelector(sel);
-    if (frame) {
-      frame.style.display = 'none';
-      frame.classList.add('hypothesis-hidden');
-      btn.textContent = 'Show Annotations Sidebar';
-      break;
-    }
-  }
+  if (btn) btn.textContent = '▷ Annotations';
 }
 </script>
 
@@ -364,25 +325,41 @@ function hideHypothesis() {
 </div>
 
 <style>
-.fullwidth-mode .page-columns,
+/* ── Fullwidth mode: hide parameter sidebar, let charts fill the page ── */
+.fullwidth-mode .page-columns {
+  grid-template-columns: 1fr !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
 .fullwidth-mode #quarto-content,
 .fullwidth-mode main.content,
 .fullwidth-mode main,
 .fullwidth-mode .column-page,
 .fullwidth-mode .column-body,
-.fullwidth-mode .panel-fill,
-.fullwidth-mode .panel-sidebar {
+.fullwidth-mode .panel-fill {
   max-width: 100% !important;
   width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }
-.fullwidth-mode .content {
-  max-width: 100% !important;
-}
-/* Hide hypothesis sidebar when in fullwidth mode */
-.fullwidth-mode .hypothesis-sidebar,
-.fullwidth-mode .annotator-frame,
-.fullwidth-mode hypothesis-sidebar {
+/* Hide parameter sidebar and TOC in fullwidth mode */
+.fullwidth-mode .panel-sidebar,
+.fullwidth-mode #quarto-sidebar,
+.fullwidth-mode #quarto-margin-sidebar,
+.fullwidth-mode .sidebar {
   display: none !important;
+}
+/* Hide Hypothesis in fullwidth mode, and when manually toggled off */
+.fullwidth-mode .annotator-frame,
+.fullwidth-mode .hypothesis-sidebar,
+.fullwidth-mode hypothesis-sidebar,
+.hyp-force-hidden .annotator-frame,
+.hyp-force-hidden .hypothesis-sidebar,
+.hyp-force-hidden hypothesis-sidebar,
+.hyp-force-hidden iframe[src*="hypothes.is"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 /* Sidebar overflow fix — offset by Quarto navbar so top buttons aren't hidden */
 .panel-sidebar {
@@ -398,9 +375,6 @@ function hideHypothesis() {
 }
 /* When params sidebar is hidden, let charts take full width */
 .params-hidden {
-  display: none !important;
-}
-.hypothesis-hidden {
   display: none !important;
 }
 </style>
