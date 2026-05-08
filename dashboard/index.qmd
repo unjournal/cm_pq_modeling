@@ -253,11 +253,35 @@ function resetAllDefaults() {
   window.location.href = window.location.pathname + window.location.hash;
 }
 
+var _expandAllActive = false;
+var _expandAllObserver = null;
+
 function collapseAllDetails() {
+  _expandAllActive = false;
+  if (_expandAllObserver) { _expandAllObserver.disconnect(); _expandAllObserver = null; }
   document.querySelectorAll('details[open]').forEach(function(d) { d.removeAttribute('open'); });
 }
+
 function expandAllDetails() {
+  _expandAllActive = true;
   document.querySelectorAll('details').forEach(function(d) { d.setAttribute('open', ''); });
+  // OJS re-renders reactive cells after every slider change, replacing <details> elements
+  // with fresh closed ones. The MutationObserver re-applies 'open' to any new ones.
+  if (!_expandAllObserver) {
+    _expandAllObserver = new MutationObserver(function(mutations) {
+      if (!_expandAllActive) return;
+      mutations.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+          if (node.nodeType !== 1) return;
+          if (node.tagName === 'DETAILS') node.setAttribute('open', '');
+          if (node.querySelectorAll) node.querySelectorAll('details').forEach(function(d) {
+            d.setAttribute('open', '');
+          });
+        });
+      });
+    });
+    _expandAllObserver.observe(document.body, { childList: true, subtree: true });
+  }
 }
 
 function toggleViewControls() {
@@ -1223,7 +1247,20 @@ viewof maturity = Inputs.range([0.1, 0.9], {
 })
 ```
 <details><summary>What is this?</summary>
-A latent factor (0=nascent, 1=mature) that correlates technology adoption, reactor costs, and financing. High maturity = correlated improvements across all three. [Full explanation and stress-test guidance →](#industry-maturity-deep-dive)
+
+A synthetic latent variable (0 = nascent, 1 = mature) that correlates technology adoption, reactor costs, and financing. **Not calibrated to observed historical trajectories** — the slider represents your assumption about where the industry lands, not a fitted rate of change.
+
+| Slider setting | Rough interpretation |
+|---|---|
+| 0.1–0.2 | Minimal progress from 2024 — pharma-grade inputs, expensive GFs, high financing risk |
+| 0.3–0.4 | Slow progress — some adoption but major cost drivers remain expensive |
+| **0.5** | **Continuation of current trajectory** — broadly consistent with the pace of progress observed 2020–2024, extrapolated to 2036 |
+| 0.6–0.7 | Accelerated progress — multiple cost-reduction technologies reaching commercial scale |
+| 0.8–0.9 | Optimistic convergence — most pathways succeed by 2036 |
+
+**To approximate "today's conditions" (minimal technical progress):** set maturity to 0.1 and target year to 2026. Note that even then the parameter ranges reflect forward projections — the model has no explicitly calibrated 2024 cost baseline.
+
+[Full explanation, calibration caveats, and stress-test guidance →](#industry-maturity-deep-dive)
 </details>
 
 ---
@@ -1238,9 +1275,14 @@ viewof target_year = Inputs.range([2026, 2050], {
 })
 ```
 <details><summary>What does the year affect?</summary>
-Earlier years → lower [maturity](#industry-maturity-deep-dive), less technology adoption.
-Later years → more time for cost reductions and scale-up.
-The model adjusts maturity expectations based on years from 2024.
+
+Earlier years → lower effective maturity, less technology adoption. The model scales maturity by a factor of (0.5 + 0.5 × (year − 2024) / 20), so:
+
+- 2026 → maturity scaled to ~55% of slider value
+- 2036 (default) → maturity scaled to ~80% of slider value
+- 2044 → maturity at full slider value
+
+This scaling is mechanical (linear interpolation), not fit to historical data. **To approximate minimal progress from today's state:** combine year = 2026 with maturity = 0.1.
 </details>
 
 ---
@@ -2702,6 +2744,10 @@ The **maturity factor** is a continuous variable ranging from 0 (nascent industr
 - Lower financing costs (WACC)
 
 ::: {.callout-warning appearance="minimal"}
+**Not calibrated to observed historical trajectories.** The maturity slider is a forward-looking judgment parameter — it does not incorporate data on how fast CM costs have actually fallen since 2015. The model's parameter ranges (e.g., media $/L, GF $/g) were set from TEA literature snapshots (Humbird 2021, Pasitka 2024, GFI 2025 amino acid report) — point estimates, not a fitted time series. The year → maturity scaling formula (linear from 2024 to 2044) is mechanical convenience, not a regression on industry data.
+
+**What this means:** "maturity = 0.5" does not mean "the historical rate of progress continues." It means "the model's default assumption is that by 2036 the industry lands roughly in the middle of the plausible range." Whether that default is consistent with observed progress since 2020 is a substantive question this model cannot answer on its own — and a good one to raise with experts at the workshop.
+
 **Correlation structure caveat (important for interpretation):** The model uses a single shared latent factor to induce correlation across technology adoption, reactor costs, and financing. This is an *ad hoc modelling convenience* — not an empirically calibrated copula. The specific sensitivity coefficients (e.g., ±0.25 shifts to adoption probabilities, ±0.03 shifts to WACC) and the choice of a single dimension are choices made for tractability, not derived from data.
 
 **What this means for interpretation:**
