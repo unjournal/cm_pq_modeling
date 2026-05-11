@@ -5,6 +5,18 @@
 
 ---
 
+## Tournament context
+
+These 7 questions are **medium-to-long-term complements** to the existing animal welfare forecasting tournament question bank. Near-term questions — EU regulatory approval (by Feb 2027), US state ban counts (by Feb 2027), FURA Singapore menu (by Feb 2027), first US retail availability (by Dec 2026) — are already well-represented in the broader bank. These questions fill three gaps:
+
+1. **Meaningful market penetration at scale** (Q1, Q1b) — not just "is it approved" but "is it in 100+ stores, and at a commercially viable price premium"
+2. **Product quality at commercial viability** (Q2) — consumer acceptance independently validated on a real commercial product
+3. **Unit economics at commercial scale** (Q3–Q6) — production cost and price trajectories at the ingredient and product level
+
+**Provenance and resolution date rationale**: Q3's December 2036 resolution date is anchored to the Unjournal's CM_01 Metaculus question. All other resolution dates were set by judgment; the nearest external anchor for Q1b/Q4/Q5 (2033) is the existing question bank's 2030 grouped question on CM price parity, which probes a different (stricter) threshold at an earlier horizon. See the [question bank assessment page](https://uj-cm-workshop.netlify.app/pq-feedback.html) for a full provenance analysis.
+
+---
+
 ## Common operationalization notes
 
 **"Price parity" definition**: the cultivated/PF product is available for commercial purchase at ≤ a stated multiple of the conventional commodity benchmark (defined per question), for orders of ≥ the stated minimum quantity, sustained for ≥3 consecutive months.
@@ -43,6 +55,9 @@ Resolves **YES** if, before 31 December 2035:
 
 ### Resolution date: 31 December 2035
 
+### Question context
+*Operationalizes Row 1021 in the question bank ("blended meat options in X major restaurant chains by year Y," Simon Newstead), moved from restaurants to retail and given a specific cultivated fraction threshold and G20 scope. The near-term FURA Singapore companion (Row 18, Feb 2027) is already in the broader bank. Resolution date (2035) set by judgment — no external anchor.*
+
 ---
 
 ## Question 1b — Cultivated chicken blend: retail price parity with conventional ground chicken
@@ -75,6 +90,9 @@ Resolves **YES** if, before 31 December 2033:
 - Temporary promotional or introductory pricing does not count — must be a sustained list price
 
 ### Resolution date: 31 December 2033
+
+### Question context
+*Related to — but more specific than — the question bank's grouped question: "Will cultivated meat reach price parity with conventional chicken by Dec 31, 2030?" That question lacks operationalization and asks about strict parity in any form. This question specifies a ≥10% blended product, a ≤2× threshold, retail channel, and 2033 resolution. Resolution date (2033) set by judgment; the 2030 grouped question is the closest external anchor but probes a different threshold and earlier horizon.*
 
 ---
 
@@ -165,6 +183,9 @@ Resolves to the median production cost estimate across peer-reviewed TEA papers 
 
 ### Resolution date: 31 December 2036
 
+### Question context
+*Directly operationalizes Row 1027 (Sheet 7) / Row 23 (Sheet 1) of the question bank: "What will be the average production cost (per edible kg) of cultured chicken meat in the given years?" — marked TRUE (sufficiently finalised) but with no resolution criteria, no date, and no resolution source. Resolution date December 2036 is the only externally-anchored date in this set: it matches the Unjournal's [CM_01 Metaculus question](https://www.metaculus.com/c/unjournal/38815/). Note on wording: Row 1027 uses "per edible kg"; we use "factory-gate wet weight" (the TEA convention from Humbird 2021 and CM_01), which excludes downstream texturization losses.*
+
 ---
 
 ## Question 4 — Precision fermentation egg white protein: price parity with conventional
@@ -191,6 +212,9 @@ Resolves **YES** if, before 31 December 2033:
 - 12-month rolling average used for the USDA benchmark if short-term volatility is high
 
 ### Resolution date: 31 December 2033
+
+### Question context
+*Implements the per-ingredient approach recommended in the question bank for Row 1023 / Row 20: "Which precision fermentation / cultivated food ingredients will reach price parity with animal equivalents by year X?" — marked FALSE with note: "you'd need 1 question per ingredient" (D. Reinstein). Ovalbumin was selected as the first ingredient because it has the clearest conventional analog (dried egg white) and a publicly available benchmark price (USDA AMS Egg Products Report). Resolution date (2033) set by judgment.*
 
 ---
 
