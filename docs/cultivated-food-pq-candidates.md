@@ -15,6 +15,8 @@ These 7 questions are **medium-to-long-term complements** to the existing animal
 
 **Provenance and resolution date rationale**: Q3's December 2036 resolution date is anchored to the Unjournal's CM_01 Metaculus question. All other resolution dates were set by judgment; the nearest external anchor for Q1b/Q4/Q5 (2033) is the existing question bank's 2030 grouped question on CM price parity, which probes a different (stricter) threshold at an earlier horizon. See the [question bank assessment page](https://uj-cm-workshop.netlify.app/pq-feedback.html) for a full provenance analysis.
 
+**Note on year choices**: We are less confident about the specific resolution dates than about the question structures themselves. A natural refinement — standard on Metaculus — is to split each question into subquestions at multiple horizons (e.g. "by 2030 / by 2033 / by 2036"), allowing forecasters to express views across the timeline rather than committing to a single date. Suggestions on which horizons are most decision-relevant are welcome.
+
 ---
 
 ## Common operationalization notes
