@@ -226,25 +226,31 @@ function toggleWideSidebar() {
   }
 }
 
-// Re-initialise Tippy tooltips for abbr[title] elements added by OJS
-// (OJS renders after Quarto's DOMContentLoaded Tippy pass, so abbr elements
-// inside OJS html`` templates are missed on first pass).
+// Re-initialise Tippy tooltips for abbr[title] and span[title] elements added by OJS.
+// OJS renders after Quarto's DOMContentLoaded Tippy pass, so elements inside OJS
+// html`` templates are missed on first pass. Span elements (used for ⓘ inline notes
+// in the main content area) are also included — native browser title tooltips clip
+// long text and are unreliable across browsers.
 function initOjsTooltips() {
   if (typeof tippy === 'undefined') return;
-  document.querySelectorAll('.panel-sidebar abbr[title], .panel-fill abbr[title]').forEach(function(el) {
+  document.querySelectorAll(
+    '.panel-sidebar abbr[title], .panel-fill abbr[title], .panel-sidebar span[title], .panel-fill span[title]'
+  ).forEach(function(el) {
     const t = el.getAttribute('title');
     if (!el._tippy && t) {
       el.removeAttribute('title');  // prevent duplicate native browser tooltip
-      tippy(el, { content: t, placement: 'bottom', maxWidth: 340, allowHTML: false });
+      tippy(el, { content: t, placement: 'bottom', maxWidth: 500, allowHTML: false });
     }
   });
 }
 setTimeout(initOjsTooltips, 2500);  // first pass after OJS settles
-// Re-run whenever sidebar content changes (OJS re-renders on slider change)
+// Re-run whenever sidebar OR main content changes (OJS re-renders on slider change)
 document.addEventListener('DOMContentLoaded', function() {
   var obs = new MutationObserver(function() { initOjsTooltips(); });
   var sidebar = document.querySelector('.panel-sidebar');
+  var fill = document.querySelector('.panel-fill');
   if (sidebar) obs.observe(sidebar, { childList: true, subtree: true });
+  if (fill) obs.observe(fill, { childList: true, subtree: true });
 });
 
 // Reset all parameters: clear URL state and reload (most reliable approach,
