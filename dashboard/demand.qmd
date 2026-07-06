@@ -1,6 +1,5 @@
 ---
 title: "Cost → Demand: bridging to Pablo AMC's adoption model"
-subtitle: "What our cost distribution implies for cultivated-meat market share"
 toc: true
 format:
   html:
@@ -10,8 +9,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-warning}
-## Early draft — not reviewed, please treat with caution
+*Draft of 6 July 2026 · early human–AI orchestrated draft by David Reinstein with Claude
+(currently Opus 4.8) · not yet carefully reviewed or shown to field experts.*
+
+::: {.callout-warning collapse="true"}
+## Early draft — not reviewed, please treat with caution (click to expand)
 This page was put together quickly with AI assistance. We have *not* checked it carefully
 ourselves, and we have *not* run it past Pablo or any field experts. Numbers, framings,
 and the little calculator below could all be wrong or misleading; treat everything here as
@@ -21,37 +23,43 @@ It discusses external work by Pablo Antonio Moreno Casares (Pablo AMC) and build
 deliberately simplified bridge from our cost model to his demand model. His
 [interactive model](https://pabloamc.github.io/Cultivated_meat/interactive.html) is the
 authoritative source for the demand side — our bridge only approximates a slice of it.
-Corrections very welcome via [Hypothesis](https://hypothes.is/) (the `<` tab at right)
-or the [discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3).
+Corrections very welcome via [Hypothesis](https://hypothes.is/) — the annotation tool (the
+`<` tab at the right of this page) — or the
+[discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3).
 :::
 
 **Return to:** [Interactive Cost Model](index.qmd) | [TEA Comparison](compare.qmd) | [Learn](learn.qmd) | [Limits/Critique](limits.qmd)
 
-## The two models are complementary halves of one pipeline
+## The two efforts focus on different aspects
 
 In July 2026 Pablo AMC published *["Cultivating hope: calibrating the expectations for
 cultivated meat to end factory farming"](https://forum.effectivealtruism.org/posts/ED2ag8hYTWf4kmL3x/cultivating-hope-calibrating-the-expectations-for-cultivated)*,
 with an accompanying [interactive economic model](https://pabloamc.github.io/Cultivated_meat/interactive.html).
 It has two parts: (1) a review of the same TEA literature we model, and (2) a
-**demand-side** model that takes a cost per kg as given and asks *what market share
+demand-side model that takes a cost per kg as given and asks *what market share
 would consumers choose at that price?*
 
-Our model and his answer different questions and connect end-to-end:
+The two efforts focus on different aspects of the same problem — we look at production
+cost (from TEAs), he looks at the demand-side response — so they could be connected:
 
 ```{=html}
 <div style="margin:14px 0; padding:12px 14px; border:1px solid #d4dfd4; border-radius:8px; background:#f8f9f5; font-size:14px;">
 <table style="width:100%; border-collapse:collapse;">
 <tr>
-  <td style="vertical-align:top; width:47%; padding:6px 10px;">
-    <strong>Our model (supply / cost)</strong><br>
-    Bottom-up Monte Carlo TEA. Media, micronutrients, growth factors, capital and
-    operating costs → a distribution of cost per kg for a target year (default 2036).
+  <td style="vertical-align:top; width:38%; padding:6px 10px;">
+    <strong>Our project (supply / cost)</strong><br>
+    A bottom-up Monte Carlo TEA — but also an interactive calculator you can re-run under
+    your own assumptions, and a worked template for future modellers. Media,
+    micronutrients, growth factors, capital and operating costs → a distribution of cost
+    per kg for a target year (default 2036).
   </td>
   <td style="vertical-align:middle; width:6%; text-align:center; font-size:15px; color:#2d4a2d; white-space:nowrap;">$/kg&nbsp;→</td>
-  <td style="vertical-align:top; width:47%; padding:6px 10px;">
+  <td style="vertical-align:top; width:56%; padding:6px 10px;">
     <strong>Pablo's model (demand / adoption)</strong><br>
-    Takes cost as <em>exogenous</em>. Cost → retail price ratio → discrete-choice
-    (logit) market share by species, product tier, and geography → diffusion over time.
+    Takes cost as <em>exogenous</em> (pinned from the TEAs). Cost → retail price ratio →
+    a discrete-choice (logit) estimate of market share, split by species, product tier,
+    and geography, for both a mainstream and an ethically-motivated consumer segment →
+    a diffusion curve for how fast that share is approached over time.
   </td>
 </tr>
 </table>
@@ -60,51 +68,61 @@ Our model and his answer different questions and connect end-to-end:
 
 Because he pins price from the same TEAs we build bottom-up (Humbird 2021, Pasitka 2024,
 Negulescu 2023, CE Delft, GFI), our cost distribution is a natural input to his demand
-model. Neither of us models the other's half: we do not model demand or adoption; he does
+model. Neither of us covers the other's side: we do not model demand or adoption; he does
 not model supply, economies of scale, or how the market would clear.
 
 ## Where the two agree, differ, and what's new
 
-On agreements: we draw on the same source literature and read it the same way. Humbird's
+*The comparison in this section is our own AI-assisted reading (Claude, currently Opus
+4.8), not Pablo's characterization of either model — please check it against
+[his post](https://forum.effectivealtruism.org/posts/ED2ag8hYTWf4kmL3x/cultivating-hope-calibrating-the-expectations-for-cultivated).*
+
+On agreements: we draw on the same source literature and read it similarly. Humbird's
 2021 pessimism was driven mostly by amino-acid/media cost, which is not a hard
 thermodynamic constraint and which Pasitka's 2024 empirical work (hydrolysate at
-$0.63/L) pushed down sharply. Both of us conclude cultivated meat likely lands a few-fold
-above conventional meat — not at parity, but not orders of magnitude off either.
+\$0.63/L) pushed down sharply. Both of us read this as suggesting cultivated meat likely
+lands a few-fold above conventional meat — not at parity, but not orders of magnitude off
+either.
 
 Differences that matter:
 
 - *Scope.* We are supply-side and end at a cost distribution; he is demand-side and ends
-  at market shares. His is the piece we have explicitly not built.
-- *Cost level and spread.* His headline biomass figure is $15–30/kg (point read ~$25/kg).
-  Our default is higher and much wider — median ~$56/kg, 5–95% roughly $15–310/kg. It is
+  at market shares. His work fills a gap our analysis leaves open — the demand side being
+  one of several things we don't cover.
+- *Cost level and spread.* His headline biomass figure is \$15–30/kg (point read ~\$25/kg).
+  Our default is higher and much wider — median ~\$56/kg, 5–95% roughly \$15–310/kg. It is
   tempting to attribute this to our adding capital and operating costs, but that is a
   small part of it:
-  <span title="From 300k Monte Carlo draws of our default model: median CAPEX + fixed OPEX ≈ $6.7/kg, about 12% of the $56 median. Media alone is the median ~$35/kg; total variable cost median ~$48/kg.">in our model capital + fixed operating cost is only ~12% of the median (~$7/kg)</span>.
-  The real driver is media: our *median* media cost is ~$35/kg, versus the ~$14/kg
-  biomass media Pasitka reports and Pablo adopts. So even stripping our CAPEX/OPEX
-  entirely, our variable-cost median (~$48/kg) sits well above his ~$25. The gap is
-  mostly that our priors on media intensity (litres of medium per kg) and medium price
-  are wider and centred higher than his single empirical point — plus a fat right tail
-  that pulls our *mean* ($97/kg) far above our median. He instead reads the optimistic
-  end of the same literature.
+  <span title="From 300k Monte Carlo draws of our default model: median CAPEX + fixed OPEX ≈ $6.7/kg, about 12% of the $56 median. Media alone is the median ~$35/kg; total variable cost median ~$48/kg.">in our model capital + fixed operating cost is only ~12% of the median (~\$7/kg)</span>.
+  The real driver is media: our *median* media cost is ~\$35/kg, versus the ~\$14/kg
+  biomass media Pasitka reports and Pablo adopts. So even stripping our capital and
+  operating costs entirely, our variable-cost median (~\$48/kg) sits well above his ~\$25.
+  The gap is mostly that our priors on media intensity (litres of medium per kg) and
+  medium price are wider and centred higher than his single empirical point — plus a fat
+  right tail that pulls our *mean* (~\$97/kg) far above our median. He instead reads the
+  optimistic end of the same literature.
 - *Treatment of uncertainty.* Ours is fundamentally a distribution (30k+ Monte Carlo
-  draws over structural priors); his exposes uncertainty through user-tuned sliders and
-  a lighter Monte Carlo band on the demand parameters.
-- *What drives the answer.* For us it is media intensity, growth-factor cost, reactor
-  capital, and financing. For him it is the price ratio R plus behavioural terms — loss
-  aversion, a "real meat" credit, authenticity/provenance penalties, and food neophobia —
-  none of which appear anywhere in a cost TEA.
+  draws over structural priors), as well as an interactive calculator that lets users tune
+  the midpoints, spreads, and structural assumptions; his exposes uncertainty through
+  user-tuned sliders and a lighter Monte Carlo band on the demand parameters.
+- *What drives each output.* For our cost figure, media cost dominates, followed by
+  growth-factor cost and reactor capital; financing turns out to matter little to the
+  spread. For his market share it is the price ratio R (cultivated cost ÷ conventional
+  price) plus behavioural terms — loss aversion, a "real meat" credit,
+  authenticity/provenance penalties, and food neophobia — none of which appear anywhere in
+  a cost TEA.
 
 Genuinely new in his work, relative to ours:
 
 - *Species inversion.* The cheap, feed-efficient meats (chicken, pork) are the hardest to
   displace because conventional price is already low; expensive meats (beef, seafood) and
-  luxury goods are the most penetrable. This is a demand result our cost model cannot
-  produce.
+  luxury goods are the most penetrable. This is a demand-side pattern — a conjecture his
+  model generates — that our cost model cannot produce.
 - *Beachhead logic.* Foie gras as the standout entry product — luxury price, unstructured
   (little scaffolding), and already ethically stigmatized or banned in places. Also
   high-end fish, tuna, salmon.
-- *Disruption framing.* An innovation-economics argument (Christensen's
+- *Disruption framing (in his post's discussion, not the formal model).* An
+  innovation-economics argument (Christensen's
   <span title="From Clayton Christensen's 'The Innovator's Dilemma': new technologies rarely win by beating incumbents on the mainstream buyer's existing priorities. They take root in an underserved niche the incumbent ignores, improve, then move upmarket — the path Pablo argues cultivated meat must follow, as electric cars did.">disruptive-innovation theory</span>)
   that improving on incumbents' own dimensions usually fails; cultivated meat needs an
   underserved segment (vegan/vegetarian attrition, "vegan veto" restaurants,
@@ -113,37 +131,50 @@ Genuinely new in his work, relative to ours:
   from-an-animal" separation (GFI's thesis), neophobia that decays with exposure, and
   income-elasticity effects (would AGI-driven abundance change adoption? — modestly).
 
-## How credible is each, and where are they weak?
+## Rough notes on strengths and limitations
 
-Neither is authoritative; both are explicitly AI-assisted, work-in-progress framings.
+*These are tentative observations from our own AI-assisted reading, not verdicts — and
+self-assessing our own model is inherently limited, so weight our comments on Pablo's work
+above our comments on our own. Neither project is authoritative; both are explicitly
+AI-assisted and in progress.*
 
-Our cost model — strengths: first-principles structure, honest wide uncertainty, a
-latent "maturity" factor tying technology adoption to financing, and a documented
-external critique with responses ([Limits/Critique](limits.qmd)). Weaknesses: an ad hoc
-dependence structure, supplemental proteins (albumin, transferrin, insulin) handled
-coarsely, sensitivity presented as a dollar-swing ranking rather than a variance
-decomposition, and a fat right tail that some readers find implausibly pessimistic.
+Our cost model — apparent strengths: a first-principles structure, wide and explicit
+uncertainty, a latent "maturity" factor tying technology adoption to financing, a
+documented external critique with responses ([Limits/Critique](limits.qmd)), and — as we
+build it out — a planned link to explicitly stated expert and forecaster beliefs.
+Apparent limitations: an
+<span title="'Ad hoc dependence structure' means the way we make parameters move together — e.g. tying cheaper financing to more mature technology — is imposed by hand through a single 'maturity' factor rather than estimated from data or derived from theory. It is a reasonable guess, not a measured correlation.">ad hoc dependence structure</span>,
+supplemental proteins (albumin, transferrin, insulin) handled coarsely, sensitivity shown
+as a dollar-swing ranking rather than a variance decomposition, and a fat right tail that
+some readers find implausibly pessimistic.
 
-Pablo's demand model — strengths: it fills the half we skip; it is calibrated to real
-data moments (plant-based ~1.2% share and its 89% mainstream split, Gallup veg+vegan ~5%,
-meat elasticities), it validates out-of-sample against plant-based *milk*, and the
-species-inversion and beachhead conclusions are robust to the diffusion form (which only
-sets speed, not the ceiling). Weaknesses he flags himself: (a) price elasticities are
-measured on today's marginal choices but applied to a not-yet-existing product at very
-different maturity; (b) the
+Pablo's demand model — apparent strengths: it addresses questions our cost model doesn't;
+it is calibrated to real data moments (plant-based ~1.2% market share and the finding that
+~89% of plant-based buyers are mainstream flexitarians rather than ethically-motivated
+vegetarians, Gallup veg+vegan ~5%, measured meat price elasticities); Pablo reports it
+reproduces plant-based *milk*'s share out-of-sample (i.e. without being fitted to it,
+though we have not verified this); and his species-inversion and beachhead patterns are
+robust to the diffusion form (which only sets speed, not the ceiling). Limitations he
+flags himself: (a) price elasticities are measured on today's marginal choices but applied
+to a not-yet-existing product at very different maturity; (b) the
 <span title="Bass diffusion model: a classic marketing S-curve for how a new product spreads, splitting adopters into 'innovators' who try it independently and 'imitators' pulled in by word-of-mouth. It was designed for one-time purchases of durable goods (TVs, cars), so applying it to repeat grocery buying is a stretch — Pablo uses it only to set how fast adoption approaches its ceiling, not the ceiling itself.">Bass diffusion S-curve</span>
 is built for first-purchase durables, not repeat grocery buys; (c) several behavioural
-weights are solved to hit calibration targets rather than independently measured;
-(d) the scaffold cost ($6/kg) is an unsourced assumption; (e) precision fermentation
-(egg, dairy) is out of scope for want of a good TEA.
+weights are solved to hit calibration targets rather than independently measured; and
+(d) the scaffold cost (\$6/kg) is an unsourced assumption. He also notes a scope boundary
+— precision fermentation (egg, dairy) is left out for want of a good TEA — which reads
+less as a flaw than as a direction for new work.
 
 Which is more credible? They are not rivals — they are not estimating the same quantity.
 On the shared cost question, Pablo reads the optimistic end of a range our distribution
 also covers; our median is higher mostly because of our wider, higher media-cost priors
 and fat tail, not (as one might assume) because of capital and operating costs. His demand
-results are the more novel and, within their stated caveats, the more decision-relevant
+work is the more novel and, within its stated caveats, the more decision-relevant
 contribution: even a cheap cultivated product may capture little chicken or pork share,
-which reframes what "success" looks like.
+which reframes what "success" looks like. One caveat to this species-by-species framing
+(our own intuition, not in his model): especially early on, a cultivated "chicken" or
+"shrimp" product may be received as its own distinct food rather than competing head-to-head
+only with the conventional product it imitates, so cross-category substitution could matter
+more than a per-species contest implies.
 
 ## Interactive bridge: from a cost per kg to a market share
 
@@ -157,18 +188,19 @@ against each species' conventional US price → a two-way conventional-vs-cultiv
 ::: {.callout-important collapse="false"}
 ## This is NOT Pablo's model — it is a rough stand-in. Read before trusting any number.
 Pablo's real model is a two-segment, four-product random-utility system with income
-effects, loss aversion, and diffusion timing. What runs below is **none of that**. It is a
+effects, loss aversion, and diffusion timing. What runs below is *none of that*. It is a
 one-line approximation we wrote to build intuition: a single-attribute logit whose slope
 we simply *reverse-engineered* to pass through two numbers Pablo reports — at price parity
 (R = 1) about 49% share, and at R ≈ 2.4 about 9% share — and to which we then bolt the
 per-tier authenticity offsets he documents (mince +0.2, cut −0.4, premium −1.5; foie gras
-treated as unstructured and stigmatized, so a small penalty). It **omits** his two consumer
+treated as unstructured and stigmatized, so a small penalty). It *omits* his two consumer
 segments, the outside "whole-food" option, income effects, loss aversion, and all
 diffusion timing. Because it is pinned to only two of his points, it can only reproduce the
 *shape* of his story (cheap species resist, expensive and luxury ones are penetrable), not
-his actual per-species shares. **For any number you would cite, use
-[his interactive model](https://pabloamc.github.io/Cultivated_meat/interactive.html), not this.**
-We would happily replace this with a faithful port, or with his own code, if he is open to it.
+his actual per-species shares. For any number you would cite, use
+[his interactive model](https://pabloamc.github.io/Cultivated_meat/interactive.html), not
+this one. We would happily replace this with a faithful port, or with his own code, if he
+is open to it.
 :::
 
 ```{ojs}
@@ -225,6 +257,8 @@ logistic = (x) => 1 / (1 + Math.exp(-x))
 //   Ground beef 100% ~$4.56/lb -> ~$10/kg (FRED APU0000703112, 2025)
 //   Beef steak (avg of cuts) ~$10.2/lb -> ~$22/kg (BLS/USDA ERS, 2025)
 //   Salmon fillet ~$11/lb -> ~$24/kg (typical US retail; no single BLS series)
+//   Shrimp (whole/shell-on) ~$8/lb -> ~$18/kg; shrimp paste/processed cheaper ~$11/kg
+//     (typical US retail; rough anchors, no single BLS series)
 //   Foie gras ~$80/kg -> illustrative luxury anchor only, NOT an official price series
 // Tier "unstructured" => no scaffold cost; "cut" => scaffold applies.
 species = [
@@ -233,6 +267,8 @@ species = [
   {name: "Ground beef",    pc: 10, tier: "mince",        tau: +0.2, structured: false},
   {name: "Beef steak",     pc: 22, tier: "cut (premium)",tau: -0.4, structured: true},
   {name: "Salmon",         pc: 24, tier: "cut",          tau: -0.4, structured: true},
+  {name: "Shrimp (whole)", pc: 18, tier: "cut",          tau: -0.4, structured: true},
+  {name: "Shrimp paste",   pc: 11, tier: "mince",        tau: +0.2, structured: false},
   {name: "Foie gras",      pc: 80, tier: "luxury/unstructured", tau: +0.1, structured: false},
 ]
 
@@ -249,11 +285,11 @@ rows = species.map(s => {
 html`<div style="overflow-x:auto; max-width:100%;">
 <table style="width:100%; min-width:620px; border-collapse:collapse; font-size:13.5px; margin:8px 0;">
 <thead><tr style="background:#2c3e50; color:white;">
-  <th style="padding:8px; text-align:left;">Species (tier)</th>
-  <th style="padding:8px; text-align:right; white-space:nowrap;">Conv. price $/kg</th>
-  <th style="padding:8px; text-align:right; white-space:nowrap;">Cultivated $/kg</th>
-  <th style="padding:8px; text-align:right; white-space:nowrap;">Ratio R</th>
-  <th style="padding:8px; text-align:left;">Estimated cultivated share</th>
+  <th style="padding:8px; text-align:left;" title="The conventional product cultivated meat would compete with, and its product form (mince = ground/paste, no scaffold needed; cut = whole muscle, needs a scaffold; luxury = premium/prestige).">Product (form)</th>
+  <th style="padding:8px; text-align:right; white-space:nowrap;" title="Approximate 2025 US retail price of the conventional product, $/kg.">Conventional retail<br>$/kg</th>
+  <th style="padding:8px; text-align:right; white-space:nowrap;" title="Modelled cultivated cost delivered to retail = your biomass cost slider + scaffold (for cuts) + markup.">Cultivated cost<br>$/kg</th>
+  <th style="padding:8px; text-align:right; white-space:nowrap;" title="Price ratio R = cultivated cost ÷ conventional price. R below 1 means cheaper than conventional; above 1 means more expensive.">Price ratio<br>R</th>
+  <th style="padding:8px; text-align:left;" title="Estimated share of THIS product's own market that cultivated would capture, from the simplified logit. Not a share of all meat.">Est. cultivated share<br>of this market</th>
 </tr></thead>
 <tbody>
 ${rows.map(r => html`<tr style="border-bottom:1px solid #dee2e6;">
@@ -274,34 +310,41 @@ ${rows.map(r => html`<tr style="border-bottom:1px solid #dee2e6;">
 </table>
 </div>
 <p style="font-size:12px; color:#666; margin-top:6px;">
-Share colour: green &gt; 30%, amber 8–30%, red &lt; 8%. Ordering across species is
-driven almost entirely by the price ratio R (cost fixed, conventional price varies),
-plus the per-tier authenticity offset — reproducing Pablo's inversion: cheap chicken and
-pork resist, expensive beef, seafood, and luxury foie gras are penetrable.<br>
-Conventional prices are rounded 2025 US retail averages (per lb × 2.2 = per kg): chicken
+<strong>How to read each column:</strong> the conventional product's retail price; the
+cultivated cost the model delivers to retail (your biomass slider + scaffold for cuts +
+markup); their ratio R; and the estimated share of <em>that product's own market</em>
+cultivated would capture (not a share of all meat). Share-bar colour: green &gt; 30%,
+amber 8–30%, red &lt; 8%.<br>
+Ordering is driven almost entirely by R (cost fixed, conventional price varies) plus the
+product-form offset — reproducing Pablo's inversion: cheap chicken and pork resist, while
+expensive beef, seafood, shrimp, and luxury foie gras are more penetrable. (Pablo also
+notes cultivated shrimp has a practical edge his model doesn't capture: no shells or heads
+to remove.)<br>
+Conventional prices are rounded 2025 US retail figures (per lb × 2.2 = per kg): chicken
 breast ~$9/kg and pork ~$9/kg (US BLS Average Price / FRED series), ground beef ~$10/kg
-(FRED APU0000703112), steak ~$22/kg (BLS/USDA ERS). Salmon ~$24/kg is a typical retail
-figure without a single official series; foie gras ~$80/kg is an illustrative luxury
-anchor, not an official price. Change any of these and the ordering can shift.
+(FRED APU0000703112), steak ~$22/kg (BLS/USDA ERS). Salmon ~$24/kg and shrimp
+(~$18/kg whole, ~$11/kg paste) are typical retail figures without a single official
+series; foie gras ~$80/kg is an illustrative luxury anchor, not an official price. Change
+any of these and the ordering can shift.
 </p>`
 ```
 
-Try loading "Our model median ($56)" versus "Pablo optimistic (~$25)" and watch the shares
-move. Even at the optimistic cost, chicken and pork stay near-zero while foie gras clears
-easily — the demand-side result that a cheaper product does not by itself rescue the
-feed-efficient species. At our more pessimistic median the whole picture shifts down, which
-is why the cost half of the pipeline still matters.
+Try loading "Our model median (\$56)" versus "Pablo optimistic (~\$25)" and watch the
+shares move. Even at the optimistic cost, chicken and pork stay near-zero while foie gras
+clears easily — the demand-side pattern that a cheaper product does not by itself rescue
+the feed-efficient species. At our more pessimistic median the whole picture shifts down,
+which is why the cost side of the picture still matters.
 
 ## Possible next steps for reconciliation
 
 - *Feed the full distribution, not a point.* Pipe our 30k-draw cost distribution into his
   cost-to-share step to produce a share distribution per species, rather than reading one
   cost point at a time.
-- *Reconcile the media priors.* The $25-vs-$56 gap is mostly media cost, not capital or
-  operating cost. The productive comparison is our priors on medium price ($/L) and media
+- *Reconcile the media priors.* The \$25-vs-\$56 gap is mostly media cost, not capital or
+  operating cost. The productive comparison is our priors on medium price (\$/L) and media
   intensity (L/kg) against Pasitka's empirical point that Pablo adopts — where should the
   central estimate sit, and how wide should the tail be?
-- *Joint parameters.* His scaffold ($6/kg) and markup ($5/kg) assumptions are exactly the
+- *Joint parameters.* His scaffold (\$6/kg) and markup (\$5/kg) assumptions are exactly the
   kind of parameter our elicitation and workshop process could put priors on.
 - *Conversation.* Pablo invited collaboration; the [CM workshop](https://uj-cm-workshop.netlify.app/)
   crux-mapping between "skeptics and optimists" is a natural venue.
