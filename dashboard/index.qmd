@@ -415,7 +415,7 @@ function hideHypothesis() {
 
 **[Read our deep dive: How Cultured Chicken is Made](learn.qmd)** — a detailed guide covering cell banking, bioreactors, media composition, growth factors, and why each step affects costs.
 
-Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**. For a side-by-side comparison of how published TEAs differ in their assumptions and estimates, see our **[TEA Comparison page](compare.qmd)**.
+Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**. For a side-by-side comparison of how published TEAs differ in their assumptions and estimates, see our **[TEA Comparison page](compare.qmd)**. This model stops at a factory-gate **cost**; for what a given cost implies for consumer **adoption and market share**, see our **[Cost → Demand bridge](demand.qmd)**, which connects to Pablo AMC's demand-side model.
 
 ```
    CELL BANK  →  SEED TRAIN  →  PRODUCTION  →  HARVEST  →  PRODUCT

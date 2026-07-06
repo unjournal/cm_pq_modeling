@@ -16,6 +16,18 @@ This comparison is **largely AI-generated** based on our reading of the cited so
 
 **Return to:** [Interactive Cost Model](index.qmd) | **Background:** [How Cultured Chicken is Made](learn.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
 
+::: {.callout-tip}
+## Related external work: Pablo AMC's demand-side model (July 2026)
+Pablo Antonio Moreno Casares reviews this same TEA literature and pairs it with an
+[interactive **demand-side** model](https://pabloamc.github.io/Cultivated_meat/interactive.html)
+([EA Forum post](https://forum.effectivealtruism.org/posts/ED2ag8hYTWf4kmL3x/cultivating-hope-calibrating-the-expectations-for-cultivated))
+that turns a cost per kg into market share by species. His read of the TEAs
+(~$15–30/kg biomass, a few-fold above conventional) is close to ours; his novel
+contribution is the adoption side — cheap chicken/pork resist displacement while beef,
+seafood, and luxury foie gras are penetrable. We connect the two on our
+**[Cost → Demand bridge](demand.qmd)**.
+:::
+
 ## Why Comparison Is Hard
 
 Cultivated meat cost estimates from different studies are often not directly comparable. They differ in:
