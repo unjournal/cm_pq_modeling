@@ -51,9 +51,9 @@ Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusin
 
 ::: {.callout-warning collapse="true"}
 ## Important: Model Status & Limitations
-This model is *largely AI-generated* and as of March 2026 we cannot vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we are interested in, and present a framework for discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
+This model is *largely AI-generated* and, as of July 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
-**An external methodological review identified several structural limitations** — including the ad hoc dependence structure, missing supplemental protein costs (albumin/transferrin/insulin), and the sensitivity chart being a dollar-swing ranking rather than a variance decomposition. We are addressing these incrementally.
+**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; wet-biomass water content is not standardized; and the model does not separate the probability of reaching commercial scale from cost *conditional on* reaching it. The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
 
 **[Read the full critique and our responses → Limits/Critique](limits.html)**
 
@@ -61,10 +61,12 @@ We especially welcome expert review of: growth factor quantities and prices, bio
 :::
 
 ::: {.callout-note collapse="true"}
-## Upcoming Workshop: Cultivated Meat Cost Trajectories
-We're organizing an online expert workshop (late April / early May 2026) to dig into the key cost cruxes — media costs, bioreactor scale-up, and the gap between TEA projections and commercial reality. This model is one of the tools we'll use.
+## From workshop evidence to model revision
+The May 8, 2026 workshop is complete. Its outputs now form a linked evidence-to-model workflow: the summary records the technical arguments, the beliefs analysis shows the forecast spread, the demand bridge connects factory-gate cost to an adoption model, and the proposed modeling hack turns the remaining disagreements into testable model changes.
 
-**[Workshop details & signup →](https://uj-cm-workshop.netlify.app/)** · **[State your cost beliefs →](https://uj-cm-workshop.netlify.app/beliefs.html)**
+**[Workshop summary →](https://uj-cm-workshop.netlify.app/summary.html)** · **[Public beliefs form →](https://uj-cm-workshop.netlify.app/beliefs.html)** · **[Cost → demand bridge →](demand.qmd)** · **[Modeling hack proposal →](https://uj-cm-workshop.netlify.app/modeling-hack.html)**
+
+The named beliefs-analysis dashboard remains an internal review artifact and is intentionally not linked from this public site; a redacted public synthesis should be produced separately.
 :::
 
 ::: {.callout-note collapse="true"}
@@ -1136,7 +1138,7 @@ For 2036 projection, consider lowering the range. &nbsp;
 
 ```{ojs}
 //| echo: false
-viewof bundled_media_p5 = Inputs.range([1, 200], {
+viewof bundled_media_p5 = Inputs.range([5, 200], {
   value: urlNum("bundled_media_p5", 50), step: 5,
   label: "Complete media p5 ($/L)"
 })
@@ -1254,17 +1256,17 @@ viewof maturity = Inputs.range([0.1, 0.9], {
 ```
 <details><summary>What is this?</summary>
 
-A synthetic latent variable (0 = nascent, 1 = mature) that correlates technology adoption, reactor costs, and financing. **Not calibrated to observed historical trajectories** — the slider represents your assumption about where the industry lands, not a fitted rate of change.
+A synthetic latent variable (0 = nascent, 1 = mature) that correlates technology adoption, reactor costs, and financing. **It is not calibrated to observed historical trajectories and does not encode an annual learning rate.** The slider is a scenario index: it represents your judgment about how many favorable conditions co-occur, not a measured pace of progress.
 
-| Slider | Rough interpretation | Implied annual cost reduction in expensive inputs (GFs + media) |
-|---|---|---|
-| 0.1–0.2 | Industry largely stalls — pharma-grade inputs, expensive GFs, high financing risk | ~0–3%/yr — worse than most biotech supply chains |
-| 0.3–0.4 | Slow progress — some adoption but major cost drivers remain expensive | ~4–7%/yr |
-| **0.5** | **Continuation of current trajectory** — pace observed 2020–2025, extrapolated to 2036 | **~7–12%/yr** — consistent with GFI 2025 amino acid data (~10%/yr for that input) |
-| 0.6–0.7 | Accelerated progress — multiple technologies reaching commercial scale | ~12–18%/yr |
-| 0.8–0.9 | Optimistic convergence — most pathways succeed by 2036 | ~18–25%/yr — "solar PV level" |
+| Slider | Rough scenario interpretation |
+|---|---|
+| 0.1–0.2 | Industry largely stalls; few process improvements reach commercial use and financing remains difficult |
+| 0.3–0.4 | Some technical progress, but major input, scale-up, or financing constraints remain |
+| **0.5** | **Neutral coupling assumption**; the model uses the base technology probabilities without claiming this matches a historical trend |
+| 0.6–0.7 | Several favorable technical and supply-chain developments co-occur |
+| 0.8–0.9 | Strongly favorable bundle; most modeled pathways succeed and financing conditions improve |
 
-*Note: "expensive inputs" = growth factors + amino acid media, which dominate variable cost. The implied rate is approximate — the slider controls correlated adoption probabilities, not a single learning rate. GFI's Dec 2025 amino acid data (Humbird's 2021 prices appear 2–10× too high vs current quotes, implying ~10–20%/yr for that component) provides the main empirical anchor.*
+Recent evidence should update the **individual parameter distributions**, not be translated into a maturity learning rate. For example, GFI's [2026 industry report](https://gfi.org/resource/cultivated-meat-seafood-and-ingredients-state-of-the-industry/) records both tighter funding and 20,000-L production progress, while the FDA's [February 2026 inventory](https://hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=animalcellculturefoods) lists five completed cultured-cell food consultations. Those signals point in different directions and should not be compressed into a single estimated trend.
 
 **To approximate "today's conditions" (minimal technical progress):** set maturity to 0.1 and target year to 2026. Note that even then the parameter ranges reflect forward projections — the model has no explicitly calibrated 2024 cost baseline.
 
@@ -1417,9 +1419,9 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 | Pharma-grade amino acids | $0.50 – $2.50 | Revised down from $1-4 based on [GFI amino acid report (2025)](https://gfi.org/resource/amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat/): real supplier quotes found Humbird's AA prices 2-10x too high |
 | Hydrolysate-based | $0.20 – $1.20 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC11663224/): ~$2/kg amino acids; [O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) |
 
-**Why 75% baseline?** [Recent research (2024-2025)](https://www.nature.com/articles/s41538-024-00352-0) shows hydrolysates are already validated across plant, yeast, insect, and fish sources. Companies like IntegriCulture have reduced media components by replacing amino acids with yeast extract. The main uncertainty is regulatory approval for food products, not technical feasibility.
+**Why 75% baseline?** This is a judgmental scenario default, not an empirically estimated adoption rate. [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) demonstrated a low-cost animal-component-free medium in one chicken-cell process, while [Mi et al. (2025)](https://doi.org/10.1016/j.cej.2025.164496) found that selected plant hydrolysates reduced serum use by up to 70% in a porcine-cell prototype. These are meaningful feasibility results, but they do not establish full substitution, lot-to-lot consistency, or commercial performance across cell lines and large reactors.
 
-**How pivotal is this parameter?** Arguably less pivotal than growth factors or cell density. The technical problem appears largely solved — hydrolysate-based media is already used in industry R&D. The remaining uncertainty is mostly regulatory: will food safety agencies in key markets (US, EU, Singapore) accept hydrolysate-based media for commercial products? Some jurisdictions may require pharmaceutical-grade ingredients regardless of technical equivalence. For a 2036 projection, 75% adoption is plausible but could be conservative. If you think regulatory barriers are minimal, push this above 85%. If you think regulatory caution will dominate, keep it at 50-65%.
+**How pivotal is this parameter?** The unresolved questions are technical, operational, and regulatory: amino-acid completeness, supplementation needs, batch variability, quality control, performance at scale, residuals, and product-specific safety review. Current US and UK guidance focuses on process controls, hazards, and evidence for the submitted product; we have not found support for the stronger claim that regulators generally require pharmaceutical-grade ingredients. Treat 75% as a scenario to stress-test, not a consensus forecast.
 
 *See [Maturity Correlation](#industry-maturity-deep-dive) for how adoption probability is adjusted.*
 </details>
@@ -1992,11 +1994,11 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Wet weight, at the CM gate: the mass of cells as harvested from the bioreactor. Water content at harvest typically ~75–90% depending on cell line, density, and post-harvest dewatering; this model uses 80% as a reference assumption. Note: published TEAs (Humbird 2021, Pasitka 2024) rarely state their assumed hydration explicitly, which means cost comparisons across papers may embed subtle inconsistencies — a 10% hydration difference substantially affects $/kg wet weight. Includes: media, growth factors, bioreactor capital (annualised), plant overhead, utilities. Excludes: texturization, scaffolding, blending with plant-based fillers, packaging, distribution. This is the same accounting object as 'edible kg before mixture' used on the beliefs form — wet cell mass at harvest IS the edible component at this stage. For comparison: Humbird reports $37/kg; Pasitka $13.75/kg (large perfusion). The widely-cited ~$6/lb Pasitka figure is for a 50/50 hybrid product. See TEA Comparison for details." style="text-decoration: underline dotted; cursor: help;">wet weight, at harvest &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. <em style="font-size:0.88em;color:#888;">Wet-weight hydration assumed ~80% (range ~75–90% in practice; see note below on hydration assumptions).</em> This is the factory-gate manufacturing cost — not a consumer product price or retail cost. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
+<strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Intended basis: wet cell biomass around the harvest gate. The calculation treats the cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry-matter content, and protein content can therefore differ across source studies. Includes media, growth factors, annualized bioreactor capital, plant overhead, and utilities. Excludes product formulation, texturization, packaging, distribution, and retail margins." style="text-decoration: underline dotted; cursor: help;">wet-biomass basis &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is a factory-gate ingredient-cost estimate, not a consumer-product price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
 <br><br>
-<strong>Why it matters:</strong> If production costs for pure cells reach <strong>~$10/kg</strong>, even 100% cultured products could compete with conventional chicken. At <strong>$25-50/kg</strong>, hybrid products with moderate cell inclusion rates may still reach price parity. If costs remain <strong>>$100/kg</strong>, even hybrid products face significant price premiums. These thresholds inform whether animal welfare interventions should prioritize supporting this industry.
+<strong>Three cautions before using the output:</strong> (1) source costs are not yet normalized to one real-dollar base year; (2) the CM_01 beliefs question conditions on large-scale commercial production being achieved, while this simulation also contains low-maturity draws and has no separate probability-of-commercialization stage; and (3) factory-gate biomass cost cannot be compared directly with retail chicken prices without matching inclusion rate, solids/protein basis, downstream yield, other ingredients, packaging, distribution, margin, geography, and currency year. The simple blended-product arithmetic below is an ingredient-cost scenario, not a price-parity result.
 </div>`
 ```
 
@@ -2101,7 +2103,9 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         downstream: +mean(results.cost_downstream).toFixed(2)
       },
       notes: {
-        units: "USD per kg of cultured chicken cell biomass, wet weight at harvest",
+        units: "USD per kg of cultured chicken cell biomass on the model's wet-biomass basis",
+        currency_basis: "Mixed source-year USD; not yet normalized to a common real-dollar year",
+        conditioning: "Does not separately model P(large-scale commercialization); not a clean conditional-on-success forecast",
         simulation_seed: 42,
         monte_carlo_samples: 30000
       }
@@ -2962,7 +2966,7 @@ The table below summarizes typical outcomes from this interactive model at diffe
 ::: {.callout-warning collapse="true"}
 ## Limitations & Caveats
 
-**Model status (March 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we're interested in, and present a framework for discussion and comparison — not a definitive cost estimate. We welcome scrutiny and suggestions via [Hypothesis annotations](https://hypothes.is/) or [email](mailto:contact@unjournal.org).
+**Model status (reviewed July 20, 2026):** This model is largely AI-generated and we cannot yet vouch for all parameter values. It is provided to fix ideas, give a sense of the sort of modeling we're interested in, and present a framework for discussion and comparison — not a definitive cost estimate. We welcome scrutiny and suggestions via [Hypothesis annotations](https://hypothes.is/) or [email](mailto:contact@unjournal.org).
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
@@ -2982,9 +2986,8 @@ The table below summarizes typical outcomes from this interactive model at diffe
 This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Cycle days is the main remaining parameter that still lacks a direct citation; growth factor quantities and the media-use multiplier were both tightened in April 2026 based on GFI 2023 / Humbird / Pasitka primary sources. This is one reason we are seeking expert review.
 :::
 
-<a id="micronutrient-change-note"></a>
 ::: {.callout-note collapse="true"}
-## Model change log — basal micronutrients folded into media (April 2026)
+## Model change log — basal micronutrients folded into media (April 2026) {#micronutrient-change-note}
 Earlier versions of this model carried a separate **food-grade micronutrient** cost line (vitamins, minerals, trace elements) with its own adoption toggle, usage range (0.1–10 g/kg), and price range (\$0.02–20/g). External review flagged two problems:
 
 1. **Category confusion / double counting.** The page already describes basal media as containing "amino acids, glucose, vitamins," and the model comments described media as "basal media, excluding growth factors." A separate line for vitamins/minerals was therefore adding a second charge for the same inputs.

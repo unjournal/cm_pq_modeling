@@ -44,8 +44,9 @@ format:
         </script>
 ---
 
-*Draft of 6 July 2026 · early human–AI orchestrated draft by David Reinstein with Claude
-(currently Opus 4.8) · not yet carefully reviewed or shown to field experts.*
+*Page reviewed 20 July 2026 · numerical default snapshot generated 10 July 2026 ·
+early human–AI orchestrated draft by David Reinstein with Claude · incorporates
+Pablo AMC's first public reply, but is not yet expert-reviewed.*
 
 ::: {.callout-warning collapse="true"}
 ## Early draft — not reviewed, please treat with caution (click to expand)
@@ -58,6 +59,9 @@ It discusses external work by Pablo Antonio Moreno Casares (Pablo AMC) and build
 deliberately simplified bridge from our cost model to his demand model. His
 [interactive model](https://pabloamc.github.io/Cultivated_meat/interactive.html) is the
 authoritative source for the demand side — our bridge only approximates a slice of it.
+The current calculator also compares a future factory-gate biomass cost with approximate
+2025 retail-price anchors without a common real-dollar base year or a full value-chain
+bridge. Its percentages are outputs of a teaching toy, not market-share forecasts.
 Corrections very welcome via [Hypothesis](https://hypothes.is/) — the annotation tool (the
 `<` tab at the right of this page) — or the
 [discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3).
@@ -128,17 +132,20 @@ Differences that matter:
   at market shares. His work fills a gap our analysis leaves open — the demand side being
   one of several things we don't cover.
 - *Cost level and spread.* His headline biomass figure is \$15–30/kg (point read ~\$25/kg).
-  Our default is higher and much wider — median ~\$56/kg, 5–95% roughly \$15–310/kg. It is
-  tempting to attribute this to our adding capital and operating costs, but that is a
-  small part of it:
-  <abbr title="From 300k Monte Carlo draws of our default model: median CAPEX + fixed OPEX ≈ $6.7/kg, about 12% of the $56 median. Media alone is the median ~$35/kg; total variable cost median ~$48/kg.">in our model capital + fixed operating cost is only ~12% of the median (~\$7/kg)</abbr>.
-  The real driver is media: our *median* media cost is ~\$35/kg, versus the ~\$14/kg
-  biomass media Pasitka reports and Pablo adopts. So even stripping our capital and
-  operating costs entirely, our variable-cost median (~\$48/kg) sits well above his ~\$25.
-  The gap is mostly that our priors on media intensity (litres of medium per kg) and
-  medium price are wider and centred higher than his single empirical point — plus a fat
-  right tail that pulls our *mean* (~\$97/kg) far above our median. He instead reads the
-  optimistic end of the same literature.
+  Our dashboard is a scenario calculator whose default changes as the model is revised;
+  a clean-default check generated on **10 July 2026** showed a median around \$42/kg
+  and p5–p95 around \$12–233/kg. This is a dated snapshot of the then-current code,
+  defaults, and output basis—not a statistic that updates automatically with the live
+  dashboard. The earlier \$56 / \$15–310 figures on this page had already become stale.
+  A separate run of the repository's Python reference implementation on **20 July
+  2026** still gives about \$56/kg (p5–p95 \$15–311). That is not Monte Carlo noise:
+  `model.py` retains older global density, media-use, and cost-component defaults,
+  whereas the interactive dashboard uses a process-mode mixture and newer parameter
+  structure. Until those implementations are harmonized, every quoted result should name
+  the surface, date, defaults, output basis, and code revision.
+  Prior decompositions suggest that the gap is driven mainly by wider, higher priors on
+  media price and litres of fresh medium per kg, rather than by capital alone, but that
+  claim should be regenerated from a versioned model export before citation.
 - *Treatment of uncertainty.* Ours is fundamentally a distribution (30k+
   <abbr title="Monte Carlo: instead of a single point estimate, we draw tens of thousands of random scenarios from ranges on each input and report the spread of results — so the output is a distribution of possible costs, not one number.">Monte Carlo</abbr>
   draws over structural priors), as well as an interactive calculator that lets users tune
@@ -152,6 +159,26 @@ Differences that matter:
   a "real meat" credit, authenticity/provenance penalties, and
   <abbr title="Food neophobia: reluctance to try unfamiliar foods. For 'lab-grown' meat this can be strong at first and, in Pablo's model, fades as the product becomes familiar through exposure.">food neophobia</abbr>
   — none of which appear anywhere in a cost TEA.
+
+## What Pablo's first reply adds
+
+Pablo's [public reply on the EA Forum](https://forum.effectivealtruism.org/posts/ED2ag8hYTWf4kmL3x/cultivating-hope-calibrating-the-expectations-for-cultivated)
+sharpens the comparison in three useful ways. He agrees that a more detailed Monte Carlo
+and a neutral/optimistic/pessimistic scenario set would help. More importantly, he says
+his optimistic reading is partly an **estimand choice**: for scientific feasibility he
+cares about what is reasonably achievable at the frontier, not the average performance
+across all attempts. He also treats roughly \$0.20–0.30/L media as achievable and points
+to a company claim of 22,000-L production as evidence that the optimistic scale world may
+be materializing.
+
+That does not simply move our cost prior downward. It exposes a question the present
+pipeline must answer first: are we forecasting (a) the best feasible plant, (b) the
+average qualifying commercial plant, or (c) a capacity-weighted sector average,
+conditional on large-scale production existing? CM_01 says "average production cost"
+and conditions on commercial scale being achieved; our model does not yet implement that
+conditioning, while Pablo's interpretation is closer to a frontier scenario. The 22,000-L
+figure is also a company claim, not a public cost-and-yield validation dataset. The hack
+should model these estimands separately rather than average them together.
 
 Genuinely new in his work, relative to ours:
 
@@ -244,16 +271,24 @@ his actual per-species shares. For any number you would cite, use
 [his interactive model](https://pabloamc.github.io/Cultivated_meat/interactive.html), not
 this one. We would happily replace this with a faithful port, or with his own code, if he
 is open to it.
+
+There is also a **cost-basis mismatch** before the demand equation begins. `cbio` is a
+future factory-gate biomass cost; the comparison prices are approximate 2025 US retail
+prices. The toy assumes 100% cell inclusion and adds only scaffold (for cuts) plus a
+generic markup. It omits recovery yield, non-cell ingredients, formulation,
+texturization, packaging, distribution, tax, retail margin, future conventional prices,
+and inflation. Until those are harmonized, the resulting price ratio and share are useful
+only for illustrating the mechanism.
 :::
 
 ```{ojs}
 //| echo: false
-viewof cbio = Inputs.range([5, 120], {value: 56, step: 1, label: "Cultivated biomass cost ($/kg)"})
+viewof cbio = Inputs.range([5, 120], {value: 42, step: 1, label: "Cultivated biomass cost ($/kg)"})
 ```
 
 ```{ojs}
 //| echo: false
-viewof markup = Inputs.range([0, 10], {value: 5, step: 0.5, label: "Retail markup m ($/kg)"})
+viewof markup = Inputs.range([0, 10], {value: 5, step: 0.5, label: "Illustrative value-chain add-on m ($/kg)"})
 ```
 
 ```{ojs}
@@ -275,8 +310,8 @@ viewof scaffold_cut = Inputs.range([0, 12], {value: 6, step: 0.5, label: "Scaffo
   };
   return html`<div style="margin:2px 0 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
     <span style="font-size:12.5px; color:#555;">Reference cost points — click to load:</span>
-    ${btn("Our model median ($56)", 56)}
-    ${btn("Our model p5 (optimistic, $15)", 15)}
+    ${btn("Our model default p50 on 10 Jul ($42)", 42)}
+    ${btn("Our model default p5 on 10 Jul ($12)", 12)}
     ${btn("Pablo optimistic (~$25)", 25)}
     ${btn("Pasitka best future (~$22)", 22)}
   </div>`;
@@ -330,7 +365,7 @@ html`<div style="overflow-x:auto; max-width:100%;">
 <thead><tr>
   <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="The conventional product cultivated meat would compete with, and its product form (mince = ground/paste, no scaffold needed; cut = whole muscle, needs a scaffold; luxury = premium/prestige)."><span class="th-hint">Product (form)</span></th>
   <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Approximate 2025 US retail price of the conventional product, in dollars per kg."><span class="th-hint">Conventional<br>retail $/kg</span></th>
-  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Modelled cultivated cost delivered to retail = your biomass cost slider + scaffold (for cuts) + markup."><span class="th-hint">Cultivated<br>cost $/kg</span></th>
+  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Illustrative unit-cost proxy = biomass cost + scaffold (for cuts) + one generic value-chain add-on. This is not a modeled retail price."><span class="th-hint">Illustrative<br>unit cost $/kg</span></th>
   <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Price ratio R = cultivated cost ÷ conventional price. Below 1 = cheaper than conventional; above 1 = more expensive."><span class="th-hint">Price<br>ratio R</span></th>
   <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="Estimated share of THIS product's own market that cultivated would capture, from the simplified logit. Not a share of all meat. The bar width uses a compressed (square-root) scale so small shares stay visible; the % is exact."><span class="th-hint">Cultivated share of<br>this product's market</span></th>
 </tr></thead>
@@ -354,8 +389,9 @@ ${rows.map(r => html`<tr style="border-bottom:1px solid #dee2e6;">
 </div>
 <p style="font-size:12px; color:#666; margin-top:6px;">
 Hover any column header for what it means. Bar width uses a compressed (square-root) scale
-so small shares stay visible next to foie gras — the <em>percentage is exact</em>; the bar
-is only a rough visual. Colour: green &gt; 30%, amber 8–30%, red &lt; 8%.<br>
+so small shares stay visible next to foie gras. The percentage is calculated exactly by
+this toy equation, but it is <em>not an empirical estimate or forecast</em>; the bar is only
+a rough visual. Colour: green &gt; 30%, amber 8–30%, red &lt; 8%.<br>
 Ordering is driven almost entirely by R (cost fixed, conventional price varies) plus the
 product-form offset — reproducing Pablo's inversion: cheap chicken and pork resist, while
 expensive beef, seafood, shrimp, and luxury foie gras are more penetrable. (Pablo also
@@ -370,27 +406,37 @@ any of these and the ordering can shift.
 </p>`
 ```
 
-Try loading "Our model median (\$56)" versus "Pablo optimistic (~\$25)" and watch the
-shares move. Even at the optimistic cost, chicken and pork stay near-zero while foie gras
-clears easily — the demand-side pattern that a cheaper product does not by itself rescue
-the feed-efficient species. At our more pessimistic median the whole picture shifts down,
-which is why the cost side of the picture still matters.
+Try loading the scenario buttons and watch the toy shares move. Under its own fixed
+assumptions, the calculator generates the species-inversion pattern: chicken and pork are
+harder to displace than higher-priced products. This demonstrates the mechanism; it does
+not establish the magnitude or even preserve the ordering once inclusion rates,
+future-year prices, value-chain costs, cross-category substitution, and the omitted
+behavioural structure are modeled properly.
 
 ## Possible next steps for reconciliation
 
-- *Feed the full distribution, not a point.* Pipe our 30k-draw cost distribution into his
-  cost-to-share step to produce a share distribution per species, rather than reading one
-  cost point at a time.
-- *Reconcile the media priors.* The \$25-vs-\$56 gap is mostly media cost, not capital or
-  operating cost. The productive comparison is our priors on medium price (\$/L) and media
-  intensity (L/kg) against Pasitka's empirical point that Pablo adopts — where should the
-  central estimate sit, and how wide should the tail be?
+- *Harmonize the repository's own model surfaces.* Make the interactive OJS dashboard and
+  `model.py` read one parameter schema and pass a parity test before using either as a
+  canonical numerical baseline.
+- *Fix the estimand first.* Separate P(qualifying large-scale production exists) from the
+  cost conditional on existence, and report frontier, average-plant, and capacity-weighted
+  sector scenarios separately.
+- *Harmonize the value chain and currency basis.* Convert all monetary inputs to one
+  constant-dollar year, then bridge biomass cost to retail price with explicit recovery,
+  inclusion rate, other ingredients, processing, packaging, distribution, tax, and margin.
+- *Then feed the full distribution, not a point.* Pipe the conditional cost distribution
+  into a faithful cost-to-share implementation to produce a share distribution per
+  species, rather than reading one cost point at a time.
+- *Reconcile the media priors.* The remaining cost gap appears to be driven largely by
+  medium price (\$/L) and fresh-media intensity (L/kg), but regenerate that decomposition
+  from a versioned export before treating it as a result.
 - *Joint parameters.* His scaffold (\$6/kg) and markup (\$5/kg) assumptions are exactly the
   kind of parameter our elicitation and workshop process could put priors on.
 - *Conversation.* Pablo invited collaboration; the [CM workshop](https://uj-cm-workshop.netlify.app/)
   crux-mapping between "skeptics and optimists" is a natural venue.
 
-*Provenance: this page was drafted quickly with AI assistance from Pablo's public post and
-model plus our own repo, and has not yet had careful human review. See the
+*Provenance: this page was drafted quickly with AI assistance from Pablo's public post,
+model, first public reply, and our own repo. Pablo has acknowledged the comparison and
+offered initial comments, but he has not reviewed this page line by line. See the
 [`pabloamc_bridge/README.md`](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/pabloamc_bridge/README.md)
 notes for the faithfulness caveats (the link resolves once this is pushed to GitHub).*

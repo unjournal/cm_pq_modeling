@@ -104,13 +104,13 @@ $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \
 The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
-**Output basis — the CM-gate manufacturing cost:** All costs are expressed as **manufacturing cost per kg of cultured chicken cell biomass (wet weight, at harvest)**. This is the factory-gate cost at the point where cells are separated from spent media — before texturization, blending, packaging, or distribution.
+**Intended output basis — factory-gate cell biomass:** Costs are expressed per kg on the model's wet-biomass basis. The calculation treats cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry matter, protein content, and recovery yield may therefore differ across the source studies being combined.
 
 **Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities.
 
 **Excludes:** Texturization/scaffolding, blending with plant-based ingredients, packaging, distribution, R&D amortization, regulatory costs.
 
-**Alignment with other surfaces:** This is the same accounting object as "edible kg before mixture" in the workshop beliefs form — at harvest, wet-weight cell biomass *is* the edible component (nothing non-edible has been added). It is also what we mean by "average production cost at commercial scale" on the Metaculus questions.
+**Alignment with other surfaces:** The dashboard, beliefs form, and Metaculus questions intend to target the same broad upstream object, but they are not yet fully harmonized. In particular, harvested wet biomass is not automatically a standardized edible ingredient, and CM_01 conditions on commercial scale being achieved while this model has no separate commercialization hurdle.
 
 See our [TEA comparison page](compare.qmd) for how this compares to published TEA figures, which often differ in output basis (hybrid products, dry weight, retail price).
 :::
@@ -946,6 +946,12 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 4. **Limited contamination modeling** — No batch failure or contamination event distributions.
 
 5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
+
+6. **Conditional-success mismatch** — The model does not separate P(large-scale commercialization by the target date) from cost conditional on that event, and it does not distinguish a frontier plant from an average or capacity-weighted commercial plant.
+
+7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
+
+8. **Output composition is not standardized** — Wet-biomass hydration, dry matter, protein content, and recovery yield are not explicit parameters.
 
 ### Recommendations for Use
 

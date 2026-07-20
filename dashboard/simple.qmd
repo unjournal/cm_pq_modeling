@@ -654,7 +654,7 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-All values are <strong>manufacturing cost per kg of cultured chicken cell biomass (wet weight, at harvest)</strong> — the factory-gate cost, not a consumer product price. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+All values are <strong>manufacturing cost per kg on the model's wet-biomass basis</strong> — a factory-gate ingredient cost, not a consumer-product price. The code treats density as wet-biomass g/L; it does not separately standardize hydration, dry matter, protein content, or recovery yield. Source dollars are not yet normalized to one real-dollar year, and the model does not separate P(commercial scale exists) from cost conditional on success. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
 </div>`
 ```

@@ -38,11 +38,43 @@ We agree. This model is designed to support structured exploration and deliberat
 
 ## Key structural issues in the model
 
-### Target quantity: "edible kg" vs "wet-weight cell mass at harvest"
+### The interactive and Python implementations do not yet match
 
-**Issue.** The model estimates the cost of pure cultured chicken cell biomass (wet weight, at harvest) — factory-gate, before texturisation or blending. The [workshop beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) asks for "average production cost per edible kg of cultured chicken meat." These are the same accounting object (harvested wet cell mass = the edible component before any downstream processing), but the wording difference created potential for semantic confusion.
+**Issue.** A clean interactive-dashboard check on 10 July 2026 produced about
+\$42/kg (p5–p95 \$12–233), while a 300,000-draw run of `dashboard/model.py` on 20
+July produced about \$56/kg (p5–p95 \$15–311). This gap is much larger than simulation
+noise. The Python file retains older global density/media-turnover ranges and an older
+cost-component structure; the interactive OJS model uses a process-mode mixture and
+newer defaults.
 
-**Status: Addressed.** Both the beliefs form and the About page now carry an explicit accounting boundary note.
+**Status: Open and high priority.** Treat neither implementation as the single canonical
+baseline until both read one versioned parameter schema and an automated parity test
+confirms that matched settings produce matched quantiles. In the meantime, every reported
+number should identify the implementation, date, defaults, output basis, and code revision.
+
+---
+
+### Target quantity: wet biomass, solids content, and the harvest gate
+
+**Issue.** The model intends to estimate pure cultured chicken cell biomass around the harvest gate, before product formulation. But "wet kg" is not a stable accounting unit unless water content, residual media, washing, dewatering, dry matter, and protein content are standardized. The code treats cell-density inputs as grams of wet biomass per litre; it does **not** separately apply the 80% hydration assumption previously stated in the interface. Harvested biomass is also not automatically identical to an edible finished ingredient: recovery and washing losses may sit between the bioreactor and the usable input.
+
+**Status: Partly addressed.** The interface now states what the code actually does. A proper fix is to report at least two normalized outputs — cost per kg at a specified dry-matter fraction and cost per kg protein — alongside the wet-biomass result, with explicit recovery losses.
+
+---
+
+### Conditional success versus probability of commercialization
+
+**Issue.** CM_01 asks for cost in 2036 **assuming large-scale commercial production is achieved**. The model, however, samples low-maturity/high-cost worlds without separately modeling the probability that a qualifying commercial plant exists. It therefore mixes two different uncertainties: whether commercialization occurs and what cost is conditional on occurrence. It also leaves ambiguous whether the target is an average commercial plant, a capacity-weighted sector average, or the frontier/best feasible plant.
+
+**Status: Open and high priority.** The next version should use a hurdle structure: (1) probability that qualifying large-scale capacity exists by the target date; (2) cost distribution conditional on that event; and (3) capacity-weighted output or an explicitly labeled frontier scenario. This distinction also matters when comparing the model with the workshop beliefs and Pablo AMC's more frontier-oriented interpretation of the TEAs.
+
+---
+
+### Currency year and cost-gate consistency
+
+**Issue.** Inputs drawn from different publications and years are not yet normalized to one constant-dollar base year. The demand bridge then compares a future factory-gate biomass-cost scenario with approximate 2025 conventional retail prices. Even perfect inflation adjustment would not solve the factory-gate-versus-retail mismatch.
+
+**Status: Open and high priority.** Choose and display a real-dollar base year; document the deflator for every imported monetary input; and add a separate value-chain bridge covering inclusion rate, recovery yield, non-cell ingredients, downstream processing, packaging, distribution, tax, and retail margin before making price-parity comparisons.
 
 ---
 
