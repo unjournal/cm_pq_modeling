@@ -335,7 +335,7 @@ form button[type="submit"]:not(.btn),
     .panel-fill.panel-grid {
         display: block;
     }
-    .panel-sidebar {
+    .layout-sidebar .panel-sidebar {
         position: static !important;
         max-height: none !important;
     }
