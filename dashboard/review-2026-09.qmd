@@ -2,6 +2,9 @@
 title: "Model review: September 2026"
 subtitle: "Accounting corrections, scientific limitations, and priorities for the next version"
 date: 2026-09-07
+format:
+  html:
+    css: styles.css
 ---
 
 This is an AI-assisted review by Codex, based on the repository's calculations and documentation, the earlier critique, and targeted checks of primary sources. It is not an independent expert validation or a complete replication of the cited TEAs. No private reviewer correspondence is reproduced here.
@@ -97,8 +100,9 @@ For research prioritization, specify a choice: fund a medium improvement, obtain
 
 Before interpreting a choice share, match currency year, geography, edible yield, inclusion rate, and product attributes. A simple accounting bridge could start with
 
-$$C_{ingredient}=C_{biomass}/y+C_{recovery},\qquad
-C_{product}=aC_{ingredient}+(1-a)C_{other}+C_{processing},$$
+$$C_{ingredient}=C_{biomass}/y+C_{recovery},$$
+
+$$C_{product}=aC_{ingredient}+(1-a)C_{other}+C_{processing},$$
 
 with compatible mass bases and explicit downstream margins. Protein normalization needs the source and target dry-matter/protein fractions; an assumed hydration percentage alone is insufficient.
 
