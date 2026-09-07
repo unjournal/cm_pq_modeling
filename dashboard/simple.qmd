@@ -24,6 +24,8 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+[September 2026 review: corrections and modeling priorities](review-2026-09.qmd)
+
 ::: {.callout-warning}
 ## Preliminary model — for exploration only
 This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For a more detailed exploration with many more parameters, use the [Advanced Model](index.qmd).
@@ -47,205 +49,13 @@ Once you've explored here, click **→ Advanced Model** at the bottom of the sid
 // ============================================================
 // SEEDED RANDOM NUMBER GENERATOR
 // ============================================================
-function mulberry32(seed) {
-  return function() {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
-}
+costModel = import(new URL("./cost-model.mjs", window.location.href).href)
+simulate = costModel.simulate
+quantile = costModel.quantile
+mean = costModel.mean
+conditionalSwing = costModel.conditionalSwing
+spearmanCorr = costModel.spearmanCorr
 
-// ============================================================
-// STATISTICAL SAMPLING FUNCTIONS
-// ============================================================
-function boxMuller(rng) {
-  const u1 = rng(); const u2 = rng();
-  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
-function sampleLognormalP5P95(rng, p5, p95, n) {
-  const Z_95 = 1.6448536269514722;
-  const mu = (Math.log(p5) + Math.log(p95)) / 2;
-  const sigma = (Math.log(p95) - Math.log(p5)) / (2 * Z_95);
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) samples[i] = Math.exp(mu + sigma * boxMuller(rng));
-  return samples;
-}
-// Like sampleLognormalP5P95 but takes an 80% CI (p10/p90) — matches the beliefs form.
-function sampleLognormalP10P90(rng, p10, p90, n) {
-  const Z_90 = 1.2815515655446004;  // qnorm(0.90)
-  const mu = (Math.log(p10) + Math.log(p90)) / 2;
-  const sigma = (Math.log(p90) - Math.log(p10)) / (2 * Z_90);
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) samples[i] = Math.exp(mu + sigma * boxMuller(rng));
-  return samples;
-}
-function sampleUniform(rng, lo, hi, n) {
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) samples[i] = lo + (hi - lo) * rng();
-  return samples;
-}
-function betaFromMeanStdev(mean, stdev) {
-  let variance = stdev * stdev;
-  const maxVar = mean * (1 - mean);
-  if (variance <= 0 || variance >= maxVar) { stdev = Math.sqrt(maxVar * 0.99); variance = stdev * stdev; }
-  const t = maxVar / variance - 1;
-  return [Math.max(mean * t, 0.01), Math.max((1 - mean) * t, 0.01)];
-}
-function sampleBeta(rng, a, b) {
-  const gammaA = sampleGamma(rng, a); const gammaB = sampleGamma(rng, b);
-  return gammaA / (gammaA + gammaB);
-}
-function sampleGamma(rng, shape) {
-  if (shape < 1) return sampleGamma(rng, shape + 1) * Math.pow(rng(), 1 / shape);
-  const d = shape - 1/3; const c = 1 / Math.sqrt(9 * d);
-  while (true) {
-    let x, v;
-    do { x = boxMuller(rng); v = 1 + c * x; } while (v <= 0);
-    v = v * v * v; const u = rng();
-    if (u < 1 - 0.0331 * (x*x) * (x*x)) return d * v;
-    if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
-  }
-}
-function sampleBetaMeanStdev(rng, mean, stdev, n) {
-  // Guard: Beta is undefined at the boundaries — return degenerate arrays
-  // Without this, betaFromMeanStdev(0 or 1, ...) produces NaN parameters,
-  // sampleBeta returns NaN, and rng() < NaN is always false, flipping
-  // boolean outcomes to the wrong regime (e.g. p_recf=100% → all expensive).
-  if (mean <= 0) return new Array(n).fill(0);
-  if (mean >= 1) return new Array(n).fill(1);
-  const [a, b] = betaFromMeanStdev(mean, stdev);
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) samples[i] = sampleBeta(rng, a, b);
-  return samples;
-}
-function crf(wacc, nYears) {
-  return wacc * Math.pow(1 + wacc, nYears) / (Math.pow(1 + wacc, nYears) - 1);
-}
-function clip(arr, min, max) { return arr.map(v => Math.min(Math.max(v, min), max)); }
-function add(a, b) { return a.map((v, i) => v + b[i]); }
-function mul(a, b) { return a.map((v, i) => v * b[i]); }
-function div(a, b) { return a.map((v, i) => v / b[i]); }
-function scale(arr, s) { return arr.map(v => v * s); }
-
-// ============================================================
-// MAIN SIMULATION FUNCTION (identical to Advanced Model)
-// ============================================================
-function simulate(n, seed, params) {
-  const rng = mulberry32(seed);
-  // Year-based maturity: 0.30 at 2026, 0.50 at 2036, 0.70 at 2050
-  // Later years -> higher industry maturity -> lower CAPEX (via WACC and custom-reactor share)
-  // and higher effective tech-adoption probabilities.
-  const effectiveMaturityMean = params.maturity_mean
-    + (params.target_year ? (params.target_year - 2036) / 14 * 0.20 : 0);
-  const clampedMaturityMean = Math.min(0.85, Math.max(0.15, effectiveMaturityMean));
-  const maturity = sampleBetaMeanStdev(rng, clampedMaturityMean, 0.20, n);
-  const plant_kta = sampleLognormalP5P95(rng, params.plant_kta_p5, params.plant_kta_p95, n);
-  const uptime = sampleBetaMeanStdev(rng, params.uptime_mean, 0.05, n);
-  const output_kgpy = mul(scale(plant_kta, 1e6), uptime);
-  let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
-  p_hydro = clip(add(p_hydro, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
-  let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
-  p_recf = clip(add(p_recf, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
-  const is_hydro = p_hydro.map(p => rng() < p);
-  const is_recf_cheap = p_recf.map(p => rng() < p);
-  const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
-  let density_gL, media_turnover, mode_labels;
-  const p_total = params.p_fedbatch + params.p_perfusion + params.p_continuous;
-  const p0  = params.p_fedbatch / p_total;
-  const p01 = p0 + params.p_perfusion / p_total;
-  const d_fb = sampleLognormalP5P95(rng, 5, 30, n);
-  const d_pf = sampleLognormalP5P95(rng, 30, 150, n);
-  const d_ct = sampleLognormalP5P95(rng, 50, 200, n);
-  const t_fb = sampleLognormalP5P95(rng, 1.0, 2.0, n);
-  const t_pf = sampleLognormalP5P95(rng, 1.0, 5.0, n);
-  const t_ct = sampleLognormalP5P95(rng, 0.5, 3.0, n);
-  const mode_rand = sampleUniform(rng, 0, 1, n);
-  mode_labels = mode_rand.map(r => r < p0 ? "fedbatch" : r < p01 ? "perfusion" : "continuous");
-  density_gL    = mode_labels.map((m, i) => m === "fedbatch" ? d_fb[i] : m === "perfusion" ? d_pf[i] : d_ct[i]);
-  media_turnover = mode_labels.map((m, i) => m === "fedbatch" ? t_fb[i] : m === "perfusion" ? t_pf[i] : t_ct[i]);
-  // Cell density override — must come before L_per_kg so CAPEX calculation also sees the new density
-  if (params.ep_density_p10 && params.ep_density_p90 && params.ep_density_p10 < params.ep_density_p90) {
-    density_gL = sampleLognormalP10P90(rng, params.ep_density_p10, params.ep_density_p90, n);
-  }
-  const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
-  const media_cost_hydro = sampleLognormalP5P95(rng, 0.2, 1.2, n);
-  const media_cost_pharma = sampleLognormalP5P95(rng, 0.5, 2.5, n);
-  const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
-  // Media cost override: if user specified their own $/kg biomass p10/p90, use that directly
-  const cost_media = (params.ep_media_p10 && params.ep_media_p90 && params.ep_media_p10 < params.ep_media_p90)
-    ? sampleLognormalP10P90(rng, params.ep_media_p10, params.ep_media_p90, n)
-    : mul(L_per_kg, media_cost_L);
-  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 6e-3, n);
-  const g_recf_cheap = sampleLognormalP5P95(rng, 5e-4, 2e-3, n);
-  const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
-  const progress = params.gf_progress / 100;
-  const cheap_p5 = 100 * Math.pow(0.01, progress);
-  const cheap_p95 = 10000 * Math.pow(0.01, progress);
-  const price_recf_cheap = sampleLognormalP5P95(rng, cheap_p5, cheap_p95, n);
-  const exp_p5 = 5000 * Math.pow(0.01, progress);
-  const exp_p95 = 500000 * Math.pow(0.01, progress);
-  const price_recf_exp = sampleLognormalP5P95(rng, exp_p5, exp_p95, n);
-  const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
-  // GF cost override: if user specified their own $/kg biomass p10/p90, bypass the regime model
-  const cost_recf = (params.ep_gf_p10 && params.ep_gf_p90 && params.ep_gf_p10 < params.ep_gf_p90)
-    ? sampleLognormalP10P90(rng, params.ep_gf_p10, params.ep_gf_p90, n)
-    : mul(g_recf, price_recf);
-  const other_var = sampleLognormalP5P95(rng, 0.5, 5.0, n);
-  const voc = add(add(cost_media, cost_recf), other_var);
-  let cdmo_toll_perkg = new Array(n).fill(0);
-  let capex_perkg = new Array(n).fill(0);
-  if (params.include_capex) {
-    const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
-    const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
-    const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
-    const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
-    let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
-    custom_share = clip(add(custom_share, scale(maturity.map(m => m - 0.5), 0.30)), 0, 1);
-    const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
-      p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i])));
-    const capex_s = sampleUniform(rng, 0.6, 0.9, n);
-    const plant_factor = sampleLognormalP5P95(rng, 1.5, 3.5, n);
-    const V_ref = 1e6;
-    const capex_total = reactor_cost_L_avg.map((r, i) =>
-      r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]);
-    let wacc = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
-    wacc = clip(wacc.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
-    const asset_life = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
-    const crf_val = wacc.map((w, i) => crf(w, asset_life[i]));
-    capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
-  }
-  let fixed_perkg = new Array(n).fill(0);
-  if (params.include_fixed_opex) {
-    const ref_output = 20e6 * 0.9;
-    const fixed_perkg_ref = sampleUniform(rng, 1.0, 6.0, n);
-    const fixed_annual_ref = scale(fixed_perkg_ref, ref_output);
-    const fixed_scale = sampleUniform(rng, 0.6, 1.0, n);
-    const fixed_annual = fixed_annual_ref.map((f, i) =>
-      f * Math.pow(output_kgpy[i] / ref_output, fixed_scale[i]));
-    fixed_perkg = div(fixed_annual, output_kgpy);
-  }
-  const unit_cost = add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg);
-  return {
-    unit_cost,
-    pct_hydro: is_hydro.filter(x => x).length / n,
-    pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
-    pct_fedbatch:   mode_labels.filter(m => m === "fedbatch").length  / n,
-    pct_perfusion:  mode_labels.filter(m => m === "perfusion").length / n,
-    pct_continuous: mode_labels.filter(m => m === "continuous").length / n,
-  };
-}
-
-// ============================================================
-// STATISTICS HELPERS
-// ============================================================
-function quantile(arr, q) {
-  const sorted = [...arr].sort((a, b) => a - b);
-  const idx = (sorted.length - 1) * q;
-  const lo = Math.floor(idx); const hi = Math.ceil(idx);
-  return sorted[lo] * (1 - (idx - lo)) + sorted[hi] * (idx - lo);
-}
-function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
 ```
 
 ```{ojs}
@@ -437,7 +247,7 @@ viewof p_continuous_s = Inputs.range([0, 100], {
 
 | Parameter | Value | Why fixed |
 |-----------|-------|-----------|
-| Industry Maturity | 0.5 (neutral) | At exactly 0.5, the maturity adjustment term (±0.25 × (m−0.5)) is zero — so technology adoption probabilities are set purely by your sliders, and financing costs use the midpoint WACC. The Projection Year slider then nudges the effective maturity toward 0.30 at 2026 (early industry) and 0.70 at 2050 (mature industry). |
+| Industry Maturity | Base index 0.5 | The shared year mapping gives a mean of 0.275 in 2026, 0.40 in 2036, and 0.50 from 2044 onward. Individual draws still vary and correlate adoption with financing. This is a scenario mapping, not an estimated learning curve. |
 | <abbr title="Weighted Average Cost of Capital: the expected return investors require, blending equity and debt financing costs. Higher WACC = more expensive capital = higher CAPEX per kg.">WACC</abbr> (cost of capital) | 8–20% range | Sampled from lognormal distribution; p5=8%, p95=20%. Food/biotech industry range from Humbird (2021) and CE Delft (2021). |
 | Asset life | 8–20 years (uniform) | Typical bioreactor/facility lifecycle; Risner et al. and Humbird use 10–15 yr. |
 | Plant capacity | 10–40 kTA (lognormal) | Ranges from small-scale (10 kTA) to large (40 kTA) commercial facilities. |
@@ -588,7 +398,8 @@ simParams_simple = {
   // so the weights always sum to 1, even if the raw slider values don't sum to 100.
   const tot = Math.max(p_fedbatch_s + p_perfusion_s + p_continuous_s, 1);
   return {
-    maturity_mean: 0.5,
+    ...costModel.DEFAULT_PARAMS,
+    maturity_mean: costModel.maturityForYear(0.5, target_year_s),
     target_year: target_year_s,
     p_hydro_mean: p_hydro_s / 100,
     p_recfactors_mean: p_recfactors_s / 100,
@@ -621,6 +432,7 @@ simParams_simple = {
 ```{ojs}
 //| echo: false
 results_s = simulate(30000, 42, simParams_simple)
+scenarioNotes = html`<div role="status">${results_s.warnings.map(w => html`<p><strong>Scenario note:</strong> ${w}</p>`)}</div>`
 ```
 
 ```{ojs}
@@ -705,31 +517,31 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
     </div>`;
   }
   const grid = `<div class="grid" style="grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1.5rem;">
-    ${card(10,  stats_s.prob_10,  'could approach conventional chicken (~$5-10/kg retail)', '#27ae60')}
-    ${card(25,  stats_s.prob_25,  'range where premium cultured products may be viable',    '#3498db')}
-    ${card(50,  stats_s.prob_50,  'potential niche/specialty market',                       '#f39c12')}
-    ${card(100, stats_s.prob_100, 'substantially below current lab-scale costs',             '#e74c3c')}
+    ${card(10,  stats_s.prob_10,  'illustrative manufacturing-cost threshold', '#27ae60')}
+    ${card(25,  stats_s.prob_25,  'illustrative manufacturing-cost threshold',    '#3498db')}
+    ${card(50,  stats_s.prob_50,  'illustrative manufacturing-cost threshold',                       '#f39c12')}
+    ${card(100, stats_s.prob_100, 'illustrative manufacturing-cost threshold',             '#e74c3c')}
   </div>`;
 
   const blendRow = include_blending_s ? `
     <p style="font-size:0.88em; color:#1a5276; font-weight:500; margin:0.5rem 0 0.3rem;">
-      Blended product (${stats_s.bs*100|0}% CM + ${((1-stats_s.bs)*100)|0}% filler at $3/kg) — consumer-relevant prices:
+      Blended product (${stats_s.bs*100|0}% CM + ${((1-stats_s.bs)*100)|0}% filler at $3/kg) — ingredient costs only:
     </p>
     <div class="grid" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; margin-bottom:1.5rem;">
       <div style="border:2px solid ${stats_s.bprob_5>20?'#27ae60':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
         <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $5/kg)</h5>
         <h2 style="color:#27ae60; margin:0.2rem 0;">${stats_s.bprob_5.toFixed(1)}%</h2>
-        <small>competitive with conventional chicken</small>
+        <small>ingredients only; excludes retail costs</small>
       </div>
       <div style="border:2px solid ${stats_s.bprob_8>30?'#3498db':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
         <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $8/kg)</h5>
         <h2 style="color:#3498db; margin:0.2rem 0;">${stats_s.bprob_8.toFixed(1)}%</h2>
-        <small>competitive with premium chicken/beef</small>
+        <small>ingredients only; excludes retail costs</small>
       </div>
       <div style="border:2px solid ${stats_s.bprob_12>50?'#f39c12':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
         <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $12/kg)</h5>
         <h2 style="color:#f39c12; margin:0.2rem 0;">${stats_s.bprob_12.toFixed(1)}%</h2>
-        <small>affordable specialty market</small>
+        <small>ingredients only; excludes retail costs</small>
       </div>
     </div>` : '';
 
@@ -743,7 +555,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 //| echo: false
 {
   const uc = results_s.unit_cost;
-  const clipVal = Math.min(quantile(uc, 0.98), 200);
+  const clipVal = quantile(uc, 0.98);
   const clipped = uc.filter(x => x <= clipVal);
   const p20 = stats_s.p20; const p80 = stats_s.p80;
 
@@ -796,6 +608,10 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
   const wrapper = document.createElement("div");
   wrapper.style.cssText = "position:relative; display:inline-block; width:100%;";
   wrapper.appendChild(makeChart(780, 360));
+  const tailNote = document.createElement("p");
+  tailNote.style.cssText = "font-size:0.85em;color:#666;";
+  tailNote.textContent = "Histogram shows the lowest 98% of draws. Summary statistics and threshold probabilities use every draw.";
+  wrapper.appendChild(tailNote);
   wrapper.appendChild(fsBtn);
   return wrapper;
 }
@@ -804,7 +620,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 <details>
 <summary>How is this cost calculated?</summary>
 
-$$\text{Unit Cost} = \underbrace{\text{Media}}_{\text{amino acids + nutrients}} + \underbrace{\text{Growth Factors}}_{\text{FGF-2, IGF-1, etc.}} + \underbrace{\text{Other VOC}}_{\text{utilities, consumables}} + \underbrace{\text{CAPEX/kg}}_{\text{bioreactors, annualised}} + \underbrace{\text{Overhead/kg}}_{\text{labour, maintenance}}$$
+$$\text{Unit Cost} = \underbrace{\text{Media}}_{\text{amino acids + nutrients}} + \underbrace{\text{Growth Factors}}_{\text{FGF-2, IGF-1, etc.}} + \text{Supplemental proteins} + \underbrace{\text{Other VOC}}_{\text{utilities, consumables}} + \underbrace{\text{CAPEX/kg}}_{\text{bioreactors, annualised}} + \underbrace{\text{Overhead/kg}}_{\text{labour, maintenance}}$$
 
 The model draws **30,000 random samples** for each uncertain parameter (cell density, media price, growth factor quantity/price, reactor costs, asset life, WACC, plant capacity, uptime, etc.) and computes a unit cost for each draw. The histogram above shows the resulting distribution of unit costs; the cards above summarize what fraction of those samples fall below each threshold.
 

@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: _site
+  resources:
+    - cost-model.mjs
 
 website:
   title: "Cultured Chicken Cost Model"

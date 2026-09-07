@@ -129,15 +129,15 @@ See our [TEA comparison page](compare.qmd) for how this compares to published TE
 
 ### 2. Variable Operating Costs (VOC)
 
-VOC is the sum of three input categories:
+VOC is the sum of four input categories in separable mode:
 
-$$\text{VOC} = \text{Media} + \text{Growth Factors} + \text{Other}$$
+$$\text{VOC} = \text{Media} + \text{Growth Factors} + \text{Supplemental proteins} + \text{Other}$$
 
 ::: {.callout-note collapse="true"}
 ## Why no separate micronutrient term?
 **Note:** even when modeled separately, micronutrient costs are typically <\$1/kg — a minor contributor that doesn't move the total much. The change below is primarily about avoiding double-counting and aligning with the literature. *(Updated April 2026.)*
 
-Earlier versions of this model carried a separate **food-grade micronutrients** line (vitamins, minerals, trace salts). External review flagged that this double-counted basal media — the model already described media as providing "amino acids, glucose, vitamins" — and that the range (0.1–10 g/kg) was not coherent with the literature. [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) treat vitamin and mineral sourcing as a relatively low-cost issue, while [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) imply roughly 0.15 kg vitamins/minerals per kg wet biomass — orders of magnitude above our old slider. We now fold basal micronutrients into media $/L and reserve any future separate term for **supplemental recombinant proteins** (insulin, transferrin, albumin), which can be sourced from supplier quotes.
+Earlier versions of this model carried a separate **food-grade micronutrients** line (vitamins, minerals, trace salts). External review flagged that this double-counted basal media — the model already described media as providing "amino acids, glucose, vitamins" — and that the range (0.1–10 g/kg) was not coherent with the literature. [O'Neill et al. (2021)](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678) treat vitamin and mineral sourcing as a relatively low-cost issue, while [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w) imply roughly 0.15 kg vitamins/minerals per kg wet biomass — orders of magnitude above our old slider. We now fold basal micronutrients into media $/L and separately model **supplemental recombinant proteins** (insulin, transferrin, albumin). Their current per-kg priors remain provisional.
 :::
 
 <details>
@@ -150,7 +150,7 @@ $$\text{Media Cost} = \underbrace{\left(\frac{1000}{\text{density}}\right)}_{\te
 **Variable definitions:**
 
 - **Cell density (g/L)**: Final concentration of cells at harvest. Higher density = less media needed per kg. The 1000 converts g/L to L/kg (since 1 kg = 1000 g).
-- **Media-use multiplier (net)**: A dimensionless ratio equal to *net fresh media consumed per kg of cells* divided by the *nominal reactor-fill volume* `1000/density`. Batch systems sit at ≈1, perfusion at ≈2–3, and recycling / fed-batch / harvest concentration can push it **below 1**. This is a bundled parameter — it's not a literal count of reactor-volume changes. See the [Learn page on media-use mechanisms](learn.qmd#media-use-mechanisms) for the three real processes that can take it below 1, or the [simulate() source code](#code-reference) for the legacy variable name (`media_turnover`).
+- **Media-use multiplier (net)**: A dimensionless ratio equal to *net fresh media consumed per kg of cells* divided by the *nominal reactor-fill volume* `1000/density`. Batch systems sit at ≈1, perfusion at ≈2–3, and explicit recovery and reuse can support values **below 1**, provided nutrient replacement is costed. This is a bundled parameter — it's not a literal count of reactor-volume changes. See the [Learn page on media-use mechanisms](learn.qmd#media-use-mechanisms) for the accounting conditions needed to justify values below 1, or the [simulate() source code](#code-reference) for the legacy variable name (`media_turnover`).
 - **Price ($/L)**: Cost per liter of basal media (amino acids, glucose, **vitamins, minerals, trace salts** — excludes growth factors and supplemental recombinant proteins, which are modeled as a [separate cost component](#growth-factor-cost)). Some literature sources report "complete medium" costs that include growth factors; our model separates these to allow independent uncertainty analysis.
 
 **Example calculation:**
@@ -173,7 +173,7 @@ Hydrolysates cost less because they're produced from commodity feedstocks via en
 <details>
 <summary>Is $/L meaningful if density varies?</summary>
 
-Yes. **Media cost ($/L)** refers to the cost of preparing one liter of complete growth medium — the liquid that fills the bioreactor. This cost is relatively fixed for a given formulation, regardless of how many cells you eventually grow in it.
+Yes. **Media cost ($/L)** refers to the cost of preparing one liter of basal medium (excluding separately costed proteins) — the liquid that fills the bioreactor. This cost is relatively fixed for a given formulation, regardless of how many cells you eventually grow in it.
 
 **What varies is $/kg meat**, which depends on:
 
@@ -220,7 +220,7 @@ $$\text{GF Cost} = \underbrace{g_{\text{GF}}}_{\text{grams/kg meat}} \times \und
 
 Growth factor cost is one of the four components of Variable Operating Costs:
 
-$$\text{VOC} = \text{Media} + \underbrace{\text{Growth Factors}}_{\text{this section}} + \text{Other}$$
+$$\text{VOC} = \text{Media} + \underbrace{\text{Growth Factors}}_{\text{this section}} + \text{Supplemental proteins} + \text{Other}$$
 
 And VOC feeds into total unit cost (see [Section 1](#total-unit-cost)).
 
@@ -233,7 +233,7 @@ The dashboard provides **two controls** for growth factor prices that work toget
 | **Binary toggle** (Bernoulli) | Flips between "cheap" and "expensive" price regimes | Default Monte Carlo — samples from uncertain future |
 | **Progress slider** | Manually sets a point between current and target prices | Scenario analysis — "what if we're 50% of the way there?" |
 
-**How they interact:** The slider **overrides** the binary toggle. When you move the slider from 0%, you're saying "ignore the coin flip; assume this level of progress."
+**How they interact:** The adoption draw selects the regime. The progress slider scales prices within both regimes and does not disable that draw. At 50% progress the price multiplier is 0.1 (a 90% reduction), not a 50% price reduction.
 
 #### The Progress Slider Formula
 
@@ -249,10 +249,7 @@ In plain text: **GF Price = Current Price x (0.01)^progress**, where the exponen
 - $\text{progress}$ = a value from 0 to 1 (the slider position, where 0 = 0% and 1 = 100%)
 - $(0.01)^{\text{progress}}$ = the **price multiplier**, which shrinks as progress increases
 
-**Why the base 0.01?** We chose 0.01 because industry targets are roughly **100× cheaper** than current prices. Since $0.01^1 = 0.01 = 1/100$, setting progress to 100% gives a 100× price reduction — matching [GFI's target estimates](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/):
-
-- Current FGF-2: ~$50,000/g → Target: ~$500/g (100× reduction)
-- Current TGF-β: ~$1,000,000/g → Target: ~$10,000/g (100× reduction)
+**Why the base 0.01?** This scenario mapping assumes a 100-fold reduction from each regime's starting price at full progress. It is a modeling choice, not a fitted time trend or a protein-specific price forecast.
 
 | Progress slider | Price multiplier | Intuition |
 |-----------------|------------------|-----------|
@@ -264,7 +261,7 @@ In plain text: **GF Price = Current Price x (0.01)^progress**, where the exponen
 
 #### The Binary "Cheap vs. Expensive" Toggle
 
-In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by default) to select between two price regimes:
+At every progress setting, an adoption draw selects between two regimes. The base probability defaults to 50% and is then maturity-adjusted. The following price intervals use the default 50% progress:
 
 **"Expensive" regime (limited progress):**
 
@@ -278,7 +275,7 @@ In Monte Carlo mode (slider at 0%), the model flips a coin (50% probability by d
 | Parameter | Range | Source |
 |-----------|-------|--------|
 | Quantity | 0.0005 – 0.002 g/kg | ≈3× usage reduction from thermostable variants, autocrine lines, recycling |
-| Price | $1 – $100/g | [GFI industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) — studies suggest $4/g achievable |
+| Price | $10 – $1,000/g | [GFI industry targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) — studies suggest $4/g achievable |
 
 **Why binary, not continuous?** The breakthrough technologies are **substitutes**:
 
@@ -336,6 +333,20 @@ CRF converts a one-time capital cost into an equivalent annual payment — the "
 | 20% | 8 years | 26.1% | $26.1M/year ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026)) |
 
 </details>
+
+### Nameplate capacity, utilization, and overhead
+
+Let $Q_N$ be nameplate kg/year, $u$ utilization, $X$ wet biomass g/L, and $t$ the effective production time in days:
+
+$$Q = Q_N u, \qquad P = \frac{X/1000}{t}, \qquad V = \frac{Q_N}{365P}.$$
+
+Installed volume $V$ is sized to nameplate output, not reduced when utilization falls. Annualized capital is divided by actual output $Q$. Annual fixed overhead is
+
+$$F = F_{ref}\left(\frac{Q_N}{20\times10^6}\right)^s, \qquad F_{ref} = c_{ref}(20\times10^6)(0.9),$$
+
+where $c_{ref}$ is uniform $1–6/kg and $s$ is uniform 0.6–1.0. Thus the reference plant's overhead is calibrated at 90% utilization, and idle capacity raises overhead per kg. Labor flexibility, startup losses, and failed-batch media consumption are still omitted.
+
+The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For continuous culture it represents an effective biomass replacement time, not the duration of an entire campaign. This proxy needs replacement with measured harvest productivity and process-specific cleaning, bleed, and retention data.
 
 ### 4. Technology Adoption & Maturity {#maturity-factor}
 
@@ -505,7 +516,7 @@ In other words, your **80% credible interval** — you'd be genuinely surprised 
 | Conservative operator | 5 | 35 | Fed-batch dominates; density gains are slow |
 | Model default (mixed modes) | ~7 | ~110 | Weighted by process mode probabilities |
 
-Setting a higher p10 and p90 shifts the entire cost distribution down — more liters needed per kg of output → lower media cost and smaller required bioreactor volume.
+Setting a higher p10 and p90 shifts the entire cost distribution down — fewer liters needed per kg of output → lower media cost and smaller required bioreactor volume.
 
 **Example: Media cost ($/kg biomass)**
 
@@ -609,9 +620,9 @@ $$\text{Media Cost} = \frac{1000}{\text{cell density}} \times \text{media-use mu
 ## Media-use multiplier: rename, range change, and what values below 1 mean (April 2026)
 **What changed.** The parameter previously labeled "Media turnover" with a default p5–p95 range of 1–10× was renamed to "Media-use multiplier" and narrowed to **0.5–3.0×**. The internal code variable is still `media_turnover` for git-history stability, but the user-facing name and semantics are new.
 
-**Why the rename.** "Turnover" in biology/lab usage literally means "how many times the media was changed," which implies a hard floor at 1. The cost model, however, uses the parameter as a bundled *effective media-use ratio* that includes real mechanisms producing values below 1 — media recycling, fed-batch with concentrated feeds, and harvest-side cell concentration. "Media-use multiplier" signals the bundling and makes sub-1 values physically coherent rather than nonsensical. See [Learn: media-use mechanisms](learn.qmd#media-use-mechanisms) for the full walkthrough of the three mechanisms.
+**Why the rename.** "Turnover" in biology/lab usage literally means "how many times the media was changed," which implies a hard floor at 1. The cost model, however, uses the parameter as a bundled *effective media-use ratio* that includes real mechanisms producing values below 1 — explicit media recovery and reuse, with replacement nutrients costed separately or included consistently. "Media-use multiplier" signals the bundling and requires a stated process interpretation for sub-1 values. See [Learn: media-use mechanisms](learn.qmd#media-use-mechanisms) for the full walkthrough of the three mechanisms.
 
-**Why the range change.** GFI's 2023 recombinant-protein report assumes 8–13 L media per kg of meat as its cost-competitive target. At 60–90 g/L cell density, the nominal reactor-fill volume is 11.1–16.7 L/kg, which back-solves to a multiplier of **≈0.48–1.17**. The old floor of 1.0 mechanically excluded the lower end of the GFI range regardless of how high density was pushed — the dashboard simply could not represent the "cost-competitive future" scenario. The new floor of 0.5 fixes that.
+**Why the range change.** GFI's 2023 recombinant-protein report assumes 8–13 L media per kg of meat as its cost-competitive target. At 60–90 g/L cell density, the nominal reactor-fill volume is 11.1–16.7 L/kg, which back-solves to a multiplier of **≈0.48–1.17**. The old floor of 1.0 mechanically excluded the lower end of the GFI range at those particular densities — the dashboard simply could not represent the "cost-competitive future" scenario. The p5 of 0.5 permits those scenarios; it is not a hard physical floor. A lognormal distribution also samples below its p5.
 
 Values in the 5–10× region remain conceivable for heavily media-intensive processes but are now a stress-test region rather than the default sampled range.
 
@@ -622,9 +633,11 @@ Values in the 5–10× region remain conceivable for heavily media-intensive pro
 
 **Not modeled as a separate line item.** Basal vitamins, minerals, and trace salts are included inside media $/L along with amino acids and glucose. See the callout under [Section 2 (VOC)](#variable-operating-costs-voc) for why the previous standalone "food-grade micronutrients" term was removed, and the [model change log on the main page](index.qmd#micronutrient-change-note) for the full rationale.
 
-**If/when we add a separate uncertainty term in this slot**, it will be repurposed to **supplemental recombinant proteins** — insulin, transferrin, and possibly albumin — which have defensible per-g prices (supplier quotes) and per-kg usage levels in the literature. These are distinct from the growth factors (FGF-2, IGF-1, TGF-β) modeled in the [GF section](#growth-factor-cost).
+**Supplemental proteins are now included.** In separable mode the model adds a low-cost regime (p5–p95 $0.03–0.60/kg) or a higher-cost regime ($0.50–4.00/kg), selected by a maturity-adjusted adoption probability (base default 70%). These are provisional per-kg assumptions, not estimates derived from an explicit formulation or supplier-price dataset. Complete-medium mode includes them within the media line, so the separate cost is zero.
 
 ### Growth Factor Price Scenarios {#gf-scenarios}
+
+Price intervals below use 50% progress. At 0% they are ten times higher; at 100% they are ten times lower. These are p5–p95 marginal intervals, not hard bounds.
 
 These parameters feed into the [GF Cost equation](#how-gf-cost-feeds-into-total-cost): GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).
 
@@ -632,7 +645,7 @@ The model uses two discrete price scenarios, selected by a Bernoulli draw (see [
 
 | Scenario | Quantity (g/kg) | Price ($/g) | What it represents | Source |
 |----------|----------------|-------------|-------------------|--------|
-| **Scalable tech achieved** | 0.0005 – 0.002 | $1 – $100 | At least one breakthrough reaches commercial scale; usage reduced ~3× via thermostable variants / autocrine / recycling | [GFI 2024 targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) |
+| **Scalable tech achieved** | 0.0005 – 0.002 | $10 – $1,000 | At least one breakthrough reaches commercial scale; usage reduced ~3× via thermostable variants / autocrine / recycling | [GFI 2024 targets](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/) |
 | **Limited progress** | 0.001 – 0.006 | $500 – $50,000 | Humbird formulation (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × 8–60 L/kg media use, no step-change | [GFI 2023 recombinant-protein report](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf); [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026) |
 
 ::: {.callout-note collapse="true"}
@@ -809,9 +822,9 @@ The comparison chart in the dashboard shows the full distribution difference. In
 
 ## Process Mode {#process-mode}
 
-The model draws a bioreactor process mode for each Monte Carlo simulation, then samples cell density and media-use multiplier from that mode's physical range. This prevents incoherent parameter combinations that the previous unconstrained approach allowed (e.g., 200 g/L density with batch-like media use, which is biologically impossible).
+The model draws an illustrative process label, then samples density and media use from the corresponding lognormal distributions. The p5–p95 ranges are soft priors, not engineering limits. No oxygen-transfer, nutrient-balance, or washout test rejects infeasible draws. Perfusion can itself operate continuously, so these labels are not a mutually exclusive engineering taxonomy; read “continuous” here as the model's recycling-oriented scenario.
 
-**Pure batch is excluded** — not commercially viable at scale for cultured meat (expert reviewer feedback, April 2026).
+Pure batch is outside the current scenario set. Its exclusion is a modeling choice, not a proof of commercial impossibility.
 
 ### Mode-Specific Parameter Ranges
 
@@ -823,7 +836,7 @@ The model draws a bioreactor process mode for each Monte Carlo simulation, then 
 
 Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. The **Override process mode constraints** toggle (full view) bypasses mode-based sampling and restores the manual density and media-use sliders for expert use.
 
-**Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. This is more physically realistic — fed-batch is genuinely more media-intensive. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.
+**Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. That difference is imposed by these priors; it does not independently validate them. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.
 
 ---
 
@@ -836,14 +849,15 @@ Published TEAs use two different accounting conventions for media costs. Underst
 | Convention | What "media $/L" includes | Example sources | When to use |
 |------------|--------------------------|-----------------|-------------|
 | **Separable** (default) | Basal media only (amino acids, glucose, vitamins) — GFs on separate $/g line | This model, GFI cost analyses | Reasoning about future cost reduction; GF breakthrough affects a visible separate line |
-| **Bundled** | Complete media including all growth factors | Humbird 2021, most research-grade TEAs | Comparing to published figures; current-state benchmarking |
+| **Bundled** | Complete media including growth factors and supplemental proteins | Only sources explicitly quoting complete medium | Comparing to published figures; current-state benchmarking |
 
 ### How to Use the Bundled Toggle
 
 Enabling **Bundled media pricing** in the dashboard (full view → Media Accounting):
 
-- Replaces the separable basal-media $/L and GF $/g lines with a single **complete media $/L** parameter
+- Replaces the separable basal-media $/L , GF $/g, and supplemental-protein lines with a single **complete media $/L** parameter
 - Default range: **$50–$500/L** — reflecting current research-grade complete media with pharma-grade GFs
+- Separate growth-factor overrides are ignored; a media $/kg override replaces the complete-medium cost in this mode
 - GF probability and progress sliders are hidden (bundled into the media price)
 - The cost breakdown shows "Complete Media (incl. GFs)" instead of separate Media and GF bars
 
@@ -867,16 +881,16 @@ Each bar is the **difference in mean unit cost ($/kg) between two groups of simu
 
 $$\text{Swing}(x) = \overline{\text{cost}} \;\big|\; x \in \text{top 10\%} \;\;-\;\; \overline{\text{cost}} \;\big|\; x \in \text{bottom 10\%}$$
 
-With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. The result is a real-dollar quantity on the same scale as every other cost figure — so a bar of $+40/kg means: simulations where that parameter is in its top decile have costs $40/kg higher on average than simulations in its bottom decile.
+With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. The result is a dollar quantity (with the same mixed source-year limitation) on the same scale as every other cost figure — so a bar of $+40/kg means: simulations where that parameter is in its top decile have costs $40/kg higher on average than simulations in its bottom decile.
 
-- **Red** (positive swing): parameter increases cost when high
-- **Green** (negative swing): parameter decreases cost when high (e.g., cell density — higher density → lower media per kg)
+- **Red** (positive swing): high parameter values occur with higher costs
+- **Green** (negative swing): high parameter values occur with lower costs (e.g., cell density — higher density → lower media per kg)
 
 ### Parameter types in the chart
 
 | Type | Examples | Interpretation |
 |------|---------|----------------|
-| *Primitive* | Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate | Sampled approximately independently; swing ≈ a genuine marginal effect |
+| *Primitive* | Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate | May share a process label or other dependencies; swing is an association, not an isolated marginal effect |
 | *Mixture* | Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity | Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both |
 | *Latent* | Industry Maturity | Not independent — perturbs P(hydrolysate), P(cheap GFs), WACC, and reactor costs simultaneously |
 
@@ -898,10 +912,10 @@ Three parameters were also removed from the earlier 11-parameter list because th
 
 ### Technical caveats
 
-- This is a **total-effect, conditional-expectation** statistic — not a Sobol first-order index. It does not cleanly decompose variance and bars can overlap across correlated parameters.
-- The tail width is 10%. Wider tails smooth more; narrower tails are noisier. At 10% × 30,000 samples the noise is small enough to be reliable.
+- This is a **conditional association** statistic, not a causal intervention effect or a Sobol index. It does not cleanly decompose variance and bars can overlap across correlated parameters.
+- The tail width is 10%. Wider tails smooth more; narrower tails are noisier. Right-tail costs can make small bars unstable; repeat seeds before interpreting close rankings.
 - Because the statistic is computed on the joint sampling distribution, changing a slider can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.
-- For a fully decomposed variance analysis (first-order + total-effect Sobol indices), dedicated re-simulation passes would be needed. This is feasible future work.
+- Classical Sobol decompositions assume independent inputs. For this dependent model, first specify independent primitive drivers or use a method designed for dependence (such as an explicitly defined Shapley allocation). Neither a variance share nor a dollar-swing bar is an expected value of information.
 
 ---
 
@@ -911,8 +925,8 @@ The full model implementation is available in multiple formats:
 
 | Format | Location | Notes |
 |--------|----------|-------|
-| **JavaScript** (interactive) | Embedded in [dashboard](index.qmd) | Primary implementation — the authoritative version |
-| **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Standalone script; kept for reference but not used by the dashboard |
+| **JavaScript** (interactive and CLI) | [cost-model.mjs](cost-model.mjs) | Shared calculation engine for Simple and Advanced; version 2026-09-07.1 |
+| **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Historical implementation; not synchronized and not a current dashboard reference |
 
 ::: {.callout-note collapse="true"}
 ## Note on the earlier Squiggle implementation

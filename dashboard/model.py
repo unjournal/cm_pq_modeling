@@ -1,5 +1,8 @@
 """
-Cultured Meat First-Principles Cost Model
+Historical Cultured Meat Cost Model (not synchronized with the dashboard)
+
+For current calculations use dashboard/cost-model.mjs and scripts/model-audit.mjs.
+This file preserves older assumptions for historical comparison only.
 
 A Monte Carlo simulation model for estimating 2036 cultured meat production costs.
 Based on techno-economic analysis (TEA) principles with explicit uncertainty.

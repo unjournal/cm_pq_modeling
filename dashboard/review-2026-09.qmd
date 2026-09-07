@@ -1,0 +1,111 @@
+---
+title: "Model review: September 2026"
+subtitle: "Accounting corrections, scientific limitations, and priorities for the next version"
+date: 2026-09-07
+---
+
+This is an AI-assisted review by Codex, based on the repository's calculations and documentation, the earlier critique, and targeted checks of primary sources. It is not an independent expert validation or a complete replication of the cited TEAs. No private reviewer correspondence is reproduced here.
+
+**My assessment:** the model is useful for making assumptions explicit and comparing scenarios. Its numerical precision exceeds its evidential precision. The biggest improvement would be a small set of physically coherent, source-reproducing process scenarios, followed by explicit uncertainty about which scenarios can operate commercially. More sliders or simulation draws would contribute less at this stage.
+
+## Corrections made in this revision
+
+1. **One calculation engine for both browser views.** Simple and Advanced previously differed in supplemental proteins, other variable costs, year adjustment, and random-number ordering. Both now import `cost-model.mjs`; tests execute their actual parameter adapters and verify identical costs at matching settings in 2026, 2036, and 2050. Python and Squiggle remain explicitly historical implementations.
+2. **Idle plants retain installed capital and annual overhead.** Previously, lower utilization reduced the volume of the modeled plant and its fixed spending. Installed volume and overhead now depend on nameplate capacity; costs per kg divide by actual output. This adopts a fixed-plant interpretation of the utilization slider. Flexible staffing and shutdown decisions would need an additional model.
+3. **Complete medium includes proteins once.** Bundled mode now zeros separate growth-factor and supplemental-protein costs. Its direct media-cost override means complete medium; a separate GF override is ignored with a visible note. Separable mode's media override means basal medium. Expert estimates must match that boundary before import.
+4. **Scenario comparisons preserve shared draws.** Component-specific random streams prevent turning CAPEX off, selecting CDMO, or adding an override from resampling unrelated later costs. This reduces simulation noise in comparisons; it does not establish a real-world causal effect.
+5. **Probability endpoints and numerical safeguards.** Adoption at 0% or 100% stays certain after the maturity adjustment. Beta sampling now preserves its intended mean near boundaries and computes gamma ratios in log space. Invalid ranges fail explicitly; all-zero process weights produce a visible default-fallback note.
+6. **Communication follows the calculation.** Retail-competitiveness claims were removed from manufacturing-cost cards. Sensitivity is described as association, with disabled/replaced inputs omitted. Documentation now includes supplemental proteins and the corrected capacity equations. The media explainer no longer treats dewatering as a reduction in medium consumed.
+
+### A material correction to the literature comparison
+
+Pasitka's Supplement Table S10 reports wet-biomass operating costs of **$38.54, $24.06, and $21.49/kg** for ATF, TFF, and large perfusion. Its separate product row is **$22.27, $15.03, and $13.75/kg**. The comparison page had labeled the latter as pure biomass. The table also sums variable and fixed OPEX without visibly adding the annual capital charge listed in S4. I corrected the labels and flagged the capital boundary rather than inventing a harmonized total. [Pasitka supplementary tables S4 and S10](https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs43016-024-01022-w/MediaObjects/43016_2024_1022_MOESM1_ESM.pdf).
+
+The paper combines empirical culture results with a theoretical 50,000-L facility. Demonstrated cell performance and a modeled industrial cost should remain separate evidence categories. [Pasitka et al., 2024](https://www.nature.com/articles/s43016-024-01022-w).
+
+## What the revised defaults imply
+
+These are **scenario outputs**, in mixed source-year USD per wet kg. They are not calibrated probabilities of achieving those costs commercially. Engine version `2026-09-07.1`, seed 42, 30,000 draws, default 2036 settings:
+
+| Scenario | p5 | Median | p95 | Fraction below $25/kg |
+|---|---:|---:|---:|---:|
+| Default process mixture | $12 | $43 | $233 | 28% |
+| Fed-batch assumptions only | $35 | $110 | $391 | 2% |
+| Perfusion assumptions only | $14 | $42 | $171 | 24% |
+| Continuous/recycling assumptions only | $9 | $24 | $115 | 52% |
+| Default mixture, 65% utilization | $14 | $46 | $242 | 23% |
+
+The large difference between process scenarios is a result of the assigned priors. It is not evidence that choosing a process label causes those savings. The scenarios do not yet carry distinct, fully specified equipment, nutrient, or contamination costs.
+
+Five seeds give default medians of about $42.2–43.1/kg and p95 values of $228–236/kg. Simulation noise is visible but much smaller than the process-assumption differences. Mean cost is about $73/kg, materially above the median because of the right tail. Mean components should sum to the mean; summing their medians would be incorrect.
+
+Run `node scripts/model-audit.mjs` from the repository for all scenarios, seed checks, parameters, and an engine content hash. The [numerical snapshot](https://github.com/unjournal/cm_pq_modeling/blob/main/docs/model-audit-2026-09-07.json) and [accounting and browser-parity tests](https://github.com/unjournal/cm_pq_modeling/blob/main/tests/cost-model.test.mjs) are public.
+
+## Scientific priorities
+
+### 1. Define the population being forecast
+
+The model currently mixes uncertain futures, uncertain processes, and variation across hypothetical plants in one draw distribution. A percentile across such draws is not automatically a percentile for the average industry's cost.
+
+Define a qualifying commercial event $S$ with a minimum sustained output, product specification, geography, and date. Report $P(S)$ separately from $P(C<c\mid S)$. The joint chance of commercialization at cost below $c$ is their product, **only when the cost distribution is actually conditioned on the same event**. Multiplying today's output by a guessed commercialization probability would not repair the conditioning.
+
+For a sector average, sample a world first, then its qualifying plants, and calculate $\sum_i Q_i C_i/\sum_i Q_i$. For a frontier estimate, specify the feasible candidate set and selection rule. Taking the cheapest of arbitrarily many independent plant draws drives costs down mechanically and assumes away common technological limitations. High-cost draws cannot simply be discarded as “noncommercial”: financing, subsidies, niches, and quantity all affect selection.
+
+### 2. Make a small physical core before eliciting more priors
+
+Density alone is not productivity. The current $P=X/(1000t)$ proxy needs a process-specific replacement: net harvest mass per reactor-liter per operating day, including retained cells, bleed fraction, failed runs, and cleaning. Perfusion and continuous operation overlap as engineering categories; the current three labels are scenario bundles.
+
+For medium, jointly track nutrient concentration, fresh feed, consumption yield, recycling losses, and wet/dry output. For nutrient $j$, a useful accounting check is
+
+$$L_{fresh}\,c_j + m_{j,feed} \geq m_{j,required},$$
+
+where all terms refer to the same kg of biomass and recycling does not recreate consumed nutrients. Concentrating a 20-L, 50-g/L culture into a 5-L slurry leaves the same kg of cells and the same past medium consumption. Price per liter must use the same formulation as the liter denominator.
+
+Oxygen transfer, CO₂ removal, and inhibition deserve explicit feasibility checks. Humbird models these constraints; lower amino-acid prices do not remove them. His mammalian-cell assumptions should not be transferred to chicken as universal limits either. [Humbird, 2021, sections 2.2–2.3](https://www.openphilanthropy.org/wp-content/uploads/Humbird-Scale%E2%80%90up-economics-for-cultured-meat.pdf).
+
+Do not introduce an arbitrary hard cap and call it biology. First reproduce one published process with traceable units, then vary the uncertain quantities around it.
+
+### 3. Couple protein demand to the process
+
+The code's GF grams/kg were motivated by concentration × medium-use calculations, but are sampled independently of the actual medium-use draw. Thus high-medium-use draws do not incur proportionately higher GF dosage. Supplemental proteins are also independent per-kg costs within a regime.
+
+A mechanistic option would calculate each additive from concentration, feed volume, degradation/replacement, and recovery. A direct $/kg expert override is still useful, provided it explicitly replaces that calculation. It must not be treated simultaneously as independent evidence on both the process inputs and the total cost.
+
+GFI's anticipated protein-volume shares are scenario calculations using specified concentrations, not evidence that every cell line needs that mix. They support keeping these proteins visible, but do not establish this model's cheap/expensive $/kg ranges. [GFI recombinant-protein analysis, 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf).
+
+### 4. Check installed equipment and operating scope
+
+Scaling total facility volume with an exponent below one can overstate economies when capacity comes from repeating many similar reactors. Separate vessel-size economies, number of vessels, and shared plant infrastructure. Process modes also need their own retention equipment and consumables. A common plant multiplier cannot reliably absorb every omitted item.
+
+The utilization correction improves accounting but does not capture wasted medium in failed batches, seed-train losses, startup ramp, or correlation between reliability and scale. CDMO is a purchased service with a specified scope and margin, not evidence that capital requirements disappear. Its toll range needs quotations or comparable-contract evidence.
+
+### 5. Stress-test dependence without changing the question
+
+Setting maturity's mean to 0.5 does not switch off correlation; its draws still vary. Changing maturity also changes marginal adoption probabilities and financing costs, so it is not a clean test of dependence alone.
+
+Compare independent, moderately coupled, and strongly coupled scenarios while preserving the relevant marginals. Consider separating bioprocess performance, input supply, and financing. Report the effect on threshold probabilities and tails. The current year slider is a prescribed adjustment to maturity, saturating in 2044, not an estimated learning trajectory.
+
+The Beta-then-Bernoulli adoption construction also needs a clear interpretation. With one adoption outcome per world, independent uncertainty about its probability largely integrates out to the mean. A hierarchical model becomes meaningful when shared adoption probabilities govern multiple plants or observations within a world.
+
+### 6. Rank research by decisions, not tornado bars
+
+Conditional-mean swings reflect association under the chosen joint prior. Density's bar can include process-regime effects. Large cost components, large variance contributions, and high research value are different quantities. Classical independent-input Sobol indices should not be applied directly to correlated displayed inputs.
+
+For research prioritization, specify a choice: fund a medium improvement, obtain a scale-up measurement, or support deployment. Then estimate whether plausible evidence changes the preferred choice and by how much. A parameter with a large swing can have low information value if every plausible value supports the same action.
+
+### 7. Keep the demand bridge conditional and capacity-aware
+
+Before interpreting a choice share, match currency year, geography, edible yield, inclusion rate, and product attributes. A simple accounting bridge could start with
+
+$$C_{ingredient}=C_{biomass}/y+C_{recovery},\qquad
+C_{product}=aC_{ingredient}+(1-a)C_{other}+C_{processing},$$
+
+with compatible mass bases and explicit downstream margins. Protein normalization needs the source and target dry-matter/protein fractions; an assumed hydration percentage alone is insufficient.
+
+Apply nonlinear demand to each cost draw rather than to the mean cost. Actual sales require available capacity and market clearing. Meat displaced is a further outcome: cultivated-product sales can replace other alternatives or add consumption. Welfare analysis needs that substitution step and species-specific output, not market share alone.
+
+## A practical next version
+
+First reproduce one published TEA's quantities and accounting boundary, with a source ledger marking each input as measured, extrapolated, supplier-quoted, expert-elicited, or assumed. Next build two coherent alternatives around its main disputed constraints. Only then elicit joint expert beliefs on those constraints and the qualifying commercialization event. Preserve individual distributions and disagreement before pooling; do not count the same published TEA twice through both direct inputs and expert summaries.
+
+The engineering redesign and empirical calibration remain open. This revision fixes demonstrated implementation and communication errors while leaving uncertain numerical priors visible for review.

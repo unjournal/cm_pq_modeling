@@ -318,3 +318,47 @@ form button[type="submit"]:not(.btn),
 .reset-button-row form {
     margin: 0 !important;
 }
+
+/* Grid items must shrink to the page width instead of their contents' width. */
+.panel-sidebar,
+.panel-fill,
+.panel-fill .grid > * {
+    min-width: 0;
+}
+.panel-sidebar form {
+    max-width: 100%;
+}
+
+@media (max-width: 767px) {
+    /* Quarto's 24-column panel grid has 23 gaps even in a stacked layout. */
+    .layout-sidebar,
+    .panel-fill.panel-grid {
+        display: block;
+    }
+    .panel-sidebar {
+        position: static !important;
+        max-height: none !important;
+    }
+    .panel-fill .grid {
+        grid-template-columns: 1fr !important;
+    }
+    .panel-fill .cell-output-display {
+        min-width: 0;
+        overflow-x: auto;
+    }
+    main table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    main .math {
+        display: inline-block;
+        max-width: 100%;
+        overflow-x: auto;
+        vertical-align: middle;
+    }
+    #view-controls {
+        position: static !important;
+        margin: 1rem 0;
+    }
+}

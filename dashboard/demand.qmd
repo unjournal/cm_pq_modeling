@@ -367,7 +367,7 @@ html`<div style="overflow-x:auto; max-width:100%;">
   <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Approximate 2025 US retail price of the conventional product, in dollars per kg."><span class="th-hint">Conventional<br>retail $/kg</span></th>
   <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Illustrative unit-cost proxy = biomass cost + scaffold (for cuts) + one generic value-chain add-on. This is not a modeled retail price."><span class="th-hint">Illustrative<br>unit cost $/kg</span></th>
   <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Price ratio R = cultivated cost ÷ conventional price. Below 1 = cheaper than conventional; above 1 = more expensive."><span class="th-hint">Price<br>ratio R</span></th>
-  <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="Estimated share of THIS product's own market that cultivated would capture, from the simplified logit. Not a share of all meat. The bar width uses a compressed (square-root) scale so small shares stay visible; the % is exact."><span class="th-hint">Cultivated share of<br>this product's market</span></th>
+  <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="Illustrative binary-choice output, not a forecast of sales or market share; ignores available capacity and market clearing. Not a share of all meat. The bar width uses a compressed (square-root) scale so small shares stay visible; the % is exact."><span class="th-hint">Toy choice share<br>(unconstrained by supply)</span></th>
 </tr></thead>
 <tbody>
 ${rows.map(r => html`<tr style="border-bottom:1px solid #dee2e6;">

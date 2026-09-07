@@ -737,43 +737,17 @@ The **<abbr title="Net fresh media consumed per kg of cells, divided by the nomi
 - **Multiplier ≈ 1**: Fed-batch mode (one reactor fill per kg of cells)
 - **Multiplier ≈ 1–5**: Standard perfusion
 - **Multiplier ≈ 0.5–3**: Continuous mode (lower with media recycling)
-- **Multiplier < 1**: Fed-batch with concentrated feeds, media recycling, or harvest concentration — see [the three mechanisms below](#media-use-mechanisms)
+- **Multiplier < 1**: Explicit media recovery and reuse, with nutrient replacement costed — see [the accounting explanation below](#media-use-mechanisms)
 - **Multiplier 5–10**: Heavily media-intensive perfusion (stress-test region, outside our default)
 :::
 
-### The media-use multiplier: why values below 1 are physically meaningful {#media-use-mechanisms}
+### The media-use multiplier: keep volume and biomass accounting consistent {#media-use-mechanisms}
 
-::: {.callout-note collapse="true"}
-## Why a value below 1 is not a typo (click to expand)
+The model uses $L/kg = (1000/X)m$, with reactor biomass density $X$ in wet g/L and multiplier $m$. At 50 g/L, one 20-L reactor fill contains 1 kg of wet cells. Multiple fresh-medium exchanges increase medium consumed per kg. Recovery and reuse can reduce fresh-medium demand, but replacement nutrients and the recovery process still have costs.
 
-The cost model computes liters of media per kg of cells as:
+**Concentrating harvested cells does not undo medium consumption.** Concentrating that 20-L culture to a 5-L slurry at 200 g/L leaves the same 1 kg of cells. It does not change the 20 L used to grow them. Keep reactor density, harvested slurry volume, and recovered biomass yield separate. Concentrated feeds likewise reduce feed volume without automatically reducing nutrient cost per kg.
 
-$$L_{\text{per kg}} = \underbrace{\frac{1000}{\text{density (g/L)}}}_{\text{nominal reactor-fill volume}} \times \underbrace{\text{multiplier}}_{\text{effective fresh-media factor}}$$
-
-At 50 g/L density the nominal reactor-fill volume is 20 L/kg — "one reactor filling, containing 1 kg of cells at 50 g/L." At 100 g/L it's 10 L/kg. A multiplier of **1** means you consumed exactly that much fresh media. Values **above 1** are straightforward: perfusion systems continuously flow fresh media through, and over a batch you cumulatively use several reactor volumes. Values **below 1** feel surprising at first but correspond to three very real mechanisms.
-
-**1. Media recycling.** Spent media can be filtered (e.g., by tangential flow filtration), depleted nutrients replenished, and fed back into the reactor. If you recover and reuse 50% of your spent media, your net *fresh* media consumption per kg of cells is half the nominal reactor volume — multiplier ≈ **0.5**. Aggressive recycling is cited in GFI's 2025 review as likely necessary for reaching commercially viable cultivated-meat costs.
-
-**2. Fed-batch with concentrated feeds.** Instead of flowing large volumes of dilute fresh media through the reactor, you start at a fraction of the working volume with full-strength media and then add small volumes of *concentrated* glucose / amino-acid / buffer solution as cells consume substrate. The total liquid media consumed over the run can be less than one nominal reactor volume, because most of the added mass is dissolved solute rather than water. Industrial microbial fermentation has been run this way for decades; for cultivated meat it maps to multipliers of ≈ **0.6–0.9**.
-
-**3. Harvest-side cell concentration.** If cells are concentrated *after* they finish growing — via settling, centrifugation, or filtration — you can extract 1 kg of cells from less media than `1000 / (growth density)` suggests. For example, running the reactor at 50 g/L growth density but harvesting a 200 g/L slurry means you're pulling 1 kg of cells out of 5 L of media, not 20 L. The baseline formula doesn't have a separate knob for harvest concentration, so the multiplier absorbs that correction — values around **0.25–0.5** can appear this way without any recycling or fed-batch logic.
-
-### Why the model's default range includes values below 1
-
-The [GFI 2023 recombinant-protein report](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) assumes **8–13 L media per kg of meat** as its cost-competitive scenario. Our dashboard lets you push cell density up to ~90 g/L. At 90 g/L:
-
-$$\text{nominal L/kg} = \frac{1000}{90} \approx 11.1 \text{ L/kg}$$
-
-So to hit the GFI upper bound of 13 L/kg at 90 g/L, you need multiplier ≈ **1.17**. To hit the lower bound of 8 L/kg at 90 g/L, you need multiplier ≈ **0.72**. At a more typical 60 g/L density, the nominal is 16.7 L/kg, and GFI's 8–13 L/kg implies multipliers of **0.48–0.78**. **None of those scenarios are reachable with a floor of 1.0** — no matter how high cell density goes. That's why the model's default sampling range is now **0.5–3.0** rather than the earlier 1–10.
-
-Values above 5× remain plausible for heavily media-intensive processes but are no longer part of the default sampled range; treat them as stress tests for pessimistic scenarios.
-
-### What this does NOT mean
-
-- It does *not* mean less than one reactor-filling's worth of liquid physically entered the vessel. It means less than one nominal reactor-filling-equivalent of fresh media was consumed, once recycling, concentration, and fed-batch feed schedules are all counted as they affect the $/kg cost calculation.
-- It does *not* mean perfusion systems are being misrepresented — a perfusion reactor with aggressive media recycling can legitimately operate at an overall multiplier below 1 even though its instantaneous media-change rate is above 1.
-- The model uses a single bundled parameter rather than separate knobs for turnover, recycle fraction, and harvest concentration. That's a simplification; a future revision may split them.
-:::
+Values below one require an explicit reuse or accounting assumption. They cannot be justified by dewatering alone. If one liter now means concentrated feed rather than ordinary medium, its price must change consistently. The current multiplier is a coarse scenario input and does not enforce these balances.
 
 ::: {.callout-tip}
 ## Cell densities have improved dramatically
@@ -842,7 +816,7 @@ At production scale, media (including growth factors) typically represents **40-
 This is why media cost reduction (hydrolysates, cheap growth factors, high cell density) is so critical.
 :::
 
-All commercial cultured meat now uses serum-free media — no current-paradigm cost trajectory depends on fetal bovine serum (FBS).
+This model assumes serum-free production. That is a scenario boundary, not a claim about every commercial formulation.
 
 ::: {.callout-note collapse="true"}
 ## Historical note: why the industry moved to serum-free (click to expand)
@@ -851,11 +825,11 @@ Until ~2018, animal cell culture relied on **fetal bovine serum** ($200–1,000/
 
 It was abandoned for cultured meat for three reasons that all point the same direction:
 
-- **It can't scale.** Global FBS supply is ~500,000–800,000 L/yr ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/)). At ~100 mL FBS per kg of meat (10% supplementation), 1 Mt of cultured meat would need ~100 billion L/yr — roughly 200,000× existing supply.
+- **It can't scale.** Global FBS supply is ~500,000–800,000 L/yr ([van der Valk et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29906528/)). At an illustrative 100 mL FBS per kg of meat, 1 Mt/year would require 100 million L/year (1 billion kg × 0.1 L/kg). The required serum volume depends on total medium use and serum concentration.
 - **It contradicts the welfare goal.** FBS is collected from bovine fetuses when pregnant cows are slaughtered (~1M+ fetuses/yr per [PMC 2014](https://pmc.ncbi.nlm.nih.gov/articles/PMC3967615/)).
 - **It's expensive and inconsistent.** Batch-to-batch variability and $200–1,000/L pricing make it unworkable for commodity production.
 
-All approved cultured meat products to date ([UPSIDE Foods](https://www.upsidefoods.com/), [GOOD Meat](https://www.goodmeat.co/)) use serum-free formulations. **For cost modeling, FBS should be treated as historical context, not a current cost line.**
+Serum-free status must be checked for each product and process; regulatory approval alone does not establish it. **For cost modeling, FBS should be treated as historical context, not a current cost line.**
 
 **Why this matters for understanding hydrolysates and growth factors:**
 

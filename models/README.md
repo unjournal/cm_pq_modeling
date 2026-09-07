@@ -1,5 +1,7 @@
 # Cultured Meat Cost Models
 
+The Squiggle files and `dashboard/model.py` are historical implementations. Current browser calculations share `dashboard/cost-model.mjs`. Run `node scripts/model-audit.mjs` for a versioned numerical snapshot and `node --test tests/cost-model.test.mjs` for accounting and browser-adapter checks.
+
 ## cm_cost_v0.2.squiggle
 
 **Purpose:** PQ-integrated cost model for evaluators to estimate 2036 cultured meat production costs.

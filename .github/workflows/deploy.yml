@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'dashboard/**'
+      - 'tests/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -23,6 +24,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check model accounting and browser parity
+        run: node --test tests/cost-model.test.mjs
 
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2

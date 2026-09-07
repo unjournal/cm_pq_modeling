@@ -1,0 +1,296 @@
+{
+  "model_version": "2026-09-07.1",
+  "engine_sha256": "165835a91728e47e74bca94e5a2fb510fc10f2c2ba75059c8fd8f58d585168f2",
+  "n": 30000,
+  "seed": 42,
+  "default_parameters": {
+    "plant_kta_p5": 10,
+    "plant_kta_p95": 40,
+    "uptime_mean": 0.9,
+    "maturity_mean": 0.4,
+    "p_hydro_mean": 0.75,
+    "p_recfactors_mean": 0.5,
+    "p_supp_protein_mean": 0.7,
+    "wacc_p5": 0.08,
+    "wacc_p95": 0.2,
+    "asset_life_lo": 8,
+    "asset_life_hi": 20,
+    "density_gL_p5": 30,
+    "density_gL_p95": 200,
+    "media_turnover_p5": 0.5,
+    "media_turnover_p95": 3,
+    "p_fedbatch": 0.2,
+    "p_perfusion": 0.5,
+    "p_continuous": 0.3,
+    "gf_progress": 50,
+    "include_capex": true,
+    "include_fixed_opex": true,
+    "include_downstream": false,
+    "cdmo_mode": false,
+    "cdmo_toll_p5": 4,
+    "cdmo_toll_p95": 40,
+    "bundled_media": false,
+    "bundled_media_p5": 50,
+    "bundled_media_p95": 500,
+    "override_mode_constraints": false,
+    "ep_media_p10": null,
+    "ep_media_p90": null,
+    "ep_gf_p10": null,
+    "ep_gf_p90": null,
+    "ep_density_p10": null,
+    "ep_density_p90": null
+  },
+  "units": "USD/kg wet biomass; mixed source-year dollars; scenario distribution, not a conditional commercialization forecast",
+  "scenarios": {
+    "default": {
+      "overrides": {},
+      "p5": 11.966312930355825,
+      "p50": 42.61764495141911,
+      "p95": 232.76619117410706,
+      "mean": 73.36392185451011,
+      "probability_under_10": 0.026833333333333334,
+      "probability_under_25": 0.27663333333333334,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "fedbatch_only": {
+      "overrides": {
+        "p_fedbatch": 1,
+        "p_perfusion": 0,
+        "p_continuous": 0
+      },
+      "p5": 34.83497483836828,
+      "p50": 109.92622041592486,
+      "p95": 391.45647790616033,
+      "mean": 148.72768986143282,
+      "probability_under_10": 0.0002,
+      "probability_under_25": 0.0157,
+      "component_means": {
+        "media": 104.18574387129254,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 19.984406574060742,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "perfusion_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 1,
+        "p_continuous": 0
+      },
+      "p5": 14.02614490488238,
+      "p50": 41.7805220189257,
+      "p95": 171.36847800969642,
+      "mean": 62.22846844961334,
+      "probability_under_10": 0.0122,
+      "probability_under_25": 0.23686666666666667,
+      "component_means": {
+        "media": 32.26532532011411,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 5.405603713419604,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "continuous_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 0,
+        "p_continuous": 1
+      },
+      "p5": 9.157003880999525,
+      "p50": 23.940310446924656,
+      "p95": 115.44562672551801,
+      "mean": 40.253191277878,
+      "probability_under_10": 0.07126666666666667,
+      "probability_under_25": 0.5242666666666667,
+      "component_means": {
+        "media": 11.799514349646007,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 3.8961375121528925,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "low_utilization": {
+      "overrides": {
+        "uptime_mean": 0.65
+      },
+      "p5": 13.920001997484821,
+      "p50": 46.17253601814753,
+      "p95": 242.37722789259104,
+      "mean": 77.7987331887013,
+      "probability_under_10": 0.013566666666666666,
+      "probability_under_25": 0.23213333333333333,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 10.95685989364159,
+        "fixed": 4.899281713642827,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "cdmo": {
+      "overrides": {
+        "cdmo_mode": true
+      },
+      "p5": 16.23696938710717,
+      "p50": 50.56703082062336,
+      "p95": 224.90675392889256,
+      "mean": 77.9698345103273,
+      "probability_under_10": 0.0066,
+      "probability_under_25": 0.16623333333333334,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 0,
+        "fixed": 0,
+        "cdmo_toll": 16.027242928910933,
+        "downstream": 0
+      }
+    },
+    "no_capex": {
+      "overrides": {
+        "include_capex": false
+      },
+      "p5": 9.385112722122757,
+      "p50": 36.72830679993313,
+      "p95": 211.10873146921682,
+      "mean": 65.47176638644534,
+      "probability_under_10": 0.0602,
+      "probability_under_25": 0.3485,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 0,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "complete_medium": {
+      "overrides": {
+        "bundled_media": true
+      },
+      "p5": 680.6138434148803,
+      "p50": 4951.29973498001,
+      "p95": 40201.90559799294,
+      "mean": 10730.685356653736,
+      "probability_under_10": 0,
+      "probability_under_25": 0,
+      "component_means": {
+        "media": 10718.048135436655,
+        "recf": 0,
+        "supp_protein": 0,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    }
+  },
+  "seed_checks": [
+    {
+      "seed": 1,
+      "p5": 11.716387085709437,
+      "p50": 42.48286935829408,
+      "p95": 236.10608688917438,
+      "mean": 74.58332840575261,
+      "probability_under_10": 0.027533333333333333,
+      "probability_under_25": 0.2837,
+      "component_means": {
+        "media": 40.29457771555287,
+        "recf": 20.913466706504234,
+        "supp_protein": 0.6873336610606631,
+        "other_var": 1.2148550952135921,
+        "capex": 7.931315033061011,
+        "fixed": 3.5417801943609897,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 7,
+      "p5": 11.765798838773998,
+      "p50": 42.20442755710456,
+      "p95": 230.1243114915269,
+      "mean": 73.1389482101938,
+      "probability_under_10": 0.0281,
+      "probability_under_25": 0.2775,
+      "component_means": {
+        "media": 40.42949089655749,
+        "recf": 19.42773510445731,
+        "supp_protein": 0.6886207438837779,
+        "other_var": 1.2201693051238487,
+        "capex": 7.858086672129659,
+        "fixed": 3.5148454880419577,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 99,
+      "p5": 11.937759155706944,
+      "p50": 42.23014979394095,
+      "p95": 228.42996596128498,
+      "mean": 72.88781755644625,
+      "probability_under_10": 0.024633333333333333,
+      "probability_under_25": 0.2795,
+      "component_means": {
+        "media": 39.73130313140149,
+        "recf": 19.913287818035943,
+        "supp_protein": 0.6874972906727382,
+        "other_var": 1.2129771255606012,
+        "capex": 7.8156634762841035,
+        "fixed": 3.527088714491237,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 2026,
+      "p5": 11.901629120792132,
+      "p50": 43.089619004549604,
+      "p95": 235.06730607502737,
+      "mean": 73.71735255278142,
+      "probability_under_10": 0.023666666666666666,
+      "probability_under_25": 0.2724666666666667,
+      "component_means": {
+        "media": 41.05440338698834,
+        "recf": 19.564807011495738,
+        "supp_protein": 0.6885334592737266,
+        "other_var": 1.2180195491535835,
+        "capex": 7.676327696753517,
+        "fixed": 3.515261449116707,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    }
+  ]
+}

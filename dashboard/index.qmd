@@ -39,6 +39,8 @@ format:
 </div>
 ```
 
+[September 2026 review: corrections and modeling priorities](review-2026-09.qmd)
+
 ::: {.callout-note collapse="true"}
 ## New to this model?
 Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusing on some key levers with line-of-sight explanations. You can carry your settings over to this Advanced Model when you're ready.
@@ -51,7 +53,7 @@ Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusin
 
 ::: {.callout-warning collapse="true"}
 ## Important: Model Status & Limitations
-This model is *largely AI-generated* and, as of July 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
+This model is *largely AI-generated* and, as of September 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
 **Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; wet-biomass water content is not standardized; and the model does not separate the probability of reaching commercial scale from cost *conditional on* reaching it. The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
 
@@ -487,7 +489,7 @@ A key feature is the **latent maturity factor** that links:
 - Reactor costs
 - Financing costs (WACC)
 
-In "good worlds" for cultured chicken (high maturity), multiple things improve together. This prevents unrealistic scenarios where technology succeeds but financing remains difficult.
+In "good worlds" for cultured chicken (high maturity), multiple things improve together. This makes favorable assumptions co-occur more often. Technical success with difficult financing remains possible and should not be ruled out.
 
 This approach draws on the concept of *copula-based correlation* in Monte Carlo simulation, where a shared latent variable induces dependence among otherwise independent marginal distributions. <abbr title="Vose (2008), Risk Analysis: A Quantitative Guide (Wiley) — textbook treatment of correlated Monte Carlo sampling; Morgan &amp; Henrion (1990), Uncertainty (Cambridge UP) — foundational discussion of dependent uncertainties.">See methodological references.</abbr>
 
@@ -511,477 +513,13 @@ The maturity factor is sampled once per simulation from a Beta distribution (mea
 // ============================================================
 
 // Simple mulberry32 PRNG (fast, good quality for Monte Carlo)
-function mulberry32(seed) {
-  return function() {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
-}
+costModel = import(new URL("./cost-model.mjs", window.location.href).href)
+simulate = costModel.simulate
+quantile = costModel.quantile
+mean = costModel.mean
+conditionalSwing = costModel.conditionalSwing
+spearmanCorr = costModel.spearmanCorr
 
-// ============================================================
-// STATISTICAL SAMPLING FUNCTIONS
-// ============================================================
-
-// Box-Muller transform for standard normal
-function boxMuller(rng) {
-  const u1 = rng();
-  const u2 = rng();
-  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-}
-
-// Sample from lognormal given p5 and p95
-function sampleLognormalP5P95(rng, p5, p95, n) {
-  const Z_95 = 1.6448536269514722;
-  const mu = (Math.log(p5) + Math.log(p95)) / 2;
-  const sigma = (Math.log(p95) - Math.log(p5)) / (2 * Z_95);
-
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) {
-    samples[i] = Math.exp(mu + sigma * boxMuller(rng));
-  }
-  return samples;
-}
-
-// Like sampleLognormalP5P95 but takes an 80% CI (p10/p90) — matches the beliefs form.
-function sampleLognormalP10P90(rng, p10, p90, n) {
-  const Z_90 = 1.2815515655446004;
-  const mu = (Math.log(p10) + Math.log(p90)) / 2;
-  const sigma = (Math.log(p90) - Math.log(p10)) / (2 * Z_90);
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) samples[i] = Math.exp(mu + sigma * boxMuller(rng));
-  return samples;
-}
-
-// Sample uniform
-function sampleUniform(rng, lo, hi, n) {
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) {
-    samples[i] = lo + (hi - lo) * rng();
-  }
-  return samples;
-}
-
-// Beta distribution parameters from mean/stdev
-function betaFromMeanStdev(mean, stdev) {
-  let variance = stdev * stdev;
-  const maxVar = mean * (1 - mean);
-  if (variance <= 0 || variance >= maxVar) {
-    stdev = Math.sqrt(maxVar * 0.99);
-    variance = stdev * stdev;
-  }
-  const t = maxVar / variance - 1;
-  const a = Math.max(mean * t, 0.01);
-  const b = Math.max((1 - mean) * t, 0.01);
-  return [a, b];
-}
-
-// Sample from beta using Joehnk's algorithm (simple, works for all a,b > 0)
-function sampleBeta(rng, a, b) {
-  // Use gamma ratio method
-  const gammaA = sampleGamma(rng, a);
-  const gammaB = sampleGamma(rng, b);
-  return gammaA / (gammaA + gammaB);
-}
-
-// Sample from gamma distribution (Marsaglia and Tsang's method)
-function sampleGamma(rng, shape) {
-  if (shape < 1) {
-    return sampleGamma(rng, shape + 1) * Math.pow(rng(), 1 / shape);
-  }
-
-  const d = shape - 1/3;
-  const c = 1 / Math.sqrt(9 * d);
-
-  while (true) {
-    let x, v;
-    do {
-      x = boxMuller(rng);
-      v = 1 + c * x;
-    } while (v <= 0);
-
-    v = v * v * v;
-    const u = rng();
-
-    if (u < 1 - 0.0331 * (x * x) * (x * x)) return d * v;
-    if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
-  }
-}
-
-// Sample from beta given mean/stdev
-function sampleBetaMeanStdev(rng, mean, stdev, n) {
-  // Guard: Beta is undefined at the boundaries (mean=0 or mean=1).
-  // betaFromMeanStdev returns NaN params → sampleBeta returns NaN →
-  // rng() < NaN is always false, silently flipping boolean outcomes.
-  // E.g. p_recf_mean=1.0 (slider at 100%) → all treated as expensive GF.
-  if (mean <= 0) return new Array(n).fill(0);
-  if (mean >= 1) return new Array(n).fill(1);
-  const [a, b] = betaFromMeanStdev(mean, stdev);
-  const samples = new Array(n);
-  for (let i = 0; i < n; i++) {
-    samples[i] = sampleBeta(rng, a, b);
-  }
-  return samples;
-}
-
-// Capital Recovery Factor
-function crf(wacc, nYears) {
-  return wacc * Math.pow(1 + wacc, nYears) / (Math.pow(1 + wacc, nYears) - 1);
-}
-
-// Clip values between min and max
-function clip(arr, min, max) {
-  return arr.map(v => Math.min(Math.max(v, min), max));
-}
-
-// Element-wise operations
-function add(a, b) { return a.map((v, i) => v + b[i]); }
-function mul(a, b) { return a.map((v, i) => v * b[i]); }
-function div(a, b) { return a.map((v, i) => v / b[i]); }
-function scale(arr, s) { return arr.map(v => v * s); }
-
-// ============================================================
-// MAIN SIMULATION FUNCTION
-// ============================================================
-
-function simulate(n, seed, params) {
-  const rng = mulberry32(seed);
-
-  // Latent maturity factor
-  const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
-
-  // Scale and uptime
-  const plant_kta = sampleLognormalP5P95(rng, params.plant_kta_p5, params.plant_kta_p95, n);
-  const uptime = sampleBetaMeanStdev(rng, params.uptime_mean, 0.05, n);
-  const output_kgpy = mul(scale(plant_kta, 1e6), uptime);
-
-  // Adoption probabilities (maturity-adjusted)
-  let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
-  p_hydro = clip(add(p_hydro, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
-
-  let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
-  p_recf = clip(add(p_recf, scale(maturity.map(m => m - 0.5), 0.25)), 0, 1);
-
-  // Bernoulli draws for adoption
-  const is_hydro = p_hydro.map(p => rng() < p);
-  const is_recf_cheap = p_recf.map(p => rng() < p);
-
-  // Process intensities
-  // Mode-based sampling: each Monte Carlo run draws a process mode, then samples
-  // density and media-use from that mode's physical range. This prevents incoherent
-  // combinations (e.g., 200 g/L density in batch mode, which is biologically impossible).
-  // Pure batch is excluded as not commercially viable at scale (Oana Kubinecz, Apr 2026).
-  const cycle_days = sampleLognormalP5P95(rng, 0.5, 5.0, n);
-
-  let density_gL, media_turnover, mode_labels;
-  if (params.override_mode_constraints) {
-    // Expert override: use manually specified density and turnover ranges directly.
-    density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
-    media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
-    mode_labels = new Array(n).fill("override");
-  } else {
-    // Default: sample process mode per run, then draw density and turnover from that
-    // mode's range. Pre-generate all six arrays (vectorized) for performance.
-    const p_total = params.p_fedbatch + params.p_perfusion + params.p_continuous;
-    const p0  = params.p_fedbatch / p_total;
-    const p01 = p0 + params.p_perfusion / p_total;
-    const d_fb = sampleLognormalP5P95(rng, 5, 30, n);    // Fed-batch density
-    const d_pf = sampleLognormalP5P95(rng, 30, 150, n);  // Perfusion density
-    const d_ct = sampleLognormalP5P95(rng, 50, 200, n);  // Continuous density
-    const t_fb = sampleLognormalP5P95(rng, 1.0, 2.0, n); // Fed-batch media-use multiplier
-    const t_pf = sampleLognormalP5P95(rng, 1.0, 5.0, n); // Perfusion media-use multiplier
-    const t_ct = sampleLognormalP5P95(rng, 0.5, 3.0, n); // Continuous media-use multiplier
-    const mode_rand = sampleUniform(rng, 0, 1, n);
-    mode_labels = mode_rand.map(r => r < p0 ? "fedbatch" : r < p01 ? "perfusion" : "continuous");
-    density_gL    = mode_labels.map((m, i) =>
-      m === "fedbatch" ? d_fb[i] : m === "perfusion" ? d_pf[i] : d_ct[i]);
-    media_turnover = mode_labels.map((m, i) =>
-      m === "fedbatch" ? t_fb[i] : m === "perfusion" ? t_pf[i] : t_ct[i]);
-  }
-
-  // Expert prior override: cell density — must precede L_per_kg so CAPEX also sees it
-  if (params.ep_density_p10 && params.ep_density_p90 && params.ep_density_p10 < params.ep_density_p90) {
-    density_gL = sampleLognormalP10P90(rng, params.ep_density_p10, params.ep_density_p90, n);
-  }
-
-  const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
-
-  // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
-  // excluding growth factors and supplemental recombinant proteins)
-  // Basal micronutrients (vitamins, minerals, trace salts) are NOT modeled as a
-  // separate line item — O'Neill et al. (2021) note vitamin sourcing is a "less
-  // pressing issue" and required minerals can be obtained relatively inexpensively,
-  // so they are rolled into media $/L alongside amino acids and glucose.
-  // Hydrolysate-based: $0.20-1.20/L (O'Neill et al. 2021; Humbird 2021 hydrolysate estimate)
-  const media_cost_hydro = sampleLognormalP5P95(rng, 0.2, 1.2, n);
-  // Pharma-grade: $0.50-2.50/L — REVISED downward from $1.00-4.00
-  // Rationale: GFI amino acid supply chain report (Dec 2025), based on real supplier quotes,
-  // found Humbird's amino acid prices overestimated by 2-10x. Since amino acids are the
-  // dominant basal media cost component (~60-80%), this substantially lowers the pharma range.
-  // Previous range ($1-4) was anchored on Humbird's Table 3.4 values.
-  const media_cost_pharma = sampleLognormalP5P95(rng, 0.5, 2.5, n);
-  const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
-  const cost_media = mul(L_per_kg, media_cost_L);
-
-  // Recombinant growth factors (FGF-2, IGF-1, TGF-β, etc.)
-  // CRITICAL: Literature shows GFs can be 55-95% of media cost at current prices
-  // Current prices: FGF-2 ~$50,000/g, TGF-β up to $1M/g
-  // Target prices: $1-10/g with scaled recombinant production
-
-  // Quantity (g/kg meat) — derived from cited medium concentrations × media-use assumptions.
-  // Humbird formulation reproduced in GFI 2023 recombinant-protein report:
-  //   FGF 1.0e-4 g/L, TGFβ 2.0e-6 g/L → true-GF total ≈ 1.02e-4 g/L.
-  // Efficient future scenarios in GFI 2023 assume ≈8–13 L media/kg product;
-  // less-optimized processes may use up to ~60 L/kg (matching our L_per_kg range).
-  //   0.102 mg/L × 8 L/kg  ≈ 0.00082 g/kg
-  //   0.102 mg/L × 13 L/kg ≈ 0.00133 g/kg
-  //   0.102 mg/L × 60 L/kg ≈ 0.00612 g/kg
-  // Pasitka et al. (2024) ACF TEA implies ≈0.00187 g GF/kg wet biomass — inside this band.
-  // Previous ranges (0.0001–0.02 g/kg) were too broad on both tails; tightened below.
-  // Expensive regime: Humbird formulation across the full media-use range (no breakthrough).
-  const g_recf_exp = sampleLognormalP5P95(rng, 1e-3, 6e-3, n);
-  // Cheap regime: breakthrough technologies (thermostable FGF2-G3, autocrine lines,
-  // recycling systems, polyphenol substitution) reduce effective per-kg usage ~3×.
-  const g_recf_cheap = sampleLognormalP5P95(rng, 5e-4, 2e-3, n);
-  const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
-
-  // Price ($/g) - Scaled by gf_progress parameter (0-100%)
-  // At 0% progress: current prices ($5k-500k expensive, $100-10k cheap)
-  // At 100% progress: target prices ($50-5k expensive, $1-100 cheap)
-  const progress = params.gf_progress / 100;  // 0 to 1
-
-  // Interpolate price ranges based on progress
-  // Cheap scenario: $100-10,000 at 0% → $1-100 at 100%
-  const cheap_p5 = 100 * Math.pow(0.01, progress);   // 100 → 1
-  const cheap_p95 = 10000 * Math.pow(0.01, progress); // 10000 → 100
-  const price_recf_cheap = sampleLognormalP5P95(rng, cheap_p5, cheap_p95, n);
-
-  // Expensive scenario: $5,000-500,000 at 0% → $50-5,000 at 100%
-  const exp_p5 = 5000 * Math.pow(0.01, progress);    // 5000 → 50
-  const exp_p95 = 500000 * Math.pow(0.01, progress); // 500000 → 5000
-  const price_recf_exp = sampleLognormalP5P95(rng, exp_p5, exp_p95, n);
-
-  const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
-  const cost_recf = mul(g_recf, price_recf);
-
-  // Supplemental recombinant proteins: albumin, transferrin, insulin
-  // These are distinct from growth factors (FGF/IGF/TGF-β) — they are structural/survival
-  // proteins used as media additives, not signalling molecules. GFI 2024 supply-chain
-  // analysis projects albumin alone to be 96.6% of anticipated recombinant protein
-  // production volume for CM. Cost depends on whether food-grade production at scale
-  // (recombinant albumin from yeast, etc.) replaces pharma-grade sourcing.
-  // Cheap regime: food-grade recombinant at scale → p5=$0.03/kg, p95=$0.60/kg cell mass
-  // Exp. regime:  pharma-grade → p5=$0.50/kg, p95=$4.00/kg cell mass
-  let p_supp = sampleBetaMeanStdev(rng, params.p_supp_protein_mean, 0.12, n);
-  p_supp = clip(add(p_supp, scale(maturity.map(m => m - 0.5), 0.20)), 0, 1);
-  const is_supp_cheap = p_supp.map(p => rng() < p);
-  const supp_cheap_cost = sampleLognormalP5P95(rng, 0.03, 0.60, n);
-  const supp_exp_cost   = sampleLognormalP5P95(rng, 0.50, 4.00, n);
-  const cost_supp_protein = is_supp_cheap.map((c, i) => c ? supp_cheap_cost[i] : supp_exp_cost[i]);
-
-  // Other variable costs (utilities, consumables, small-molecule additives)
-  // Reduced from p5=0.5/p95=5.0 — supplemental proteins now have their own term above
-  const other_var = sampleLognormalP5P95(rng, 0.30, 3.0, n);
-
-  // Bundled media override (advanced full-view mode): replaces the separable basal+GF
-  // structure with a single complete-medium $/L figure, matching the convention used in
-  // research-grade published TEAs (e.g., Humbird 2021 quotes $50-500/L complete media).
-  // GF sampling above still runs to maintain RNG consistency regardless of bundled mode.
-  let cost_media_eff = cost_media;
-  let cost_recf_eff = cost_recf;
-  let media_cost_L_eff = media_cost_L;
-  if (params.bundled_media) {
-    const complete_media_L = sampleLognormalP5P95(rng, params.bundled_media_p5, params.bundled_media_p95, n);
-    cost_media_eff  = mul(L_per_kg, complete_media_L);
-    cost_recf_eff   = new Array(n).fill(0);
-    media_cost_L_eff = complete_media_L;
-  }
-
-  // Expert prior overrides: applied after bundled-media so they work in both modes.
-  // These bypass the regime-switching logic and express direct beliefs in $/kg biomass.
-  if (params.ep_media_p10 && params.ep_media_p90 && params.ep_media_p10 < params.ep_media_p90) {
-    cost_media_eff = sampleLognormalP10P90(rng, params.ep_media_p10, params.ep_media_p90, n);
-  }
-  if (params.ep_gf_p10 && params.ep_gf_p90 && params.ep_gf_p10 < params.ep_gf_p90) {
-    cost_recf_eff = sampleLognormalP10P90(rng, params.ep_gf_p10, params.ep_gf_p90, n);
-  }
-
-  // VOC total: media + growth factors + supplemental proteins + other
-  const voc = add(add(add(cost_media_eff, cost_recf_eff), cost_supp_protein), other_var);
-
-  // CDMO mode: replace CAPEX + Fixed OPEX with a contract toll fee ($/kg)
-  // The toll covers the CDMO's amortized capital, labor, overhead, and margin.
-  // VOC (media, GFs) remain as direct company costs.
-  let cdmo_toll_perkg = new Array(n).fill(0);
-  if (params.cdmo_mode) {
-    cdmo_toll_perkg = sampleLognormalP5P95(rng, params.cdmo_toll_p5, params.cdmo_toll_p95, n);
-  }
-
-  // CAPEX calculation (skipped in CDMO mode — CDMO bears the capital)
-  let capex_perkg = new Array(n).fill(0);
-  // Pre-allocate WACC and asset-life sample arrays so they exist for the
-  // tornado chart even when CAPEX is excluded (in those cases they're
-  // sampled here purely for the sensitivity export, with no cost effect).
-  let wacc_samples_out = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
-  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
-  let asset_life_samples_out = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
-  if (!params.cdmo_mode && params.include_capex) {
-    const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
-    const total_working_volume_L = div(output_kgpy, scale(prod_kg_L_day, 365));
-    const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
-    const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
-    let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
-    custom_share = clip(add(custom_share, scale(maturity.map(m => m - 0.5), 0.30)), 0, 1);
-
-    const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
-      p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i]))
-    );
-
-    const capex_s = sampleUniform(rng, 0.6, 0.9, n);
-    const plant_factor = sampleLognormalP5P95(rng, 1.5, 3.5, n);
-    const V_ref = 1e6;
-
-    const capex_total = reactor_cost_L_avg.map((r, i) =>
-      r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]
-    );
-
-    // Re-use the pre-sampled wacc/asset_life so the tornado chart has access
-    // to the realized values regardless of CAPEX inclusion.
-    const wacc = wacc_samples_out;
-    const asset_life = asset_life_samples_out;
-    const crf_val = wacc.map((w, i) => crf(w, asset_life[i]));
-
-    capex_perkg = capex_total.map((c, i) => (c * crf_val[i]) / output_kgpy[i]);
-  }
-
-  // Fixed OPEX calculation (skipped in CDMO mode — CDMO bears overhead)
-  let fixed_perkg = new Array(n).fill(0);
-  if (!params.cdmo_mode && params.include_fixed_opex) {
-    const ref_output = 20e6 * 0.9;
-    const fixed_perkg_ref = sampleUniform(rng, 1.0, 6.0, n);
-    const fixed_annual_ref = scale(fixed_perkg_ref, ref_output);
-    const fixed_scale = sampleUniform(rng, 0.6, 1.0, n);
-
-    const fixed_annual = fixed_annual_ref.map((f, i) =>
-      f * Math.pow(output_kgpy[i] / ref_output, fixed_scale[i])
-    );
-    fixed_perkg = div(fixed_annual, output_kgpy);
-  }
-
-  // Downstream processing (scaffolding, texturization) for structured products
-  let downstream_perkg = new Array(n).fill(0);
-  if (params.include_downstream) {
-    // Downstream adds $2-15/kg for structured products
-    downstream_perkg = sampleLognormalP5P95(rng, 2.0, 15.0, n);
-  }
-
-  // Total unit cost
-  const unit_cost = add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg);
-
-  return {
-    unit_cost,
-    cost_media: cost_media_eff,
-    cost_recf: cost_recf_eff,
-    cost_supp_protein,
-    cost_other_var: other_var,
-    cost_capex: capex_perkg,
-    cost_fixed: fixed_perkg,
-    cost_cdmo_toll: cdmo_toll_perkg,
-    cost_downstream: downstream_perkg,
-    pct_hydro: is_hydro.filter(x => x).length / n,
-    pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
-    // Process mode realized shares — stored as scalars (not the full 30k string array)
-    // to keep OJS reactive graph lightweight
-    mode_is_override: mode_labels[0] === "override",
-    pct_fedbatch:  mode_labels.filter(m => m === "fedbatch").length  / n,
-    pct_perfusion: mode_labels.filter(m => m === "perfusion").length / n,
-    pct_continuous: mode_labels.filter(m => m === "continuous").length / n,
-    // Input parameters for sensitivity analysis
-    maturity_samples: maturity,
-    density_samples: density_gL,
-    media_turnover_samples: media_turnover,
-    L_per_kg_samples: L_per_kg,
-    media_cost_L_samples: media_cost_L_eff,
-    is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
-    is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
-    g_recf_samples: g_recf,
-    price_recf_samples: price_recf,
-    plant_kta_samples: plant_kta,
-    uptime_samples: uptime,
-    wacc_samples: wacc_samples_out,
-    asset_life_samples: asset_life_samples_out
-  };
-}
-
-// Statistical helpers
-function quantile(arr, q) {
-  const sorted = [...arr].sort((a, b) => a - b);
-  const idx = (sorted.length - 1) * q;
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  const frac = idx - lo;
-  return sorted[lo] * (1 - frac) + sorted[hi] * frac;
-}
-
-function mean(arr) {
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
-
-// Conditional-mean dollar swing.
-// Signed $/kg difference between mean(uc) among samples where `paramArr`
-// is in its top tail and mean(uc) among samples where it is in its bottom tail.
-// Sign: positive → parameter increases cost; negative → decreases cost.
-// This is a TOTAL-EFFECT statistic under the joint sampling distribution —
-// it honors latent-variable propagation (e.g. maturity → hydrolysate adoption)
-// but can overlap across correlated parameters and should not be summed.
-function conditionalSwing(paramArr, uc, tailFrac = 0.10) {
-  const n = paramArr.length;
-  const paired = paramArr.map((p, i) => [p, uc[i]]).sort((a, b) => a[0] - b[0]);
-  const tailCount = Math.max(1, Math.floor(n * tailFrac));
-  let loSum = 0, hiSum = 0;
-  for (let i = 0; i < tailCount; i++) loSum += paired[i][1];
-  for (let i = n - tailCount; i < n; i++) hiSum += paired[i][1];
-  return (hiSum - loSum) / tailCount; // $/kg, signed
-}
-
-// Spearman rank correlation coefficient (retained for reference; not currently plotted)
-function spearmanCorr(x, y) {
-  const n = x.length;
-
-  // Rank function (handles ties with average rank)
-  function rank(arr) {
-    const sorted = arr.map((v, i) => ({v, i})).sort((a, b) => a.v - b.v);
-    const ranks = new Array(n);
-    let i = 0;
-    while (i < n) {
-      let j = i;
-      while (j < n - 1 && sorted[j + 1].v === sorted[j].v) j++;
-      const avgRank = (i + j) / 2 + 1;
-      for (let k = i; k <= j; k++) ranks[sorted[k].i] = avgRank;
-      i = j + 1;
-    }
-    return ranks;
-  }
-
-  const rx = rank(x);
-  const ry = rank(y);
-
-  // Pearson correlation of ranks
-  const meanRx = mean(rx);
-  const meanRy = mean(ry);
-
-  let num = 0, denX = 0, denY = 0;
-  for (let i = 0; i < n; i++) {
-    const dx = rx[i] - meanRx;
-    const dy = ry[i] - meanRy;
-    num += dx * dy;
-    denX += dx * dx;
-    denY += dy * dy;
-  }
-
-  return num / Math.sqrt(denX * denY);
-}
 ```
 
 ```{ojs}
@@ -1117,7 +655,7 @@ Most published TEAs report costs with CAPEX and plant overhead OPEX included. To
 ```{ojs}
 //| echo: false
 viewof bundled_media = Inputs.toggle({
-  label: html`Bundled media pricing (TEA-comparable) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="When ON: basal media + growth factors are replaced by a single 'complete media' $/L figure, matching the convention used in research-grade published TEAs (Humbird 2021 etc.). Default OFF = separable accounting, which is better for reasoning about future cost reduction.">(?)</abbr>`,
+  label: html`Bundled media pricing (TEA-comparable) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="When ON: basal media + growth factors + supplemental proteins are replaced by a single 'complete media' $/L figure, matching the convention used in research-grade published TEAs (Humbird 2021 etc.). Default OFF = separable accounting, which is better for reasoning about future cost reduction.">(?)</abbr>`,
   value: urlBool("bundled_media", false)
 })
 ```
@@ -1129,7 +667,7 @@ viewof bundled_media = Inputs.toggle({
 ```{ojs}
 //| echo: false
 html`<div style="padding: 0.5rem 0.8rem; background: #f0f4fa; border-left: 3px solid #3498db; font-size: 0.84em; margin: 0.25rem 0 0.4rem 0; line-height: 1.5;">
-<strong>Bundled mode:</strong> Complete media $/L replaces basal media + GF lines. GF sliders hidden.
+<strong>Bundled mode:</strong> Complete media $/L includes basal nutrients, growth factors, and supplemental proteins. Separate protein costs are zero; a separate GF override is ignored.
 Range ($50–$500/L default) reflects current research-grade complete media with pharma GFs.
 For 2036 projection, consider lowering the range. &nbsp;
 <a href="docs.html#bundled-media-pricing" target="_blank" style="white-space:nowrap;">Details ↗</a>
@@ -1395,7 +933,7 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 ::: {.callout-note appearance="minimal" icon=false collapse=false}
 **Basal media** = the bulk nutrient broth cells grow in (water + amino acids + glucose + salts + vitamins) — *everything except* the expensive recombinant growth factors, which we model on a separate line. **Hydrolysates** are cheap enzymatically-digested plant or yeast proteins; they replace the *purified pharmaceutical-grade amino acids* (vegan but ~10× more expensive) that dominate Humbird's basal-media cost.
 
-**Note on \$/L vs \$/kg output:** The model uses \$/L as an internal parameter, but the economically meaningful unit is **\$/kg of cell biomass produced** — which equals (\$/L) × (L consumed per kg output). L per kg = 1000/density(g/L) × media_turnover_multiplier. At the model's default settings (~60 g/L median density, 1.5× turnover), this is ~25 L/kg: a \$0.70/L hydrolysate medium costs ~\$17.5/kg output; a \$1.25/L pharma-grade medium costs ~\$31/kg. At 200 g/L perfusion with 1.0× turnover (~5 L/kg), the same formulations cost \$3.5/kg and \$6.25/kg respectively — illustrating why cell density matters far more than formulation price at high-density processes. The "Media" bar in the cost breakdown chart already shows this \$/kg result directly.
+**Note on \$/L vs \$/kg output:** The model uses \$/L as an internal parameter, but the economically meaningful unit is **\$/kg of cell biomass produced** — which equals (\$/L) × (L consumed per kg output). L per kg = 1000/density(g/L) × media_turnover_multiplier. In an illustrative scenario (60 g/L density, 1.5× multiplier), this is ~25 L/kg: a \$0.70/L hydrolysate medium costs ~\$17.5/kg output; a \$1.25/L pharma-grade medium costs ~\$31/kg. At 200 g/L perfusion with 1.0× turnover (~5 L/kg), the same formulations cost \$3.5/kg and \$6.25/kg respectively — illustrating the inverse-density relationship when all other inputs are fixed; both density and price have unit elasticity in this formula. The "Media" bar in the cost breakdown chart already shows this \$/kg result directly.
 
 **Note on correlation with density:** \$/L and cell density (g/L) are not fully independent — richer media is often needed to sustain higher densities, particularly in fed-batch systems where cells deplete the available nutrient pool. Combining a very low $/L with a very high density assumption in the same scenario may therefore overstate cost savings. The model partially addresses this via process-mode-specific density ranges, but does not impose explicit correlation between $/L and density within a given mode. See [Model Limits](limits.qmd#parameter-grounding) for discussion.
 :::
@@ -1430,7 +968,7 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 
 **This slider has been removed.** A previous version of the model carried a separate "food-grade micronutrients" cost line (vitamins, minerals, trace salts). That structure double-counted basal media, which the model already describes as providing "amino acids, glucose, vitamins."
 
-Basal micronutrients (vitamins, minerals, trace salts) are not modeled separately here. Basal media on this page already includes vitamins, and the literature suggests vitamin/mineral sourcing is relatively low-cost compared with growth factors and recombinant proteins ([O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678): vitamin sourcing is a "less pressing issue" and required minerals can "generally be obtained relatively inexpensively"). We therefore include basal micronutrients inside media $/L and reserve separate uncertainty terms for supplemental recombinant proteins (insulin, transferrin, albumin) if/when we add them as a standalone category — see the [model change log](#micronutrient-change-note) below.
+Basal micronutrients (vitamins, minerals, trace salts) are not modeled separately here. Basal media on this page already includes vitamins, and the literature suggests vitamin/mineral sourcing is relatively low-cost compared with growth factors and recombinant proteins ([O'Neill et al. 2021](https://ift.onlinelibrary.wiley.com/doi/abs/10.1111/1541-4337.12678): vitamin sourcing is a "less pressing issue" and required minerals can "generally be obtained relatively inexpensively"). We therefore include basal micronutrients inside media $/L and reserve separate uncertainty terms for the supplemental recombinant proteins (insulin, transferrin, albumin) now modeled separately — see the [model change log](#micronutrient-change-note) below.
 </details>
 
 <a id="growth-factors-explanation"></a>
@@ -1455,7 +993,7 @@ viewof p_recfactors = Inputs.range([0.1, 0.9], {
 //| echo: false
 viewof gf_progress = Inputs.range([0, 100], {
   value: urlNum("gf_progress", 50), step: 5,
-  label: html`GF cost reduction by ${target_year} (%)`
+  label: html`GF price progress index for ${target_year} (%)`
 })
 ```
 <details><summary>What do these sliders control? (click to expand)</summary>
@@ -1501,7 +1039,7 @@ The probability slider represents whether **at least one** of these technology a
 | Scenario | Usage (g/kg) | Price ($/g) | **Cost/kg chicken** |
 |----------|-------------|-------------|---------------------|
 | No breakthrough (Humbird formulation × 8–60 L/kg media use) | 0.001 – 0.006 | $500 – $50,000 | **$0.5 – $300** |
-| Breakthrough achieved (≈3× usage reduction) | 0.0005 – 0.002 | $1 – $100 | **$0.0005 – $0.2** |
+| Breakthrough achieved (≈3× usage reduction) | 0.0005 – 0.002 | $10 – $1,000 | Endpoint products $0.005–2 (not a cost credible interval) |
 
 **Where the quantity range comes from.** GFI's 2023 recombinant-protein cost analysis reproduces the Humbird medium formulation with FGF at 0.1 mg/L and TGFβ at 0.002 mg/L — about 0.102 mg/L of true growth factors combined. GFI's efficient-future scenarios assume roughly 8–13 L media per kg meat; less-optimized processes may use up to ~60 L/kg. Multiplying through gives ≈**0.0008–0.006 g true GF/kg** as the defensible cited range, with Pasitka et al. (2024)'s empirical ACF chicken process landing at ~0.00187 g/kg — comfortably inside this band. An earlier version of this model used 0.0001–0.02 g/kg, which was too broad on both tails.
 
@@ -1529,7 +1067,7 @@ viewof p_supp_protein = Inputs.range([0.20, 0.95], {
 
 <details><summary>About supplemental proteins and cost ranges (click to expand)</summary>
 
-**Albumin, transferrin, and insulin** are media additives — structural/survival proteins distinct from growth factors. They are widely used in serum-free cell culture but rarely modeled explicitly in CM TEAs (usually bundled into "other VOC" or media cost).
+**Albumin, transferrin, and insulin** are media additives — proteins grouped separately here for cost accounting (insulin also has signaling functions). They are widely used in serum-free cell culture but rarely modeled explicitly in CM TEAs (usually bundled into "other VOC" or media cost).
 
 Per GFI's 2024 supply-chain analysis, albumin is expected to represent ~97% of anticipated recombinant protein production volume for CM. At typical cell-culture concentrations (~1 mg/mL albumin) and the model's L/kg range, the per-kg cost contribution is:
 
@@ -1683,14 +1221,14 @@ The model computes total working volume as: `total_volume = annual_output / (den
 <div class="full-mode-only">
 ```
 
-**Advanced: <span title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / harvest concentration.">Media-use multiplier (×)</span>**
+**Advanced: <span title="Net fresh media consumed per kg of cells, divided by the nominal (1000/density) reactor-fill volume. 1 = batch; >1 = perfusion; <1 = recycling / fed-batch / explicit medium recovery.">Media-use multiplier (×)</span>**
 
 <details>
 <summary>What is this — and why can it be below 1? (click to expand)</summary>
 
 The model computes media volume per kg as `(1000 / density) × multiplier`. A value of **1** is traditional batch mode (fill reactor once, harvest); **>1** is perfusion (multiple media-volume equivalents flow through during the run); **<1** represents media recycling, fed-batch with concentrated feeds, or harvest-side cell concentration. The [Learn page](learn.html#media-use-mechanisms) walks through all three mechanisms.
 
-**Why the range changed (April 2026):** the default p5–p95 was tightened from 1–10× to **0.5–3.0×**. The old floor of 1.0 was too restrictive — the GFI 2023 cost-competitive scenarios assume 8–13 L/kg, which at 60–90 g/L density implies a multiplier of roughly **0.5–1.2**. A floor of 1.0 mechanically excluded those scenarios no matter how high you pushed density. The new range covers both recycled/fed-batch (<1) and standard perfusion (up to ~3×); values of 5–10× remain plausible for heavily media-intensive processes but are now a stress-test region rather than the default.
+**Range interpretation:** The manual override uses p5–p95 0.5–3.0; default sampling instead uses process-specific ranges. These are lognormal percentiles, not hard bounds. Values below one need explicit medium recovery and consistently priced replacement nutrients. For example, 8 L/kg at 90 g/L implies a multiplier of 0.72, while the same medium use at 200 g/L implies 1.6. A lower multiplier is not the only way to achieve a particular L/kg value.
 
 </details>
 
@@ -1838,7 +1376,7 @@ viewof expert_priors_adv = {
   details.style.cssText='border:1.5px solid #3498db;border-radius:6px;overflow:hidden;margin:10px 0 4px;';
   const summary = document.createElement('summary');
   summary.style.cssText='padding:7px 10px;background:#f0f8ff;cursor:pointer;font-size:0.82rem;font-weight:600;color:#1a5276;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;';
-  summary.innerHTML = '◧ Set my own uncertainty ranges <span style="font-size:0.68rem;font-weight:400;color:#888;margin-left:auto;" title="Override the model\'s built-in uncertainty ranges for the three biggest cost drivers with your own 80% credible intervals (p10/p90) — the same format as the beliefs form (CM_13, CM_14, CM_16). Overrides apply after bundled-media mode; leave blank to use defaults.">(?)</span>';
+  summary.innerHTML = '◧ Set my own uncertainty ranges <span style="font-size:0.68rem;font-weight:400;color:#888;margin-left:auto;" title="Override the model\'s built-in uncertainty ranges for the three biggest cost drivers with your own 80% credible intervals (p10/p90) — the same format as the beliefs form (CM_13, CM_14, CM_16). Media overrides follow the selected accounting scope; separate GF overrides are ignored in bundled mode. Leave blank to use defaults.">(?)</span>';
   const body = document.createElement('div');
   body.style.cssText='padding:10px 12px;display:flex;flex-direction:column;gap:10px;';
   const intro = document.createElement('p');
@@ -1851,7 +1389,7 @@ viewof expert_priors_adv = {
   body.append(
     intro, activeNote,
     row('Media cost ($/kg biomass)',
-        'Total cell culture media cost per kg of harvested cell biomass. Overrides the $/L × L/kg calculation — applies in both standard and bundled-media modes. Connects to CM_14 in the beliefs form. Default model range roughly p10≈5, p90≈120.',
+        'Basal media cost per kg in separable mode; complete medium cost per kg in bundled mode. Match the accounting scope of your source before entering a range. Overrides the $/L × L/kg calculation. Connects to CM_14 in the beliefs form. Default model range roughly p10≈5, p90≈120.',
         ['media_p10','media_p90'], ['e.g. 5','e.g. 80'], [1,5]),
     row('Growth factor cost ($/kg biomass)',
         'Total growth factor cost per kg of biomass. Bypasses the breakthrough regime switch — express your net belief directly. Connects to CM_13. Default range varies with the GF slider.',
@@ -1890,8 +1428,7 @@ viewof expert_priors_adv = {
 
 // Shared parameter object — consumed by both the primary run and the comparison run
 simParams = {
-  const yearFactor = Math.max(0, Math.min(1, (target_year - 2024) / 20));
-  const adjustedMaturity = maturity * (0.5 + 0.5 * yearFactor);
+  const adjustedMaturity = costModel.maturityForYear(maturity, target_year);
   return {
     plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
     plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,
@@ -1937,12 +1474,15 @@ simParams = {
 
 ```{ojs}
 //| echo: false
+html`<div role="status">${results.warnings.map(w => html`<p><strong>Scenario note:</strong> ${w}</p>`)}</div>`
+```
+
+```{ojs}
+//| echo: false
 
 // Primary simulation run (uses whatever mode is selected)
-// N=30,000: adequate precision for this model's decision-relevant outputs
-// (SE on median < 0.3%, SE on P(cost<$10/kg) < 0.2pp at p≈0.1).
-// Higher N (e.g. 200k) would reduce tail noise marginally but re-runs on every
-// slider drag — 30k keeps reactive updates imperceptible (<100ms in most browsers).
+// N=30,000 balances browser responsiveness and sampling precision.
+// Repeat-seed variability is reported by scripts/model-audit.mjs.
 results = simulate(30000, 42, simParams)
 
 // Comparison run: when CDMO mode is on, also run the in-house baseline
@@ -1996,7 +1536,7 @@ stats = {
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
 <strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Intended basis: wet cell biomass around the harvest gate. The calculation treats the cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry-matter content, and protein content can therefore differ across source studies. Includes media, growth factors, annualized bioreactor capital, plant overhead, and utilities. Excludes product formulation, texturization, packaging, distribution, and retail margins." style="text-decoration: underline dotted; cursor: help;">wet-biomass basis &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is a factory-gate ingredient-cost estimate, not a consumer-product price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
-<strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. The "price parity with conventional meat" threshold may therefore be achievable at higher per-kg cell costs than these numbers suggest.
+<strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. Assessing retail parity still requires a matched product and the remaining value-chain costs.
 <br><br>
 <strong>Three cautions before using the output:</strong> (1) source costs are not yet normalized to one real-dollar base year; (2) the CM_01 beliefs question conditions on large-scale commercial production being achieved, while this simulation also contains low-maturity draws and has no separate probability-of-commercialization stage; and (3) factory-gate biomass cost cannot be compared directly with retail chicken prices without matching inclusion rate, solids/protein basis, downstream yield, other ingredients, packaging, distribution, margin, geography, and currency year. The simple blended-product arithmetic below is an ingredient-cost scenario, not a price-parity result.
 </div>`
@@ -2070,6 +1610,9 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
 
   function downloadJSON() {
     const config = {
+      model_version: costModel.MODEL_VERSION,
+      effective_simulation_parameters: results.effective_params,
+      warnings: results.warnings,
       generated_at: new Date().toISOString(),
       dashboard_url: window.location.origin + window.location.pathname,
       shareable_link: window.location.href,
@@ -2165,7 +1708,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 //| echo: false
 {
   const uc = results.unit_cost;
-  const clipVal = Math.min(quantile(uc, 0.98), 200);
+  const clipVal = quantile(uc, 0.98);
   const clipped = uc.filter(x => x <= clipVal);
   const p20 = quantile(uc, 0.20);
   const p80 = quantile(uc, 0.80);
@@ -2243,6 +1786,10 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 
   document.body.appendChild(overlay);
   wrapper.appendChild(makeDistChart(800, 400, 12));
+  const tailNote = document.createElement("p");
+  tailNote.style.cssText = "font-size:0.85em;color:#666;";
+  tailNote.textContent = "Histogram shows the lowest 98% of draws. Summary statistics and threshold probabilities use every draw.";
+  wrapper.appendChild(tailNote);
   wrapper.appendChild(fsBtn);
   return wrapper;
 }
@@ -2257,7 +1804,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 - **Green dashed line**: 5th percentile (optimistic scenario)
 - **Blue solid line**: Median (50th percentile)
 - **Red dashed line**: 95th percentile (pessimistic scenario)
-- **Dark green dotted**: $10/kg reference (competitive with conventional chicken)
+- **Dark green dotted**: $10/kg reference (ingredient cost only; excludes retail costs)
 - **Orange dotted**: $25/kg reference (premium product viable)
 
 The **width** of the distribution shows uncertainty. Narrow = confident. Wide = uncertain.
@@ -2387,36 +1934,36 @@ These percentages answer: "What's the chance that production costs fall below ke
 
   const bs = stats.bs, fc = stats.fc;
   const grid = `<div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 1.5rem 0;">
-    ${card(10,  stats.prob_10,  'could approach conventional chicken pricing (~$5-10/kg retail)',  '#27ae60', stats.bprob_10,  bs, fc)}
-    ${card(25,  stats.prob_25,  'range where premium cultured products may be viable',              '#3498db', stats.bprob_25,  bs, fc)}
-    ${card(50,  stats.prob_50,  'potential niche/specialty market segment',                         '#f39c12', stats.bprob_50,  bs, fc)}
-    ${card(100, stats.prob_100, 'substantially cheaper than current lab-scale costs',               '#e74c3c', stats.bprob_100, bs, fc)}
+    ${card(10,  stats.prob_10,  'illustrative manufacturing-cost threshold',  '#27ae60', stats.bprob_10,  bs, fc)}
+    ${card(25,  stats.prob_25,  'illustrative manufacturing-cost threshold',              '#3498db', stats.bprob_25,  bs, fc)}
+    ${card(50,  stats.prob_50,  'illustrative manufacturing-cost threshold',                         '#f39c12', stats.bprob_50,  bs, fc)}
+    ${card(100, stats.prob_100, 'illustrative manufacturing-cost threshold',               '#e74c3c', stats.bprob_100, bs, fc)}
   </div>`;
 
   // When blending is on, also show consumer-relevant blended thresholds
   const blendRow = include_blending ? `
     <p style="font-size:0.88em; color:#1a5276; margin:0.5rem 0 0.3rem; font-weight:500;">
-      Blended product (${Math.round(bs*100)}% CM + ${Math.round((1-bs)*100)}% filler at $${fc}/kg) — consumer-relevant price points:
+      Blended product (${Math.round(bs*100)}% CM + ${Math.round((1-bs)*100)}% filler at $${fc}/kg) — ingredient-cost thresholds:
     </p>
     <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
       <div class="card" style="border: 2px solid ${stats.bprob_5  > 20 ? '#27ae60' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
         <h5 style="font-size:0.85em;">P(Blend &lt; $5/kg)</h5>
         <h2 style="color:#27ae60; margin:0.2rem 0;">${stats.bprob_5.toFixed(1)}%</h2>
-        <small>competitive with conventional chicken</small>
+        <small>ingredient cost only; excludes retail costs</small>
       </div>
       <div class="card" style="border: 2px solid ${stats.bprob_8  > 30 ? '#3498db' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
         <h5 style="font-size:0.85em;">P(Blend &lt; $8/kg)</h5>
         <h2 style="color:#3498db; margin:0.2rem 0;">${stats.bprob_8.toFixed(1)}%</h2>
-        <small>competitive with premium chicken/beef</small>
+        <small>ingredient cost only; excludes retail costs</small>
       </div>
       <div class="card" style="border: 2px solid ${stats.bprob_12 > 50 ? '#f39c12' : '#ddd'}; padding: 0.8rem; border-radius: 8px; text-align: center;">
         <h5 style="font-size:0.85em;">P(Blend &lt; $12/kg)</h5>
         <h2 style="color:#f39c12; margin:0.2rem 0;">${stats.bprob_12.toFixed(1)}%</h2>
-        <small>affordable specialty market</small>
+        <small>ingredient cost only; excludes retail costs</small>
       </div>
     </div>
     <p style="font-size:0.82em; color:#777; margin-bottom:1rem; font-style:italic;">
-      Key insight: even if pure cell costs remain high ($50-100/kg), a 20-30% CM blended product can still approach conventional chicken pricing — the blend ratio and filler cost ($${fc}/kg) matter as much as cell costs alone.
+      Blending reduces the cultured-cell contribution per kg of product. The result excludes formulation losses, processing, packaging, distribution, and retail margins.
     </p>` : '';
 
   return html([grid + blendRow]);
@@ -2430,7 +1977,7 @@ These percentages answer: "What's the chance that production costs fall below ke
 ```{ojs}
 //| echo: false
 {
-  const mediaLabel = bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)";
+  const mediaLabel = bundled_media ? "Complete Media (all proteins included)" : "Media (incl. basal micros)";
   const allComponents = [
     {name: mediaLabel,               value: mean(results.cost_media),          color: "#27ae60"},
     {name: "Growth Factors",         value: mean(results.cost_recf),           color: "#9b59b6"},
@@ -2545,7 +2092,7 @@ function formatCost(val) {
 
 {
   const allComponents = [
-    {name: bundled_media ? "Complete Media (incl. GFs)" : "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
+    {name: bundled_media ? "Complete Media (all proteins included)" : "Media (incl. basal micros)", data: results.cost_media, color: "#27ae60"},
     {name: "Growth Factors", data: results.cost_recf, color: "#9b59b6"},
     {name: "Supplemental Proteins (albumin/transferrin/insulin)", data: results.cost_supp_protein, color: "#e67e22"},
     {name: "Other VOC", data: results.cost_other_var, color: "#7f8c8d"},
@@ -2631,7 +2178,7 @@ html`<div style="display:flex; gap:2rem; flex-wrap:wrap; font-size:0.95em; paddi
 
 ### Sensitivity Analysis (Tornado Chart)
 
-Which parameters have the most impact on the final cost? Each bar shows the **dollar swing** in mean unit cost between simulations where the parameter is in its top 10% versus its bottom 10%. Larger bars = bigger levers on cost.
+Which parameters have the most impact on the final cost? Each bar shows the **dollar swing** in mean unit cost between simulations where the parameter is in its top 10% versus its bottom 10%. Larger bars indicate stronger associations under the selected assumptions.
 
 ```{ojs}
 //| echo: false
@@ -2653,11 +2200,27 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     {name: "WACC (financing)",                   data: results.wacc_samples,           kind: "primitive"},
     {name: "Asset Life (years)",                 data: results.asset_life_samples,     kind: "primitive"},
     {name: "Plant Capacity (kTA)",               data: results.plant_kta_samples,      kind: "primitive"},
+    {name: "Effective production time (days)", data: results.cycle_days_samples, kind: "primitive"},
     {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
   ];
 
+  // Exclude replaced or disabled inputs rather than ranking irrelevant random draws.
+  const mediaOverride = simParams.ep_media_p10 > 0 && simParams.ep_media_p90 > simParams.ep_media_p10;
+  const gfOverride = simParams.ep_gf_p10 > 0 && simParams.ep_gf_p90 > simParams.ep_gf_p10;
+  const capitalActive = !simParams.cdmo_mode && simParams.include_capex;
+  const activeParams = params.filter(p => {
+    if (p.name.startsWith("Media $/L") || p.name.startsWith("Media-use")) return !mediaOverride;
+    if (p.name.startsWith("GF ")) return !simParams.bundled_media && !gfOverride;
+    if (p.name.startsWith("WACC") || p.name.startsWith("Asset Life") || p.name.startsWith("Effective production")) return capitalActive;
+    if (p.name.startsWith("Cell Density")) return !mediaOverride || capitalActive;
+    if (p.name.startsWith("Plant Capacity") || p.name.startsWith("Utilization")) return capitalActive || (!simParams.cdmo_mode && simParams.include_fixed_opex);
+    return true;
+  });
+  if (mediaOverride) activeParams.push({name: "Media cost override ($/kg)", data: results.cost_media, kind: "override"});
+  if (gfOverride && !simParams.bundled_media) activeParams.push({name: "GF cost override ($/kg)", data: results.cost_recf, kind: "override"});
+
   // Compute signed swings: positive = high param → higher cost (red); negative = high param → lower cost (green)
-  const swingsRaw = params.map(p => ({
+  const swingsRaw = activeParams.map(p => ({
     name: p.name,
     kind: p.kind,
     rawSwing: conditionalSwing(p.data, uc, 0.10)
@@ -2680,7 +2243,7 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
     marginLeft: 290,
     marginRight: 120,
     x: {
-      label: "Dollar swing in mean unit cost ($/kg) — larger bar = bigger lever on cost",
+      label: "Dollar swing in mean unit cost ($/kg) — larger bar = stronger cost association",
       domain: [0, maxAbs + pad],
       grid: true,
       labelOffset: 40,
@@ -2708,13 +2271,13 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
   });
 
   return html`<div style="font-size: 1em;">
-    <div style="font-weight: normal; font-size: 1.05em; margin-bottom: 0.5rem; color: #333;">Which parameters matter most? (dollar impact on mean cost)</div>
+    <div style="font-weight: normal; font-size: 1.05em; margin-bottom: 0.5rem; color: #333;">Which sampled inputs are associated with higher or lower costs?</div>
     ${tornadoPlot}
   </div>`;
 }
 ```
 
-*Red bars: when this parameter is high, cost is higher (a cost driver). Green bars: when high, cost is lower (a cost reducer). Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is NOT a variance decomposition — bars for correlated parameters can overlap and should not be summed. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
+*Red bars: high values occur with higher costs. Green bars: high values occur with lower costs. Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is an association, not an intervention effect or variance decomposition. Correlated inputs overlap; bars should not be summed or interpreted as research value. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
 
 ### Industry Maturity Deep Dive
 
@@ -2735,7 +2298,7 @@ The **maturity factor** is a continuous variable ranging from 0 (nascent industr
 - Scenarios where all dimensions co-move together (high maturity = everything goes well; low maturity = everything is hard) will be overrepresented relative to a fully independent model
 - Scenarios where, say, bioprocess technology matures rapidly but financing remains difficult are partly suppressed
 - **Stress test:** Set the maturity slider to 0.1 (pessimistic) and 0.9 (optimistic) and compare — the difference captures the full correlated scenario range. Then check whether P(cost < $25/kg) changes materially
-- The alternative — modeling technology adoption, reactor costs, and financing as fully *independent* — can be approximated by setting maturity to exactly 0.5 and reading the adoption probabilities as unconditional (no maturity adjustment)
+- Setting the maturity mean to 0.5 does not remove dependence: maturity still varies across draws. A true independence stress test must change dependence while preserving marginal assumptions.
 
 We plan to offer explicit alternative correlation modes (independent / coupled) in a future update.
 :::
@@ -2877,7 +2440,7 @@ The scatter plot shows how **maturity** (x-axis) relates to **unit cost** (y-axi
 - **Color gradient**: Higher density (yellow) tends to cluster at lower costs
 - **Spread**: Even at high maturity, costs vary due to other random factors
 
-This correlation structure prevents unrealistic scenarios where technology succeeds but financing remains difficult, or vice versa.
+This is an assumed dependence structure. Technical success with difficult financing, and the reverse, remain plausible scenarios.
 </details>
 
 :::
@@ -2947,19 +2510,7 @@ The model runs **30,000 Monte Carlo simulations**, sampling from parameter distr
 
 ## Key Insights
 
-The table below summarizes typical outcomes from this interactive model at different maturity settings. These are illustrative ranges -- the actual results shown in the charts above update dynamically as you adjust the sidebar parameters.
-
-| Scenario | Typical Median Cost | Key Drivers |
-|----------|---------------------|-------------|
-| High maturity (0.7+) | $15-30/kg | All technologies adopted, low WACC |
-| Baseline (0.5) | $25-50/kg | Mixed adoption, moderate uncertainty |
-| Low maturity (0.3-) | $50-100+/kg | Pharma-grade inputs, high financing costs |
-
-**Most sensitive parameters:**
-
-1. Technology adoption (especially hydrolysates)
-2. Cell density at harvest
-3. Industry maturity (affects multiple factors)
+The [versioned September audit](review-2026-09.qmd#what-the-revised-defaults-imply) compares the current defaults across process scenarios and multiple random seeds. Use the live results above for your selected settings. The largest remaining questions concern coherent process productivity and medium requirements, commercial-success conditioning, and evidence for the joint priors.
 
 ---
 
@@ -3027,8 +2578,8 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 <summary>Parameters where source grounding is weakest — review priority (click to expand)</summary>
 
 - Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
-- Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. The remaining uncertainty lives in the **$/g** of growth factors, not in the grams/kg.
-- Media-use multiplier — **renamed and tightened April 2026** from "Media turnover (1–10×)" to "Media-use multiplier (0.5–3.0×)". The rename flags that the parameter is a bundled ratio (fresh media / nominal reactor volume), not a literal count of reactor-volume changes, so values below 1 (recycling, fed-batch, harvest concentration) are now allowed. The new range lets the model represent GFI 2023 cost-competitive scenarios (8–13 L/kg ≈ 0.5–1.2× at 60–90 g/L); the old floor of 1.0 mechanically excluded those. See [Learn: media-use mechanisms](learn.html#media-use-mechanisms) for the derivation.
+- Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. Both dosage and price remain uncertain; the current per-kg dosage draw is not coupled to realized medium use.
+- Media-use multiplier — **renamed and tightened April 2026** from "Media turnover (1–10×)" to "Media-use multiplier (0.5–3.0×)". The rename flags that the parameter is a bundled ratio (fresh media / nominal reactor volume), not a literal count of reactor-volume changes, so values below 1 (recycling, fed-batch, explicit medium recovery) are now allowed. The new range lets the model represent GFI 2023 cost-competitive scenarios (8–13 L/kg ≈ 0.5–1.2× at 60–90 g/L); the old floor of 1.0 excluded some combinations at fixed density. See [Learn: media-use mechanisms](learn.html#media-use-mechanisms) for the derivation.
 - Cycle days (0.5-5.0 days) — hardcoded without source attribution
 - Plant factor (1.5-3.5×) — standard engineering multiplier range, not CM-specific
 

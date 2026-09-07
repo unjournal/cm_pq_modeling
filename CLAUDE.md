@@ -43,6 +43,16 @@ cm_pq_modeling/
 
 ## Dashboard Technology Stack
 
+### Current calculation engine (September 2026)
+
+- `dashboard/cost-model.mjs` is the shared, versioned engine for both browser views. The Python and Squiggle files are historical and are not equivalent current implementations.
+- Run `node --test tests/cost-model.test.mjs` before shipping calculation changes. Tests cover accounting, utilization, paired comparisons, probability boundaries, and the actual Simple/Advanced parameter adapters.
+- Run `node scripts/model-audit.mjs` for default and process-scenario results, multiple seeds, effective parameters, and the engine SHA-256.
+- In OJS, import the module using `new URL("./cost-model.mjs", window.location.href).href`; a bare relative dynamic import resolves against the Quarto runtime directory instead of the page.
+- The scientific review is `dashboard/review-2026-09.qmd`. Keep `docs.qmd` and `limits.qmd` synchronized with implementation changes.
+- Nameplate capacity sets installed volume and annual overhead; actual output includes utilization. Complete medium includes all proteins once. Keep component random streams stable for paired scenario comparisons.
+- These are scenario distributions in mixed source-year dollars, not a calibrated conditional commercialization forecast.
+
 ### Quarto + Observable JS (OJS)
 - **Quarto**: Document/website generator (v1.6+)
 - **Observable JS (OJS)**: Reactive JavaScript for interactive visualizations

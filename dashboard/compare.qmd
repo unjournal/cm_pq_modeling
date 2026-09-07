@@ -9,6 +9,10 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-important}
+**Source correction, 7 September 2026.** [Pasitka Supplement Table S10](https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs43016-024-01022-w/MediaObjects/43016_2024_1022_MOESM1_ESM.pdf) distinguishes wet-biomass operating costs ($38.54, $24.06, $21.49/kg for ATF, TFF, and large perfusion) from product costs ($22.27, $15.03, $13.75/kg). Earlier versions of this page mislabeled the product row as pure cell mass. Table S4 separately gives an annual capital charge; it is not visibly included in the S10 total. Comparisons with this dashboard must reconcile that boundary.
+:::
+
 ::: {.callout-warning}
 ## Work in Progress — Feedback Welcome
 This comparison is **largely AI-generated** based on our reading of the cited sources. We are not the domain experts — this is a framework for structured discussion, not a definitive assessment. For corrections, alternative data, or methodological debate, please post in the [substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) (see the [discussion map](discuss.html) for topic-specific threads). For quick inline notes, use [Hypothesis](https://hypothes.is/) (the `<` tab on the right). The May 2026 workshop is complete; its [summary](https://uj-cm-workshop.netlify.app/summary.html) and follow-up modeling proposal now provide additional context.
@@ -60,7 +64,7 @@ The tables below attempt to put these studies on a comparable footing. Where a d
 <tr style="border-bottom: 1px solid #dee2e6;">
   <td style="padding: 8px;"><strong><a href="https://www.nature.com/articles/s43016-024-01022-w">Pasitka et al. 2024</a></strong> (Nature Food + supplement)</td>
   <td style="padding: 8px;">Chicken; pure cell mass (ACF medium)</td>
-  <td style="padding: 8px;">$13.75/kg (large perfusion), $15.03/kg (TFF), $22.27/kg (ATF) — Supplement Table S10. The widely-cited ~$6/lb figure is a 50/50 hybrid product (per GFI State of Industry 2024); pure cell mass costs are higher.</td>
+  <td style="padding: 8px;">$21.49/kg (large perfusion), $24.06/kg (TFF), $38.54/kg (ATF) for wet biomass in Supplement Table S10. The $13.75/$15.03/$22.27 figures are the separate product row. These totals sum variable and fixed OPEX; reconcile the annual capital charge in Table S4 before comparing with fully annualized costs.</td>
   <td style="padding: 8px;">2×25m³ (perfusion), 10×5m³ (TFF), 25×2m³ (ATF); 14.6% annual capital charge</td>
   <td style="padding: 8px;">Believer Meats shut down Dec 2025. Only chicken-specific TEA in the literature.</td>
 </tr>
@@ -217,12 +221,11 @@ This is where the differences become clearest. Each study makes different assump
 
 <div class="waterfall-study">
 <h4><a href="https://www.nature.com/articles/s43016-024-01022-w">Pasitka 2024</a><br><small>(Chicken, large perfusion)</small></h4>
-<div class="cost-bar"><span class="label">Media</span><div class="bar media" style="width: 120px;">~$6-8/kg</div></div>
-<div class="cost-bar"><span class="label">Growth factors</span><div class="bar gf" style="width: 30px;">incl.</div></div>
-<div class="cost-bar"><span class="label">CAPEX</span><div class="bar capex" style="width: 70px;">~$3-4/kg</div></div>
-<div class="cost-bar"><span class="label">Fixed OPEX</span><div class="bar opex" style="width: 40px;">~$2/kg</div></div>
-<div class="study-total">$13.75/kg</div>
-<div class="study-note">Pure cell mass, ACF medium<br>Believer Meats (shut down Dec 2025)</div>
+<div class="cost-bar"><span class="label">Nutrients</span><div class="bar media" style="width: 141px;">$14.11/kg</div></div>
+<div class="cost-bar"><span class="label">Consumables + utilities</span><div class="bar other" style="width: 50px;">$2.25/kg</div></div>
+<div class="cost-bar"><span class="label">Fixed OPEX</span><div class="bar opex" style="width: 65px;">$5.13/kg</div></div>
+<div class="study-total">$21.49/kg wet biomass</div>
+<div class="study-note">Table S10 operating-cost total.<br>Annual capital charge requires separate reconciliation.</div>
 </div>
 
 <div class="waterfall-study">
@@ -248,7 +251,7 @@ This is where the differences become clearest. Each study makes different assump
 </div>
 ```
 
-*Note: Growth factor costs in Pasitka are included in the media cost figure ($0.63/L ACF medium) and not separately broken out. Humbird reports GFs at $3-4/kg assuming bulk pricing breakthroughs. Component breakdown for CE Delft is omitted as they do not report comparable per-kg component costs across most scenarios.*
+*Note: Pasitka Table S5 breaks out growth factors within the ACF nutrient total; they must not be added again to complete-medium cost. Humbird reports GFs at $3-4/kg assuming bulk pricing breakthroughs. Component breakdown for CE Delft is omitted as they do not report comparable per-kg component costs across most scenarios.*
 
 ---
 
@@ -320,7 +323,7 @@ Rather than showing all numbers, this highlights where the studies **most disagr
 <tr class="high-diverge">
   <td><strong>Output basis</strong></td>
   <td><span class="divergence-tag high">HIGH</span></td>
-  <td>50/50 hybrid (~$6/lb headline) or pure cell mass ($13.75/kg)</td>
+  <td>50/50 hybrid (~$6/lb headline) or wet biomass ($21.49/kg operating-cost total)</td>
   <td>Pure wet cell mass ($37-51/kg, Humbird)</td>
   <td>Comparing hybrid product cost to pure cell mass cost is an apples-to-oranges error that inflates apparent agreement between studies.</td>
 </tr>
@@ -380,7 +383,7 @@ Based on the studies above, here is a rough bracketing for **pure cultivated chi
 <tr style="border-bottom: 1px solid #dee2e6; background: #e8f5e9;">
   <td style="padding: 8px;">Optimistic</td>
   <td style="padding: 8px;">~$14-18/kg</td>
-  <td style="padding: 8px;">Anchored by Pasitka supplement's chicken-specific large-scale perfusion ($13.75/kg) and TFF ($15.03/kg). Modeled, not demonstrated at commercial scale. Believer Meats' shutdown adds uncertainty about near-term achievability.</td>
+  <td style="padding: 8px;">Exploratory lower-cost scenario, not directly supported by Pasitka Table S10: its wet-biomass operating totals are $21.49/kg (large perfusion) and $24.06/kg (TFF), before resolving capital treatment. Do not treat this band as a literature-derived quantile.</td>
 </tr>
 <tr style="border-bottom: 1px solid #dee2e6; background: #fff3e0;">
   <td style="padding: 8px;">Central</td>
