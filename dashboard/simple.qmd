@@ -24,7 +24,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-[September 2026 review: corrections and modeling priorities](review-2026-09.qmd)
+::: {.callout-note}
+## Model versions
+
+This page runs the **current model** (engine `2026-09-07.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+:::
 
 ::: {.callout-warning}
 ## Preliminary model — for exploration only

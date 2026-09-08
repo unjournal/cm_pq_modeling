@@ -39,7 +39,11 @@ format:
 </div>
 ```
 
-[September 2026 review: corrections and modeling priorities](review-2026-09.qmd)
+::: {.callout-note}
+## Model versions
+
+This page runs the **current model** (engine `2026-09-07.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+:::
 
 ::: {.callout-note collapse="true"}
 ## New to this model?
@@ -1214,7 +1218,7 @@ The model computes total working volume as: `total_volume = annual_output / (den
 
 **Why it's not a direct slider (yet):** Adding individual tank size would require modeling the number of tanks, contamination batch-failure rates, and the trade-off between scale and reliability. This is a planned enhancement. For now, the **Plant Capacity** and **Cell Density** parameters together determine total working volume, and the **custom reactor ratio** (in full view) captures the pharma-vs-food-grade cost difference.
 
-**Workshop discussion:** This is one of the key cruxes for the [upcoming CM workshop](https://uj-cm-workshop.netlify.app/) — what bioreactor scale is realistic, and what does it cost?
+**Workshop discussion:** This was one of the key cruxes for the [May 8, 2026 CM workshop](https://uj-cm-workshop.netlify.app/) — what bioreactor scale is realistic, and what does it cost?
 </details>
 
 ```{=html}
@@ -2577,7 +2581,7 @@ Earlier versions of this model carried a separate **food-grade micronutrient** c
 <details>
 <summary>Parameters where source grounding is weakest — review priority (click to expand)</summary>
 
-- Supplemental recombinant proteins (insulin, transferrin, albumin) are **not currently broken out** as a separate cost line — they are implicitly absorbed into "Other VOC" or into media $/L. A dedicated uncertainty term sourced from supplier quotes would be an improvement (see the [model change log](#micronutrient-change-note) on why the old "micronutrients" line was removed).
+- Supplemental recombinant proteins (insulin, transferrin, albumin) are now broken out as a separate cost line in separable-media mode. Their ranges remain provisional and need supplier quotes or process-linked dosage evidence. In bundled complete-medium mode they are included in media $/L and are not added again.
 - Growth factor quantities — **tightened April 2026** from a very broad 0.0001–0.02 g/kg stress-test range to a cited 0.0005–0.006 g/kg default, derived from the Humbird medium formulation reproduced in [GFI 2023](https://gfi.org/wp-content/uploads/2023/01/GFI-report_Anticipated-growth-factor-and-recombinant-protein-costs-and-volumes-necessary-for-cost-competitive-cultivated-meat_2023-1.pdf) (FGF 0.1 mg/L + TGFβ 0.002 mg/L) × media-use assumptions of 8–60 L/kg, and cross-checked against [Pasitka et al. (2024)](https://www.nature.com/articles/s43016-024-01022-w)'s ~0.00187 g/kg empirical ACF figure. Both dosage and price remain uncertain; the current per-kg dosage draw is not coupled to realized medium use.
 - Media-use multiplier — **renamed and tightened April 2026** from "Media turnover (1–10×)" to "Media-use multiplier (0.5–3.0×)". The rename flags that the parameter is a bundled ratio (fresh media / nominal reactor volume), not a literal count of reactor-volume changes, so values below 1 (recycling, fed-batch, explicit medium recovery) are now allowed. The new range lets the model represent GFI 2023 cost-competitive scenarios (8–13 L/kg ≈ 0.5–1.2× at 60–90 g/L); the old floor of 1.0 excluded some combinations at fixed density. See [Learn: media-use mechanisms](learn.html#media-use-mechanisms) for the derivation.
 - Cycle days (0.5-5.0 days) — hardcoded without source attribution

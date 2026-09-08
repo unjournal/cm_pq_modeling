@@ -11,6 +11,10 @@ This is an AI-assisted review by Codex, based on the repository's calculations a
 
 **My assessment:** the model is useful for making assumptions explicit and comparing scenarios. Its numerical precision exceeds its evidential precision. The biggest improvement would be a small set of physically coherent, source-reproducing process scenarios, followed by explicit uncertainty about which scenarios can operate commercially. More sliders or simulation draws would contribute less at this stage.
 
+## Model versions and reproducibility
+
+The [current model](index.qmd) uses engine `2026-09-07.1` and includes the corrections below. The [hosted workshop-era model](archive/workshop-2026-05-08/) preserves the build deployed at 9:57 a.m. Eastern on May 8, 2026, the workshop date. Its exact source is permanently named by the [`workshop-2026-05-08` Git tag](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). Use that version when reconstructing what workshop participants could see; use the current version for new analysis. The archive intentionally retains mistakes described in this review.
+
 ## Corrections made in this revision
 
 1. **One calculation engine for both browser views.** Simple and Advanced previously differed in supplemental proteins, other variable costs, year adjustment, and random-number ordering. Both now import `cost-model.mjs`; tests execute their actual parameter adapters and verify identical costs at matching settings in 2026, 2036, and 2050. Python and Squiggle remain explicitly historical implementations.
