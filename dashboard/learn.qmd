@@ -36,8 +36,8 @@ format:
 ---
 
 ::: {.callout-note collapse="true"}
-## Workshop: Cultured Meat Cost Trajectories (Late April / Early May 2026)
-This page provides background for [The Unjournal's upcoming expert workshop](https://uj-cm-workshop.netlify.app/) on CM production costs. We're bringing together TEA researchers, evaluators, and stakeholders to assess cost trajectories and identify key uncertainties. [Join us](https://uj-cm-workshop.netlify.app/schedule.html)
+## Workshop background and continuing work
+This guide began as background for [The Unjournal's May 8, 2026 cultivated-meat workshop](https://uj-cm-workshop.netlify.app/). It remains a working introduction to the production process and the assumptions that drive cost estimates. See the [preliminary workshop synthesis](https://uj-cm-workshop.netlify.app/synthesis.html), or [contribute a forecast](https://uj-cm-workshop.netlify.app/cm-cost-beliefs.html).
 :::
 
 ```{=html}
