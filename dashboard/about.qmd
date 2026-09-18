@@ -7,7 +7,7 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-tip collapse="false"}
+::: {.callout-tip collapse="true"}
 ## Share Your Feedback
 
 **For substantive or longer-form discussion — please use [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions)** so the conversation can get involved, get threaded replies, and stay organized. See the curated [📖 Discussion Map](discuss.html). Four hubs:

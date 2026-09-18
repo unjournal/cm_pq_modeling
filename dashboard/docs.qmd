@@ -350,7 +350,7 @@ The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For 
 
 ### 4. Technology Adoption & Maturity {#maturity-factor}
 
-The model uses a **maturity factor** to create realistic correlations between different aspects of industry development. Without this, the Monte Carlo simulation would generate unrealistic scenarios (e.g., breakthrough growth factor technology but prohibitively expensive financing).
+The baseline uses a **shared maturity factor** to couple several developments. This is an uncalibrated structural assumption. Cheap growth factors and expensive financing can coexist; Advanced now offers independent maturity channels to test how results depend on the shared factor. Each channel keeps its original marginal distribution. Other process and accounting dependencies remain.
 
 **Why should these be correlated?** The underlying logic is not that technology *causes* cheaper financing or vice versa. Rather, both are driven by a common set of enabling conditions -- investor confidence, regulatory clarity, talent availability, and demonstrated unit economics. In a world where the cultured meat industry develops well by the projection year, we would expect *both* technological breakthroughs *and* improved financing terms, because both flow from the same underlying industry momentum. See the [detailed explanation below](#why-should-technology-success-correlate-with-cheaper-financing) for the full causal story.
 
@@ -488,6 +488,20 @@ This produces the histograms and probability thresholds shown in the dashboard.
 
 ---
 
+::: {.callout-note collapse="true"}
+## September 17 structural alternatives {#structural-alternatives}
+
+The [response to Reports 5 and 6](review-response-2026-09.qmd#structures) documents three optional choices in Advanced:
+
+- **Independent maturity channels:** separate Beta draws for hydrolysates, GF adoption, supplemental proteins, WACC, and equipment, with the baseline marginal parameters and coefficients.
+- **Direct fresh-media intensity:** sample L/kg from a user-specified p5–p95 lognormal, replacing $(1000/D)T$. Initial 8–60 L/kg endpoints are an illustrative stress range, not fitted evidence. Density still determines reactor volume.
+- **Media-linked GF dose:** fresh L/kg × concentration in mg/L / 1000 × regime dose fraction. Initial concentration 0.102 mg/L reuses the earlier formulation assumption; cheap-regime fraction 0.4 approximates the earlier median-dose ratio. Both are editable, provisional assumptions.
+
+Direct media or GF $/kg priors override their respective equations. Complete-medium accounting includes proteins once and overrides separate GF costs. The controls and comparison report these precedence rules. The Simple view fixes all three structures at their baseline choices; its custom priors use the same fitter as Advanced.
+
+Each Monte Carlo draw is a hypothetical plant/process scenario. The model does not simulate an industry output-weighted average, a frontier plant, or the probability of commercial scale. Source dollars remain unnormalized.
+:::
+
 ## Expert Priors: Customizing Uncertainty Ranges {#expert-priors}
 
 The Simplest Model includes a collapsible "Set my own uncertainty ranges" panel that lets you override the model's built-in distributions for the three biggest cost drivers. This section explains what that means and how to use it.
@@ -516,7 +530,7 @@ In other words, your **80% credible interval** — you'd be genuinely surprised 
 | Conservative operator | 5 | 35 | Fed-batch dominates; density gains are slow |
 | Model default (mixed modes) | ~7 | ~110 | Weighted by process mode probabilities |
 
-Setting a higher p10 and p90 shifts the entire cost distribution down — fewer liters needed per kg of output → lower media cost and smaller required bioreactor volume.
+Higher density reduces required reactor volume. Under the baseline media equation it also reduces fresh L/kg; direct fresh-media mode removes that imposed relationship.
 
 **Example: Media cost ($/kg biomass)**
 
@@ -540,11 +554,9 @@ Setting GF cost $/kg directly *bypasses the breakthrough probability slider* —
 
 ### How the distribution is constructed
 
-Your p10 and p90 define a **lognormal distribution**. Lognormal is the right shape for costs: it's always positive, right-skewed (a small probability of very high costs), and multiplicative uncertainty compounds naturally. The model uses:
+Both views accept **p10, an optional p50, and p90**. With p50 supplied, a two-piece lognormal preserves all three population quantiles. Without p50, the previous two-endpoint lognormal remains, with median $\sqrt{p_{10}p_{90}}$. Neither choice determines the tails from evidence. Equal quantiles allow point masses; invalid or incomplete rows retain the last valid settings and show an explanation.
 
-$$\mu = \frac{\ln(p_{10}) + \ln(p_{90})}{2}, \quad \sigma = \frac{\ln(p_{90}) - \ln(p_{10})}{2 \times 1.28}$$
-
-where 1.28 is the 90th percentile of the standard normal. The median of your distribution is $e^\mu = \sqrt{p_{10} \times p_{90}}$ — the geometric mean of your bounds.
+The [September 17 response](review-response-2026-09.qmd#quantiles) gives the formula, provenance (Report 5), validation rules, and example 8/20/100. Finite simulation samples approximate these population quantiles.
 
 ### Interaction with other sliders
 
@@ -552,13 +564,13 @@ When you override a cost driver:
 
 - **Media cost $/kg override** — replaces the entire media cost calculation; the hydrolysate slider and density slider no longer affect media cost (cell density still affects CAPEX through bioreactor volume)
 - **GF cost $/kg override** — replaces the entire GF cost calculation; the GF breakthrough slider no longer affects GF cost
-- **Cell density override** — replaces all process-mode-specific density sampling; still affects both media cost (through L/kg) and CAPEX (through bioreactor volume); mode distribution still affects media turnover
+- **Cell density override** — replaces all process-mode-specific density sampling; affects CAPEX through bioreactor volume and, under the baseline density-derived structure, media cost through L/kg; direct fresh-media intensity removes the latter dependence
 
 Overrides stack: you can set all three simultaneously to see what *your specific combination of beliefs* implies for the overall cost distribution.
 
 ### Connection to the beliefs form
 
-These three parameters correspond directly to beliefs form questions:
+These controls concern quantities related to the beliefs form. Before transferring a response, check whether the question asks for the same accounting scope and a representative plant or a frontier maximum:
 
 | Override parameter | Beliefs form question |
 |---|---|
@@ -566,7 +578,7 @@ These three parameters correspond directly to beliefs form questions:
 | GF cost $/kg biomass | CM_13: growth factor cost per kg of biomass |
 | Cell density g/L | CM_16: achievable cell density in a 20,000-L bioreactor |
 
-If you've already filled in the beliefs form with a median and 80% CI for these questions, you can enter those same numbers here to see what they imply for the full cost distribution — closing the loop between elicitation and model exploration.
+If you've already filled in the beliefs form with a median and 80% CI for these questions, you can enter them here only when their definitions match to see what they imply for the full cost distribution — closing the loop between elicitation and model exploration.
 
 ---
 
@@ -996,10 +1008,13 @@ The model is better at estimating *how much* a technology improvement helps than
 
 ---
 
-## Changelog
+<details>
+<summary><strong>Version history</strong></summary>
 
 | Version | Date | Changes |
 |---------|------|---------|
 | v0.3 | 2026-02 | Separated Learn page, consolidated technical docs |
 | v0.2 | 2026-02 | Explicit scale/uptime, beta distributions, maturity factor |
 | v0.1 | 2026-01 | Initial Squiggle model based on UC Davis |
+
+</details>

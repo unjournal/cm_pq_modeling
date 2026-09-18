@@ -48,6 +48,8 @@ cm_pq_modeling/
 - `dashboard/cost-model.mjs` is the shared, versioned engine for both browser views. The Python and Squiggle files are historical and are not equivalent current implementations.
 - Run `node --test tests/cost-model.test.mjs` before shipping calculation changes. Tests cover accounting, utilization, paired comparisons, probability boundaries, and the actual Simple/Advanced parameter adapters.
 - Run `node scripts/model-audit.mjs` for default and process-scenario results, multiple seeds, effective parameters, and the engine SHA-256.
+- September 17 alternatives and responses: `dashboard/review-response-2026-09.qmd`. Run `node scripts/review-robustness.mjs` for structural alternatives and sample-size/seed checks; regenerate `dashboard/review-2026-09-17-audit.json` after engine changes.
+- `dashboard/model-controls.mjs` shares custom-prior validation between views. Optional p50 preserves all three quantiles; blank p50 retains the two-endpoint fit. Advanced structural controls are opt-in and provisional; Simple fixes baseline structures. Keep new settings and valid priors in URL state and exports.
 - In OJS, import the module using `new URL("./cost-model.mjs", window.location.href).href`; a bare relative dynamic import resolves against the Quarto runtime directory instead of the page.
 - The scientific review is `dashboard/review-2026-09.qmd`. Keep `docs.qmd` and `limits.qmd` synchronized with implementation changes.
 - Nameplate capacity sets installed volume and annual overhead; actual output includes utilization. Complete medium includes all proteins once. Keep component random streams stable for paired scenario comparisons.

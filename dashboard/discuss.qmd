@@ -8,10 +8,18 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-note collapse="true"}
+## September 17 model-response update
+
+[Read the discussion responses to Reports 5 and 6, implemented alternatives, provenance, and open questions](review-response-2026-09.qmd). The original September audit remains a record of that version.
+:::
+
+
 **Quick links:** [All GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions) · [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) · [PQ framing hub (#4)](https://github.com/unjournal/cm_pq_modeling/discussions/4) · [Workshop hub (#2)](https://github.com/unjournal/cm_pq_modeling/discussions/2) · [Platform & UX hub (#16)](https://github.com/unjournal/cm_pq_modeling/discussions/16)
 
 ---
 
+::: {.callout-note collapse="true"}
 ## How feedback becomes changes
 
 Two channels, two speeds:
@@ -23,8 +31,7 @@ Navigate to the page where you noticed the problem — the [model dashboard](htt
 Post in the [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/discussions/3) for anything that needs expert debate rather than a quick fix. Resolved discussions are committed to the model or site with the discussion linked in the commit message. Track implementation in the [git log](https://github.com/unjournal/cm_pq_modeling/commits/main).
 
 *Not sure which channel? Annotate first. If it needs broader discussion, the team will open a GitHub thread and link your annotation.*
-
----
+:::
 
 ## The structure
 

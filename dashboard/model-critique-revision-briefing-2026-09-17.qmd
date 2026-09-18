@@ -1,0 +1,18 @@
+---
+title: "Model critique and revision briefing"
+subtitle: "Audio transcript · September 17, 2026"
+format:
+  html:
+    toc: true
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+::: {.callout-note}
+This is the transcript of an **AI-generated narration** based on the current cultivated chicken cost model, two supplied deep research reports, the [written response to those reports](review-response-2026-09.qmd), and the [numerical audit](review-2026-09-17-audit.json). The research reports are treated as critiques rather than independently verified empirical evidence. The raw reports are not bundled with the public site because they include participant-specific material.
+
+[Listen or download the MP3](cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3)
+:::
+
+{{< include _model-critique-revision-briefing-2026-09-17-narrative.md >}}

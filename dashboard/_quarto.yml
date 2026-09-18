@@ -3,6 +3,9 @@ project:
   output-dir: _site
   resources:
     - cost-model.mjs
+    - model-controls.mjs
+    - review-2026-09-17-audit.json
+    - cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3
     - archive/**
 
 website:

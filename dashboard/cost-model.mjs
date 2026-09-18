@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-09-07.1";
+export const MODEL_VERSION = "2026-09-17.1";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -13,8 +13,45 @@ export const DEFAULT_PARAMS = Object.freeze({
   bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
   override_mode_constraints: false,
   ep_media_p10: null, ep_media_p90: null, ep_gf_p10: null, ep_gf_p90: null,
-  ep_density_p10: null, ep_density_p90: null
+  ep_density_p10: null, ep_density_p90: null,
+  ep_media_p50: null, ep_gf_p50: null, ep_density_p50: null,
+  dependence_mode: "shared", media_use_model: "density",
+  fresh_media_p5: 8, fresh_media_p95: 60,
+  gf_dose_model: "per_kg", gf_concentration_mg_L: 0.102,
+  gf_cheap_dose_fraction: 0.4
 });
+
+// Review-driven structural alternatives. These are scenario choices, not new evidence.
+export const REVIEW_PROVENANCE = Object.freeze({
+  quantiles: "Report 5, Belief elicitation: preserve p10/p50/p90. Two-piece lognormal; tails remain assumed.",
+  dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
+  media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 8–60 L/kg p5–p95 is an illustrative stress range, not an elicited or fitted prior.",
+  gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate."
+});
+
+export function gfPriceRanges(progress) {
+  if (!Number.isFinite(progress) || progress < 0 || progress > 100)
+    throw new RangeError("GF progress must be between 0 and 100.");
+  const factor = Math.pow(0.01, progress / 100);
+  return {cheap: [100 * factor, 10000 * factor], expensive: [5000 * factor, 500000 * factor]};
+}
+
+// A monotone transform of a standard normal, with separate log scales either side
+// of its median. Equal quantiles deliberately allow point masses.
+export function threeQuantileTransform(z, p10, p50, p90) {
+  validateRange(p10, p90);
+  if (!Number.isFinite(p50) || p50 < p10 || p50 > p90)
+    throw new RangeError("Require 0 < p10 <= p50 <= p90.");
+  const sigma = z < 0 ? Math.log(p50 / p10) / 1.2815515655446004
+    : Math.log(p90 / p50) / 1.2815515655446004;
+  return Math.exp(Math.log(p50) + sigma * z);
+}
+
+function sampleExpertPrior(rng, params, key, n) {
+  const lo = params[`ep_${key}_p10`], mid = params[`ep_${key}_p50`], hi = params[`ep_${key}_p90`];
+  if (mid == null) return sampleLognormalP10P90(rng, lo, hi, n);
+  return Array.from({length: n}, () => threeQuantileTransform(boxMuller(rng), lo, mid, hi));
+}
 
 // Retains the Advanced view's existing scenario mapping; not a learning curve.
 export function maturityForYear(maturity, year) {
@@ -189,6 +226,19 @@ function simulate(n, seed, params = {}) {
   if (!Number.isFinite(params.gf_progress) || params.gf_progress < 0 || params.gf_progress > 100)
     throw new RangeError("GF progress must be between 0 and 100.");
   validateRange(params.asset_life_lo, params.asset_life_hi);
+  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct"], gf_dose_model: ["per_kg", "media_linked"]})) {
+    if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
+  }
+  validateRange(params.fresh_media_p5, params.fresh_media_p95);
+  if (!Number.isFinite(params.gf_concentration_mg_L) || params.gf_concentration_mg_L < 0
+      || !Number.isFinite(params.gf_cheap_dose_fraction) || params.gf_cheap_dose_fraction < 0 || params.gf_cheap_dose_fraction > 1)
+    throw new RangeError("GF concentration must be nonnegative and dose fraction between 0 and 1.");
+  for (const key of ["media", "gf", "density"]) {
+    const lo = params[`ep_${key}_p10`], mid = params[`ep_${key}_p50`], hi = params[`ep_${key}_p90`];
+    if ([lo, mid, hi].every(v => v == null)) continue;
+    validateRange(lo, hi);
+    if (mid != null) threeQuantileTransform(0, lo, mid, hi);
+  }
   const warnings = [];
   const modeKeys = ["p_fedbatch", "p_perfusion", "p_continuous"];
   if (modeKeys.some(k => !Number.isFinite(params[k]) || params[k] < 0))
@@ -201,6 +251,13 @@ function simulate(n, seed, params = {}) {
 
   // Latent maturity factor
   const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
+  // Independent channel factors keep the same Beta marginal, including the mean
+  // shift and clipping. Setting coefficients to zero would also change marginals.
+  const maturityChannel = name => params.dependence_mode === "shared" ? maturity
+    : sampleBetaMeanStdev(namedStream(seed, `maturity-${name}`), params.maturity_mean, 0.20, n);
+  const hydroMaturity = maturityChannel("hydro"), gfMaturity = maturityChannel("gf");
+  const suppMaturity = maturityChannel("supp"), financeMaturity = maturityChannel("finance");
+  const equipmentMaturity = maturityChannel("equipment");
 
   rng = namedStream(seed, "scale");
   // Scale and uptime
@@ -212,10 +269,10 @@ function simulate(n, seed, params = {}) {
   rng = namedStream(seed, "adoption");
   // Adoption probabilities (maturity-adjusted)
   let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
-  p_hydro = adjustedAdoption(params.p_hydro_mean, p_hydro, maturity, 0.25);
+  p_hydro = adjustedAdoption(params.p_hydro_mean, p_hydro, hydroMaturity, 0.25);
 
   let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
-  p_recf = adjustedAdoption(params.p_recfactors_mean, p_recf, maturity, 0.25);
+  p_recf = adjustedAdoption(params.p_recfactors_mean, p_recf, gfMaturity, 0.25);
 
   // Bernoulli draws for adoption
   const is_hydro = p_hydro.map(p => rng() < p);
@@ -255,11 +312,13 @@ function simulate(n, seed, params = {}) {
 
   rng = namedStream(seed, "density-override");
   // Expert prior override: cell density — must precede L_per_kg so CAPEX also sees it
-  if (params.ep_density_p10 && params.ep_density_p90 && params.ep_density_p10 < params.ep_density_p90) {
-    density_gL = sampleLognormalP10P90(rng, params.ep_density_p10, params.ep_density_p90, n);
+  if (params.ep_density_p10 != null) {
+    density_gL = sampleExpertPrior(rng, params, "density", n);
   }
 
-  const L_per_kg = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
+  const L_per_kg = params.media_use_model === "direct"
+    ? sampleLognormalP5P95(namedStream(seed, "fresh-media"), params.fresh_media_p5, params.fresh_media_p95, n)
+    : mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
   rng = namedStream(seed, "media");
   // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
@@ -300,22 +359,22 @@ function simulate(n, seed, params = {}) {
   // Cheap regime: breakthrough technologies (thermostable FGF2-G3, autocrine lines,
   // recycling systems, polyphenol substitution) reduce effective per-kg usage ~3×.
   const g_recf_cheap = sampleLognormalP5P95(rng, 5e-4, 2e-3, n);
-  const g_recf = is_recf_cheap.map((c, i) => c ? g_recf_cheap[i] : g_recf_exp[i]);
+  const g_recf = is_recf_cheap.map((c, i) => params.gf_dose_model === "media_linked"
+    ? L_per_kg[i] * params.gf_concentration_mg_L / 1000 * (c ? params.gf_cheap_dose_fraction : 1)
+    : c ? g_recf_cheap[i] : g_recf_exp[i]);
 
   // Price ($/g) - Scaled by gf_progress parameter (0-100%)
   // At 0% progress: current prices ($5k-500k expensive, $100-10k cheap)
   // At 100% progress: target prices ($50-5k expensive, $1-100 cheap)
-  const progress = params.gf_progress / 100;  // 0 to 1
+  const priceRanges = gfPriceRanges(params.gf_progress);
 
   // Interpolate price ranges based on progress
   // Cheap scenario: $100-10,000 at 0% → $1-100 at 100%
-  const cheap_p5 = 100 * Math.pow(0.01, progress);   // 100 → 1
-  const cheap_p95 = 10000 * Math.pow(0.01, progress); // 10000 → 100
+  const [cheap_p5, cheap_p95] = priceRanges.cheap;
   const price_recf_cheap = sampleLognormalP5P95(rng, cheap_p5, cheap_p95, n);
 
   // Expensive scenario: $5,000-500,000 at 0% → $50-5,000 at 100%
-  const exp_p5 = 5000 * Math.pow(0.01, progress);    // 5000 → 50
-  const exp_p95 = 500000 * Math.pow(0.01, progress); // 500000 → 5000
+  const [exp_p5, exp_p95] = priceRanges.expensive;
   const price_recf_exp = sampleLognormalP5P95(rng, exp_p5, exp_p95, n);
 
   const price_recf = is_recf_cheap.map((c, i) => c ? price_recf_cheap[i] : price_recf_exp[i]);
@@ -331,7 +390,7 @@ function simulate(n, seed, params = {}) {
   // Cheap regime: food-grade recombinant at scale → p5=$0.03/kg, p95=$0.60/kg cell mass
   // Exp. regime:  pharma-grade → p5=$0.50/kg, p95=$4.00/kg cell mass
   let p_supp = sampleBetaMeanStdev(rng, params.p_supp_protein_mean, 0.12, n);
-  p_supp = adjustedAdoption(params.p_supp_protein_mean, p_supp, maturity, 0.20);
+  p_supp = adjustedAdoption(params.p_supp_protein_mean, p_supp, suppMaturity, 0.20);
   const is_supp_cheap = p_supp.map(p => rng() < p);
   const supp_cheap_cost = sampleLognormalP5P95(rng, 0.03, 0.60, n);
   const supp_exp_cost   = sampleLognormalP5P95(rng, 0.50, 4.00, n);
@@ -360,16 +419,20 @@ function simulate(n, seed, params = {}) {
 
   // In bundled mode a media override means complete medium; no separate proteins.
   // These bypass the regime-switching logic and express direct beliefs in $/kg biomass.
-  if (params.ep_media_p10 && params.ep_media_p90 && params.ep_media_p10 < params.ep_media_p90) {
+  if (params.ep_media_p10 != null) {
     rng = namedStream(seed, "media-override");
-    cost_media_eff = sampleLognormalP10P90(rng, params.ep_media_p10, params.ep_media_p90, n);
+    cost_media_eff = sampleExpertPrior(rng, params, "media", n);
   }
   if (params.bundled_media && params.ep_gf_p10 && params.ep_gf_p90)
     warnings.push("Separate growth-factor override ignored: complete medium already includes all proteins.");
-  if (!params.bundled_media && params.ep_gf_p10 && params.ep_gf_p90 && params.ep_gf_p10 < params.ep_gf_p90) {
+  if (!params.bundled_media && params.ep_gf_p10 != null) {
     rng = namedStream(seed, "gf-override");
-    cost_recf_eff = sampleLognormalP10P90(rng, params.ep_gf_p10, params.ep_gf_p90, n);
+    cost_recf_eff = sampleExpertPrior(rng, params, "gf", n);
   }
+  if (params.media_use_model === "direct" && params.ep_media_p10 != null)
+    warnings.push("Direct media cost prior overrides fresh L/kg for media cost; fresh L/kg still affects media-linked GF dosage when active.");
+  if (params.gf_dose_model === "media_linked" && (params.bundled_media || params.ep_gf_p10 != null))
+    warnings.push("Media-linked GF dosage has no cost effect: complete medium or a direct GF cost prior takes precedence.");
 
   // VOC total: media + growth factors + supplemental proteins + other
   const voc = add(add(add(cost_media_eff, cost_recf_eff), cost_supp_protein), other_var);
@@ -390,7 +453,7 @@ function simulate(n, seed, params = {}) {
   // tornado chart even when CAPEX is excluded (in those cases they're
   // sampled here purely for the sensitivity export, with no cost effect).
   let wacc_samples_out = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
-  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (maturity[i] - 0.5)), 0.03, 1);
+  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (financeMaturity[i] - 0.5)), 0.03, 1);
   let asset_life_samples_out = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
   if (!params.cdmo_mode && params.include_capex) {
     rng = namedStream(seed, "capex");
@@ -399,7 +462,7 @@ function simulate(n, seed, params = {}) {
     const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
     const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
     let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
-    custom_share = clip(add(custom_share, scale(maturity.map(m => m - 0.5), 0.30)), 0, 1);
+    custom_share = clip(add(custom_share, scale(equipmentMaturity.map(m => m - 0.5), 0.30)), 0, 1);
 
     const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
       p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i]))
@@ -451,6 +514,8 @@ function simulate(n, seed, params = {}) {
   return {
     unit_cost,
     model_version: MODEL_VERSION,
+    seed, sample_count: n,
+    provenance: REVIEW_PROVENANCE,
     effective_params: params,
     warnings,
     cost_media: cost_media_eff,

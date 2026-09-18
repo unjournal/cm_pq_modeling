@@ -7,9 +7,19 @@ format:
     css: styles.css
 ---
 
+::: {.callout-note collapse="true"}
+## September 17 update
+
+[Read the discussion responses to Reports 5 and 6, implemented alternatives, provenance, and open questions](review-response-2026-09.qmd). The original September audit remains a record of that version.
+:::
+
+::: {.callout-note collapse="true"}
+## Review scope and assessment
+
 This is an AI-assisted review by Codex, based on the repository's calculations and documentation, the earlier critique, and targeted checks of primary sources. It is not an independent expert validation or a complete replication of the cited TEAs. No private reviewer correspondence is reproduced here.
 
 **My assessment:** the model is useful for making assumptions explicit and comparing scenarios. Its numerical precision exceeds its evidential precision. The biggest improvement would be a small set of physically coherent, source-reproducing process scenarios, followed by explicit uncertainty about which scenarios can operate commercially. More sliders or simulation draws would contribute less at this stage.
+:::
 
 ## Model versions and reproducibility
 

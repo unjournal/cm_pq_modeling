@@ -1,0 +1,119 @@
+---
+title: "Responses to two model critiques"
+subtitle: "September 17, 2026 · engine 2026-09-17.1"
+format:
+  html:
+    toc: true
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+This page records the response to two supplied research reports and the resulting model changes. Discussion responses were provided before implementation. The changes were implemented with AI assistance and have not received independent scientific review. [Open the model](index.qmd) or [its structural comparisons](index.qmd#structural-comparison).
+
+::: {.callout-note collapse="true"}
+## Report provenance and source key
+
+Report 5 is *Audit and Redesign Recommendations for the Unjournal Cultivated-Meat Cost Model and Belief-Elicitation Workflow*, supplied as `critique_discussion/deep-research-report (5).md`. Report 6 is *Deep Review of the Unjournal Cultured Meat Cost Model and Belief Elicitation Workflow*, supplied as `critique_discussion/deep-research-report (6).md`. Their exported citation markers do not resolve to source URLs in these files. We treat the reports as critiques, not as independently verified empirical evidence. The raw reports include participant-specific material and are not bundled with this public page.
+:::
+
+## What changed
+
+- Both views accept an optional median alongside p10/p90, with explicit validation and the same fitting method.
+- Advanced offers direct fresh-media intensity and media-linked growth-factor dosage as alternatives to the baseline equations.
+- Advanced compares shared maturity with independent maturity channels, preserving the channel-level marginal distributions.
+- Growth-factor controls show the price ranges they imply. The association chart omits inputs made inactive by the selected structure.
+- New controls explain provenance on hover and link here. Advanced shared links retain the structural choices and valid custom priors; the Simple-to-Advanced link carries custom priors too. JSON exports include provenance and structural comparisons; CSV exports include version, seed, sample count, and effective parameters (the full configuration is on the first sample row).
+
+Baseline numerical assumptions and the workshop-era archive are retained. The new structural settings are opt-in. They are tools for examining assumptions, not fitted replacements.
+
+## Target quantity and interpretation {#target}
+
+**Reports 5 and 6: accepted.** A draw currently represents a hypothetical plant/process scenario. Process weights select a process for each draw. They do not represent production shares of coexisting plants within one simulated industry. The model now states this beside the results on both pages.
+
+A production-weighted industry average would require simulated costs and output weights for multiple plants/processes within each world, including cross-plant dependence and adoption shares. A probability that most plants adopt a technology is not an output share. We have not relabeled the existing mixture as an industry average.
+
+Commercialization probability, cost conditional on commercial success, frontier cost, and a volume-weighted industry average remain separate open quantities. Infeasible engineering draws are not screened out. A claim of “2025 USD/kg” would also be premature: the source inputs still mix dollar years. These issues need explicit definitions and evidence before new numerical outputs are defensible.
+
+## Custom quantiles {#quantiles}
+
+**Report 5: accepted with a correction.** The previous dashboard accepted p10/p90 only; it did not discard a median entered in this dashboard. But its connection to an elicitation supplying three quantiles was incomplete.
+
+An optional p50 now defines a two-piece lognormal transform. For a standard-normal draw $z$, use
+
+$$
+X=\exp(\log q_{50}+\sigma(z)z),\quad
+\sigma(z)=
+\begin{cases}
+\log(q_{50}/q_{10})/1.281551566,&z<0,\\
+\log(q_{90}/q_{50})/1.281551566,&z\geq0.
+\end{cases}
+$$
+
+This preserves all three population quantiles; Monte Carlo sample quantiles have sampling error. Equal adjacent quantiles allow a point mass. If p50 is omitted, the previous two-endpoint lognormal remains, with median $\sqrt{q_{10}q_{90}}$. For example, 8/20/100 retains a median of 20 rather than approximately 28.3. Tail shapes remain modeling assumptions.
+
+Inputs must satisfy $0<q_{10}\leq q_{50}\leq q_{90}$, omitting the middle comparison if p50 is blank. Incomplete or invalid rows show a message and keep the last valid inputs active. The calculation API rejects invalid priors. No workshop responses or respondent records were modified.
+
+## Structural alternatives {#structures}
+
+### Fresh medium
+
+**Report 5: accepted as a stress test.** The baseline uses $L/kg=(1000/D)T$, where $D$ is wet harvest density and $T$ a media-use multiplier. This makes density reduce media cost mechanically. The alternative samples fresh L/kg directly and computes media cost as L/kg × $/L. Density still sets reactor volume and CAPEX, but no longer sets fresh medium use.
+
+**Provenance and justification:** the structural recommendation comes from Report 5's media-identity critique. The alternative's initial p5–p95 range of 8–60 L/kg is an illustrative developer-selected stress range informed by examples discussed in the report and earlier engine comments. It is not a reported study's uncertainty interval, expert elicitation, or calibrated commercial process. Users should replace it with process-specific beliefs. Process-specific material balances, oxygen transfer, nutrient yield, and washout remain unmodeled. A direct media-cost prior takes precedence over either media equation.
+
+### Growth-factor dose
+
+**Report 5: accepted as a stress test.** The alternative is
+
+$$
+g_{GF}/kg=(L_{fresh}/kg)\times c_{GF}\;(mg/L)/1000\times f_{regime}.
+$$
+
+The expensive regime uses $f=1$; the cheap regime initially uses 0.4. Both concentration and cheap-regime dose fraction are editable. Multiplying by the existing price draw gives GF $/kg.
+
+**Provenance and justification:** concentration 0.102 mg/L reuses the earlier engine's aggregate formulation assumption; it has not been revalidated for all processes. The 0.4 dose fraction rounds the earlier cheap/expensive median-dose ratio (approximately 0.408). It is a scenario assumption, not an estimated recycling or retention efficiency. This alternative makes dosage respond to realized medium consumption. It does not establish biological feasibility or a protein-specific price basket. A direct GF $/kg prior or complete-medium accounting takes precedence, with a visible note.
+
+### Dependence
+
+**Reports 5 and 6: accepted in part.** Shared maturity remains the baseline. The alternative gives hydrolysates, GF adoption, supplemental proteins, financing, and equipment separate, independent maturity draws from the same Beta distribution. Each channel retains its existing coefficient, mean shift, and clipping. This changes shared dependence without also removing the marginal maturity effect.
+
+The alternative is called **independent maturity channels**, since density, process mode, media volume, and accounting still create dependencies. It is not a fully independent-input model. An unused common-maturity bar is omitted in this mode. A three-factor model and expert-specified correlations remain open: assigning them new coefficients now would add assumptions without calibration.
+
+### What the comparison answers
+
+Advanced reruns each structural alternative with the same seed and other settings, reporting p50, p90, and P(cost < $25/kg). Each row changes one choice relative to the selected scenario. Media and GF comparisons also depend on their alternative input assumptions, so their differences cannot be attributed solely to equation form. These comparisons do not replace Sobol, Morris, or dependence-aware attribution analyses.
+
+## Findings already addressed, and clarifications {#already-addressed}
+
+**Supplemental proteins (Report 6).** The current engine already includes albumin/transferrin/insulin in a separate cost block; complete medium includes them once. Another block would double-count these costs. Formulation-specific protein quantities and prices still need evidence.
+
+**One authoritative core (Report 5).** Simple and Advanced already use `cost-model.mjs`, with adapter parity tests. Python and Squiggle are historical implementations. The new controls preserve the shared browser core.
+
+**GF probability and progress (Report 5).** Both controls already operate. Probability selects the cheap/expensive state; progress scales prices within each state. At progress 50, p5–p95 price ranges are $10–1,000/g and $500–50,000/g respectively. The ranges now appear beside the controls, and tests check both adoption and progress. These are assumed interpolations, not estimated learning curves.
+
+**Sensitivity claims and colors (both reports).** The current chart already uses red/green to indicate the sign of the conditional mean difference, and describes the statistic as an association rather than a variance decomposition. The heading now says “Association under the current uncertainty model.” Inactive inputs are removed for the new structures. The hidden-input explanation also avoids an unsupported fixed ranking. Bar lengths remain absolute magnitudes; color carries direction.
+
+**Mean components versus median total (Report 5).** The existing breakdown already labels component means. The result remains an expected-cost decomposition, which need not sum to the median. Accounting tests check draw-by-draw totals.
+
+**Blended product and thresholds (both reports).** The dashboard already has an ingredient-mix calculation and a separate demand page. Manufacturing-cost thresholds do not establish retail competitiveness or animal-welfare impact. Commercial margins, processing, demand, and displacement require additional assumptions. No decision recommendation was inferred from the new scenario results.
+
+## Recommendations retained as open work {#open}
+
+**Process engineering and validation.** Study-specific reproduction fixtures, formulation-specific protein costs, nutrient balances, contamination and failure loss, discrete equipment trains, geography, hydration/recovery normalization, and common-dollar-year conversion need evidence beyond these critiques. Full material balances or fitted experience curves are not substitutes for missing data. A single result falling between published headline estimates would not validate this model.
+
+**Global sensitivity and numerical precision.** The new structural comparisons are implemented; formal variance decompositions and dependence-aware analyses are not. Sobol analysis must define independent primitive inputs, and latent-factor sensitivity cannot be interpreted as the value of researching a particular intervention. The accompanying audit script records multiple seeds and sample sizes for p50, p90, p95, and threshold probabilities. Those checks describe simulation stability, not empirical accuracy or proof that tail estimates have converged.
+
+**Parameter and assumption registries.** The new controls share metadata with the engine. A complete evidence registry covering every numerical primitive, an empirical validation record, and build-time checks of every documented default remain open. The export records effective inputs and engine version; the audit records the engine SHA-256. These do not yet amount to the full build manifest proposed in Report 5.
+
+**Elicitation design.** Both reports' recommendations for private initial beliefs, discussion of evidence and interpretation, and private revised beliefs are useful. Preserve original responses and revision reasons. Match units, date, cost scope, output basis, and representative versus frontier definitions before importing any belief. In particular, a maximum-density forecast is not a representative-density prior, and a single protein's price is not necessarily a dose-weighted GF basket price.
+
+**Pooling and facilitation.** Equal-weight descriptive mixtures, subgroup comparisons, and leave-one-out checks can reveal disagreement. Performance weighting needs relevant calibration evidence; expertise labels alone do not justify numerical weights. Training, practice questions, neutral evidence packets, and piloting deserve a separate workshop-workflow revision. No form, aggregation, participant assignment, or external discussion thread was changed in this model revision.
+
+## Verification scope
+
+Automated checks cover accounting identities, utilization, complete-medium precedence, Simple/Advanced parity, quantile fitting and rejection, GF-control interaction, media-volume coupling, dependence behavior, and reproducibility. Numerical audit output records the exact engine hash and settings. Rendering and browser checks address implementation behavior; they do not establish scientific validity.
+
+At baseline settings with 30,000 draws and seed 42, median cost is **$42.62/kg**, identical draw-for-draw to the previous engine. Independent maturity channels give **$42.57/kg**. The illustrative direct-media range gives **$34.49/kg**, while media-linked GF dosage alone gives **$41.05/kg** and increases p90 from **$159.79 to $191.30/kg**. The media alternatives change their input assumptions as well as the equation. These values are scenario comparisons, not updated forecasts.
+
+Across seeds 42, 7, and 99 at 30,000 draws, the baseline p50 ranges from **$42.20 to $42.62/kg** and p95 from **$228.43 to $232.77/kg**. The small maturity-comparison difference should be read in light of simulation variability. [Download the numerical audit](review-2026-09-17-audit.json) for all variants, sample-size checks, input settings, and engine SHA-256.

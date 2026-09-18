@@ -9,18 +9,18 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-::: {.callout-important}
-**Source correction, 7 September 2026.** [Pasitka Supplement Table S10](https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs43016-024-01022-w/MediaObjects/43016_2024_1022_MOESM1_ESM.pdf) distinguishes wet-biomass operating costs ($38.54, $24.06, $21.49/kg for ATF, TFF, and large perfusion) from product costs ($22.27, $15.03, $13.75/kg). Earlier versions of this page mislabeled the product row as pure cell mass. Table S4 separately gives an annual capital charge; it is not visibly included in the S10 total. Comparisons with this dashboard must reconcile that boundary.
-:::
+::: {.callout-important collapse="true"}
+## Source correction and review status
 
-::: {.callout-warning}
-## Work in Progress — Feedback Welcome
+**Source correction, 7 September 2026.** [Pasitka Supplement Table S10](https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs43016-024-01022-w/MediaObjects/43016_2024_1022_MOESM1_ESM.pdf) distinguishes wet-biomass operating costs ($38.54, $24.06, $21.49/kg for ATF, TFF, and large perfusion) from product costs ($22.27, $15.03, $13.75/kg). Earlier versions of this page mislabeled the product row as pure cell mass. Table S4 separately gives an annual capital charge; it is not visibly included in the S10 total. Comparisons with this dashboard must reconcile that boundary.
+
+**Work in progress — feedback welcome.**
 This comparison is **largely AI-generated** based on our reading of the cited sources. We are not the domain experts — this is a framework for structured discussion, not a definitive assessment. For corrections, alternative data, or methodological debate, please post in the [substantive discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3) (see the [discussion map](discuss.html) for topic-specific threads). For quick inline notes, use [Hypothesis](https://hypothes.is/) (the `<` tab on the right). The May 2026 workshop is complete; its [summary](https://uj-cm-workshop.netlify.app/summary.html) and follow-up modeling proposal now provide additional context.
 :::
 
 **Return to:** [Interactive Cost Model](index.qmd) | **Background:** [How Cultured Chicken is Made](learn.qmd) | **Technical details:** [Documentation](docs.qmd) | **[Workshop (May 2026)](https://uj-cm-workshop.netlify.app/)**
 
-::: {.callout-tip}
+::: {.callout-tip collapse="true"}
 ## Related external work: Pablo AMC's demand-side model (July 2026)
 Pablo Antonio Moreno Casares reviews this same TEA literature and pairs it with an
 [interactive **demand-side** model](https://pabloamc.github.io/Cultivated_meat/interactive.html)
