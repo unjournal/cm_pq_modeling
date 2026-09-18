@@ -120,7 +120,7 @@ The tornado chart is a useful exploration tool, but it has well-defined limitati
 
 A variance analysis asks a different question: how should output uncertainty be attributed to inputs? Classical Sobol indices require independent inputs; this dependent model needs explicitly defined primitive drivers or a dependence-aware allocation. Neither method alone measures research value.
 
-**Status: Association wording corrected; dependence-aware analysis remains open.** The source text now accurately describes the chart as a "conditional-mean swing statistic, not a variance decomposition." A proper global sensitivity mode is planned when the methodology is better understood. The chart nonetheless offers a practical, readable guide to which sliders move the dial most.
+**Status: Association wording corrected; alternative methods now implemented and compared.** The source text describes the chart as a "conditional-mean swing statistic, not a variance decomposition." The [sensitivity methods page](sensitivity.qmd) (September 2026) works through why the bars are hard to interpret — inputs coupled by construction, the arbitrary 10% tails, the mean's dependence on the right tail, and the difference between learning an input and setting it — and runs the alternatives on the same scenario: adjustable tail widths and output statistics with simulation standard errors, conditional-mean profiles, expected uncertainty after learning one input, rank regression, one-at-a-time interventions, and an exploratory sample-based Shapley-effect estimate. A Sobol decomposition on independent primitive inputs and any value-of-information analysis remain open. The chart itself is still a practical, readable guide to which sliders move the dial most.
 
 ---
 

@@ -928,6 +928,9 @@ Three parameters were also removed from the earlier 11-parameter list because th
 - The tail width is 10%. Wider tails smooth more; narrower tails are noisier. Right-tail costs can make small bars unstable; repeat seeds before interpreting close rankings.
 - Because the statistic is computed on the joint sampling distribution, changing a slider can move bars for parameters you didn't touch — a different joint distribution produces different conditional means.
 - Classical Sobol decompositions assume independent inputs. For this dependent model, first specify independent primitive drivers or use a method designed for dependence (such as an explicitly defined Shapley allocation). Neither a variance share nor a dollar-swing bar is an expected value of information.
+- With 30,000 draws and 10% tails, a bar's Monte Carlo standard error is roughly $2–3/kg for the mean statistic in the default scenario, so bars below about $5/kg are not distinguishable from zero.
+
+The [sensitivity methods page](sensitivity.qmd) works through these limitations with live numbers and compares the alternatives (adjustable tails and statistics, conditional profiles, expected uncertainty after learning one input, rank regression, interventions, and Shapley effects). The estimators live in [`sensitivity-methods.mjs`](sensitivity-methods.mjs).
 
 ---
 
@@ -953,7 +956,10 @@ The JavaScript implementation includes:
 - `sampleLognormalP5P95(rng, p5, p95, n)` — Sample from lognormal given percentiles
 - `sampleBetaMeanStdev(rng, mean, sd, n)` — Sample from beta distribution
 - `crf(wacc, years)` — Capital Recovery Factor calculation
-- `spearmanCorr(x, y)` — Rank correlation for sensitivity analysis
+- `conditionalSwing(x, uc, tailFrac)` — Signed tail contrast for the association chart
+- `spearmanCorr(x, y)` — Rank correlation (retained for reference)
+
+The alternative sensitivity estimators (`tailContrastDetail`, `learningValue`, `rankRegression`, `interventionContrasts`, `shapleyEffects`) are in `sensitivity-methods.mjs`, with tests in `tests/sensitivity-methods.test.mjs`.
 
 View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/index.qmd) for the complete implementation.
 

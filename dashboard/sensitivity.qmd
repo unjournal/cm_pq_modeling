@@ -1,0 +1,378 @@
+---
+title: "Sensitivity analysis: what the tornado chart can and cannot tell you"
+subtitle: "Why the dollar-swing bars are hard to interpret, and six other ways to ask which uncertainties matter"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    css: styles.css
+    include-in-header:
+      text: |
+        <script>
+        // Same convention as the Advanced page: read ?key=val into a global and
+        // strip the query so Hypothes.is anchors to the bare URL.
+        (function () {
+          try {
+            if (!window.location.search) return;
+            var usp = new URLSearchParams(window.location.search);
+            window.__CM_URL_STATE__ = {};
+            usp.forEach(function (v, k) { window.__CM_URL_STATE__[k] = v; });
+            history.replaceState(null, "", window.location.pathname + window.location.hash);
+          } catch (e) {
+            console.warn("CM URL state extraction failed:", e);
+          }
+        })();
+        </script>
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+```{=html}
+<div style="margin:6px 0 14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+  <a href="index.html#sensitivity-analysis-tornado-chart" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;">← Back to the tornado chart</a>
+  <a href="docs.html#sensitivity-analysis-dollar-swing-metric" style="display:inline-block; padding:6px 14px; background:#fff; color:#555; border:1px solid #bbb; border-radius:6px; text-decoration:none; font-size:13px;">Dollar-swing definition (docs)</a>
+</div>
+```
+
+The Advanced Model page ends with a tornado chart: one bar per input, showing how much the mean cost differs between draws where that input is in its top 10% and draws where it is in its bottom 10%. It is easy to read and, as a first pass, useful. It is also easy to over-read. Several of the inputs move together by construction, the 10% cut is arbitrary, the mean is pulled around by the right tail, and the question the chart answers ("what do costs look like in the worlds where this input is high?") is not the question people usually have in mind ("what happens to costs if this input changes?"). Neither is the question that matters for research prioritization ("would learning this change what we would do?").
+
+This page works through those problems with live numbers and then runs the alternatives on the same scenario. Everything below is computed from the same 30,000-draw simulation the main page uses, except the Shapley table, which is precomputed offline for the default scenario. The methods and text were drafted with AI assistance and have not been independently reviewed; the code is in [`sensitivity-methods.mjs`](sensitivity-methods.mjs) with tests, and we welcome corrections via Hypothes.is annotations.
+
+```{ojs}
+//| echo: false
+costModel = import(new URL("./cost-model.mjs", window.location.href).href)
+sm = import(new URL("./sensitivity-methods.mjs", window.location.href).href)
+urlState = window.__CM_URL_STATE__ || {}
+isCustom = Object.keys(urlState).length > 0
+scenarioParams = sm.advancedUrlStateToParams(urlState, costModel.maturityForYear)
+results = costModel.simulate(30000, 42, scenarioParams)
+uc = results.unit_cost
+logUc = uc.map(Math.log)
+inputs = sm.displayedInputs(results, scenarioParams)
+quantile = costModel.quantile
+mean = costModel.mean
+short = ({density: "Cell density", media_turnover: "Media-use multiplier", media_cost_L: "Media $/L", price_recf: "GF price", g_recf: "GF quantity", maturity: "Maturity", wacc: "WACC", asset_life: "Asset life", plant_kta: "Plant capacity", cycle_days: "Production time", uptime: "Utilization", L_per_kg: "Fresh media L/kg", media_override: "Media override", gf_override: "GF override"})
+label = i => short[i.key] || i.name
+usd = v => (v < 0 ? "−" : "") + "$" + Math.abs(v).toFixed(v >= 100 || v <= -100 ? 0 : 1) + "/kg"
+pct = v => (100 * v).toFixed(0) + "%"
+```
+
+```{ojs}
+//| echo: false
+{
+  // Keep a shared scenario in the address bar after load, as the Advanced page does.
+  if (isCustom) setTimeout(() => {
+    try { history.replaceState(null, "", location.pathname + "?" + new URLSearchParams(urlState).toString() + location.hash); } catch (e) {}
+  }, 300);
+  const cap = v => (100 * uc.filter(c => c < v).length / uc.length).toFixed(0);
+  return html`<div style="border:1px solid #bcc8cc; border-left:4px solid #1a5276; padding:0.6rem 0.9rem; margin:0.5rem 0 1rem; font-size:0.95em;">
+    <strong>Scenario analyzed:</strong> ${isCustom ? "custom settings carried over from the Advanced page link" : "the Advanced page defaults (maturity 0.5 mapped to 2036, seed 42)"}.
+    Unit cost p10 / p50 / p90 = ${usd(quantile(uc, 0.1))} / ${usd(quantile(uc, 0.5))} / ${usd(quantile(uc, 0.9))}; mean ${usd(mean(uc))}; standard deviation ${usd(Math.sqrt(sm.variance(uc)))}; P(cost &lt; $25/kg) = ${cap(25)}%.
+    ${inputs.length} inputs are active in the chart. To analyze a different scenario, set it up on the <a href="index.html">Advanced page</a> and use the “Analyze this scenario” link under its tornado chart.
+    ${results.warnings.length ? html`<div style="margin-top:0.4rem;"><strong>Scenario notes:</strong> ${results.warnings.join(" ")}</div>` : ""}
+  </div>`;
+}
+```
+
+## 1. What a bar on the tornado chart is {#what-the-bar-is}
+
+For each input $x$, the chart sorts the 30,000 draws by $x$, takes the top 10% and the bottom 10% (3,000 draws each), and reports the difference in mean unit cost between the two groups:
+
+$$\text{Swing}(x) = \overline{\text{cost}}\,\big|\,x \in \text{top 10\%} \;-\; \overline{\text{cost}}\,\big|\,x \in \text{bottom 10\%}.$$
+
+That is all. There is no re-simulation, no holding anything else fixed, and no model of how $x$ enters the cost equation. It is a summary of the joint distribution the simulation happened to produce.
+
+```{ojs}
+//| echo: false
+{
+  const rows = inputs.map(i => ({i, d: sm.tailContrastDetail(i.data, uc)})).sort((a, b) => Math.abs(b.d.contrast) - Math.abs(a.d.contrast));
+  const top = rows[0];
+  const x = top.i.data;
+  return html`<p><em>Worked example for the largest bar in this scenario.</em> For <strong>${top.i.name}</strong>, the 10% of draws with the highest values (above ${quantile(x, 0.9).toPrecision(3)}) have a mean cost of <strong>${usd(top.d.hiStat)}</strong>; the 10% with the lowest values (below ${quantile(x, 0.1).toPrecision(3)}) have a mean cost of <strong>${usd(top.d.loStat)}</strong>. The bar is the difference, ${usd(top.d.contrast)}, with a Monte Carlo standard error of about ${usd(top.d.se)}. The smallest bars in the chart are ${rows.slice(-3).map(r => `${label(r.i)} (${usd(r.d.contrast)} ± ${usd(r.d.se)})`).join(", ")}: at this sample size they are not distinguishable from zero.</p>`;
+}
+```
+
+## 2. Why the bars are hard to interpret {#why-hard}
+
+### 2.1 The inputs move together by construction {#coupled-inputs}
+
+The chart lists inputs side by side as if each were an independent dial. In the engine they are not:
+
+| Coupling in the engine | What it does to the bars |
+|---|---|
+| **Process mode → density and media-use multiplier.** Each draw first picks fed-batch, perfusion or continuous, then draws density and the multiplier from that mode's range (fed-batch 5–30 g/L with multiplier 1–2; perfusion 30–150 g/L, 1–5; continuous 50–200 g/L, 0.5–3). | The top density decile is almost entirely continuous and perfusion draws; the bottom decile is fed-batch. The density bar is partly a process-mode bar, and it is entangled with the multiplier bar. |
+| **Maturity → adoption, financing and equipment.** One latent maturity draw shifts the hydrolysate and cheap-GF adoption probabilities, the supplemental-protein regime, WACC and the custom-reactor share. | The maturity bar bundles all of those channels. It overlaps with the Media $/L, GF price, GF quantity and WACC bars, which already carry the regime effects it induces. |
+| **Regime switches inside the mixtures.** "Media $/L" mixes a hydrolysate regime and a pharma-grade regime; "GF price" and "GF quantity" mix a cheap and an expensive regime, and both switch together. | The GF price and GF quantity bars share the same coin flip, so they overlap heavily. Each mixture bar is a regime effect plus a within-regime effect. |
+| **Deterministic identities.** Fresh media L/kg = 1000 / density × multiplier; GF cost = quantity × price. | Removed from the chart for this reason, but the parents still co-determine cost in a multiplicative way. |
+
+The consequence is that a bar answers "what do costs look like in the worlds where this input is high?" and those worlds differ from the low-input worlds in other respects too. Bars cannot be added, and no bar isolates "the effect of" its input. The rank correlations among the displayed inputs, computed from the current draws, show the couplings directly:
+
+```{ojs}
+//| echo: false
+{
+  const r = inputs.map(i => sm.ranks(i.data));
+  const cells = [];
+  for (let a = 0; a < inputs.length; a++) for (let b = 0; b < inputs.length; b++)
+    cells.push({a: label(inputs[a]), b: label(inputs[b]), rho: a === b ? 1 : sm.pearson(r[a], r[b])});
+  const names = inputs.map(label);
+  return Plot.plot({
+    width: Math.min(760, 80 + 62 * names.length), height: 80 + 34 * names.length,
+    marginLeft: 130, marginBottom: 110,
+    x: {domain: names, label: null, tickRotate: -40}, y: {domain: names, label: null},
+    color: {scheme: "RdBu", domain: [-1, 1], reverse: true, label: "Spearman ρ", legend: true},
+    marks: [
+      Plot.cell(cells, {x: "a", y: "b", fill: "rho", inset: 0.5}),
+      Plot.text(cells, {x: "a", y: "b", text: d => d.a === d.b ? "" : d.rho.toFixed(2), fill: d => Math.abs(d.rho) > 0.5 ? "white" : "#222", fontSize: 10})
+    ]
+  });
+}
+```
+
+*Spearman rank correlations between the displayed inputs across the 30,000 draws. Red: move together; blue: move in opposite directions. Correlations near zero mean the engine samples the pair independently in this scenario; they say nothing about whether the pair is really independent.*
+
+### 2.2 Some uncertainties are probably correlated in ways the model does not encode {#correlated-beliefs}
+
+The couplings above are the ones the engine builds in. There are others it leaves out. Media cost per litre and achievable cell density are plausibly linked (denser cultures need richer, more expensive media, at least in fed-batch systems), but the engine samples them independently within a process mode, so the joint distribution the chart summarizes puts weight on combinations an expert might rule out — very cheap media with very high density, for example. The chart cannot detect this; it only summarizes the draws it is given. The [beliefs form](https://uj-cm-workshop.netlify.app/cm-cost-beliefs.html) asks for media cost per kilogram of biomass, rather than $/L and density separately, partly so that respondents can integrate this interaction themselves. The [Limits page](limits.qmd#parameter-grounding) discusses it further.
+
+### 2.3 "Top 10% versus bottom 10%" and "mean cost" are choices {#tail-and-statistic}
+
+Nothing in the method fixes the 10% cut or the mean. Comparing the top and bottom 5% gives bigger bars (more extreme worlds); comparing the top and bottom halves gives smaller ones. The mean cost is dominated by the right tail (in the default scenario the mean is about $73/kg against a median of $43/kg), so a bar mostly reports what happens in the expensive tail. If the question is whether cultivated chicken can get under $25/kg, the relevant statistic is a threshold probability, and that ranks the inputs differently. Try it:
+
+```{ojs}
+//| echo: false
+viewof tailFrac = Inputs.radio(new Map([["5%", 0.05], ["10% (chart default)", 0.10], ["25%", 0.25], ["50% (top half vs bottom half)", 0.50]]), {value: 0.10, label: "Tail width"})
+viewof statKey = Inputs.radio(new Map([["Mean cost ($/kg)", "mean"], ["Median cost ($/kg)", "median"], ["P(cost < $25/kg), percentage points", "below25"], ["P(cost < $50/kg), percentage points", "below50"]]), {value: "mean", label: "Output statistic"})
+```
+
+```{ojs}
+//| echo: false
+statSpec = ({mean: {type: "mean"}, median: {type: "median"}, below25: {type: "below", threshold: 25}, below50: {type: "below", threshold: 50}})[statKey]
+statIsShare = statKey.startsWith("below")
+contrastRows = inputs.map(i => {
+  const d = sm.tailContrastDetail(i.data, uc, {tailFrac, stat: statSpec});
+  const scale = statIsShare ? 100 : 1;
+  return {name: i.name, value: d.contrast * scale, se: d.se * scale, abs: Math.abs(d.contrast * scale)};
+}).sort((a, b) => b.abs - a.abs)
+```
+
+```{ojs}
+//| echo: false
+{
+  const maxAbs = Math.max(...contrastRows.map(r => r.abs + 2 * r.se), 1);
+  const unit = statIsShare ? "pp" : "$/kg";
+  return Plot.plot({
+    width: 860, height: 60 + 34 * contrastRows.length, marginLeft: 290, marginRight: 110,
+    x: {label: statIsShare ? "Difference in probability (percentage points), top tail minus bottom tail" : "Dollar swing, top tail minus bottom tail ($/kg)", domain: [0, maxAbs * 1.15], grid: true},
+    y: {label: null, tickSize: 0, domain: contrastRows.map(r => r.name)},
+    style: {fontSize: "13px"},
+    marks: [
+      Plot.barX(contrastRows, {y: "name", x: "abs", fill: d => d.value >= 0 ? "#c0392b" : "#27ae60", fillOpacity: 0.8}),
+      Plot.ruleY(contrastRows, {y: "name", x1: d => Math.max(0, d.abs - 2 * d.se), x2: d => d.abs + 2 * d.se, stroke: "#222", strokeWidth: 1.5}),
+      Plot.text(contrastRows, {y: "name", x: d => d.abs + 2 * d.se + maxAbs * 0.015, text: d => (d.value >= 0 ? "+" : "−") + d.abs.toFixed(1) + " " + unit, textAnchor: "start", fontSize: 12})
+    ]
+  });
+}
+```
+
+*Bar colour gives the sign (red: high input goes with higher cost or a lower chance of clearing the threshold; green: the opposite). Black whiskers are ±2 Monte Carlo standard errors. For the threshold statistics, green means a high value of the input goes with a higher probability of cheap cultivated meat.*
+
+```{ojs}
+//| echo: false
+{
+  const tails = [0.05, 0.10, 0.25, 0.50];
+  const table = inputs.map(i => ({name: i.name, values: tails.map(t => sm.tailContrast(i.data, uc, {tailFrac: t}))}));
+  const rankAt = k => [...table].sort((a, b) => Math.abs(b.values[k]) - Math.abs(a.values[k])).map(r => r.name);
+  const ranks = tails.map((_, k) => rankAt(k));
+  const rows = [...table].sort((a, b) => Math.abs(b.values[1]) - Math.abs(a.values[1]));
+  return html`<details><summary style="cursor:pointer;">Rank of each input under each tail width (mean cost)</summary>
+  <table style="font-size:0.9em;"><thead><tr><th>Input</th>${tails.map(t => html`<th>${Math.round(t * 100)}% tails: $/kg (rank)</th>`)}</tr></thead>
+  <tbody>${rows.map(r => html`<tr><td>${r.name}</td>${r.values.map((v, k) => html`<td>${usd(v)} (${ranks[k].indexOf(r.name) + 1})</td>`)}</tr>`)}</tbody></table>
+  <p style="font-size:0.85em; color:#555;">The largest bars usually keep their order; the middle of the ranking does not. An input whose bar shrinks sharply as the tail widens matters mainly through its extreme values.</p></details>`;
+}
+```
+
+### 2.4 Small bars are noise {#noise}
+
+Each bar is a difference between two sample means of 3,000 draws with a standard deviation around $100/kg, so its standard error is a few dollars per kilogram. In the default scenario, WACC, asset life, plant capacity and utilization all have bars of $1–5/kg, which is within noise; the chart on the main page nonetheless draws and labels them. The whiskers above show the same problem for other statistics.
+
+### 2.5 Two different questions: learning an input versus setting it {#learn-vs-set}
+
+The chart, and every statistic in this section, conditions on the input: it compares worlds in which the input happens to be high with worlds in which it happens to be low. Under the model's dependence structure, that is the right way to answer *"if we learned this input's value, what would we expect cost to be?"*, because learning that density is high also tells you the process is probably continuous, and the conditional statistic carries that along.
+
+It is the wrong way to answer *"if this input were changed while everything else stayed as it is, what would happen to cost?"*, which is what an engineer improving a process or a funder backing a technology usually means. That needs an intervention: re-run the simulation with the input pinned. When inputs are independent, the two answers coincide; here they do not (Section 3.5 shows the gap for the inputs the engine lets us pin). Neither answer is more correct in general; they are answers to different questions, and the chart only gives the first.
+
+### 2.6 None of this is research value {#not-research-value}
+
+The [September review](review-2026-09.qmd) makes the point directly: a large bar can have low information value if every plausible value of the input supports the same decision, and a small bar can matter if the decision is on a knife edge. Deciding what to study requires specifying a choice (fund a medium improvement, obtain a scale-up measurement, support deployment) and asking whether plausible evidence would change it. None of the statistics on this page do that. They describe the model's uncertainty; they do not price it.
+
+## 3. Alternatives, run on this scenario {#alternatives}
+
+### 3.1 Conditional-mean profiles: where in the range the cost moves {#profiles}
+
+Instead of two tails, look at all ten deciles. For each input, the red line is the mean cost within each decile of that input, the dashed blue line is the median, and the band is the 10th–90th percentile of cost within the decile. Steep, straight profiles are what the tornado bar assumes; curved profiles show that the swing comes from one end of the range; flat profiles with wide bands are inputs the bar ranks by noise.
+
+```{ojs}
+//| echo: false
+{
+  const panels = inputs.map(i => {
+    const bins = sm.conditionalProfile(i.data, uc, 10);
+    const plot = Plot.plot({
+      width: 270, height: 180, marginLeft: 48, marginBottom: 34,
+      x: {label: `decile of ${label(i)} →`, ticks: [1, 5, 10]},
+      y: {type: "log", label: "$/kg", grid: true},
+      marks: [
+        Plot.areaY(bins, {x: "bin", y1: "yP10", y2: "yP90", fill: "#3498db", fillOpacity: 0.15}),
+        Plot.lineY(bins, {x: "bin", y: "yMedian", stroke: "#1a5276", strokeDasharray: "4,2"}),
+        Plot.lineY(bins, {x: "bin", y: "yMean", stroke: "#c0392b", strokeWidth: 2})
+      ]
+    });
+    return html`<div style="flex:0 0 auto;">${plot}</div>`;
+  });
+  return html`<div style="display:flex; flex-wrap:wrap; gap:10px;">${panels}</div>`;
+}
+```
+
+*Log scale on cost. Deciles are equal-count bins of the input's own distribution (decile 1 is the lowest 10%, decile 10 the highest), so the horizontal axis is not linear in the input's units.*
+
+### 3.2 Expected uncertainty after learning one input {#learning-value}
+
+This is the closest thing to the question "how much would our uncertainty shrink if we pinned this input down?" Split the draws into 30 equal-count bins of the input, measure the spread of cost within each bin, and average. The share of variance removed, $\eta^2 = 1 - \mathbb{E}[\operatorname{Var}(\text{cost} \mid x)]/\operatorname{Var}(\text{cost})$, is the first-order Sobol index when inputs are independent; under dependence it also counts the information the input carries about correlated inputs, so the shares can add up to more than 100%. The 80% interval width is the more robust companion, because the variance of a heavy-tailed cost is driven by a few extreme draws.
+
+```{ojs}
+//| echo: false
+viewof targetKey = Inputs.radio(new Map([["Cost ($/kg)", "cost"], ["Log cost (proportional uncertainty)", "log"]]), {value: "cost", label: "Attribute the uncertainty in"})
+```
+
+```{ojs}
+//| echo: false
+targetY = targetKey === "log" ? logUc : uc
+learningRows = inputs.map(i => ({name: i.name, ...sm.learningValue(i.data, targetY, 30)})).sort((a, b) => b.eta2 - a.eta2)
+```
+
+```{ojs}
+//| echo: false
+{
+  const total = learningRows.reduce((s, r) => s + r.eta2, 0);
+  const width = v => targetKey === "log" ? "×" + Math.exp(v).toFixed(1) : usd(v);
+  const sd = v => targetKey === "log" ? v.toFixed(2) : usd(v);
+  const base = learningRows[0];
+  return html`<div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+  <div>${Plot.plot({
+    width: 460, height: 50 + 30 * learningRows.length, marginLeft: 260, marginRight: 60,
+    x: {label: "Share of variance removed by learning this input (η²)", domain: [0, Math.max(0.05, ...learningRows.map(r => r.eta2)) * 1.2], tickFormat: v => (100 * v).toFixed(0) + "%", grid: true},
+    y: {label: null, tickSize: 0, domain: learningRows.map(r => r.name)}, style: {fontSize: "12px"},
+    marks: [Plot.barX(learningRows, {y: "name", x: "eta2", fill: "#1a5276", fillOpacity: 0.8}),
+      Plot.text(learningRows, {y: "name", x: "eta2", dx: 4, text: d => (100 * d.eta2).toFixed(1) + "%", textAnchor: "start", fontSize: 11})]
+  })}</div>
+  <table style="font-size:0.88em; max-width:420px;"><thead><tr><th>Input</th><th>80% interval width now → expected after learning it</th><th>SD now → expected</th></tr></thead>
+  <tbody>${learningRows.map(r => html`<tr><td>${r.name}</td><td>${width(r.marginalWidth80)} → <strong>${width(r.expectedWidth80)}</strong></td><td>${sd(r.marginalSd)} → ${sd(r.expectedSd)}</td></tr>`)}</tbody></table>
+  </div>
+  <p style="font-size:0.85em; color:#555;">The shares sum to ${(100 * total).toFixed(0)}%${total > 1 ? ", above 100% because the inputs overlap" : ""}. ${targetKey === "log" ? "For log cost the 80% interval width is shown as the ratio p90/p10." : "Widths are the p90 − p10 range of cost, now and averaged across what it would be after learning the input."} Thirty bins of 1,000 draws; the within-bin spread still includes variation of the input inside its bin, so the shares are slightly conservative.</p>`;
+}
+```
+
+### 3.3 Rank regression: partial adjustment for co-movement {#rank-regression}
+
+Regress the rank of cost on the ranks of all displayed inputs at once. The standardized coefficients (SRRC) describe each input's monotone association with cost *holding the other listed inputs at their ranks*, which is a partial correction for the overlap problem: an input whose association runs entirely through other listed inputs gets a coefficient near zero. The $R^2$ says how much of the rank variation the listed inputs explain additively; the remainder is unlisted inputs (other variable costs, reactor and plant-factor draws, supplemental proteins, fixed costs) plus interactions and non-monotone effects. It is still a description of the joint sample, not an intervention.
+
+```{ojs}
+//| echo: false
+{
+  const fit = sm.rankRegression(inputs.map(i => i.data), targetY);
+  const rows = inputs.map((i, j) => ({name: i.name, rho: sm.spearman(i.data, targetY), srrc: fit.coefficients[j], eta2: sm.learningValue(i.data, targetY, 30).eta2}))
+    .sort((a, b) => Math.abs(b.srrc) - Math.abs(a.srrc));
+  const f = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+  return html`<table style="font-size:0.9em;"><thead><tr><th>Input</th><th>Spearman ρ with ${targetKey === "log" ? "log cost" : "cost"}</th><th>SRRC (partial, all inputs together)</th><th>η² (Section 3.2)</th></tr></thead>
+  <tbody>${rows.map(r => html`<tr><td>${r.name}</td><td>${f(r.rho)}</td><td><strong>${f(r.srrc)}</strong></td><td>${(100 * r.eta2).toFixed(1)}%</td></tr>`)}</tbody></table>
+  <p style="font-size:0.85em; color:#555;">Rank regression R² = ${fit.r2.toFixed(2)}: the listed inputs explain ${(100 * fit.r2).toFixed(0)}% of the rank variation in ${targetKey === "log" ? "log cost" : "cost"} through additive monotone effects. Compare ρ and SRRC for maturity: its raw association is largely accounted for by the media and GF inputs it drives.</p>`;
+}
+```
+
+### 3.4 Interventions: pin one input and re-run {#interventions}
+
+For the inputs the engine exposes as ranges, we can set the input to a single value and re-simulate with the same seed, so every other draw is unchanged. The set-points are the mean of the input within the bottom and top 10% tails, which makes the intervention comparable with the chart's conditional contrast. The difference between the two columns is the dependence structure at work.
+
+```{ojs}
+//| echo: false
+interventions = sm.interventionContrasts(results, scenarioParams, {n: 20000, seed: 42, tailFrac: 0.10})
+```
+
+```{ojs}
+//| echo: false
+{
+  if (!interventions.length) return html`<p><em>No input in this scenario can be pinned without changing the model structure.</em></p>`;
+  return html`<table style="font-size:0.9em;"><thead><tr><th>Input</th><th>Set-points (bottom-tail mean → top-tail mean)</th><th>Conditional contrast (chart)</th><th>Intervention contrast</th><th>Note</th></tr></thead>
+  <tbody>${interventions.map(r => html`<tr><td>${r.name}</td><td>${r.lo.toPrecision(3)} → ${r.hi.toPrecision(3)}</td><td>${usd(r.conditional)}</td><td><strong>${usd(r.intervention)}</strong></td><td style="font-size:0.85em; color:#555;">${r.note}${r.warnings.length ? " " + r.warnings.join(" ") : ""}</td></tr>`)}</tbody></table>
+  <p style="font-size:0.85em; color:#555;">Mean cost, 20,000 paired draws per run. Interventions are only available for inputs the engine parameterizes as a range (density via the custom-prior override, plant capacity, WACC, asset life, and fresh media when the direct model is selected). Pinning the media-use multiplier, media $/L or the GF inputs would require engine changes; pinning maturity would require a point-mass option for the latent factor.</p>`;
+}
+```
+
+In the default scenario the density intervention is *larger* than the conditional contrast. Setting density to the bottom-tail value for every draw, including perfusion draws with high media-use multipliers, produces media volumes the engine never generates on its own (low density with a fed-batch multiplier is what the conditional bottom tail contains). So the intervention breaks a coupling that is there for a physical reason, and its answer is not "the effect of density" either. When inputs are structurally linked, the honest statement is that the effect of one input is only defined relative to what is assumed about the others.
+
+### 3.5 Shapley effects: a variance split that respects dependence {#shapley}
+
+Sobol indices split the output variance into shares attributable to each input, but the classical decomposition requires independent inputs, which we do not have. **Shapley effects** (Owen 2014; Song, Nelson and Staum 2016; Iooss and Prieur 2019) are the standard answer to that problem. They borrow the Shapley value from cooperative game theory: treat each input as a player, define the "value" of any group of inputs as the variance they jointly explain, $c(u) = \operatorname{Var}(Y) - \mathbb{E}[\operatorname{Var}(Y \mid X_u)]$, and give each input the average of its marginal contribution over all orders in which the inputs could be added. The result is a set of shares that sum to the explained variance even when inputs are dependent, with each input's share lying between its first-order and total-effect Sobol index. So the answer to "is this relevant here?" is yes: it is precisely the method built for dependent inputs like ours.
+
+Two practical limits. First, computing $\mathbb{E}[\operatorname{Var}(Y \mid X_u)]$ for every subset $u$ needs conditional distributions of the inputs, which the engine does not expose; we use the given-data estimator of Broto, Bachoc and Depecker (2020), which approximates the conditional variance by the variance of cost among each draw's nearest neighbours in the subset's coordinates. That estimator degrades quickly as the number of inputs grows, because neighbourhoods in many dimensions are wide: with all eleven inputs it returns negative shares and explains only about half the variance. It behaves well for the six inputs that carry nearly all the variance, on log cost, with two independent subsamples agreeing closely. Second, the shares depend on how the inputs are carved up. "Media $/L including the hydrolysate regime" is one input here; split it into the regime switch and the within-regime price and the attribution changes.
+
+```{ojs}
+//| echo: false
+shapleyData = fetch(new URL("./sensitivity-shapley-2026-09.json", window.location.href).href).then(r => r.json())
+```
+
+```{ojs}
+//| echo: false
+{
+  const runs = shapleyData.shapley_runs;
+  const main = runs.filter(r => r.inputs_set === "reduced" && r.target === "log_cost");
+  const raw = runs.filter(r => r.inputs_set === "reduced" && r.target === "cost");
+  const all = runs.find(r => r.inputs_set === "all");
+  const eta = Object.fromEntries(shapleyData.full_sample.log_cost.inputs.map(i => [i.key, i.eta2]));
+  const keys = main[0].inputs.map(i => i.key);
+  const f = v => (v < -0.005 ? "−" : "") + Math.abs(100 * v).toFixed(1) + "%";
+  const rows = keys.map((k, j) => ({name: main[0].inputs[j].name,
+    eta: eta[k], main: main.map(r => r.inputs[j].shapley), raw: raw.map(r => r.inputs[j].shapley),
+    first: main[0].inputs[j].first_order, total: main[0].inputs[j].total_effect}));
+  const order = [...rows].sort((a, b) => b.main[0] - a.main[0]);
+  const unexplained = 1 - main[0].explained_share;
+  return html`<p><em>Default scenario only</em> (${isCustom ? "the scenario above is custom; this table does not update" : "matches the scenario above"}). Engine ${shapleyData.model_version}, generated ${shapleyData.generated}.</p>
+  ${Plot.plot({
+    width: 620, height: 50 + 30 * order.length, marginLeft: 260, marginRight: 60,
+    x: {label: "Shapley share of the variance of log cost", domain: [Math.min(0, ...order.map(r => r.main[0])) * 1.2, Math.max(...order.map(r => r.main[0])) * 1.25], tickFormat: v => (100 * v).toFixed(0) + "%", grid: true},
+    y: {label: null, tickSize: 0, domain: order.map(r => r.name)}, style: {fontSize: "12px"},
+    marks: [Plot.barX(order, {y: "name", x: d => d.main[0], fill: "#8e44ad", fillOpacity: 0.8}),
+      Plot.dot(order, {y: "name", x: d => d.main[1], fill: "#222", r: 3, title: "second subsample"}),
+      Plot.text(order, {y: "name", x: d => Math.max(d.main[0], 0), dx: 6, text: d => f(d.main[0]), textAnchor: "start", fontSize: 11})]
+  })}
+  <table style="font-size:0.88em;"><thead><tr><th>Input</th><th>Shapley share, log cost (subsample 1 / 2)</th><th>First-order / total, same estimator</th><th>η² from Section 3.2 (log cost, full sample)</th><th>Shapley share, cost in $/kg (1 / 2)</th></tr></thead>
+  <tbody>${order.map(r => html`<tr><td>${r.name}</td><td><strong>${f(r.main[0])}</strong> / ${f(r.main[1])}</td><td>${f(r.first)} / ${f(r.total)}</td><td>${f(r.eta)}</td><td>${f(r.raw[0])} / ${f(r.raw[1])}</td></tr>`)}</tbody></table>
+  <p style="font-size:0.85em; color:#555;">Six inputs, log cost, ${main[0].subsample.toLocaleString()} draws subsampled from 30,000, k = ${main[0].k} nearest neighbours. Shares sum to ${(100 * main[0].explained_share).toFixed(0)}% (subsample 2: ${(100 * main[1].explained_share).toFixed(0)}%); the remaining ${(100 * unexplained).toFixed(0)}% is inputs not in the chart plus estimator bias. For comparison, a rank regression on the same six inputs explains ${(100 * main[0].rank_r2_same_inputs).toFixed(0)}% of the rank variation in log cost. The small negative share for maturity is impossible in theory and is the estimator's signature: adding an input that carries almost no extra information widens the neighbourhoods and looks like added noise. The all-eleven-input run (${all.subsample.toLocaleString()} draws) explained ${(100 * all.explained_share).toFixed(0)}% and produced ${all.inputs.filter(i => i.shapley < -0.005).length} negative shares, which is why it is not shown as a result. On cost in dollars rather than log cost the density share falls and the two subsamples disagree more, because the variance of a heavy-tailed quantity is driven by a few extreme draws.</p>
+  <p style="font-size:0.85em; color:#555;">Compared with the η² column, the Shapley shares remove the overlap: GF price and GF quantity share a regime switch, so their first-order shares over-count and their Shapley shares are lower; the same holds for media $/L and the multiplier through process mode.</p>`;
+}
+```
+
+Reproduce with `node scripts/sensitivity-shapley.mjs`, which writes [`sensitivity-shapley-2026-09.json`](sensitivity-shapley-2026-09.json) with the full-sample statistics for every input alongside the runs.
+
+### 3.6 What is still not done {#not-done}
+
+- **Sobol indices on independent primitive inputs.** The engine draws about twenty-five independent primitives (the mode-selection uniform, the Beta noise on each adoption probability, the within-regime lognormals, the reactor, plant-factor and fixed-cost draws, and so on). A classical Sobol decomposition on those would be exact and cheap with the pick-freeze scheme, but the engine would need to accept the primitives as inputs, and most primitives are not quantities anyone would set out to research ("the uniform draw that picks the process mode" is not a research target). Attributing to the displayed, aggregated inputs is more meaningful and less clean; that trade-off is inherent, not an implementation gap.
+- **Multi-factor dependence.** All of the above takes the single latent maturity factor as given. The [structural comparison](index.qmd#structural-comparison) on the main page shows what independent maturity channels do to the headline numbers; rerunning this page's statistics under that setting is one click away via the Advanced page link.
+- **Value of information.** The decision-relevant version of this analysis (expected value of perfect or sample information for a specified choice) needs a decision and a loss function. We have neither on the site yet.
+
+## 4. Summary {#summary}
+
+| Method | Question it answers | Handles the engine's dependence? | Unit | Where |
+|---|---|---|---|---|
+| Tornado (tail contrast, mean) | In worlds where $x$ is high, how much higher is mean cost than in worlds where it is low? | Describes the joint sample; bars overlap and cannot be added | $/kg | Main page; Section 2.3 with other tails and statistics |
+| Threshold contrast | Same, for P(cost below a target) | Same | percentage points | Section 2.3 |
+| Conditional profiles | How does cost change across the whole range of $x$? | Same | $/kg by decile | Section 3.1 |
+| Expected uncertainty after learning $x$ (η², interval width) | If we learned $x$, how much narrower would the cost distribution be? | Yes, in the "learning" sense: counts information carried by correlated inputs | share; $/kg | Section 3.2 |
+| Rank regression (SRRC) | Monotone association with cost, adjusting for the other listed inputs | Partially, among listed inputs | SD units | Section 3.3 |
+| Intervention contrast | If $x$ were set to a value, everything else unchanged, what would cost be? | Breaks the dependence by design; only for pinnable inputs | $/kg | Section 3.4 |
+| Shapley effects | How should the variance be split among inputs so the shares add up? | Yes, by construction; estimator is the weak point | share of variance | Section 3.5 (default scenario, offline) |
+| Sobol on primitives, value of information | Exact variance split; decision relevance | — | — | Not implemented |
+
+The practical reading for this model, in the default scenario: cell density and the growth-factor inputs dominate every measure, media $/L and the media-use multiplier come next, and the financing, scale, timing and utilization inputs are within noise on every measure. The methods disagree about the ordering and size of the middle group, which is the honest result: the middle group's ranking depends on which question you ask.
+
+*Estimators: [`sensitivity-methods.mjs`](sensitivity-methods.mjs); tests: `tests/sensitivity-methods.test.mjs`; offline run: `scripts/sensitivity-shapley.mjs`. References: Owen, A. B. (2014) "Sobol' indices and Shapley value," SIAM/ASA J. Uncertainty Quantification; Song, E., Nelson, B. L. and Staum, J. (2016) "Shapley effects for global sensitivity analysis," SIAM/ASA JUQ; Iooss, B. and Prieur, C. (2019) "Shapley effects for sensitivity analysis with correlated inputs," Int. J. Uncertainty Quantification; Broto, B., Bachoc, F. and Depecker, M. (2020) "Variance reduction for estimation of Shapley effects and adaptation to unknown input distribution," SIAM/ASA JUQ; Saltelli et al. (2008) Global Sensitivity Analysis: The Primer.*

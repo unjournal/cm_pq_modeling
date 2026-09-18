@@ -25,6 +25,8 @@ cm_pq_modeling/
 │   ├── index.qmd        # Main dashboard with Monte Carlo simulation (OJS)
 │   ├── learn.qmd        # Educational content: how cultured meat is made
 │   ├── docs.qmd         # Technical reference: formulas and parameters
+│   ├── sensitivity.qmd  # Sensitivity methods: tornado caveats and alternatives, live
+│   ├── sensitivity-methods.mjs  # Estimators shared by index.qmd, sensitivity.qmd, tests, scripts
 │   ├── about.qmd        # About page
 │   ├── styles.css       # Custom styling
 │   ├── _quarto.yml      # Quarto project config
@@ -42,6 +44,19 @@ cm_pq_modeling/
 ```
 
 ## Dashboard Technology Stack
+
+### Current calculation engine (September 2026)
+
+- `dashboard/cost-model.mjs` is the shared, versioned engine for both browser views. The Python and Squiggle files are historical and are not equivalent current implementations.
+- Run `node --test tests/cost-model.test.mjs` before shipping calculation changes. Tests cover accounting, utilization, paired comparisons, probability boundaries, and the actual Simple/Advanced parameter adapters.
+- Run `node scripts/model-audit.mjs` for default and process-scenario results, multiple seeds, effective parameters, and the engine SHA-256.
+- September 17 alternatives and responses: `dashboard/review-response-2026-09.qmd`. Run `node scripts/review-robustness.mjs` for structural alternatives and sample-size/seed checks; regenerate `dashboard/review-2026-09-17-audit.json` after engine changes.
+- `dashboard/model-controls.mjs` shares custom-prior validation between views. Optional p50 preserves all three quantiles; blank p50 retains the two-endpoint fit. Advanced structural controls are opt-in and provisional; Simple fixes baseline structures. Keep new settings and valid priors in URL state and exports.
+- In OJS, import the module using `new URL("./cost-model.mjs", window.location.href).href`; a bare relative dynamic import resolves against the Quarto runtime directory instead of the page.
+- The scientific review is `dashboard/review-2026-09.qmd`. Keep `docs.qmd` and `limits.qmd` synchronized with implementation changes.
+- Sensitivity methods (September 18, 2026): `dashboard/sensitivity-methods.mjs` holds the displayed-input list and activity rules for the tornado chart (imported by `index.qmd`), plus the alternative estimators used by `dashboard/sensitivity.qmd` (tail contrasts with standard errors, conditional profiles, η²/expected width after learning one input, rank regression, one-at-a-time interventions, nearest-neighbour Shapley effects) and the Advanced-page URL-state adapter. Run `node --test tests/sensitivity-methods.test.mjs`; the adapter test executes the real `simParams` cell in `index.qmd`, so page and adapter cannot drift silently. `node scripts/sensitivity-shapley.mjs > dashboard/sensitivity-shapley-2026-09.json` regenerates the offline Shapley table (about a minute); rerun it after engine changes. The tornado heading keeps the `#sensitivity-analysis-tornado-chart` anchor; workshop-site pages link to it.
+- Nameplate capacity sets installed volume and annual overhead; actual output includes utilization. Complete medium includes all proteins once. Keep component random streams stable for paired scenario comparisons.
+- These are scenario distributions in mixed source-year dollars, not a calibrated conditional commercialization forecast.
 
 ### Quarto + Observable JS (OJS)
 - **Quarto**: Document/website generator (v1.6+)

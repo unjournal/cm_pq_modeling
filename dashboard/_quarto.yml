@@ -4,7 +4,9 @@ project:
   resources:
     - cost-model.mjs
     - model-controls.mjs
+    - sensitivity-methods.mjs
     - review-2026-09-17-audit.json
+    - sensitivity-shapley-2026-09.json
     - cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3
     - archive/**
 
@@ -25,6 +27,8 @@ website:
         href: demand.qmd
       - text: "Model formulas & metrics"
         href: docs.qmd
+      - text: "Sensitivity"
+        href: sensitivity.qmd
       - text: "Discuss"
         href: discuss.qmd
       - text: "Limits/Critique"

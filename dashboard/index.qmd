@@ -2128,52 +2128,25 @@ html`<div style="display:flex; gap:2rem; flex-wrap:wrap; font-size:0.95em; paddi
 
 </details>
 
-### Association under the current uncertainty model {#sensitivity-analysis-tornado-chart}
+### Sensitivity analysis (tornado chart): association under the current uncertainty model {#sensitivity-analysis-tornado-chart}
 
-Which parameters have the most impact on the final cost? Each bar shows the **dollar swing** in mean unit cost between simulations where the parameter is in its top 10% versus its bottom 10%. Larger bars indicate stronger associations under the selected assumptions.
+Which parameters have the most impact on the final cost? Each bar shows the **dollar swing** in mean unit cost between simulations where the parameter is in its top 10% versus its bottom 10%. Larger bars indicate stronger associations under the selected assumptions. This is one of several ways to ask the question, and not the most robust one; the [sensitivity methods page](sensitivity.qmd) explains what the bars do and do not measure and compares alternatives on the same scenario.
+
+```{ojs}
+//| echo: false
+sensitivityMethods = import(new URL("./sensitivity-methods.mjs", window.location.href).href)
+```
 
 ```{ojs}
 //| echo: false
 {
   const uc = results.unit_cost;
 
-  // Deduplicated parameter list.
-  // Removed vs. previous version (see explainer below for details):
-  //   • L/kg (volume)     — deterministic function of density × media-use multiplier
-  //   • Uses Hydrolysates — regime-switch subsumed into Media $/L
-  //   • Has Cheap GFs     — regime-switch subsumed into GF Price / GF Quantity
-  const params = [
-    {name: "Cell Density (g/L)",                 data: results.density_samples,        kind: "primitive"},
-    {name: "Media-use multiplier (×)",           data: results.media_turnover_samples, kind: "primitive"},
-    {name: "Media $/L (incl. hydrolysate regime)", data: results.media_cost_L_samples, kind: "mixture"},
-    {name: "GF Price ($/g, incl. regime)",       data: results.price_recf_samples,     kind: "mixture"},
-    {name: "GF Quantity (g/kg, incl. regime)",   data: results.g_recf_samples,         kind: "mixture"},
-    {name: "Industry Maturity (latent — see note)", data: results.maturity_samples,    kind: "latent"},
-    {name: "WACC (financing)",                   data: results.wacc_samples,           kind: "primitive"},
-    {name: "Asset Life (years)",                 data: results.asset_life_samples,     kind: "primitive"},
-    {name: "Plant Capacity (kTA)",               data: results.plant_kta_samples,      kind: "primitive"},
-    {name: "Effective production time (days)", data: results.cycle_days_samples, kind: "primitive"},
-    {name: "Utilization Rate",                   data: results.uptime_samples,         kind: "primitive"}
-  ];
-
-  // Exclude replaced or disabled inputs rather than ranking irrelevant random draws.
-  const mediaOverride = simParams.ep_media_p10 != null;
-  const gfOverride = simParams.ep_gf_p10 != null;
-  const capitalActive = !simParams.cdmo_mode && simParams.include_capex;
-  const mediaVolumeActive = !mediaOverride || (simParams.gf_dose_model === "media_linked" && !gfOverride && !simParams.bundled_media);
-  const activeParams = params.filter(p => {
-    if (p.name.startsWith("Industry Maturity")) return simParams.dependence_mode === "shared";
-    if (p.name.startsWith("Media-use")) return simParams.media_use_model === "density" && mediaVolumeActive;
-    if (p.name.startsWith("Media $/L")) return !mediaOverride;
-    if (p.name.startsWith("GF ")) return !simParams.bundled_media && !gfOverride;
-    if (p.name.startsWith("WACC") || p.name.startsWith("Asset Life") || p.name.startsWith("Effective production")) return capitalActive;
-    if (p.name.startsWith("Cell Density")) return (simParams.media_use_model === "density" && mediaVolumeActive) || capitalActive;
-    if (p.name.startsWith("Plant Capacity") || p.name.startsWith("Utilization")) return capitalActive || (!simParams.cdmo_mode && simParams.include_fixed_opex);
-    return true;
-  });
-  if (simParams.media_use_model === "direct" && mediaVolumeActive) activeParams.push({name: "Fresh media (L/kg)", data: results.L_per_kg_samples, kind: "primitive"});
-  if (mediaOverride) activeParams.push({name: "Media cost override ($/kg)", data: results.cost_media, kind: "override"});
-  if (gfOverride && !simParams.bundled_media) activeParams.push({name: "GF cost override ($/kg)", data: results.cost_recf, kind: "override"});
+  // The displayed inputs and their activity rules live in sensitivity-methods.mjs,
+  // shared with the sensitivity page. L/kg and the two regime switches are absent
+  // by design: L/kg is density × media-use multiplier, and the switches sit inside
+  // the Media $/L and GF bars.
+  const activeParams = sensitivityMethods.displayedInputs(results, simParams);
 
   // Compute signed swings: positive = high param → higher cost (red); negative = high param → lower cost (green)
   const swingsRaw = activeParams.map(p => ({
@@ -2233,7 +2206,14 @@ Which parameters have the most impact on the final cost? Each bar shows the **do
 }
 ```
 
-*Red bars: high values occur with higher costs. Green bars: high values occur with lower costs. Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is an association, not an intervention effect or variance decomposition. Correlated inputs overlap; bars should not be summed or interpreted as research value. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
+*Red bars: high values occur with higher costs. Green bars: high values occur with lower costs. Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is an association, not an intervention effect or variance decomposition. Correlated inputs overlap; bars should not be summed or interpreted as research value. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements. Bars of a few dollars per kilogram are within simulation noise.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
+
+```{=html}
+<p style="margin:0.5rem 0 1.5rem;">
+  <a href="sensitivity.html" onclick="this.href = 'sensitivity.html' + window.location.search;" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;">Analyze this scenario on the sensitivity methods page →</a>
+  <span style="font-size:0.85em; color:#666; margin-left:0.5rem;">Other tail widths, other output statistics, conditioning versus intervention, expected uncertainty after learning one input, rank regression, and Shapley effects.</span>
+</p>
+```
 
 ### Structural comparison {#structural-comparison}
 
