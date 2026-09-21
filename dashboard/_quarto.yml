@@ -8,6 +8,7 @@ project:
     - review-2026-09-17-audit.json
     - sensitivity-shapley-2026-09.json
     - cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3
+    - process_overview.mp3
     - archive/**
 
 website:

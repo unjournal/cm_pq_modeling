@@ -40,11 +40,13 @@ format:
 ```
 
 ::: {.callout-note collapse="true"}
-## Model version and September 17 update
+## Model version and September 17–20 updates
 
 This page runs the **current model** (engine `2026-09-17.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
+
+**September 20:** the model pages now connect the technical limitations to the workshop's skeptical–optimistic disagreement map and structured response round. This adds no new parameter values or headline forecast. It makes the top-down microbial benchmark, interaction risk, and remaining measurement needs visible, with provenance and caveats in the [response note](review-response-2026-09.qmd#top-down).
 :::
 
 
@@ -73,7 +75,9 @@ We especially welcome expert review of: growth factor quantities and prices, bio
 ## From workshop evidence to model revision
 The May 8, 2026 workshop is complete. Its outputs now form a linked evidence-to-model workflow: the summary records the technical arguments, the beliefs analysis shows the forecast spread, the demand bridge connects factory-gate cost to an adoption model, and the proposed modeling hack turns the remaining disagreements into testable model changes.
 
-**[Workshop summary →](https://uj-cm-workshop.netlify.app/summary.html)** · **[Public beliefs form →](https://uj-cm-workshop.netlify.app/beliefs.html)** · **[Cost → demand bridge →](demand.qmd)** · **[Modeling hack proposal →](https://uj-cm-workshop.netlify.app/modeling-hack.html)**
+The follow-up now separates disagreements about definitions, factual estimates, evidence, source credibility, interpretation, model structure, and the importance of a claim to the final result. This matters because agreement that one input can become cheaper does not establish that the total system becomes cheap. The [workshop synthesis](https://uj-cm-workshop.netlify.app/synthesis.html#sources-of-disagreement) explains the distinction, and the [crux response form](https://uj-cm-workshop.netlify.app/crux-map.html#respond) asks skeptics and optimists to diagnose it directly.
+
+**[Workshop summary →](https://uj-cm-workshop.netlify.app/summary.html)** · **[Where disagreement sits →](https://uj-cm-workshop.netlify.app/synthesis.html#sources-of-disagreement)** · **[Respond to the crux map →](https://uj-cm-workshop.netlify.app/crux-map.html#respond)** · **[Cost → demand bridge →](demand.qmd)** · **[Sensitivity methods →](sensitivity.qmd)**
 
 The named beliefs-analysis dashboard remains an internal review artifact and is intentionally not linked from this public site; a redacted public synthesis should be produced separately.
 :::

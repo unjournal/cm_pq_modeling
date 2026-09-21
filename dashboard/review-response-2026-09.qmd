@@ -1,6 +1,6 @@
 ---
 title: "Responses to two model critiques"
-subtitle: "September 17, 2026 · engine 2026-09-17.1"
+subtitle: "September 17–20, 2026 · engine 2026-09-17.1"
 format:
   html:
     toc: true
@@ -24,6 +24,7 @@ Report 5 is *Audit and Redesign Recommendations for the Unjournal Cultivated-Mea
 - Advanced compares shared maturity with independent maturity channels, preserving the channel-level marginal distributions.
 - Growth-factor controls show the price ranges they imply. The association chart omits inputs made inactive by the selected structure.
 - New controls explain provenance on hover and link here. Advanced shared links retain the structural choices and valid custom priors; the Simple-to-Advanced link carries custom priors too. JSON exports include provenance and structural comparisons; CSV exports include version, seed, sample count, and effective parameters (the full configuration is on the first sample row).
+- The model now links to the workshop's structured skeptic–optimist follow-up, which distinguishes disagreement about definitions, evidence, credibility, interpretation, structure, materiality, and commercialization probability.
 
 Baseline numerical assumptions and the workshop-era archive are retained. The new structural settings are opt-in. They are tools for examining assumptions, not fitted replacements.
 
@@ -83,6 +84,16 @@ The alternative is called **independent maturity channels**, since density, proc
 ### What the comparison answers
 
 Advanced reruns each structural alternative with the same seed and other settings, reporting p50, p90, and P(cost < $25/kg). Each row changes one choice relative to the selected scenario. Media and GF comparisons also depend on their alternative input assumptions, so their differences cannot be attributed solely to equation form. These comparisons do not replace Sobol, Morris, or dependence-aware attribution analyses.
+
+## A top-down critical perspective and the response round {#top-down}
+
+The workshop materials contain a stronger skeptical argument than a high alternative cost estimate. One public-cleared anonymized respondent starts from mature yeast fermentation and argues that slower animal-cell growth, lower net volumetric productivity, more fragile cultures, hygiene requirements, senescence and cell-line work could leave cultured meat with a two-to-three-order-of-magnitude production-cost disadvantage. They also argue that bottom-up models can combine individually plausible improvements without showing that they work together.
+
+**Provenance and status:** this is one respondent's public-cleared argument, summarized in the [workshop crux map](https://uj-cm-workshop.netlify.app/crux-map.html#topdown-mechanisms). It is neither an independently validated cost floor nor a workshop consensus. The model should test the mechanisms and common-basis quantities behind the claim rather than widen a prior merely to include its headline estimate.
+
+The highest-value comparison would report net harvested grams per litre per day, fresh medium per kilogram, reactor occupancy, utilization, failed-batch losses, and vessel count on the same basis for the model scenario and a documented microbial-fermentation reference. The current engine can expose some of these quantities, but it does not yet provide a harmonized microbial reference band, explicit failed-batch accounting, or a top-down bound. Those remain open work.
+
+The [public synthesis](https://uj-cm-workshop.netlify.app/synthesis.html#sources-of-disagreement) now distinguishes eight possible sources of disagreement: target definition, factual estimate, evidence set, source credibility, interpretation or reference class, model structure, the importance of an accepted fact to the final result, and commercialization probability or timing. The [crux response form](https://uj-cm-workshop.netlify.app/crux-map.html#respond) asks both sides to classify the dispute, state what they think the other side believes, and say how much resolution would change their forecast or decision.
 
 ## Findings already addressed, and clarifications {#already-addressed}
 

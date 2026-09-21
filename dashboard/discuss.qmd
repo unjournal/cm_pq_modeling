@@ -41,12 +41,21 @@ Post in the [Substantive hub (#3)](https://github.com/unjournal/cm_pq_modeling/d
 
 GitHub Discussions is a flat stack of threads per category; the structure below is maintained by hand.
 
+::: {.callout-note collapse="true"}
+## A more structured skeptic–optimist follow-up
+
+The workshop follow-up is trying to distinguish several things that can look like one disagreement: a different product or target quantity; a different factual estimate; different evidence; different trust in the same source; a different interpretation or reference class; a different model structure; or agreement on the fact but disagreement about how much it matters to the result.
+
+The [public synthesis](https://uj-cm-workshop.netlify.app/synthesis.html#sources-of-disagreement) maps these categories. The [crux map and response form](https://uj-cm-workshop.netlify.app/crux-map.html#respond) ask respondents to identify the source and materiality of a disagreement, state what they think the other side believes, and say what observation would change their view. This is the preferred route for a structured response; use GitHub Discussions for the longer technical exchange that follows.
+:::
+
 ## Quick decision tree
 
 | I want to... | Use... |
 |---|---|
 | Comment on a specific line, paragraph, parameter, or equation | [**Hypothesis**](https://hypothes.is/) — click the `<` tab on the right edge of any dashboard page (a free Hypothesis account is required, signup takes ~30 seconds) |
 | Debate actual cost values, biology, engineering, welfare, or methodology | [**Substantive hub (#3)**](https://github.com/unjournal/cm_pq_modeling/discussions/3) |
+| Diagnose a skeptic–optimist disagreement and say what would resolve it | [**Workshop crux response form**](https://uj-cm-workshop.netlify.app/crux-map.html#respond) |
 | Discuss how to *frame* a Pivotal Question (resolution, jurisdiction fork, retiring/splitting) | [**PQ framing hub (#4)**](https://github.com/unjournal/cm_pq_modeling/discussions/4) |
 | Discuss workshop logistics, scheduling, session format | [**Workshop hub (#2)**](https://github.com/unjournal/cm_pq_modeling/discussions/2) |
 | Suggest UX, visual, page-layout, or commenting-tool improvements | [**Platform & UX hub (#16)**](https://github.com/unjournal/cm_pq_modeling/discussions/16) |
