@@ -1,0 +1,20 @@
+# Cultured Chicken Cost Model
+
+> Interactive Monte Carlo model for estimating cultured chicken production costs, built for The Unjournal's Pivotal Questions work on cultivated meat cost trajectories.
+
+By The Unjournal (https://unjournal.org), a nonprofit that commissions public expert evaluations of impactful research. Published evaluations: https://unjournal.pubpub.org. About: https://info.unjournal.org. Related workshop: https://uj-cm-workshop.netlify.app/. Source code: https://github.com/unjournal/cm_pq_modeling
+
+## Pages
+
+- [Cultured Chicken Production Cost Model (advanced)](https://unjournal.github.io/cm_pq_modeling/): the full Monte Carlo model with adjustable inputs and a sensitivity (tornado) chart
+- [Simplest Model](https://unjournal.github.io/cm_pq_modeling/simple.html): a reduced version of the model with fewer inputs
+- [How Cultured Chicken is Made](https://unjournal.github.io/cm_pq_modeling/learn.html): background on the production process the model represents
+- [TEA Comparison](https://unjournal.github.io/cm_pq_modeling/compare.html): what published techno-economic analyses estimate, compared with the model
+- [Cost to Demand](https://unjournal.github.io/cm_pq_modeling/demand.html): bridging production costs to an adoption model
+- [Model formulas & metrics](https://unjournal.github.io/cm_pq_modeling/docs.html): equations, parameters and output definitions
+- [Sensitivity analysis](https://unjournal.github.io/cm_pq_modeling/sensitivity.html): what the tornado chart can and cannot tell you, with alternative estimators
+- [Discussion Map](https://unjournal.github.io/cm_pq_modeling/discuss.html): open questions and discussion links
+- [Model Limits & Critique](https://unjournal.github.io/cm_pq_modeling/limits.html): known limitations and critiques of the model
+- [About](https://unjournal.github.io/cm_pq_modeling/about.html): project background and how to give feedback
+
+Full page list: https://unjournal.github.io/cm_pq_modeling/sitemap.xml

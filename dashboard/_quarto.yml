@@ -10,10 +10,16 @@ project:
     - cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3
     - process_overview.mp3
     - archive/**
+    - llms.txt
 
 website:
   title: "Cultured Chicken Cost Model"
   description: "Interactive Monte Carlo model for estimating cultured chicken production costs"
+  # Discoverability: site-url makes Quarto write sitemap.xml and absolute
+  # canonical/Open Graph URLs.
+  site-url: "https://unjournal.github.io/cm_pq_modeling/"
+  open-graph: true
+  twitter-card: true
   navbar:
     left:
       - text: "Simplest Model"
@@ -52,6 +58,7 @@ format:
       dark: darkly
     toc: true
     toc-depth: 3
+    canonical-url: true
     code-fold: true
     code-tools: true
     include-in-header:
