@@ -222,9 +222,9 @@ it is calibrated to real data moments (plant-based ~1.2% market share, and the f
 ~89% of plant-based buyers are mainstream
 <abbr title="Flexitarians: mostly-omnivorous consumers who buy plant-based products occasionally, without being vegetarian or vegan. Pablo's point is that most plant-based sales come from this mainstream group, not from the small ethically-motivated vegetarian/vegan segment.">flexitarians</abbr>
 rather than ethically-motivated vegetarians, Gallup veg+vegan ~5%, measured meat price
-elasticities); Pablo reports it reproduces plant-based *milk*'s share
-<abbr title="Out-of-sample: the model's coefficients were fit to other products, then applied to plant-based milk without further tuning, and still roughly matched milk's observed share. That is evidence the structure generalizes — though we are relaying Pablo's claim, not independently checking it.">out-of-sample</abbr>
-(without being fitted to it, though we have not verified this); and his species-inversion
+elasticities); Pablo is reported to say it reproduces plant-based *milk*'s share
+<abbr title="Out-of-sample: if the model's coefficients were fit to other products and then applied to plant-based milk without further tuning, a rough match would be evidence the structure generalizes. We have not confirmed that milk was held out rather than used in calibration; this page's bridge notes do not record it, and the point needs checking with Pablo or his model documentation.">out-of-sample</abbr>
+(we have not confirmed that milk was left out of the calibration, so treat this as unverified); and his species-inversion
 and beachhead patterns are robust to the diffusion form (which only sets speed, not the
 ceiling). Limitations he flags himself: (a) price elasticities are measured on today's
 marginal choices but applied to a not-yet-existing product at very different maturity;

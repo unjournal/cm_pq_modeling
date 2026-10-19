@@ -128,7 +128,7 @@ For **quick inline notes** on specific text, use [Hypothesis](https://hypothes.i
 
 **Cultured chicken** (also called "cell-based" or "cultivated" chicken) is produced by growing <abbr title="Cells from birds (chickens, ducks, etc.) as opposed to mammalian cells from cows or pigs">avian muscle cells</abbr> in <abbr title="Vessels designed for growing cells or microorganisms under controlled conditions (temperature, pH, oxygen, mixing)">bioreactors</abbr> — essentially brewing meat instead of raising and slaughtering animals. Production costs have dropped dramatically — per [GFI](https://gfi.org/science/the-science-of-cultivated-meat/), the first cultured burger in 2013 "took months to produce and was reported to cost $330,000." Today, optimistic projections suggest ~$63/kg ([Garrison et al. 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)), with some companies claiming costs below $10/kg for pure cell mass (per a [2025 Lever VC industry report](https://www.levervc.com/) — note: authored by CM investors). These are costs for pure cultured cells, not finished consumer products, which may blend CM with plant-based or fungal ingredients at lower overall cost. This page explains the production process in detail and how each step affects costs. To explore these costs interactively, see our [Monte Carlo cost model](index.qmd).
 
-::: {.callout-warning}
+::: {#cost-basis-matters-read-carefully .callout-warning}
 ## Cost Basis Matters: Read Carefully
 Cost figures in the cultivated meat literature refer to different things depending on the study. Throughout this page, we label costs by their **output basis** where known:
 
@@ -140,10 +140,10 @@ Cost figures in the cultivated meat literature refer to different things dependi
 A $14/kg figure for pure cell mass and a $14/kg figure for a 50/50 hybrid imply very different costs for the cultivated component. We try to flag the basis for every number cited below. See our [TEA comparison page](compare.qmd) for a systematic breakdown.
 :::
 
-*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [**<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>**](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest--processing) → Processing → Product.*
+*The diagram below shows the high-level production flow. Each term is explained in detail in the sections that follow: [Cell Bank](#step-1-cell-banking) → [**<abbr title="Seed Train = the sequence of progressively larger vessels used to expand cells from a tiny frozen vial (~1 mL) up to production scale (1,000+ L). Like growing a starter culture for sourdough bread, but scaling up by 10x at each step.">Seed Train</abbr>**](#step-2-seed-train-scale-up) → [Production](#step-3-production-bioreactors) → [Harvest](#step-6-harvest-processing) → Processing → Product.*
 
 ```{=html}
-<svg viewBox="0 0 900 180" style="width: 100%; max-width: 1100px; min-height: 300px; margin: 2rem auto; display: block;">
+<svg viewBox="40 15 830 135" style="width: 100%; max-width: 1100px; margin: 1.5rem auto; display: block;">
   <!-- Background -->
   <rect width="900" height="180" fill="#f8f9fa" rx="8"/>
 
@@ -214,11 +214,17 @@ A $14/kg figure for pure cell mass and a $14/kg figure for a 50/50 hybrid imply 
   <!-- Arrow 5 -->
   <path d="M740 80 L780 80" stroke="#bdc3c7" stroke-width="3" marker-end="url(#arrowhead)"/>
 
-  <!-- Final: Product (chicken breast shape) -->
+  <!-- Final: Product (processed nugget / burger-style patty, no bone) -->
   <g transform="translate(790, 40)">
-    <rect x="10" y="15" width="60" height="50" rx="8" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/>
-    <text x="40" y="48" text-anchor="middle" font-size="18" fill="white">🍗</text>
-    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Chicken</text>
+    <title>Early products are likely to be boneless, processed items such as nuggets or burger-style patties.</title>
+    <path d="M12 38 C10 22 28 14 42 17 C58 13 72 24 68 40 C72 54 58 64 42 62 C26 66 12 54 12 38 Z" fill="#e0a85a" stroke="#b9762a" stroke-width="2"/>
+    <circle cx="28" cy="32" r="2" fill="#b9762a" opacity="0.6"/>
+    <circle cx="46" cy="28" r="2" fill="#b9762a" opacity="0.6"/>
+    <circle cx="54" cy="44" r="2" fill="#b9762a" opacity="0.6"/>
+    <circle cx="34" cy="48" r="2" fill="#b9762a" opacity="0.6"/>
+    <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Product</text>
+    <text x="40" y="115" text-anchor="middle" font-size="10" fill="#7f8c8d">e.g. nugget</text>
+    <text x="40" y="128" text-anchor="middle" font-size="10" fill="#7f8c8d">or burger</text>
   </g>
 
   <!-- Arrowhead marker -->
@@ -241,7 +247,7 @@ Several factors make chicken an attractive first target for cultured meat:
 | **Cell biology** | Chicken <abbr title="Muscle stem cells that can differentiate into mature muscle fibers; named for their position adjacent to muscle fibers">satellite cells</abbr> can be cultured effectively and show <abbr title="Cells remain healthy, continue growing well, and maintain their function under culture conditions">robust viability</abbr> | [<abbr title="'Efficient production of chicken satellite cell-based meat: Optimized culture medium, cell seeding density, and harvest time' — demonstrates optimized culture conditions for chicken satellite cells including serum-free proliferation and differentiation.">Kim et al. 2024</abbr>](https://pmc.ncbi.nlm.nih.gov/articles/PMC11506350/) |
 | **Spontaneous immortalization** | <abbr title="Per Pasitka et al. 2022: 'HUN-CF-2 cell line exhibited stable cell growth for over 300 population doublings' without genetic modification. Cells reached 'densities of 108 × 10⁶ cells per ml' in serum-free suspension culture.">Some avian cells can divide indefinitely without genetic modification</abbr> — a rare spontaneous mutational event (a few cells acquire random mutations enabling indefinite division) that avoids <abbr title="Genetically Modified Organism — cells or organisms whose DNA has been altered using genetic engineering">GMO</abbr> concerns | [<abbr title="'Spontaneously immortalized chicken fibroblasts generate an osteochondral-like tissue' (Nature Food, 2022). Key finding: chicken fibroblast cell line HUN-CF-2 grew for 300+ population doublings without genetic modification, in serum-free suspension culture at densities of 108 million cells/mL. Supports the claim that avian cells can spontaneously immortalize.">Pasitka et al. 2022</abbr>](https://www.nature.com/articles/s43016-022-00658-w) |
 | **Market size** | Chicken is the most consumed meat globally (~130 million tonnes/year) | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL) |
-| **Animal welfare** | <abbr title="Because chickens are much smaller than cattle, far more individual animals are killed for the same amount of meat. From an animal welfare perspective, replacing chicken production could reduce the largest number of individual animal lives affected. See Rethink Priorities and Open Philanthropy analyses of farmed animal suffering.">~70 billion chickens slaughtered annually</abbr> vs ~300 million cattle | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL), [Rethink Priorities](https://rethinkpriorities.org/research/animal-welfare) |
+| **Animal welfare** | <abbr title="Because chickens are much smaller than cattle, far more individual animals are killed for the same amount of meat. From an animal welfare perspective, replacing chicken production could reduce the largest number of individual animal lives affected. See Rethink Priorities and Open Philanthropy analyses of farmed animal suffering. Two caveats: factory-farming conditions are widely argued to be far worse for chickens than for cattle (the Welfare Footprint Project estimates the pain broiler chickens endure), and some animal welfare advocates argue that many cattle, especially pasture-raised, may lead net-positive lives. That second view is contested, and we have not found a single authoritative reference for it. The welfare case for replacing chicken is therefore stronger than the case for replacing beef.">~70 billion chickens slaughtered annually</abbr> vs ~300 million cattle (conditions are also widely argued to be worse for chickens; some welfare advocates think cattle may lead net-positive lives, a contested view) | [FAO 2023](https://www.fao.org/faostat/en/#data/QCL), [Rethink Priorities](https://rethinkpriorities.org/research/animal-welfare), [Welfare Footprint Project](https://welfarefootprint.org/) |
 | **Growth factors** | <abbr title="Why this matters: since chicken cells need similar growth factors at similar concentrations as bovine cells, the same cost-reduction technologies (precision fermentation, plant molecular farming) being developed for beef will also work for chicken. This means chicken benefits from all the R&amp;D investment targeting bovine cultured meat.">Similar</abbr> <abbr title="Fibroblast Growth Factor 2 — stimulates cell proliferation and maintains stem cell properties">FGF-2</abbr>/<abbr title="Insulin-like Growth Factor 1 — promotes cell growth and differentiation">IGF-1</abbr> requirements to bovine (~10-100 <abbr title="nanograms per milliliter — a very small concentration. One nanogram = one billionth of a gram. At these tiny concentrations, even expensive growth factors contribute modest cost per liter of media.">ng/mL</abbr> optimal) | [Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/) |
 
 ---
@@ -474,7 +480,7 @@ The <abbr title="The sequence of progressively larger vessels used to expand cel
 
 - Uses **expensive, small-scale equipment** (research-grade, often <abbr title="Disposable plastic bioreactor bags/vessels — avoid cleaning validation but add consumable costs">single-use</abbr>)
 - Requires **manual handling** and skilled labor ($50-150/hour <abbr title="'Fully loaded' = total employer cost including salary plus benefits, payroll taxes, insurance, training, and overhead. Per Humbird 2021: '$50,000/y for regular FTEs' with '100% labor burden' = $100k total. Fed-batch needs '95 total FTE'; perfusion needs '132 FTE'.">fully loaded</abbr>)
-- Consumes **high-quality media** (often <abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives. Per Humbird 2021: pharma-grade media at $5-20/L; food-grade alternatives at $0.50-2/L (per Lever VC 2025 claims).">pharma-grade</abbr> at $5-20/L, though many companies now use food-grade at $0.50-2/L)
+- Consumes **high-quality media** (<abbr title="Extremely pure, tested for contaminants, with full documentation — required for drug manufacturing but increasingly replaced by food-grade alternatives. Per Humbird 2021: pharma-grade media at $5-20/L; food-grade alternatives at $0.50-2/L (per Lever VC 2025 claims).">pharma-grade</abbr> media costs $5-20/L per Humbird 2021; many companies now report using food-grade media at $0.50-2/L, though that figure comes from company claims)
 
 ::: {.callout-note collapse="true"}
 ## Are Companies Still Using Pharma-Grade? (click to expand)
@@ -488,7 +494,7 @@ Increasingly, no. While early R&D relied heavily on pharma-grade media and equip
 Per the same report, production COGS for cell mass are claimed to be "$10-15/kg, with some leading-edge companies claiming costs below $10/kg" — up to 50% lower than the 2021 projections. *Note: these claims come from a [Lever VC report](https://www.levervc.com/) authored by CM investors and have not been independently verified.*
 :::
 
-::: {.callout-tip collapse="true"}
+::: {#why-cell-density-is-so-important .callout-tip collapse="true"}
 ## Why Cell Density is So Important (click to expand)
 
 **<abbr title="Grams of cells per liter of media — higher is better for cost efficiency">Cell density</abbr>** is one of the most important parameters for cost. Note: density is measured in wet-weight (g/L); water content at harvest is typically ~75–90% depending on cell line, process, and post-harvest separation — we use 80% as a reference. Published TEAs often don't state this assumption explicitly, which can make cost comparisons subtly inconsistent.
@@ -502,7 +508,7 @@ Per the same report, production COGS for cell mass are claimed to be "$10-15/kg,
 Higher density means:
 
 - **Less media** per kg of meat (biggest savings)
-- **Fewer reactor transfers** in seed train
+- **Fewer reactor transfers** in the seed train (a minor saving in $/kg of final product: the main gain is lower contamination risk and labor, not direct cost; the big saving is the reduced media volume above)
 - **Smaller bioreactors** needed for same output
 - **Lower labor** per kg
 
@@ -515,7 +521,7 @@ The table above assumes media cost per liter ($/L) stays constant as density inc
 
 In perfusion mode this coupling is weaker: fresh media is continuously supplied, so density is limited more by oxygen transfer and shear stress than by nutrient depletion per se. In continuous mode it varies with the recycling fraction.
 
-**The practical implication:** combining very low $/L with very high density in the same cost scenario may overstate savings. Our [cost model](index.qmd) samples these as somewhat independent parameters within process-mode-specific ranges — a simplification flagged on the [model limits page](limits.qmd#parameter-grounding). In the beliefs form we ask for **total media cost per kg of biomass** ($/kg) rather than $/L and density separately, precisely because these aren't independent — a knowledgeable respondent will naturally integrate the interaction.
+**The practical implication:** combining very low \$/L with very high density in the same cost scenario may overstate savings. Our [cost model](index.qmd) samples these as somewhat independent parameters within process-mode-specific ranges — a simplification flagged on the [model limits page](limits.qmd#parameter-grounding). In the beliefs form we ask for **total media cost per kg of biomass** (\$/kg) rather than \$/L and density separately, precisely because these aren't independent — a knowledgeable respondent will naturally integrate the interaction.
 :::
 :::
 
@@ -621,10 +627,12 @@ Companies like UPSIDE Foods and Believer Meats have built large-scale facilities
 
 | Type | Description | Scale | Cost Range | Source |
 |------|-------------|-------|------------|--------|
-| **<abbr title="Most common design — a motor-driven impeller stirs the culture. Per Humbird 2021: a 20m³ vessel with agitator costs '$330k' bare, '$1.5M' installed (direct cost factor 3.5).">Stirred-tank</abbr>** | Traditional design with <abbr title="A rotating blade or paddle that mixes the culture">impeller</abbr> mixing | 1-20,000 L | $50-500/L (pharma) | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
+| **<abbr title="Most common design — a motor-driven impeller stirs the culture. Per Humbird 2021: a 20m³ vessel with agitator costs '$330k' bare, '$1.5M' installed (direct cost factor 3.5).">Stirred-tank</abbr>** | Traditional design with <abbr title="A rotating blade or paddle that mixes the culture">impeller</abbr> mixing | 1-20,000 L | $50-500/L (pharma) | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/); recent costing: [PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/) |
 | **<abbr title="Rising air bubbles create circulation without mechanical mixing — gentler on cells">Air-lift</abbr>** | Bubbles provide mixing and oxygenation | 1-50,000 L | $30-200/L | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
 | **<abbr title="Cells attach to a 3D scaffold while media flows past — good for structured products">Packed-bed</abbr>** | Cells grow on <abbr title="A 3D structure (like a sponge) that cells can attach to and grow on">scaffolds</abbr>, media flows through | 10-1,000 L | $100-300/L | [Allan et al. 2019](https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2019.00044/full) |
-| **<abbr title="Emerging commercial use — designs inspired by beer/dairy fermentation equipment, adapted for cell culture. Vow (Australia) and others now operating custom food-grade bioreactors.">Custom food-grade</abbr>** | <abbr title="'Designed for food production' means built to food safety standards (like brewing or dairy equipment) rather than pharmaceutical GMP standards. The key difference: pharma equipment requires extensive validation documentation, ultra-precise controls, and 316L stainless steel. Food-grade uses simpler materials and cleaning procedures. The cost savings come from removing pharma-specific requirements, not from the equipment being used for a different food product.">Simplified designs</abbr> <abbr title="Similar to beer brewing or dairy fermentation — large, simple, cheap — but adapted to maintain sterility for cell culture">inspired by food/beverage industry</abbr> | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3) |
+| **<abbr title="Emerging commercial use — designs inspired by beer/dairy fermentation equipment, adapted for cell culture. Vow (Australia) and others now operating custom food-grade bioreactors.">Custom food-grade</abbr>** | <abbr title="'Designed for food production' means built to food safety standards (like brewing or dairy equipment) rather than pharmaceutical GMP standards. The key difference: pharma equipment requires extensive validation documentation, ultra-precise controls, and 316L stainless steel. Food-grade uses simpler materials and cleaning procedures. The cost savings come from removing pharma-specific requirements, not from the equipment being used for a different food product.">Simplified designs</abbr> <abbr title="Similar to beer brewing or dairy fermentation — large, simple, cheap — but adapted to maintain sterility for cell culture">inspired by food/beverage industry</abbr> | 1,000-100,000 L | $10-50/L (target) | [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3); [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive) (vendor/company claims, not independently verified) |
+
+*Most published per-liter equipment costs still come from 2019-2021 analyses (Humbird, Risner, GFI, Allan et al.). The 2025 sources are more recent but rely on company statements, so treat the custom food-grade figures as claims to be tested rather than settled numbers.*
 
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
@@ -663,34 +671,34 @@ The choice of operating mode is not about different bioreactor *types* — it is
 *The diagram compares two of the three operating modes. Fed-batch (left) harvests everything at once; perfusion (right) continuously adds fresh media and removes spent media while retaining cells. Continuous mode (not shown) simultaneously feeds fresh media and harvests cells to maintain steady-state density.*
 
 ```{=html}
-<svg viewBox="0 0 650 200" style="width: 100%; max-width: 900px; min-height: 280px; margin: 0.5rem auto; display: block;">
-  <rect width="650" height="200" fill="#f8f9fa" rx="8"/>
+<svg viewBox="10 10 630 182" style="width: 100%; max-width: 1000px; margin: 0.5rem auto; display: block;">
+  <rect x="0" y="0" width="650" height="200" fill="#f8f9fa" rx="8"/>
 
   <!-- Batch Mode -->
   <g transform="translate(20, 20)">
-    <text x="130" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Fed-Batch Mode</text>
+    <text x="130" y="15" text-anchor="middle" font-size="15" font-weight="bold" fill="#2c3e50">Fed-Batch Mode</text>
 
     <!-- Reactor stages -->
     <rect x="20" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#3498db" stroke-width="2"/>
     <rect x="22" y="70" width="46" height="22" fill="#3498db" opacity="0.4"/>
-    <text x="45" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Fill</text>
+    <text x="45" y="115" text-anchor="middle" font-size="11" fill="#7f8c8d">Fill</text>
 
     <text x="85" y="65" font-size="14" fill="#bdc3c7">→</text>
 
     <rect x="100" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#27ae60" stroke-width="2"/>
     <rect x="102" y="55" width="46" height="37" fill="#e74c3c" opacity="0.4"/>
-    <text x="125" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Grow</text>
+    <text x="125" y="115" text-anchor="middle" font-size="11" fill="#7f8c8d">Grow</text>
 
     <text x="165" y="65" font-size="14" fill="#bdc3c7">→</text>
 
     <rect x="180" y="35" width="50" height="60" rx="5" fill="#ecf0f1" stroke="#f39c12" stroke-width="2"/>
     <rect x="182" y="40" width="46" height="52" fill="#e74c3c" opacity="0.6"/>
-    <text x="205" y="115" text-anchor="middle" font-size="8" fill="#7f8c8d">Harvest all</text>
+    <text x="205" y="115" text-anchor="middle" font-size="11" fill="#7f8c8d">Harvest all</text>
 
     <!-- Stats -->
-    <text x="130" y="145" text-anchor="middle" font-size="9" fill="#27ae60">✓ Simple operation</text>
-    <text x="130" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ 5-30 g/L density</text>
-    <text x="130" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">Media multiplier ≈ 1</text>
+    <text x="130" y="145" text-anchor="middle" font-size="12" fill="#27ae60">✓ Simple operation</text>
+    <text x="130" y="160" text-anchor="middle" font-size="12" fill="#e74c3c">✗ 5-30 g/L density</text>
+    <text x="130" y="175" text-anchor="middle" font-size="12" fill="#7f8c8d">Media multiplier ≈ 1</text>
   </g>
 
   <!-- Divider -->
@@ -698,7 +706,7 @@ The choice of operating mode is not about different bioreactor *types* — it is
 
   <!-- Perfusion Mode -->
   <g transform="translate(340, 20)">
-    <text x="140" y="15" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Perfusion Mode</text>
+    <text x="140" y="15" text-anchor="middle" font-size="15" font-weight="bold" fill="#2c3e50">Perfusion Mode</text>
 
     <!-- Continuous reactor -->
     <rect x="70" y="35" width="140" height="70" rx="8" fill="#ecf0f1" stroke="#9b59b6" stroke-width="2"/>
@@ -706,22 +714,22 @@ The choice of operating mode is not about different bioreactor *types* — it is
 
     <!-- Flow arrows -->
     <path d="M50 70 L70 70" stroke="#3498db" stroke-width="3" marker-end="url(#arr4)"/>
-    <text x="35" y="60" font-size="8" fill="#3498db">Fresh</text>
-    <text x="35" y="72" font-size="8" fill="#3498db">media</text>
+    <text x="22" y="50" font-size="11" fill="#3498db">Fresh</text>
+    <text x="22" y="62" font-size="11" fill="#3498db">media</text>
 
     <path d="M210 55 L235 55" stroke="#f39c12" stroke-width="3" marker-end="url(#arr4)"/>
-    <text x="245" y="50" font-size="8" fill="#f39c12">Spent</text>
-    <text x="245" y="62" font-size="8" fill="#f39c12">media</text>
+    <text x="245" y="50" font-size="11" fill="#f39c12">Spent</text>
+    <text x="245" y="64" font-size="11" fill="#f39c12">media</text>
 
     <path d="M210 85 L235 85" stroke="#e74c3c" stroke-width="3" marker-end="url(#arr4)"/>
-    <text x="245" y="80" font-size="8" fill="#e74c3c">Harvest</text>
-    <text x="245" y="92" font-size="8" fill="#e74c3c">cells</text>
+    <text x="245" y="80" font-size="11" fill="#e74c3c">Harvest</text>
+    <text x="245" y="94" font-size="11" fill="#e74c3c">cells</text>
 
     <!-- Stats -->
-    <text x="140" y="130" text-anchor="middle" font-size="9" fill="#27ae60">✓ 100-200+ g/L density</text>
-    <text x="140" y="145" text-anchor="middle" font-size="9" fill="#27ae60">✓ Continuous production</text>
-    <text x="140" y="160" text-anchor="middle" font-size="9" fill="#e74c3c">✗ Complex operation</text>
-    <text x="140" y="175" text-anchor="middle" font-size="9" fill="#7f8c8d">Higher media usage</text>
+    <text x="140" y="130" text-anchor="middle" font-size="12" fill="#27ae60">✓ 100-200+ g/L density</text>
+    <text x="140" y="145" text-anchor="middle" font-size="12" fill="#27ae60">✓ Continuous production</text>
+    <text x="140" y="160" text-anchor="middle" font-size="12" fill="#e74c3c">✗ Complex operation</text>
+    <text x="140" y="175" text-anchor="middle" font-size="12" fill="#7f8c8d">Higher media usage</text>
   </g>
 
   <defs>
@@ -786,7 +794,7 @@ Media composition isn't sequential — it's used throughout the production proce
 
 Cell culture <abbr title="The nutrient-rich liquid that cells grow in — analogous to the blood that nourishes cells in a living animal">media</abbr> contains everything cells need to grow. Below are components ordered by approximate share of total media cost at production scale.
 
-**Note on the interaction with cell density:** Media cost per liter ($/L) and cell density (g/L) are connected — they are not parameters you can optimise independently. Richer media formulations are often needed to sustain higher cell densities, because cells in denser cultures consume proportionally more amino acids, glucose, and other nutrients. The economically meaningful unit is therefore **media cost per kg of cells produced** ($/kg), which reflects both $/L and the litres consumed per kg output. See the [cell density section above](#why-cell-density-is-so-important) and the [model limits page](limits.qmd#parameter-grounding) for further discussion.
+**Note on the interaction with cell density:** Media cost per liter (\$/L) and cell density (g/L) are connected — they are not parameters you can optimise independently. Richer media formulations are often needed to sustain higher cell densities, because cells in denser cultures consume proportionally more amino acids, glucose, and other nutrients. The economically meaningful unit is therefore **media cost per kg of cells produced** (\$/kg), which reflects both \$/L and the litres consumed per kg output. See the [cell density section above](#why-cell-density-is-so-important) and the [model limits page](limits.qmd#parameter-grounding) for further discussion.
 
 | Component | % of Media Cost | Function | Key Cost Driver |
 |-----------|----------------|----------|-----------------|
@@ -860,19 +868,29 @@ Serum-free status must be checked for each product and process; regulatory appro
 Because FBS was doing both jobs in one fluid, switching to serum-free doesn't solve one cost problem — it creates two distinct ones. Hydrolysates address only the basal media component (top left → top right). Growth factors remain a separate challenge regardless of what you use for basal media.
 :::
 
-### Hydrolysates: The Big Win for Amino Acids
+### Hydrolysates: A Promising Route for Amino Acids {#hydrolysates-the-big-win-for-amino-acids}
 
 ::: {.callout-important}
 **Hydrolysates address basal media amino acids — not growth factors.** These are basically separate cost categories. Hydrolysates can improve overall cell nutrition and may modestly reduce the *amount* of growth factor stimulation cells need, but they cannot replace growth factor signalling (FGF-2, IGF-1, TGF-β). The model tracks them on separate cost lines for this reason. See the before/after schematic in the FBS historical note above for why these are two independent problems.
 :::
 
-**<abbr title="Proteins broken down into amino acids and peptides using enzymes — much cheaper than purified individual amino acids. Hydrolysates replace the amino acid component of media, which represents 30-50% of total media cost (or roughly 15-35% of total production cost).">Hydrolysates</abbr>** are enzymatically digested proteins from plants (soy, wheat) or yeast. They replace the amino acid fraction of media — typically **30-50% of media cost** — and provide complete <abbr title="All 20 amino acids needed for protein synthesis, in the right proportions">amino acid profiles</abbr> at food-grade prices:
+**<abbr title="Proteins broken down into amino acids and peptides using enzymes — much cheaper than purified individual amino acids. Hydrolysates replace the amino acid component of media, which represents 30-50% of total media cost (or roughly 15-35% of total production cost).">Hydrolysates</abbr>** are enzymatically digested proteins from plants (soy, wheat) or yeast. They replace the amino acid fraction of media — typically **30-50% of media cost** — and can supply much of the <abbr title="All 20 amino acids needed for protein synthesis, in the right proportions">amino acid profile</abbr> at food-grade prices (supplementation is sometimes needed, see the caveats below):
 
 | Media Type | Cost ($/L) | Source |
 |------------|-----------|--------|
 | <abbr title="Traditional pharmaceutical-grade media with purified amino acids">Pharma-grade amino acids</abbr> | $1.00 - $4.00 | [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) |
 | <abbr title="Per PMC 2025: Beefy-9 costs ~$36/L; Beefy-R achieves '14-fold cost reduction' to ~$2.57/L">Optimized serum-free (Beefy-R)</abbr> | $2.00 - $4.00 | [PMC 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/) |
 | <abbr title="Per 2024 Believer study: 'animal-free culture medium that cost only $0.63 per litre' supporting 1.3×10¹¹ cells/L density">Hydrolysate-based (optimized)</abbr> | $0.20 - $1.00 | [Believer 2024](https://www.nature.com/articles/s43016-024-01022-w) |
+
+::: {.callout-warning}
+**Practical caveats: this is not yet a settled question at production scale.** The published evidence that hydrolysates work for muscle cell culture is mostly lab-scale, from a small number of studies. In practice:
+
+- Performance does not always match the label, and **batch-to-batch variability** in hydrolysates can disturb the production process.
+- Because they are plant- or yeast-derived, hydrolysates can carry **contaminants** (for example pesticides, PCBs, dioxins, mycotoxins) unless incoming lots are tested and controlled. That adds quality-control cost.
+- Some hydrolysates are deficient in key amino acids and need supplementation or blending (see the GFI note in the footnote below).
+
+So the reported $/L figures should be read as what has been shown to work in the lab or claimed by companies, and the extra cost of consistency and testing at scale is an open uncertainty. (These caveats were raised by an outside cell biologist in an annotation on this page.)
+:::
 
 ::: {.callout-note collapse="true"}
 ## Note on Believer Meats (Pasitka et al. 2024)
@@ -895,7 +913,7 @@ $$\text{Media cost per kg} = \frac{\text{Media cost (\\$/L)} \times 1000}{\text{
 
 This is why **cell density matters far more than media formulation price** in the cost calculation. Halving the $/L has the same effect as doubling the density.
 
-**Important caveat — $/L is not enough:** A $0.20/L formulation with low nutrient density may not outperform a $0.50/L formulation that is more nutrient-dense, because cells may need to consume *more* volume of the dilute medium per kg of output. The economically meaningful metric is **$/kg of cell biomass produced**, not $/L. TEAs that report only $/L without stating their assumed density and media consumption rate are hard to compare directly.
+**Important caveat — \$/L is not enough:** A \$0.20/L formulation with low nutrient density may not outperform a \$0.50/L formulation that is more nutrient-dense, because cells may need to consume *more* volume of the dilute medium per kg of output. The economically meaningful metric is **\$/kg of cell biomass produced**, not \$/L. TEAs that report only \$/L without stating their assumed density and media consumption rate are hard to compare directly.
 
 Note: Hydrolysate-based and pharma-grade media can achieve comparable cell densities in published studies, though hydrolysate performance can vary depending on source, lot, and formulation.
 :::
@@ -919,7 +937,7 @@ Published values for mammalian cell cultures in bioreactors are not widely repor
 :::
 
 ::: {.callout-tip}
-Hydrolysates are a promising and widely-pursued cost reduction pathway. Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)), and <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media.">several companies report achieving hydrolysate-based media at $1/L or less</abbr>.^[There is some disagreement here. GFI's 2025 amino acid report notes that hydrolysates can be deficient in key amino acids and typically require supplementation or blending. Humbird (2021) describes hydrolysate suitability as requiring "further study." We are investigating the latest evidence on this point and welcome feedback.]
+Hydrolysates are a promising and widely-pursued cost reduction pathway, but the evidence is mostly lab-scale (see the caveats above). Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): "Soybean meal pricing for animal feed is about $0.33/kg... a formulation of mixed amino acids from hydrolysis could cost as little as $1.60/kg." At $2/kg hydrolysate, "the macronutrient contribution [is reduced] by almost $16/kg, bringing the total cost to $22/kg." Multiple studies have validated hydrolysate use for muscle cell culture ([Ahmad et al. 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10119461/), [Ng & Zheng 2024](https://www.nature.com/articles/s41538-024-00352-0)), and <abbr title="Per a 2025 industry report: companies have achieved media costs '$1 per liter or less' using hydrolysate-based formulations. Believer Meats (Nature Food 2024) published results with $0.63/L media.">several companies report achieving hydrolysate-based media at $1/L or less</abbr>.^[There is some disagreement here. GFI's 2025 amino acid report notes that hydrolysates can be deficient in key amino acids and typically require supplementation or blending. Humbird (2021) describes hydrolysate suitability as requiring "further study." We are investigating the latest evidence on this point and welcome feedback.]
 :::
 
 ---
@@ -954,9 +972,9 @@ Usage: typically 10-100 <abbr title="nanograms per milliliter — billionths of 
 | Factor | Function | <abbr title="Catalog/research-grade prices from suppliers like Sigma-Aldrich, PeproTech, R&D Systems (2024). Bulk production-scale pricing is substantially lower but not publicly available. These catalog prices represent the starting point that must be reduced.">Research Price</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at research-grade prices. Assumes ~50 ng/mL usage and ~20 L media per kg meat (at 50 g/L cell density). Actual values vary with formulation and density.">Cost/kg meat (research)</abbr> | <abbr title="Target prices needed for cultured meat to reach cost-competitiveness (~$10-25/kg). Per GFI: 'albumin at $10/kg, insulin and transferrin at $1,000/kg, and growth factors at $100,000/kg.' Some companies report approaching these targets via precision fermentation.">Production Target</abbr> | <abbr title="Estimated cost contribution per kg of cultured meat output at target production prices. Same usage assumptions as research column.">Cost/kg meat (target)</abbr> | Source |
 |--------|----------|---------------|--------------|--------------|--------------|--------|
 | **<abbr title="Fibroblast Growth Factor 2, also called basic FGF. At catalog prices ~$2M/g, FGF2 alone can drive production costs to $400K/kg meat (PMC 2024). Halving GF costs could reduce total expenses by up to 10-fold.">FGF-2</abbr>** (bFGF) | <abbr title="Cell division while maintaining stem-like properties">Proliferation, maintain stemness</abbr> | ~$50,000/g | ~$50/kg | $1-10/g | ~$0.001-0.01/kg | [CEN 2023](https://cen.acs.org/food/food-science/Inside-effort-cut-cost-cultivated/101/i33) |
-| **<abbr title="Insulin-like Growth Factor 1">IGF-1</abbr>** | <abbr title="Cell division and maturation into muscle">Proliferation, differentiation</abbr> | ~$10,000/g | ~$10/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech, R&D Systems) as of 2024. Research-grade pricing; bulk pricing is substantially lower but not publicly available.">Market data</abbr> |
+| **<abbr title="Insulin-like Growth Factor 1">IGF-1</abbr>** | <abbr title="Cell division and maturation into muscle">Proliferation, differentiation</abbr> | ~$10,000/g | ~$10/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech, R&D Systems) as of 2024. Research-grade pricing; bulk pricing is substantially lower but not publicly available.">Market data</abbr>: [Sigma-Aldrich](https://www.sigmaaldrich.com/US/en/search/igf-1?focus=products&page=1&perpage=30&sort=relevance&term=igf-1&type=product), [R&D Systems](https://www.rndsystems.com/search?keywords=IGF-I) (catalog search pages) |
 | **<abbr title="Transforming Growth Factor beta">TGF-β</abbr>** | <abbr title="Maturation into muscle fibers and structural protein production">Differentiation, ECM production</abbr> | ~$1,000,000/g | ~$1,000/kg | $10-100/g | ~$0.01-0.10/kg | [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/) |
-| **<abbr title="Epidermal Growth Factor">EGF</abbr>** | <abbr title="General cell division signal">Proliferation</abbr> | ~$5,000/g | ~$5/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech) as of 2024. Research-grade pricing.">Market data</abbr> |
+| **<abbr title="Epidermal Growth Factor">EGF</abbr>** | <abbr title="General cell division signal">Proliferation</abbr> | ~$5,000/g | ~$5/kg | $1-10/g | ~$0.001-0.01/kg | <abbr title="Based on catalog prices from major suppliers (Sigma-Aldrich, PeproTech) as of 2024. Research-grade pricing.">Market data</abbr>: [Sigma-Aldrich](https://www.sigmaaldrich.com/US/en/search/egf?focus=products&page=1&perpage=30&sort=relevance&term=egf&type=product), [PeproTech](https://www.peprotech.com/) (catalog pages) |
 
 *Cost/kg meat estimates assume ~50 ng/mL usage concentration and ~20 L media per kg of output (at 50 g/L cell density). At higher densities (100+ g/L), media usage and GF costs per kg drop proportionally.*
 
@@ -1048,61 +1066,112 @@ The model's downstream processing toggle ($2-15/kg for structured products) shou
 
 ## Cost Breakdown Summary
 
-*This diagram summarizes the <abbr title="Based on central estimates from multiple TEA models (Humbird 2021, Risner et al. 2021, CE Delft 2021, GFI 2024). Ranges reflect scenario variation across studies.">typical</abbr> cost structure and key levers for reduction, drawing on the components explained above: [media](#media-composition-the-food-for-cells), [growth factors](#step-5-growth-factors--a-key-cost-driver), [bioreactors](#step-3-production-bioreactors), and [cell density](#why-cell-density-is-so-important).*
+*This diagram summarizes the <abbr title="Based on central estimates from multiple TEA models (Humbird 2021, Risner et al. 2021, CE Delft 2021, GFI 2024). Ranges reflect scenario variation across studies.">typical</abbr> cost structure and key levers for reduction, drawing on the components explained above: [media](#media-composition-40-70-of-total-cost), [growth factors](#step-5-growth-factors-a-key-cost-driver), [bioreactors](#step-3-production-bioreactors), and [cell density](#why-cell-density-is-so-important).*
 
 ```{=html}
-<svg viewBox="0 0 800 380" style="width: 100%; max-width: 1000px; min-height: 480px; margin: 1.5rem auto; display: block;">
-  <rect width="800" height="380" fill="#f8f9fa" rx="8"/>
+<svg viewBox="0 0 900 480" style="width: 100%; max-width: 1100px; min-height: 520px; margin: 1.5rem auto; display: block;" role="img" aria-label="Typical cost breakdown per kg of cultured chicken, with the variable cost split and the main cost reduction levers. Hover over any element for notes.">
+  <rect width="900" height="480" fill="#f8f9fa" rx="8"/>
 
-  <text x="400" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Typical Cost Breakdown ($/kg chicken)</text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#7f8c8d">Hover over any item for notes</text>
 
-  <!-- Stacked bar -->
-  <rect x="50" y="55" width="480" height="60" fill="#27ae60"/>
-  <text x="290" y="92" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Variable Costs (Media, GFs, etc.): 40-70%</text>
+  <!-- Stacked bar: three cost categories -->
+  <g>
+    <title>Variable costs: media, growth factors, micronutrients and other consumables. Typically 40-70% of total production cost (Humbird 2021, Risner et al. 2021, GFI 2024).</title>
+    <rect x="40" y="70" width="400" height="80" fill="#1e8449"/>
+    <text x="240" y="105" text-anchor="middle" font-size="15" fill="white" font-weight="bold">Variable costs</text>
+    <text x="240" y="127" text-anchor="middle" font-size="14" fill="white">(media, GFs, etc.): 40-70%</text>
+  </g>
+  <g>
+    <title>Capital costs: bioreactors, buildings and the rest of the plant, annualised. Typically 15-35% of total production cost.</title>
+    <rect x="40" y="150" width="400" height="56" fill="#c0392b"/>
+    <text x="240" y="184" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Capital costs (bioreactors): 15-35%</text>
+  </g>
+  <g>
+    <title>Fixed operating costs: labor, maintenance, overhead. Typically 10-25% of total production cost.</title>
+    <rect x="40" y="206" width="400" height="48" fill="#d68910"/>
+    <text x="240" y="236" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Fixed OPEX (labor, overhead): 10-25%</text>
+  </g>
 
-  <rect x="50" y="115" width="480" height="45" fill="#e74c3c"/>
-  <text x="290" y="144" text-anchor="middle" font-size="13" fill="white" font-weight="bold">Capital Costs (Bioreactors): 15-35%</text>
+  <!-- Branch from the green bar to its split -->
+  <polygon points="440,70 500,70 500,254 440,150" fill="#1e8449" opacity="0.12" stroke="#1e8449" stroke-width="1" stroke-dasharray="4 3"/>
 
-  <rect x="50" y="160" width="480" height="38" fill="#f39c12"/>
-  <text x="290" y="185" text-anchor="middle" font-size="13" fill="white" font-weight="bold">OPEX (Labor, Overhead, etc.): 10-25%</text>
+  <!-- Variable cost split: ranges on a 0-100% scale -->
+  <g transform="translate(500, 70)">
+    <rect x="0" y="0" width="360" height="184" fill="white" stroke="#1e8449" rx="5"/>
+    <text x="180" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e8449">Variable cost split (range of share)</text>
 
-  <!-- Breakdown detail -->
-  <g transform="translate(560, 55)">
-    <rect x="0" y="0" width="220" height="145" fill="white" stroke="#ddd" rx="5"/>
-    <text x="110" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Variable Cost Split</text>
-    <rect x="10" y="34" width="200" height="18" fill="#27ae60"/>
-    <text x="110" y="48" text-anchor="middle" font-size="10" fill="white">Media 30-50%</text>
-    <rect x="10" y="54" width="200" height="18" fill="#9b59b6"/>
-    <text x="110" y="68" text-anchor="middle" font-size="10" fill="white">Growth Factors*</text>
-    <rect x="10" y="74" width="200" height="18" fill="#1abc9c"/>
-    <text x="110" y="88" text-anchor="middle" font-size="10" fill="white">Micros 5-15%</text>
-    <rect x="10" y="94" width="200" height="18" fill="#7f8c8d"/>
-    <text x="110" y="108" text-anchor="middle" font-size="10" fill="white">Other 5-10%</text>
-    <text x="110" y="128" text-anchor="middle" font-size="10" fill="#9b59b6">*0-60% depending</text>
-    <text x="110" y="141" text-anchor="middle" font-size="10" fill="#9b59b6">on technology</text>
+    <line x1="120" y1="40" x2="120" y2="150" stroke="#ccc"/>
+    <line x1="195" y1="40" x2="195" y2="150" stroke="#eee"/>
+    <line x1="270" y1="40" x2="270" y2="150" stroke="#eee"/>
+    <line x1="345" y1="40" x2="345" y2="150" stroke="#ccc"/>
+    <text x="120" y="165" text-anchor="middle" font-size="11" fill="#7f8c8d">0%</text>
+    <text x="195" y="165" text-anchor="middle" font-size="11" fill="#7f8c8d">30%</text>
+    <text x="270" y="165" text-anchor="middle" font-size="11" fill="#7f8c8d">60%</text>
+    <text x="345" y="165" text-anchor="middle" font-size="11" fill="#7f8c8d">90%</text>
+
+    <g>
+      <title>Media (basal nutrients: amino acids, glucose, vitamins) is about 30-50% of variable costs in these sources. Hydrolysates and higher cell density both act on this component.</title>
+      <text x="10" y="62" font-size="13" fill="#2c3e50">Media</text>
+      <rect x="195" y="48" width="50" height="20" fill="#1e8449"/>
+      <text x="252" y="63" font-size="12" fill="#2c3e50">30-50%</text>
+    </g>
+    <g>
+      <title>Growth factors: 0-60% of variable costs depending on technology. At research-grade catalog prices they dominate; with bulk precision fermentation or autocrine cell lines they could be small. This is the widest range in the model.</title>
+      <text x="10" y="92" font-size="13" fill="#2c3e50">Growth factors*</text>
+      <rect x="120" y="78" width="150" height="20" fill="#7d3c98"/>
+      <text x="276" y="93" font-size="12" fill="#2c3e50">0-60%</text>
+    </g>
+    <g>
+      <title>Micronutrients (minerals, trace elements, vitamins) are about 5-15% of variable costs. They are cheap commodities and are not significantly affected by cell density.</title>
+      <text x="10" y="122" font-size="13" fill="#2c3e50">Micros</text>
+      <rect x="127" y="108" width="25" height="20" fill="#17a589"/>
+      <text x="158" y="123" font-size="12" fill="#2c3e50">5-15%</text>
+    </g>
+    <g>
+      <title>Other variable costs (utilities, consumables) are about 5-10% of variable costs.</title>
+      <text x="10" y="148" font-size="13" fill="#2c3e50">Other</text>
+      <rect x="127" y="134" width="20" height="14" fill="#7f8c8d"/>
+      <text x="153" y="146" font-size="12" fill="#2c3e50">5-10%</text>
+    </g>
+    <text x="180" y="180" text-anchor="middle" font-size="10" fill="#7f8c8d">Ranges come from different sources; they overlap and are not additive</text>
   </g>
 
   <!-- Key levers -->
-  <text x="50" y="230" font-size="14" font-weight="bold" fill="#2c3e50">Key Cost Reduction Levers:</text>
+  <text x="40" y="296" font-size="16" font-weight="bold" fill="#2c3e50">Key Cost Reduction Levers (color = the component each one acts on)</text>
 
-  <circle cx="65" cy="258" r="9" fill="#27ae60"/>
-  <text x="82" y="263" font-size="12" fill="#2c3e50">Hydrolysates: lowers 30-50% of media cost</text>
+  <g>
+    <title>Hydrolysates replace purified amino acids (30-50% of media cost) with cheaper plant or yeast protein digests. Practical caveats: batch-to-batch variability and contaminant control at production scale.</title>
+    <circle cx="55" cy="330" r="10" fill="#1e8449"/>
+    <text x="75" y="335" font-size="14" fill="#2c3e50">Hydrolysates: lower 30-50% of media cost</text>
+  </g>
+  <g>
+    <title>Cheap growth factors (precision fermentation, plant molecular farming, autocrine cell lines) could lower growth factor cost by 50-90%. This is the pivotal uncertainty.</title>
+    <circle cx="55" cy="366" r="10" fill="#7d3c98"/>
+    <text x="75" y="371" font-size="14" fill="#2c3e50">Cheap GFs: lower 50-90% of GF cost (pivotal)</text>
+  </g>
+  <g>
+    <title>Higher cell density means less media is needed per kg of cells, so it lowers the media (green) component. It is not linked to micronutrients. Richer media may be needed to sustain very high densities.</title>
+    <circle cx="55" cy="402" r="10" fill="#1e8449"/>
+    <circle cx="55" cy="402" r="4" fill="white"/>
+    <text x="75" y="407" font-size="14" fill="#2c3e50">High cell density: lowers media volume per kg by 50-80%</text>
+  </g>
+  <g>
+    <title>Food-grade (rather than pharma-grade) reactors and large-volume vessels could lower bioreactor capital cost by 50-80%.</title>
+    <circle cx="500" cy="330" r="10" fill="#c0392b"/>
+    <text x="520" y="335" font-size="14" fill="#2c3e50">Food-grade reactors: lower 50-80% of CAPEX</text>
+  </g>
+  <g>
+    <title>Larger plants spread labor and overhead over more output, lowering fixed cost per kg by roughly 30-50%.</title>
+    <circle cx="500" cy="366" r="10" fill="#d68910"/>
+    <text x="520" y="371" font-size="14" fill="#2c3e50">Scale (larger plants): lower 30-50% of fixed costs</text>
+  </g>
 
-  <circle cx="65" cy="288" r="9" fill="#9b59b6"/>
-  <text x="82" y="293" font-size="12" fill="#2c3e50">Cheap GFs: lowers 50-90% of GF cost (PIVOTAL)</text>
-
-  <circle cx="65" cy="318" r="9" fill="#2c3e50"/>
-  <text x="82" y="323" font-size="12" fill="#2c3e50">High cell density: lowers 50-80% of media volume</text>
-
-  <circle cx="440" cy="258" r="9" fill="#e74c3c"/>
-  <text x="457" y="263" font-size="12" fill="#2c3e50">Food-grade reactors: lowers 50-80% of CAPEX</text>
-
-  <circle cx="440" cy="288" r="9" fill="#f39c12"/>
-  <text x="457" y="293" font-size="12" fill="#2c3e50">Scale (larger plants): lowers 30-50% of fixed costs</text>
+  <text x="450" y="460" text-anchor="middle" font-size="11" fill="#7f8c8d">*Growth factor share depends heavily on technology breakthroughs. Dot with white center = cell density (acts on the media component).</text>
 </svg>
 ```
 
-*Note: Cell density reduces media volume needed per kg, affecting the green (media) cost component. It does not directly relate to micronutrients (teal).*
+*Note: Cell density reduces media volume needed per kg, so it acts on the green (media) component. It is not linked to micronutrients (teal). Colors map to one concept each: green = media/variable costs, purple = growth factors, teal = micronutrients, red = capital, orange = fixed operating costs.*
 
 Source: Cost breakdown ranges from [Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [Risner et al. 2021](https://www.mdpi.com/2304-8158/10/1/3), [GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/), updated with data from [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/), [Believer Meats 2024](https://www.nature.com/articles/s43016-024-01022-w), and a [2025 industry report](https://agfundernews.com/humbird-was-spectacularly-wrong-on-cultivated-meat-economics-says-report-as-vow-predicts-it-will-soon-be-unit-margin-positive).
 

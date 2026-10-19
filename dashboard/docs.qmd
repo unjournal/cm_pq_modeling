@@ -78,9 +78,9 @@ This section presents the model structure **top-down**: starting with the final 
 | # | Component | Equation | Key variables |
 |---|-----------|----------|---------------|
 | 1 | **[Total Cost](#total-unit-cost)** | Unit Cost = VOC + CAPEX/kg + Fixed/kg + Downstream/kg | — |
-| 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + GFs + Other | — |
+| 2 | **[VOC](#variable-operating-costs-voc)** | VOC = Media + GFs + Supplemental proteins + Other | — |
 | 2a | **[Media](#variable-operating-costs-voc)** | (1000/density) × multiplier × \$/L | density (g/L), media-use multiplier, \$/L |
-| 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g_GF x P_GF | quantity (g/kg), price (\$/g) |
+| 2b | **[Growth Factors](#growth-factor-cost)** | GF Cost = g<sub>GF</sub> &times; P<sub>GF</sub> | g<sub>GF</sub> = quantity (g/kg), P<sub>GF</sub> = price (\$/g) |
 | 3 | **[CAPEX/kg](#annualized-capital-costs)** | (CAPEX × CRF) / Output | CRF, annual output |
 | 3a | **[CRF](#annualized-capital-costs)** | r(1+r)<sup>n</sup> / ((1+r)<sup>n</sup> &minus; 1) | r=WACC, n=years |
 | 3b | **[Scale](#economies-of-scale-the-k-sim-qs-relationship)** | CAPEX<sub>ref</sub> &times; (Q/Q<sub>ref</sub>)<sup>s</sup> | s=0.6-0.9 |
@@ -199,7 +199,7 @@ Since both $/L and cell density matter, here's how they combine (assuming multip
 
 </details>
 
-<details>
+<details id="growth-factor-cost">
 <summary>2b. Growth Factor Cost</summary>
 
 Growth factors are signaling proteins that tell cells to proliferate. They are the most price-volatile component.
@@ -259,7 +259,7 @@ In plain text: **GF Price = Current Price x (0.01)^progress**, where the exponen
 | 75% | × 0.032 | ~30× cheaper |
 | 100% | × 0.01 | ~100× cheaper (targets achieved) |
 
-#### The Binary "Cheap vs. Expensive" Toggle
+#### The Binary "Cheap vs. Expensive" Toggle {#the-binary-cheap-vs-expensive-toggle}
 
 At every progress setting, an adoption draw selects between two regimes. The base probability defaults to 50% and is then maturity-adjusted. The following price intervals use the default 50% progress:
 
@@ -612,7 +612,7 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Scalable GF technology](learn.qmd#step-5-growth-factors--a-key-cost-driver) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
+| [Scalable GF technology](learn.qmd#step-5-growth-factors-a-key-cost-driver) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
 
 *Note: an earlier version of this table included a "Food-grade micronutrients" adoption parameter (65% base prob). This was removed — vitamins, minerals, and trace salts are now folded into basal media $/L. See the [model change log](index.html#micronutrient-change-note) for the full rationale.*
 
@@ -789,6 +789,8 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 
 ## CDMO Production Model {#cdmo-production-model}
 
+*Used in:* [In-house vs. CDMO comparison on the Advanced model page](index.qmd#in-house-vs-cdmo-comparison)
+
 A **CDMO (Contract Development and Manufacturing Organization)** is a company that manufactures products on behalf of other companies, charging a per-unit toll fee. The dashboard includes a CDMO mode toggle that replaces in-house CAPEX and Fixed OPEX with a sampled toll fee.
 
 ### When CDMO mode changes the cost equation
@@ -833,6 +835,8 @@ The comparison chart in the dashboard shows the full distribution difference. In
 ---
 
 ## Process Mode {#process-mode}
+
+*Used in:* [Process mode sliders on the Advanced model page](index.qmd#process-mode-controls)
 
 The model draws an illustrative process label, then samples density and media use from the corresponding lognormal distributions. The p5–p95 ranges are soft priors, not engineering limits. No oxygen-transfer, nutrient-balance, or washout test rejects infeasible draws. Perfusion can itself operate continuously, so these labels are not a mutually exclusive engineering taxonomy; read “continuous” here as the model's recycling-oriented scenario.
 
@@ -884,6 +888,8 @@ Separable accounting also better matches the future state of the cultured meat i
 ---
 
 ## Sensitivity Analysis: Dollar-Swing Metric {#sensitivity-analysis-dollar-swing-metric}
+
+*Used in:* [the tornado chart on the Advanced model page](index.qmd#sensitivity-analysis-tornado-chart) · [Sensitivity methods page](sensitivity.qmd) (alternatives, with live numbers)
 
 The tornado chart on the dashboard answers: **which parameters move the cost estimate the most?** This section explains exactly what is computed and how to read the result.
 

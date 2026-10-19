@@ -34,7 +34,7 @@ format:
 
 ```{=html}
 <div style="margin:6px 0 10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-  <a href="#adjustable-parameters" style="display:inline-block; padding:6px 14px; background:#2d4a2d; color:white; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">↓ Go to parameters</a>
+  <a href="#model-parameters" style="display:inline-block; padding:6px 14px; background:#2d4a2d; color:white; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">↓ Go to parameters</a>
   <a href="simple.html" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;">Simplest Model →</a>
 </div>
 ```
@@ -68,7 +68,7 @@ This model is *largely AI-generated* and, as of September 2026, has not been ind
 
 **[Read the full critique and our responses → Limits/Critique](limits.html)**
 
-We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources--how-they-inform-the-model).
+We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources-how-they-inform-the-model).
 :::
 
 ::: {.callout-note collapse="true"}
@@ -464,25 +464,27 @@ This model uses **Monte Carlo simulation**: we sample thousands of possible futu
 <tbody>
 <tr style="border-bottom: 1px solid #eee; vertical-align: top;">
   <td style="padding: 8px;">Costs, intensities</td>
-  <td style="padding: 8px;"><strong>Lognormal</strong></td>
+  <td style="padding: 8px;"><strong><a href="https://en.wikipedia.org/wiki/Log-normal_distribution" target="_blank" rel="noopener">Lognormal</a></strong></td>
   <td style="padding: 8px;">Always positive, right-skewed (some very high values possible)</td>
   <td style="padding: 8px;">Media cost per liter, GF price per gram, cell density</td>
 </tr>
 <tr style="border-bottom: 1px solid #eee; vertical-align: top;">
   <td style="padding: 8px;">Probabilities, fractions</td>
-  <td style="padding: 8px;"><strong>Beta</strong></td>
+  <td style="padding: 8px;"><strong><a href="https://en.wikipedia.org/wiki/Beta_distribution" target="_blank" rel="noopener">Beta</a></strong></td>
   <td style="padding: 8px;">Bounded between 0 and 1, flexible shape</td>
   <td style="padding: 8px;">Maturity factor, adoption probabilities, utilization rate (0–1 share). For switching parameters (e.g., hydrolysate adoption), the model first samples an adoption <em>probability</em> from a Beta distribution, then uses a Bernoulli draw to determine whether each run uses the "adopted" or "non-adopted" cost regime.</td>
 </tr>
 <tr style="vertical-align: top;">
   <td style="padding: 8px;">Bounded ranges</td>
-  <td style="padding: 8px;"><strong>Uniform</strong></td>
+  <td style="padding: 8px;"><strong><a href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution" target="_blank" rel="noopener">Uniform</a></strong></td>
   <td style="padding: 8px;">Equal probability within bounds; used when we have only a plausible range and no reason to favor values within it</td>
   <td style="padding: 8px;">Asset life (years), CAPEX scale exponent, fixed OPEX scaling factor</td>
 </tr>
 </tbody>
 </table>
 ```
+
+**Background reading.** Each distribution name above links to its Wikipedia article. For a visual, non-technical introduction to distributions, see [Seeing Theory: Probability Distributions](https://seeing-theory.brown.edu/probability-distributions/index.html) (Brown University). The switching parameters also use a [Bernoulli](https://en.wikipedia.org/wiki/Bernoulli_distribution) (yes/no) draw. How the model builds a lognormal from the p5/p95 (or p10/p90) values you enter is explained in [Model formulas: how the distribution is constructed](docs.html#how-the-distribution-is-constructed).
 
 We are open to considering alternative distributional forms (e.g., triangular, PERT, or mixture distributions) and to making the modeling flexible enough for users to select or compare different distributional assumptions. Suggestions are welcome via Hypothesis annotations.
 
@@ -846,7 +848,7 @@ This scaling is mechanical (linear interpolation), not fit to historical data. *
 
 ---
 
-**Probability of Each Process Mode** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="Each slider sets the relative probability that a randomly drawn simulated plant operates in that mode. The three values are normalized internally so they always sum to 100% — so only their ratios matter. E.g., Fed-batch 0.2, Perfusion 0.5, Continuous 0.3 means 20% of simulated plants use fed-batch, 50% perfusion, 30% continuous.">(?)</abbr>
+<span id="process-mode-controls"></span>**Probability of Each Process Mode** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="Read each weight as your probability that this mode is the one commercial plants actually use in the projection year, i.e. the lowest-cost method that is technically feasible and permitted. The model does not pick the cheapest mode for you: it draws a mode for each simulated plant using these weights. The three values are normalized to sum to 100%, so only their ratios matter. E.g., Fed-batch 0.2, Perfusion 0.5, Continuous 0.3 means 20% of simulated plants use fed-batch, 50% perfusion, 30% continuous.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
@@ -887,7 +889,11 @@ viewof p_continuous = Inputs.range([0, 1], {
 
 <details><summary>What are these modes and why does it matter? (click to expand)</summary>
 
-These weights set the probability of each bioreactor process mode being drawn per Monte Carlo simulation. Within each mode, cell density and media-use multiplier are sampled from mode-specific ranges — preventing physically incoherent combinations.
+These weights set the probability of each bioreactor process mode being drawn per Monte Carlo simulation. Each simulated plant runs in a single mode; the weights describe uncertainty about which mode the industry ends up using, not a mix of modes inside one facility. Within each mode, cell density and media-use multiplier are sampled from mode-specific ranges — preventing physically incoherent combinations.
+
+**How to set them.** The question is which mode will actually be the lowest-cost method that is technically feasible and permitted by regulators in the projection year. The model does not choose the cheapest mode in each simulated world; it draws the mode independently of other parameters. So a fed-batch weight of 20% says: "in 20% of worlds, something (scale-up problems, contamination risk, regulation) rules out the higher-density modes and plants fall back on fed-batch."
+
+For reference, at default settings plants drawn as fed-batch come in under \$25/kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous. If you think fed-batch would only be used where it is the cheapest permitted option, give it a low weight.
 
 | Mode | Density (g/L) | Media-use (×) | Typical application |
 |------|--------------|--------------|---------------------|
@@ -989,7 +995,7 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 ```
 
 ::: {.callout-note appearance="minimal" icon=false}
-<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes. *For background on what growth factors do, why they're expensive, and which technologies might reduce costs, see [Learn → Step 5: Growth Factors](learn.html#step-5-growth-factors--a-key-cost-driver).*
+<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes. *For background on what growth factors do, why they're expensive, and which technologies might reduce costs, see [Learn → Step 5: Growth Factors](learn.html#step-5-growth-factors-a-key-cost-driver).*
 :::
 
 ```{ojs}
@@ -1928,7 +1934,7 @@ These percentages answer: "What's the chance that production costs fall below ke
 
 ### Cost Breakdown
 
-**Where does the cost come from?** This chart shows the **mean** contribution of each cost component across all 30,000 simulations (mean, not median — skewed components like growth factors will appear larger here than at the median). The largest bars are the cost drivers to focus on — these are where technological progress or parameter uncertainty has the most impact.
+**Where does the cost come from?** This chart shows the **mean** contribution of each cost component across all 30,000 simulations (mean, not median — skewed components like growth factors will appear larger here than at the median). The largest bars are the cost drivers to focus on — these are where technological progress or parameter uncertainty has the most impact. [How each component is calculated →](docs.html#total-unit-cost)
 
 ```{ojs}
 //| echo: false
@@ -2484,6 +2490,8 @@ Quick reference:
 
 $\text{Unit Cost} = \text{VOC} + \text{CAPEX}_{/\text{kg}} + \text{Fixed OPEX}_{/\text{kg}} + \text{Downstream}_{/\text{kg}}$
 
+Jump to each term on the formulas page: [Total unit cost](docs.html#total-unit-cost) · [VOC (media, growth factors, other)](docs.html#variable-operating-costs-voc) · [Growth factors](docs.html#growth-factor-cost) · [Annualized CAPEX](docs.html#annualized-capital-costs) · [Maturity and adoption](docs.html#maturity-factor) · [Parameter definitions](docs.html#parameter-definitions) · [Equations at a glance](docs.html#model-formulas)
+
 The model runs **30,000 Monte Carlo simulations**, sampling from parameter distributions and technology adoption switches to produce cost distributions and probability thresholds.
 :::
 
@@ -2518,8 +2526,8 @@ The [versioned September audit](review-2026-09.qmd#what-the-revised-defaults-imp
 This model was largely AI-generated. We have grounded key parameter ranges in published TEAs and recently revised the pharma-grade media cost range downward (from $1-4/L to $0.50-2.50/L) based on GFI's 2025 amino acid supplier data. However, **we have not yet systematically verified that every hardcoded range traces to a specific source.** Cycle days is the main remaining parameter that still lacks a direct citation; growth factor quantities and the media-use multiplier were both tightened in April 2026 based on GFI 2023 / Humbird / Pasitka primary sources. This is one reason we are seeking expert review.
 :::
 
-::: {.callout-note collapse="true"}
-## Model change log — basal micronutrients folded into media (April 2026) {#micronutrient-change-note}
+::: {#micronutrient-change-note .callout-note collapse="true"}
+## Model change log — basal micronutrients folded into media (April 2026)
 Earlier versions of this model carried a separate **food-grade micronutrient** cost line (vitamins, minerals, trace elements) with its own adoption toggle, usage range (0.1–10 g/kg), and price range (\$0.02–20/g). External review flagged two problems:
 
 1. **Category confusion / double counting.** The page already describes basal media as containing "amino acids, glucose, vitamins," and the model comments described media as "basal media, excluding growth factors." A separate line for vitamins/minerals was therefore adding a second charge for the same inputs.

@@ -18,7 +18,7 @@ This is the text of the **process overview audio** linked from this site. It was
 
 Cultivated meat — also called cell-based or cultured meat — is produced by growing animal cells in a controlled environment rather than raising and slaughtering animals. The basic idea is simple: take a small sample of cells from an animal, give them the right conditions to grow, and you end up with genuine animal muscle tissue, produced without the animal.
 
-That's the concept. The reality involves some sophisticated biology and engineering, and understanding it is essential for anyone thinking seriously about whether this technology can become commercially viable. This overview walks through the main steps of the production process and flags where costs enter the picture at each stage.
+That's the concept. The reality involves some sophisticated biology and engineering, and understanding it is essential for anyone thinking seriously about whether this technology can become commercially viable. This overview walks through the main steps of the production process and flags where costs enter the picture at each stage. Many workshop participants will know the basics already; if so, skim ahead to the sections on the production bioreactor, media, and growth factors, where most of the cost uncertainty sits.
 
 ---
 
@@ -28,7 +28,7 @@ Every batch of cultured meat traces back to a cell source. Cells are taken from 
 
 The challenge is that these cells, in their natural state, will only divide a limited number of times before they stop. Primary cells have a biological clock — the Hayflick limit — of roughly fifty to eighty doublings before they senesce, meaning they stop dividing and eventually die. For a manufacturing process that needs to run continuously for years, that's a fundamental problem.
 
-The solution is cell immortalization — making cells capable of dividing indefinitely. This can happen in two ways. In some avian species, particularly chickens, a small fraction of cells spontaneously acquire random mutations that allow them to keep dividing. This is a rare event, but when it happens, you have a cell line that can be grown indefinitely without any intentional genetic modification — and that's commercially valuable because it sidesteps the regulatory and consumer concerns associated with genetically modified organisms.
+One widely pursued solution is cell immortalization — making cells capable of dividing indefinitely. It is not the only approach. Alternatives include repeatedly sourcing fresh primary cells from biopsies, starting from pluripotent stem cells (embryonic or induced) that can self-renew and are then differentiated into muscle and fat, or using adipose-derived or other stem cell types. Each trades off differently on cost, consistency, and regulatory complexity. Immortalization is attractive because it gives a stable, well-characterized line, and it can happen in two ways. In some avian species, particularly chickens, a small fraction of cells spontaneously acquire random mutations that allow them to keep dividing. This is a rare event, but when it happens, you have a cell line that can be grown indefinitely without any intentional genetic modification — and that's commercially valuable because it sidesteps the regulatory and consumer concerns associated with genetically modified organisms.
 
 The other route is deliberate gene editing: introducing specific modifications that switch off the signals that normally stop cell division. This is more controllable and applicable to a wider range of species, but it comes with regulatory complexity and potential labeling requirements in some markets.
 
@@ -70,7 +70,7 @@ Expensive purified amino acids are a major cost driver. Hydrolysates — protein
 
 ---
 
-**Growth factors: the most uncertain cost driver**
+**Growth factors: arguably the most uncertain cost driver**
 
 Beyond the basal nutrients, cells also need growth factors: small signalling proteins that tell them to keep dividing. At research scale, these proteins cost tens of thousands of dollars per gram, because they're produced in tiny quantities for pharmaceutical research. Commercial cultivated meat would need them in vastly larger quantities.
 
