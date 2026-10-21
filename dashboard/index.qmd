@@ -893,7 +893,7 @@ These weights set the probability of each bioreactor process mode being drawn pe
 
 **How to set them.** The question is which mode will actually be the lowest-cost method that is technically feasible and permitted by regulators in the projection year. The model does not choose the cheapest mode in each simulated world; it draws the mode independently of other parameters. So a fed-batch weight of 20% says: "in 20% of worlds, something (scale-up problems, contamination risk, regulation) rules out the higher-density modes and plants fall back on fed-batch."
 
-For reference, at default settings plants drawn as fed-batch come in under \$25/kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous. If you think fed-batch would only be used where it is the cheapest permitted option, give it a low weight.
+For reference, at default settings plants drawn as fed-batch come in under \$25/kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous. Treat this with caution: it follows largely from our fed-batch density prior (5–30 g/L). [Humbird (2021)](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) reaches about 110 g/L in fed-batch with a metabolically improved cell line, and in his base case fed-batch is the *cheaper* mode (\$37/kg vs \$51/kg for perfusion). The 20/50/30 default weights are not anchored to a specific source.
 
 | Mode | Density (g/L) | Media-use (×) | Typical application |
 |------|--------------|--------------|---------------------|
