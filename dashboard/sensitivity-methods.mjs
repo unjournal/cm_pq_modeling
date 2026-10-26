@@ -351,6 +351,8 @@ export function displayedInputs(results, params) {
   const out = DISPLAYED_INPUT_SPECS.filter(s => active[s.key]).map(s => ({key: s.key, name: s.name, kind: s.kind, data: results[s.sample]}));
   if (p.media_use_model === "direct" && mediaVolumeActive)
     out.push({key: "L_per_kg", name: "Fresh media (L/kg)", kind: "primitive", data: results.L_per_kg_samples});
+  if (p.media_use_model === "yield" && mediaVolumeActive)
+    out.push({key: "nutrient_yield", name: "Nutrient yield (g cell solids/L)", kind: "primitive", data: results.nutrient_yield_samples});
   if (mediaOverride) out.push({key: "media_override", name: "Media cost override ($/kg)", kind: "override", data: results.cost_media});
   if (gfOverride && !p.bundled_media) out.push({key: "gf_override", name: "GF cost override ($/kg)", kind: "override", data: results.cost_recf});
   return out;
@@ -365,7 +367,7 @@ export function displayedInputs(results, params) {
 export function interventionSpecs(params) {
   const p = {...DEFAULT_PARAMS, ...params};
   const specs = [];
-  if (p.ep_density_p10 == null && !(p.media_use_model === "direct" && (p.cdmo_mode || !p.include_capex)))
+  if (p.ep_density_p10 == null && !(p.media_use_model !== "density" && (p.cdmo_mode || !p.include_capex)))
     specs.push({key: "density", note: "Custom-prior override; removes the process-mode link to density but keeps the media-use multiplier's link.",
       set: v => ({ep_density_p10: v, ep_density_p50: v, ep_density_p90: v})});
   if (!p.cdmo_mode && (p.include_capex || p.include_fixed_opex))
@@ -380,6 +382,9 @@ export function interventionSpecs(params) {
   if (p.media_use_model === "direct" && p.ep_media_p10 == null)
     specs.push({key: "L_per_kg", note: "Sets fresh media p5 and p95 to the same value.",
       set: v => ({fresh_media_p5: v, fresh_media_p95: v})});
+  if (p.media_use_model === "yield" && p.ep_media_p10 == null)
+    specs.push({key: "nutrient_yield", note: "Sets nutrient yield p5 and p95 to the same value.",
+      set: v => ({nutrient_yield_p5: v, nutrient_yield_p95: v})});
   return specs;
 }
 
@@ -488,9 +493,11 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
   return {
     ...DEFAULT_PARAMS,
     dependence_mode: choice("dependence_mode", DEFAULT_PARAMS.dependence_mode, ["shared", "independent_maturity"]),
-    media_use_model: choice("media_use_model", DEFAULT_PARAMS.media_use_model, ["density", "direct"]),
+    media_use_model: choice("media_use_model", DEFAULT_PARAMS.media_use_model, ["density", "direct", "yield"]),
     fresh_media_p5: num("fresh_media_p5", DEFAULT_PARAMS.fresh_media_p5),
     fresh_media_p95: num("fresh_media_p95", DEFAULT_PARAMS.fresh_media_p95),
+    nutrient_yield_p5: num("nutrient_yield_p5", DEFAULT_PARAMS.nutrient_yield_p5),
+    nutrient_yield_p95: num("nutrient_yield_p95", DEFAULT_PARAMS.nutrient_yield_p95),
     gf_dose_model: choice("gf_dose_model", DEFAULT_PARAMS.gf_dose_model, ["per_kg", "media_linked"]),
     gf_concentration_mg_L: num("gf_concentration_mg_L", DEFAULT_PARAMS.gf_concentration_mg_L),
     gf_cheap_dose_fraction: num("gf_cheap_dose_fraction", DEFAULT_PARAMS.gf_cheap_dose_fraction),

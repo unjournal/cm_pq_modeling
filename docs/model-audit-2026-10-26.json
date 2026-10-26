@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-10-26.2",
-  "engine_sha256": "b5deeadc372f94741ed3faa06bc1411823cb89291de37ddaa5cc0c68037b57f0",
+  "model_version": "2026-10-26.3",
+  "engine_sha256": "39b6e39f8a5b1fa71b325dd1bbf02e08c2b518038383895dd79fd68b5f48a5af",
   "n": 30000,
   "seed": 42,
   "default_parameters": {
@@ -58,7 +58,9 @@
     "protein_fraction_of_solids": 0.65,
     "include_harvest_dewater": false,
     "harvest_dewater_p5": 0.5,
-    "harvest_dewater_p95": 3
+    "harvest_dewater_p95": 3,
+    "nutrient_yield_p5": 3,
+    "nutrient_yield_p95": 25
   },
   "units": "USD/kg wet biomass (other_bases: provisional per kg at target solids and per kg protein); mixed source-year dollars; scenario distribution, not a calibrated forecast",
   "scenarios": {
@@ -330,6 +332,97 @@
       "other_bases": {
         "target_solids_p50": 60.56385603960247,
         "protein_p50": 338.8187750467271,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
+      }
+    },
+    "media_direct": {
+      "overrides": {
+        "media_use_model": "direct"
+      },
+      "p5": 12.755571004860338,
+      "p50": 34.48840036805892,
+      "p95": 144.07136810018264,
+      "mean": 52.45175350504271,
+      "probability_under_10": 0.0167,
+      "probability_under_25": 0.3208666666666667,
+      "component_means": {
+        "media": 20.002058620899593,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 47.42155050608102,
+        "protein_p50": 265.29538744660704,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
+      }
+    },
+    "media_direct_with_forming": {
+      "overrides": {
+        "media_use_model": "direct",
+        "include_downstream": true
+      },
+      "p5": 18.062230196088386,
+      "p50": 41.49447478961571,
+      "p95": 150.28409058571478,
+      "mean": 59.07574821128518,
+      "probability_under_10": 0.0010333333333333334,
+      "probability_under_25": 0.1758,
+      "component_means": {
+        "media": 20.002058620899593,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 6.623994706242292,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 57.0549028357216,
+        "protein_p50": 319.1882676124285,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
+      }
+    },
+    "media_yield": {
+      "overrides": {
+        "media_use_model": "yield"
+      },
+      "p5": 12.935809974153816,
+      "p50": 35.69097678151222,
+      "p95": 148.73425402098198,
+      "mean": 54.12424480005364,
+      "probability_under_10": 0.015733333333333332,
+      "probability_under_25": 0.30396666666666666,
+      "component_means": {
+        "media": 21.67454991591089,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 49.07509307457931,
+        "protein_p50": 274.5459752424017,
         "factors": {
           "target_solids": 1.375,
           "protein": 7.692307692307692

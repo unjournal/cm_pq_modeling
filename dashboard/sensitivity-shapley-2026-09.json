@@ -1,7 +1,7 @@
 {
-  "model_version": "2026-10-26.2",
-  "engine_sha256": "b5deeadc372f94741ed3faa06bc1411823cb89291de37ddaa5cc0c68037b57f0",
-  "methods_sha256": "cc1216d64604135b611b48d8a372111c833a5648e8b947fe51ca9102ce199a7f",
+  "model_version": "2026-10-26.3",
+  "engine_sha256": "39b6e39f8a5b1fa71b325dd1bbf02e08c2b518038383895dd79fd68b5f48a5af",
+  "methods_sha256": "e3971e03f045856d77db2213720f2eae9133c7691551bae06abb476c39e3929d",
   "generated": "2026-10-26",
   "basis": "Advanced-page default scenario (maturity 0.5 mapped to 2036), seed 42, 30,000 draws; USD/kg wet biomass in mixed source-year dollars.",
   "interpretation": "Exploratory uncertainty attribution among displayed inputs. Variance shares are not research value. The nearest-neighbour Shapley estimator is biased toward zero or below for inputs that add little information, and breaks down with many inputs at these subsample sizes; compare runs before reading small differences.",
@@ -61,6 +61,8 @@
     "include_harvest_dewater": false,
     "harvest_dewater_p5": 0.5,
     "harvest_dewater_p95": 3,
+    "nutrient_yield_p5": 3,
+    "nutrient_yield_p95": 25,
     "target_year": 2036
   },
   "reduced_inputs": [
@@ -541,7 +543,7 @@
       "subsample": 3000,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 2.3,
+      "seconds": 2.5,
       "explained_share": 0.7503060064848807,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -651,7 +653,7 @@
       "subsample": 3000,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 2.3,
+      "seconds": 2.5,
       "explained_share": 0.5759406045470382,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -706,7 +708,7 @@
       "subsample": 3000,
       "subsample_seed": 2,
       "k": 10,
-      "seconds": 2.4,
+      "seconds": 2.7,
       "explained_share": 0.5719674234756948,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -761,7 +763,7 @@
       "subsample": 1500,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 19.9,
+      "seconds": 20.2,
       "explained_share": 0.5611827452683992,
       "rank_r2_same_inputs": 0.7278097358539521,
       "inputs": [

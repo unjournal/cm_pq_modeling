@@ -58,6 +58,25 @@ test('solids and protein bases rescale the wet-basis cost and leave it unchanged
   lc.unit_cost.forEach((v, i) => assert.ok(Math.abs(lc.unit_cost_target_solids[i] - v * lc.basis_factors.target_solids) < 1e-9));
 });
 
+test('yield media rule derives L/kg from nutrient yield and is invariant to density', () => {
+  const r = simulate(n, 42, {media_use_model: 'yield'});
+  r.L_per_kg_samples.forEach((l, i) => assert.ok(Math.abs(l - 1000 * 0.2 / r.nutrient_yield_samples[i]) < 1e-9));
+  assert.ok(Math.abs(model.quantile(r.nutrient_yield_samples, 0.5) - Math.sqrt(3 * 25)) < 1);
+  // Changing density moves capital but not medium, unlike the density rule.
+  const dense = simulate(n, 42, {media_use_model: 'yield', ep_density_p10: 150, ep_density_p90: 200});
+  assert.deepEqual(dense.cost_media, r.cost_media);
+  assert.notDeepEqual(dense.cost_capex, r.cost_capex);
+  // Only the medium volume changes relative to the default rule; other components are paired.
+  const base = simulate(n, 42, {});
+  for (const k of ['supp_protein', 'other_var', 'capex', 'fixed']) assert.deepEqual(base['cost_' + k], r['cost_' + k]);
+  assert.equal(base.nutrient_yield_samples, null);
+  // More solids per wet kg needs proportionally more medium.
+  const wetter = simulate(n, 42, {media_use_model: 'yield', solids_fraction: 0.1});
+  wetter.L_per_kg_samples.forEach((l, i) => assert.ok(Math.abs(l * 2 - r.L_per_kg_samples[i]) < 1e-9));
+  assert.throws(() => simulate(10, 1, {media_use_model: 'yield', nutrient_yield_p5: 0}), RangeError);
+  assert.throws(() => simulate(10, 1, {media_use_model: 'volume'}), RangeError);
+});
+
 test('CDMO comparison preserves all shared costs draw for draw', () => {
   const a = simulate(n, 42, {include_downstream: true});
   const b = simulate(n, 42, {include_downstream: true, cdmo_mode: true});

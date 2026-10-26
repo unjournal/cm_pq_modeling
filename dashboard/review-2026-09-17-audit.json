@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-10-26.2",
-  "engine_sha256": "b5deeadc372f94741ed3faa06bc1411823cb89291de37ddaa5cc0c68037b57f0",
+  "model_version": "2026-10-26.3",
+  "engine_sha256": "39b6e39f8a5b1fa71b325dd1bbf02e08c2b518038383895dd79fd68b5f48a5af",
   "basis": "Hypothetical plant/process scenarios; USD/kg wet biomass; mixed dollar years; no commercialization conditioning",
   "default_parameters": {
     "plant_kta_p5": 10,
@@ -57,7 +57,9 @@
     "protein_fraction_of_solids": 0.65,
     "include_harvest_dewater": false,
     "harvest_dewater_p5": 0.5,
-    "harvest_dewater_p95": 3
+    "harvest_dewater_p95": 3,
+    "nutrient_yield_p5": 3,
+    "nutrient_yield_p95": 25
   },
   "variants": {
     "baseline": {

@@ -77,6 +77,9 @@ test('displayed inputs follow the same activity rules as the association chart',
   assert.ok(!keys({cdmo_mode: true}).some(k => ['wacc', 'asset_life', 'cycle_days', 'plant_kta', 'uptime'].includes(k)));
   const direct = keys({media_use_model: 'direct'});
   assert.ok(direct.includes('L_per_kg') && !direct.includes('media_turnover'));
+  const yieldKeys = keys({media_use_model: 'yield'});
+  assert.ok(yieldKeys.includes('nutrient_yield') && !yieldKeys.includes('media_turnover') && yieldKeys.includes('density'));
+  assert.ok(sm.interventionSpecs({media_use_model: 'yield'}).some(s => s.key === 'nutrient_yield'));
   const override = keys({ep_media_p10: 5, ep_media_p90: 20});
   assert.ok(override.includes('media_override') && !override.includes('media_cost_L'));
   assert.ok(!keys({bundled_media: true}).includes('price_recf'));
@@ -135,7 +138,7 @@ function pageParams(cell, globals) {
 }
 test('URL state adapter reproduces the Advanced page parameters', () => {
   const epNull = {media_p10: null, media_p50: null, media_p90: null, gf_p10: null, gf_p50: null, gf_p90: null, density_p10: null, density_p50: null, density_p90: null};
-  const structure = {dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 8, fresh_media_p95: 60, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
+  const structure = {dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 8, fresh_media_p95: 60, nutrient_yield_p5: 3, nutrient_yield_p95: 25, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
     mode_selection: 'mixture', p_feasible_perfusion: 0.7, p_feasible_continuous: 0.3, mode_choice_noise: 0,
     solids_fraction: 0.2, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65};
   const defaults = {
@@ -158,9 +161,11 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
       expert_priors_adv: {...epNull, media_p10: 4, media_p50: 9, media_p90: 30, density_p10: 20, density_p90: 90}}],
     [{mode_selection: 'least_cost', p_feasible_perfusion: '0.9', p_feasible_continuous: '0.5', mode_choice_noise: '0.25'},
      {structure_settings: {...structure, mode_selection: 'least_cost', p_feasible_perfusion: 0.9, p_feasible_continuous: 0.5, mode_choice_noise: 0.25}}],
-    [{simpleMode: '0', include_harvest_dewater: '1', solids_fraction: '0.15', target_solids_fraction: '0.3', protein_fraction_of_solids: '0.6'},
+    [{simpleMode: '0', include_harvest_dewater: '1', solids_fraction: '0.15', target_solids_fraction: '0.3', protein_fraction_of_solids: '0.6',
+      media_use_model: 'yield', nutrient_yield_p5: '4', nutrient_yield_p95: '30'},
      {simpleMode: false, include_harvest_dewater: true,
-      structure_settings: {...structure, solids_fraction: 0.15, target_solids_fraction: 0.3, protein_fraction_of_solids: 0.6}}]
+      structure_settings: {...structure, solids_fraction: 0.15, target_solids_fraction: 0.3, protein_fraction_of_solids: 0.6,
+        media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30}}]
   ];
   for (const [state, overrides] of cases) {
     const expected = pageParams('simParams', {...defaults, ...overrides});

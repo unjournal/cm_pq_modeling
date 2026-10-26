@@ -141,7 +141,11 @@ Respondents find it hard to give coherent beliefs about derived quantities such 
 
 Each respondent would also give one or two derived numbers, such as their overall cost per kg, as a consistency check against the cost computed from their primitive answers. Large gaps flag either a missing cost component or an assumption the respondent holds but did not state.
 
-**Medium per kg and density.** The default media equation derives litres of medium per kg as 1000 / density × a media-use multiplier, so higher density mechanically means less medium per kg. Two independent reviewers argue instead that medium consumed per kg depends on **nutrient yield** (how many kilograms of cells the nutrients in a litre can support) and is roughly invariant to density: concentrating cells in less liquid does not reduce the nutrients they consume. A planned option (`media_use_model: "yield"`) will derive litres per kg from a yield primitive rather than from density. The [threshold profile](sensitivity.qmd) shows why this matters: most simulated draws under $10/kg rely on the density-derived medium assumption.
+**Medium per kg and density.** The default media equation derives litres of medium per kg as 1000 / density × a media-use multiplier, so higher density mechanically means less medium per kg. Two independent reviewers argue instead that medium consumed per kg depends on **nutrient yield** (how many kilograms of cells the nutrients in a litre can support) and is roughly invariant to density: concentrating cells in less liquid does not reduce the nutrients they consume. Engine `2026-10-26.3` adds this as an option, `media_use_model: "yield"` (off by default):
+
+$$\text{L of medium per wet kg} = \frac{1000 \times \texttt{solids\_fraction}}{\text{nutrient yield (g cell solids per L of medium consumed)}}$$
+
+Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–25 g per litre (`nutrient_yield_p5`, `nutrient_yield_p95`). That range is illustrative, not elicited or fitted: it was chosen so that at 20% solids it implies about 8–67 litres per kg, close to the direct stress range. Density still sets reactor volume and capital cost. Yield is defined on cell solids so it does not depend on how much water the harvested paste carries. It is not yet conditional on process mode. In the default scenario this rule gives 1.6% of draws under \$10/kg (against 2.7% under the density rule), 30.4% under \$25/kg, and a median of \$35.69; 607 of the 805 default draws under \$10/kg rise above \$10 under it. The [structure check](sensitivity.qmd#structure-check) shows why this matters: most simulated draws under \$10/kg rely on the density-derived medium assumption.
 
 ---
 
@@ -1051,7 +1055,7 @@ The full model implementation is available in multiple formats:
 
 | Format | Location | Notes |
 |--------|----------|-------|
-| **JavaScript** (interactive and CLI) | [cost-model.mjs](cost-model.mjs) | Shared calculation engine for Simple and Advanced; version 2026-10-26.2 |
+| **JavaScript** (interactive and CLI) | [cost-model.mjs](cost-model.mjs) | Shared calculation engine for Simple and Advanced; version 2026-10-26.3 |
 | **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Historical implementation; not synchronized and not a current dashboard reference |
 
 ::: {.callout-note collapse="true"}

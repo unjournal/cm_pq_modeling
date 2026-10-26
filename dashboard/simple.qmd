@@ -27,7 +27,7 @@ format:
 ::: {.callout-note collapse="true"}
 ## Model version and September 17 update
 
-This page runs the **current model** (engine `2026-10-26.2`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-10-26.3`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 :::

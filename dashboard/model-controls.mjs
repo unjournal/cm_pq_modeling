@@ -98,9 +98,11 @@ export function structuralControl(initial = new URLSearchParams()) {
   const fields = {};
   const specs = [
     ['dependence_mode', 'Maturity dependence', [['shared', 'Shared maturity (baseline)'], ['independent_maturity', 'Independent maturity channels']], REVIEW_PROVENANCE.dependence],
-    ['media_use_model', 'Fresh-media calculation', [['density', 'Density-derived (baseline)'], ['direct', 'Direct fresh L/kg']], REVIEW_PROVENANCE.media],
+    ['media_use_model', 'Fresh-media calculation', [['density', 'Density-derived (baseline)'], ['direct', 'Direct fresh L/kg'], ['yield', 'From nutrient yield (density-invariant)']], REVIEW_PROVENANCE.media + ' ' + REVIEW_PROVENANCE.media_yield],
     ['fresh_media_p5', 'Fresh media p5 (L/kg)', null, REVIEW_PROVENANCE.media],
     ['fresh_media_p95', 'Fresh media p95 (L/kg)', null, REVIEW_PROVENANCE.media],
+    ['nutrient_yield_p5', 'Nutrient yield p5 (g cell solids per L of medium)', null, REVIEW_PROVENANCE.media_yield],
+    ['nutrient_yield_p95', 'Nutrient yield p95 (g cell solids per L of medium)', null, REVIEW_PROVENANCE.media_yield],
     ['gf_dose_model', 'Growth-factor dosage', [['per_kg', 'Separate g/kg prior (baseline)'], ['media_linked', 'Concentration × fresh L/kg']], REVIEW_PROVENANCE.gf],
     ['gf_concentration_mg_L', 'GF concentration (mg/L)', null, REVIEW_PROVENANCE.gf],
     ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf],
@@ -130,7 +132,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     label.append(el); details.append(label);
   }
   const note = document.createElement('p');
-  note.textContent = 'Direct-media range 8–60 L/kg, the GF dose fraction, the feasibility defaults and the solids and protein shares are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
+  note.textContent = 'Direct-media range 8–60 L/kg, the nutrient-yield range 3–25 g/L, the GF dose fraction, the feasibility defaults and the solids and protein shares are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
   link.href = 'review-response-2026-09.html#structures'; link.textContent = 'Sources, justification and open questions';
   const modeLink = document.createElement('a');
@@ -144,12 +146,14 @@ export function structuralControl(initial = new URLSearchParams()) {
     const values = Object.fromEntries(specs.map(([key, , choices]) => [key, choices ? fields[key].value : fields[key].value === '' ? NaN : Number(fields[key].value)]));
     const valid = specs.every(([key, , choices]) => choices ? choices.some(([v]) => v === values[key]) : Number.isFinite(values[key]))
       && values.fresh_media_p5 > 0 && values.fresh_media_p95 >= values.fresh_media_p5
+      && values.nutrient_yield_p5 > 0 && values.nutrient_yield_p95 >= values.nutrient_yield_p5
       && values.gf_concentration_mg_L >= 0 && values.gf_cheap_dose_fraction >= 0 && values.gf_cheap_dose_fraction <= 1
       && [values.p_feasible_perfusion, values.p_feasible_continuous].every(p => p >= 0 && p <= 1) && values.mode_choice_noise >= 0
       && [values.solids_fraction, values.target_solids_fraction, values.protein_fraction_of_solids].every(f => f > 0 && f <= 1);
     if (valid) { committed = values; status.textContent = ''; }
-    else status.textContent = 'Enter positive ordered media endpoints, nonnegative concentration and noise, a dose fraction and feasibility probabilities from 0 to 1, and solids and protein shares above 0 and at most 1. Results retain the last valid settings.';
+    else status.textContent = 'Enter positive ordered media and yield endpoints, nonnegative concentration and noise, a dose fraction and feasibility probabilities from 0 to 1, and solids and protein shares above 0 and at most 1. Results retain the last valid settings.';
     fields.fresh_media_p5.disabled = fields.fresh_media_p95.disabled = values.media_use_model !== 'direct';
+    fields.nutrient_yield_p5.disabled = fields.nutrient_yield_p95.disabled = values.media_use_model !== 'yield';
     fields.gf_concentration_mg_L.disabled = fields.gf_cheap_dose_fraction.disabled = values.gf_dose_model !== 'media_linked';
     fields.p_feasible_perfusion.disabled = fields.p_feasible_continuous.disabled = fields.mode_choice_noise.disabled = values.mode_selection !== 'least_cost';
   }

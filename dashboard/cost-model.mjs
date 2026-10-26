@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-10-26.2";
+export const MODEL_VERSION = "2026-10-26.3";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -24,7 +24,9 @@ export const DEFAULT_PARAMS = Object.freeze({
   // Output basis. unit_cost stays per kg of wet biomass at solids_fraction; the
   // target-solids and protein views are extra outputs and leave it unchanged.
   solids_fraction: 0.20, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65,
-  include_harvest_dewater: false, harvest_dewater_p5: 0.5, harvest_dewater_p95: 3.0
+  include_harvest_dewater: false, harvest_dewater_p5: 0.5, harvest_dewater_p95: 3.0,
+  // media_use_model "yield": grams of cell solids per litre of medium consumed.
+  nutrient_yield_p5: 3, nutrient_yield_p95: 25
 });
 
 // Review-driven structural alternatives. These are scenario choices, not new evidence.
@@ -32,6 +34,7 @@ export const REVIEW_PROVENANCE = Object.freeze({
   quantiles: "Report 5, Belief elicitation: preserve p10/p50/p90. Two-piece lognormal; tails remain assumed.",
   dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
   media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 8–60 L/kg p5–p95 is an illustrative stress range, not an elicited or fitted prior.",
+  media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per wet kg = 1000 × solids fraction ÷ yield (g cell solids per L of medium consumed). 3–25 g/L p5–p95 is illustrative, chosen so that at 20% solids it implies about 8–67 L/kg, close to the direct stress range; not elicited or fitted.",
   gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
   basis: "October 26, 2026 design decision. Cost per wet kg is not a stable unit, so results are also reported per kg at a target solids content and per kg protein: × target/solids and ÷ (solids × protein share). 0.20 solids matches the 80%-water reference used in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of cell solids is an unverified placeholder. Recovery losses are not modeled.",
   harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $0.50–3.00/kg p5–p95 range is a placeholder until values from the planned process model are available (see docs); off by default.",
@@ -310,7 +313,7 @@ function simulateDrawnMode(n, seed, params) {
   if (!Number.isFinite(params.gf_progress) || params.gf_progress < 0 || params.gf_progress > 100)
     throw new RangeError("GF progress must be between 0 and 100.");
   validateRange(params.asset_life_lo, params.asset_life_hi);
-  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct"], gf_dose_model: ["per_kg", "media_linked"]})) {
+  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"]})) {
     if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
   }
   validateRange(params.fresh_media_p5, params.fresh_media_p95);
@@ -319,6 +322,7 @@ function simulateDrawnMode(n, seed, params) {
       throw new RangeError(`${key} must be above 0 and at most 1.`);
   }
   if (params.include_harvest_dewater) validateRange(params.harvest_dewater_p5, params.harvest_dewater_p95);
+  if (params.media_use_model === "yield") validateRange(params.nutrient_yield_p5, params.nutrient_yield_p95);
   if (!Number.isFinite(params.gf_concentration_mg_L) || params.gf_concentration_mg_L < 0
       || !Number.isFinite(params.gf_cheap_dose_fraction) || params.gf_cheap_dose_fraction < 0 || params.gf_cheap_dose_fraction > 1)
     throw new RangeError("GF concentration must be nonnegative and dose fraction between 0 and 1.");
@@ -405,8 +409,15 @@ function simulateDrawnMode(n, seed, params) {
     density_gL = sampleExpertPrior(rng, params, "density", n);
   }
 
+  // "yield": medium consumed per kg follows from how much cell solids the nutrients
+  // in a litre support, independent of how concentrated the cells are at harvest.
+  const nutrient_yield = params.media_use_model === "yield"
+    ? sampleLognormalP5P95(namedStream(seed, "nutrient-yield"), params.nutrient_yield_p5, params.nutrient_yield_p95, n)
+    : null;
   const L_per_kg = params.media_use_model === "direct"
     ? sampleLognormalP5P95(namedStream(seed, "fresh-media"), params.fresh_media_p5, params.fresh_media_p95, n)
+    : params.media_use_model === "yield"
+    ? nutrient_yield.map(y => 1000 * params.solids_fraction / y)
     : mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
   rng = namedStream(seed, "media");
@@ -518,7 +529,7 @@ function simulateDrawnMode(n, seed, params) {
     rng = namedStream(seed, "gf-override");
     cost_recf_eff = sampleExpertPrior(rng, params, "gf", n);
   }
-  if (params.media_use_model === "direct" && params.ep_media_p10 != null)
+  if (params.media_use_model !== "density" && params.ep_media_p10 != null)
     warnings.push("Direct media cost prior overrides fresh L/kg for media cost; fresh L/kg still affects media-linked GF dosage when active.");
   if (params.gf_dose_model === "media_linked" && (params.bundled_media || params.ep_gf_p10 != null))
     warnings.push("Media-linked GF dosage has no cost effect: complete medium or a direct GF cost prior takes precedence.");
@@ -644,6 +655,7 @@ function simulateDrawnMode(n, seed, params) {
     density_samples: density_gL,
     media_turnover_samples: media_turnover,
     L_per_kg_samples: L_per_kg,
+    nutrient_yield_samples: nutrient_yield,
     media_cost_L_samples: media_cost_L_eff,
     is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
     is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),

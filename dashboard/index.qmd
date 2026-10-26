@@ -46,7 +46,9 @@ format:
 
 **October 26 (engine `2026-10-26.2`):** results are also shown per kg at a target solids content and per kg of protein, using placeholder conversions you can change under *Structural stress tests*. A placeholder harvest, washing and dewatering cost is available under *Model Structure*, off by default. Default results are unchanged.
 
-This page runs the **current model** (engine `2026-10-26.2`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+**October 26 (engine `2026-10-26.3`):** a third *Fresh-media calculation* option under *Structural stress tests* derives medium per kg from nutrient yield (grams of cell solids per litre of medium), so it no longer falls automatically as density rises. Off by default; default results are unchanged. See the [structure check](sensitivity.qmd#structure-check).
+
+This page runs the **current model** (engine `2026-10-26.3`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 
@@ -2284,6 +2286,7 @@ structural_comparison_rows = {
     ["Independent maturity channels", {dependence_mode: "independent_maturity"}],
     ["Density-derived media", {media_use_model: "density"}],
     ["Direct fresh media", {media_use_model: "direct"}],
+    ["Media from nutrient yield", {media_use_model: "yield"}],
     ["Separate GF dose prior", {gf_dose_model: "per_kg"}],
     ["Media-linked GF dose", {gf_dose_model: "media_linked"}],
     ["Mode drawn by weights", {mode_selection: "mixture"}],

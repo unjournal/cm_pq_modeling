@@ -21,7 +21,11 @@ const scenarios = {
   continuous_only: {p_fedbatch: 0, p_perfusion: 0, p_continuous: 1},
   low_utilization: {uptime_mean: 0.65}, cdmo: {cdmo_mode: true},
   no_capex: {include_capex: false}, complete_medium: {bundled_media: true},
-  harvest_dewater_placeholder: {include_harvest_dewater: true}
+  harvest_dewater_placeholder: {include_harvest_dewater: true},
+  // Medium-rule structure check (sensitivity.qmd, Section 4.1).
+  media_direct: {media_use_model: 'direct'},
+  media_direct_with_forming: {media_use_model: 'direct', include_downstream: true},
+  media_yield: {media_use_model: 'yield'}
 };
 console.log(JSON.stringify({
   model_version: MODEL_VERSION,
