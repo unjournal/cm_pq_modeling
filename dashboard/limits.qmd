@@ -105,6 +105,7 @@ This distinction also matters when comparing the model with the workshop beliefs
 
 *Status update AI-drafted (Claude, 26 October 2026) from David Reinstein's decisions; not yet reviewed by a person.*
 
+*October 2026:* an opt-in [least-cost mode selection](docs.qmd#least-cost-mode-selection) uses the cheapest feasible process mode in each world, with feasibility probabilities in place of mode weights. That fits the best-available-plant target, but for the process choice only; other ranges are not yet frontier-specific. Until mode-specific equipment, consumable and contamination costs are modeled, it favors whichever mode has the fewest downsides represented.
 
 ---
 

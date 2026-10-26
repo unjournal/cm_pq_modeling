@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-09-17.1",
-  "engine_sha256": "81c4537e86a52900ac36568c8c7b8711f1892667ea19a3f5385ec4da1b6f8028",
+  "model_version": "2026-10-26.1",
+  "engine_sha256": "3f358a8388c81d8097c7b2fde0da4d12a7caf002fe6ad2b39e158273f84954f3",
   "basis": "Hypothetical plant/process scenarios; USD/kg wet biomass; mixed dollar years; no commercialization conditioning",
   "default_parameters": {
     "plant_kta_p5": 10,
@@ -47,7 +47,11 @@
     "fresh_media_p95": 60,
     "gf_dose_model": "per_kg",
     "gf_concentration_mg_L": 0.102,
-    "gf_cheap_dose_fraction": 0.4
+    "gf_cheap_dose_fraction": 0.4,
+    "mode_selection": "mixture",
+    "p_feasible_perfusion": 0.7,
+    "p_feasible_continuous": 0.3,
+    "mode_choice_noise": 0
   },
   "variants": {
     "baseline": {

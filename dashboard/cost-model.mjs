@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-09-17.1";
+export const MODEL_VERSION = "2026-10-26.1";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -18,7 +18,9 @@ export const DEFAULT_PARAMS = Object.freeze({
   dependence_mode: "shared", media_use_model: "density",
   fresh_media_p5: 8, fresh_media_p95: 60,
   gf_dose_model: "per_kg", gf_concentration_mg_L: 0.102,
-  gf_cheap_dose_fraction: 0.4
+  gf_cheap_dose_fraction: 0.4,
+  mode_selection: "mixture", p_feasible_perfusion: 0.70, p_feasible_continuous: 0.30,
+  mode_choice_noise: 0
 });
 
 // Review-driven structural alternatives. These are scenario choices, not new evidence.
@@ -26,7 +28,8 @@ export const REVIEW_PROVENANCE = Object.freeze({
   quantiles: "Report 5, Belief elicitation: preserve p10/p50/p90. Two-piece lognormal; tails remain assumed.",
   dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
   media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 8–60 L/kg p5–p95 is an illustrative stress range, not an elicited or fitted prior.",
-  gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate."
+  gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
+  mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific equipment, consumable and contamination costs are not modeled, so selection favors the least-specified modes."
 });
 
 export function gfPriceRanges(progress) {
@@ -215,8 +218,83 @@ function scale(arr, s) { return arr.map(v => v * s); }
 // MAIN SIMULATION FUNCTION
 // ============================================================
 
+const PROCESS_MODES = ["fedbatch", "perfusion", "continuous"];
+
+// "mixture" (baseline) draws each world's process mode from the weights.
+// "least_cost" prices every world under each mode and keeps the feasible one
+// with the lowest unit cost; the weights are then unused.
 function simulate(n, seed, params = {}) {
   params = {...DEFAULT_PARAMS, ...params};
+  if (!["mixture", "least_cost"].includes(params.mode_selection))
+    throw new RangeError(`Unknown mode_selection: ${params.mode_selection}`);
+  for (const key of ["p_feasible_perfusion", "p_feasible_continuous"]) {
+    if (!Number.isFinite(params[key]) || params[key] < 0 || params[key] > 1)
+      throw new RangeError(`${key} must be between 0 and 1.`);
+  }
+  if (!Number.isFinite(params.mode_choice_noise) || params.mode_choice_noise < 0)
+    throw new RangeError("Mode choice noise must be finite and nonnegative.");
+  if (params.mode_selection === "mixture") return simulateDrawnMode(n, seed, params);
+  if (params.override_mode_constraints) {
+    const r = simulateDrawnMode(n, seed, params);
+    r.warnings.push("Least-cost mode selection ignored: process-mode constraints are overridden.");
+    return r;
+  }
+  return selectLeastCostMode(n, seed, params);
+}
+
+// The three runs share every named stream, and the process stream pre-draws
+// density and media use for all modes, so run k is each world priced under mode k.
+// Fed-batch is always feasible. With Gumbel noise of scale β on log cost,
+// P(mode k) = c_k^(-1/β) / Σ over feasible j of c_j^(-1/β): the relative-cost
+// logit used for technology shares in GCAM. β = 0 is strict least cost.
+function selectLeastCostMode(n, seed, params) {
+  const runs = PROCESS_MODES.map(mode => simulateDrawnMode(n, seed, {...params,
+    ...Object.fromEntries(PROCESS_MODES.map(m => [`p_${m}`, +(m === mode)]))}));
+  let rng = namedStream(seed, "mode-feasibility");
+  const feasible = [new Array(n).fill(true),
+    sampleUniform(rng, 0, 1, n).map(u => u < params.p_feasible_perfusion),
+    sampleUniform(rng, 0, 1, n).map(u => u < params.p_feasible_continuous)];
+  rng = namedStream(seed, "mode-choice");
+  // Drawn at every β so that changing β leaves all other draws unchanged.
+  const gumbel = PROCESS_MODES.map(() => sampleUniform(rng, 0, 1, n)
+    .map(u => -Math.log(-Math.log(Math.min(Math.max(u, 1e-12), 1 - 1e-12)))));
+  const beta = params.mode_choice_noise;
+  const chosen = new Array(n);
+  let binding = 0, notCheapestFeasible = 0;
+  for (let i = 0; i < n; i++) {
+    let best = 0, bestScore = Infinity, cheapest = 0, cheapestAny = 0;
+    for (let k = 0; k < PROCESS_MODES.length; k++) {
+      const cost = runs[k].unit_cost[i];
+      if (cost < runs[cheapestAny].unit_cost[i]) cheapestAny = k;
+      if (!feasible[k][i]) continue;
+      if (cost < runs[cheapest].unit_cost[i]) cheapest = k;
+      const score = Math.log(cost) - beta * gumbel[k][i];
+      if (score < bestScore) { bestScore = score; best = k; }
+    }
+    chosen[i] = best;
+    if (!feasible[cheapestAny][i]) binding++;
+    if (best !== cheapest) notCheapestFeasible++;
+  }
+  const out = {...runs[0]};
+  for (const [key, value] of Object.entries(runs[0])) {
+    if (Array.isArray(value) && value.length === n) out[key] = value.map((_, i) => runs[chosen[i]][key][i]);
+  }
+  const share = k => chosen.filter(c => c === k).length / n;
+  return {...out,
+    effective_params: params,
+    warnings: [...new Set(runs.flatMap(r => r.warnings))],
+    mode_is_override: false,
+    pct_fedbatch: share(0), pct_perfusion: share(1), pct_continuous: share(2),
+    mode_selection_stats: {
+      feasible_share: Object.fromEntries(PROCESS_MODES.map((m, k) => [m, feasible[k].filter(Boolean).length / n])),
+      // Worlds whose cheapest mode overall is infeasible, so feasibility decides the choice.
+      feasibility_binding_share: binding / n,
+      // Worlds where decision noise picks a feasible mode other than the cheapest.
+      not_cheapest_feasible_share: notCheapestFeasible / n
+    }};
+}
+
+function simulateDrawnMode(n, seed, params) {
   if (!Number.isInteger(n) || n < 1) throw new RangeError("Sample count must be a positive integer.");
   for (const key of ["maturity_mean", "uptime_mean", "p_hydro_mean", "p_recfactors_mean", "p_supp_protein_mean"]) {
     if (!Number.isFinite(params[key]) || params[key] < 0 || params[key] > 1)
@@ -534,6 +612,7 @@ function simulate(n, seed, params = {}) {
     pct_fedbatch:  mode_labels.filter(m => m === "fedbatch").length  / n,
     pct_perfusion: mode_labels.filter(m => m === "perfusion").length / n,
     pct_continuous: mode_labels.filter(m => m === "continuous").length / n,
+    mode_selection_stats: null,
     // Input parameters for sensitivity analysis
     maturity_samples: maturity,
     density_samples: density_gL,

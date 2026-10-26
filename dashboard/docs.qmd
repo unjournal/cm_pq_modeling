@@ -566,7 +566,7 @@ The [response to Reports 5 and 6](review-response-2026-09.qmd#structures) docume
 
 Direct media or GF $/kg priors override their respective equations. Complete-medium accounting includes proteins once and overrides separate GF costs. The controls and comparison report these precedence rules. The Simple view fixes all three structures at their baseline choices; its custom priors use the same fitter as Advanced.
 
-Each Monte Carlo draw is a hypothetical plant/process scenario. The model does not simulate an industry output-weighted average, a frontier plant, or the probability of commercial scale. Source dollars remain unnormalized.
+Each Monte Carlo draw is a hypothetical plant/process scenario. The model does not simulate an industry output-weighted average, a frontier plant, or the probability of commercial scale. Source dollars remain unnormalized. The October 2026 [least-cost mode selection](#least-cost-mode-selection) option makes only the process choice a frontier choice.
 :::
 
 ## Expert Priors: Customizing Uncertainty Ranges {#expert-priors}
@@ -921,6 +921,34 @@ Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. Th
 
 **Calibration note:** The 20% fed-batch default produces somewhat higher expected media usage per kg than the previous unconstrained lognormal(30–200 g/L) default, because fed-batch at 5–30 g/L generates 50–200 L/kg vs. ~16 L/kg at the old median. That difference is imposed by these priors; it does not independently validate them. Expect median total cost to run somewhat higher under the new defaults than under the old unconstrained settings.
 
+### Least-cost mode selection (opt-in, October 2026) {#least-cost-mode-selection}
+
+*Used in:* **Structural stress tests → Process-mode selection** on the [Advanced model page](index.qmd#structural-comparison). Default: off ("Draw mode by weights").
+
+**Why.** A process mode is only used if it is the cheapest method that is technically feasible and permitted. The baseline weights ask the user to make that comparison mentally, and the drawn mode cannot respond to other inputs in the same world. For example, Ark Biotech's TEA finds fed-batch lower in COGS when medium is expensive and continuous lower in CapEx ([Ark Biotech, 2023](https://uploads-ssl.webflow.com/628c84a07fc3884718667dbf/64acb656a98483e9a5921b83_Ark%20TEA%20v20230710.pdf)). The alternative asks for feasibility instead and lets the model make the cost comparison.
+
+**Method.** For each simulated world $i$ the engine computes unit cost $C_{ik}$ under each mode $k \in \{\text{fed-batch}, \text{perfusion}, \text{continuous}\}$. All other draws are shared: the process stream already draws density and media use for every mode, and every other component has its own random stream. Fed-batch is always feasible; perfusion and continuous are feasible with independent probabilities $q_P$ and $q_C$ (defaults 0.70 and 0.30). The world uses
+
+$$k^*_i = \arg\min_{k\ \text{feasible}} \left(\ln C_{ik} - \beta\,\varepsilon_{ik}\right),\qquad \varepsilon_{ik} \sim \text{Gumbel}(0,1),$$
+
+and reports $C_{ik^*}$ and all components and inputs of the chosen mode.
+
+- **$\beta = 0$ (default):** strict least cost, a perfect-foresight frontier reading of the process choice.
+- **$\beta > 0$ (choice sharpness):** the choice is made on noisy cost estimates, so $P(k) = C_{k}^{-1/\beta} / \sum_{j\ \text{feasible}} C_{j}^{-1/\beta}$. This is the relative-cost logit used for technology shares in GCAM, where shares represent the probability each technology has the least cost under heterogeneous conditions ([EPA/GCAM workshop](https://www.epa.gov/system/files/documents/2022-03/biofuel-ghg-model-workshop-global-change-analysis-model-2022-03-01.pdf)). A mode costing half as much as another is chosen $2^{1/\beta}$ times as often: 16× at $\beta = 0.25$, 4× at 0.5, 2× at 1. It stands in for committing to a process years ahead, lock-in, and differences between firms. The realized, not estimated, cost is reported, so noise raises expected cost.
+
+The mode weights are unused in this setting. The page shows the selected shares and the share of worlds where feasibility, not cost, decides the mode (the cheapest mode overall is infeasible). The JSON export records both. The override toggle for process-mode constraints disables selection, with a warning.
+
+**Default feasibility.** With default priors the modes are almost always ranked continuous < perfusion < fed-batch within a world (fed-batch is cheaper than continuous in about 0.4% of worlds). Selection then acts like a fallback chain, so $P(\text{continuous}) \approx q_C$, $P(\text{perfusion}) \approx (1-q_C)q_P$ and $P(\text{fed-batch}) \approx (1-q_C)(1-q_P)$. The defaults 0.70/0.30 reproduce the 20/50/30 weights this way and give nearly the same costs (seed 42, 30,000 draws: median \$42.1 vs \$42.6/kg). They are a bridge from the old setting, not elicited values. With every mode always feasible, continuous is chosen in 84% of worlds and the median falls to about \$23/kg, so the result hinges on $q_C$.
+
+**Caveats.**
+
+1. **Omitted costs decide the winner.** Modes differ here only through their density and media-use priors. Cell-retention equipment and consumables, reactor size limits, contamination and failed runs are not modeled per mode. A minimum selects whichever option has the fewest downsides represented, so this setting currently favors continuous. Published TEAs that cost modes directly rank them differently: [Humbird (2021)](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) finds fed-batch cheaper than perfusion (\$37 vs \$51/kg), and Ark finds fed-batch lower in COGS than continuous in almost every scenario. [Pollock, Ho and Farid (2013)](https://pubmed.ncbi.nlm.nih.gov/22806692/) show how failure rates change a fed-batch vs perfusion comparison under uncertainty.
+2. **Selection on estimates is optimistic.** Choosing the apparent best of several uncertain options makes the chosen option look better than it will turn out (Smith and Winkler, 2006, "The optimizer's curse"). $\beta = 0$ assumes firms know each world's true costs when they choose.
+3. **Independent mode draws add option value.** Density and media use are drawn independently across modes within a world. A common cell-line-quality factor would correlate them and reduce the gain from choosing.
+4. **Feasibility is independent** of maturity and across modes. Both are open choices.
+5. **Designs, not plants.** Taking the cheapest of three designs within one world differs from taking the cheapest of many independent plant draws, which the [September review](review-2026-09.qmd) warns drives costs down mechanically.
+6. **Frontier for the process choice only.** This fits the [best-available-plant target](#estimand) for the choice of mode; the other parameter ranges are not yet frontier-specific ([Limits](limits.qmd)).
+
 ---
 
 ## Bundled Media Pricing {#bundled-media-pricing}
@@ -1052,7 +1080,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
 
-6. **Estimand not yet reflected in the parameter ranges** — The target is now unconditional and hypothetical (the best available large plant with 2036 technology, whether or not such plants exist; see [target quantity](#estimand)), so a separate commercialization stage is no longer required. But the ranges were not built for that target, and the model does not yet distinguish a frontier plant from an average or capacity-weighted commercial plant.
+6. **Estimand not yet reflected in the parameter ranges** — The target is now unconditional and hypothetical (the best available large plant with 2036 technology, whether or not such plants exist; see [target quantity](#estimand)), so a separate commercialization stage is no longer required. But the ranges were not built for that target, and the model does not yet distinguish a frontier plant from an average or capacity-weighted commercial plant. The opt-in [least-cost mode selection](#least-cost-mode-selection) covers the process choice only.
 
 7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
 

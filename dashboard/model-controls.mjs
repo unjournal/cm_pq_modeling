@@ -103,7 +103,11 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['fresh_media_p95', 'Fresh media p95 (L/kg)', null, REVIEW_PROVENANCE.media],
     ['gf_dose_model', 'Growth-factor dosage', [['per_kg', 'Separate g/kg prior (baseline)'], ['media_linked', 'Concentration × fresh L/kg']], REVIEW_PROVENANCE.gf],
     ['gf_concentration_mg_L', 'GF concentration (mg/L)', null, REVIEW_PROVENANCE.gf],
-    ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf]
+    ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf],
+    ['mode_selection', 'Process-mode selection', [['mixture', 'Draw mode by weights (baseline)'], ['least_cost', 'Cheapest feasible mode']], REVIEW_PROVENANCE.mode_selection],
+    ['p_feasible_perfusion', 'P(perfusion feasible at scale) (0–1)', null, 'Probability that perfusion works at commercial scale and is permitted by the projection year. Fed-batch is always feasible as the fallback. ' + REVIEW_PROVENANCE.mode_selection],
+    ['p_feasible_continuous', 'P(continuous feasible at scale) (0–1)', null, 'Probability that continuous culture works at commercial scale and is permitted by the projection year, drawn independently of perfusion. ' + REVIEW_PROVENANCE.mode_selection],
+    ['mode_choice_noise', 'Choice sharpness: decision noise β (0 = always cheapest)', null, 'β = 0: each world uses its cheapest feasible mode. β > 0: firms choose on noisy cost estimates, and a mode costing half as much as another is chosen 2^(1/β) times as often (β = 0.25: 16×; 0.5: 4×; 1: 2×). Realized cost of the chosen mode is reported.']
   ];
   for (const [key, text, choices, provenance] of specs) {
     const label = document.createElement('label');
@@ -123,21 +127,27 @@ export function structuralControl(initial = new URLSearchParams()) {
     label.append(el); details.append(label);
   }
   const note = document.createElement('p');
-  note.textContent = 'Direct-media range 8–60 L/kg and the GF dose fraction are illustrative assumptions. Hover over labels for provenance, or read the linked response. The Simple view uses baseline structures.';
+  note.textContent = 'Direct-media range 8–60 L/kg, the GF dose fraction and the feasibility defaults are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
   link.href = 'review-response-2026-09.html#structures'; link.textContent = 'Sources, justification and open questions';
+  const modeLink = document.createElement('a');
+  modeLink.href = 'docs.html#least-cost-mode-selection'; modeLink.textContent = 'Least-cost mode selection: method and caveats';
+  const links = document.createElement('p');
+  links.append(link, document.createElement('br'), modeLink);
   const status = document.createElement('p'); status.setAttribute('role', 'status');
-  details.append(note, link, status); container.append(details);
+  details.append(note, links, status); container.append(details);
   let committed = Object.fromEntries(specs.map(([key]) => [key, DEFAULT_PARAMS[key]]));
   function update() {
     const values = Object.fromEntries(specs.map(([key, , choices]) => [key, choices ? fields[key].value : fields[key].value === '' ? NaN : Number(fields[key].value)]));
     const valid = specs.every(([key, , choices]) => choices ? choices.some(([v]) => v === values[key]) : Number.isFinite(values[key]))
       && values.fresh_media_p5 > 0 && values.fresh_media_p95 >= values.fresh_media_p5
-      && values.gf_concentration_mg_L >= 0 && values.gf_cheap_dose_fraction >= 0 && values.gf_cheap_dose_fraction <= 1;
+      && values.gf_concentration_mg_L >= 0 && values.gf_cheap_dose_fraction >= 0 && values.gf_cheap_dose_fraction <= 1
+      && [values.p_feasible_perfusion, values.p_feasible_continuous].every(p => p >= 0 && p <= 1) && values.mode_choice_noise >= 0;
     if (valid) { committed = values; status.textContent = ''; }
-    else status.textContent = 'Enter positive ordered media endpoints, nonnegative concentration, and a dose fraction from 0 to 1. Results retain the last valid settings.';
+    else status.textContent = 'Enter positive ordered media endpoints, nonnegative concentration and noise, and a dose fraction and feasibility probabilities from 0 to 1. Results retain the last valid settings.';
     fields.fresh_media_p5.disabled = fields.fresh_media_p95.disabled = values.media_use_model !== 'direct';
     fields.gf_concentration_mg_L.disabled = fields.gf_cheap_dose_fraction.disabled = values.gf_dose_model !== 'media_linked';
+    fields.p_feasible_perfusion.disabled = fields.p_feasible_continuous.disabled = fields.mode_choice_noise.disabled = values.mode_selection !== 'least_cost';
   }
   container.addEventListener('input', update);
   Object.defineProperty(container, 'value', {get: () => ({...committed})});

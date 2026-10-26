@@ -40,15 +40,17 @@ format:
 ```
 
 ::: {.callout-note collapse="true"}
-## Model version and September 17–20 updates
+## Model version and September–October updates
 
 **October 26 (target and basis, documentation only):** the team set the model's target: unconditional and hypothetical cost of a large plant built with the best technology available in 2036, whether or not such plants exist, in 2026 US dollars ([estimand](limits.qmd#estimand)). It also set a planned standard output basis, washed cell biomass at a fixed solids content plus cost per kg of protein ([output basis](docs.qmd#output-basis)). The "downstream processing" switch is relabelled "forming and texturization" (outside the estimate). No model outputs changed.
 
-This page runs the **current model** (engine `2026-09-17.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-10-26.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 
 **September 20:** the model pages now connect the technical limitations to the workshop's skeptical–optimistic disagreement map and structured response round. This adds no new parameter values or headline forecast. It makes the top-down microbial benchmark, interaction risk, and remaining measurement needs visible, with provenance and caveats in the [response note](review-response-2026-09.qmd#top-down).
+
+**October 26:** an opt-in *Process-mode selection* setting in **Structural stress tests** replaces the mode weights with feasibility probabilities and uses the cheapest feasible mode in each simulated world, optionally with decision noise. The default (draw mode by weights) and its results are unchanged. See [least-cost mode selection](docs.qmd#least-cost-mode-selection) for the method and caveats.
 :::
 
 
@@ -859,7 +861,7 @@ This scaling is mechanical (linear interpolation), not fit to historical data. *
 
 ---
 
-<span id="process-mode-controls"></span>**Probability of Each Process Mode** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="Read each weight as your probability that this mode is the one commercial plants actually use in the projection year, i.e. the lowest-cost method that is technically feasible and permitted. The model does not pick the cheapest mode for you: it draws a mode for each simulated plant using these weights. The three values are normalized to sum to 100%, so only their ratios matter. E.g., Fed-batch 0.2, Perfusion 0.5, Continuous 0.3 means 20% of simulated plants use fed-batch, 50% perfusion, 30% continuous.">(?)</abbr>
+<span id="process-mode-controls"></span>**Probability of Each Process Mode** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="Read each weight as your probability that this mode is the one commercial plants actually use in the projection year, i.e. the lowest-cost method that is technically feasible and permitted. By default the model does not pick the cheapest mode for you: it draws a mode for each simulated plant using these weights. (Structural stress tests → Process-mode selection offers a cheapest-feasible alternative that ignores these weights.) The three values are normalized to sum to 100%, so only their ratios matter. E.g., Fed-batch 0.2, Perfusion 0.5, Continuous 0.3 means 20% of simulated plants use fed-batch, 50% perfusion, 30% continuous.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
@@ -891,6 +893,12 @@ viewof p_continuous = Inputs.range([0, 1], {
   const sumNote = sumExact
     ? ""
     : ` — weights sum to ${rawPct}%, normalized to 100% in simulation`;
+  const pct = v => (v * 100).toFixed(0);
+  if (results.mode_selection_stats) return html`<div style="font-size:0.84em; color:#555; margin: -0.2rem 0 0.4rem 0;">
+    <strong>Weights not used:</strong> cheapest-feasible selection is on (Structural stress tests).<br>
+    Selected: Fed-batch <strong>${pct(results.pct_fedbatch)}%</strong> · Perfusion <strong>${pct(results.pct_perfusion)}%</strong> · Continuous <strong>${pct(results.pct_continuous)}%</strong><br>
+    Feasibility decides the mode in ${pct(results.mode_selection_stats.feasibility_binding_share)}% of worlds.
+  </div>`;
   return html`<div style="font-size:0.84em; color:#555; margin: -0.2rem 0 0.4rem 0;">
     <span style="color:${sumColor}; font-weight:600;">Sum: ${rawPct}%${sumNote}</span><br>
     Using: Fed-batch <strong>${fb}%</strong> · Perfusion <strong>${pf}%</strong> · Continuous <strong>${ct}%</strong>
@@ -902,7 +910,9 @@ viewof p_continuous = Inputs.range([0, 1], {
 
 These weights set the probability of each bioreactor process mode being drawn per Monte Carlo simulation. Each simulated plant runs in a single mode; the weights describe uncertainty about which mode the industry ends up using, not a mix of modes inside one facility. Within each mode, cell density and media-use multiplier are sampled from mode-specific ranges — preventing physically incoherent combinations.
 
-**How to set them.** The question is which mode will actually be the lowest-cost method that is technically feasible and permitted by regulators in the projection year. The model does not choose the cheapest mode in each simulated world; it draws the mode independently of other parameters. So a fed-batch weight of 20% says: "in 20% of worlds, something (scale-up problems, contamination risk, regulation) rules out the higher-density modes and plants fall back on fed-batch."
+**How to set them.** The question is which mode will actually be the lowest-cost method that is technically feasible and permitted by regulators in the projection year. By default the model does not choose the cheapest mode in each simulated world; it draws the mode independently of other parameters. So a fed-batch weight of 20% says: "in 20% of worlds, something (scale-up problems, contamination risk, regulation) rules out the higher-density modes and plants fall back on fed-batch."
+
+**Alternative: cheapest feasible mode.** Under **Structural stress tests → Process-mode selection**, you can instead give the probability that perfusion and continuous culture each *work* at commercial scale. The model then prices every world under each mode and uses the cheapest feasible one; fed-batch is the fallback. The selected shares become an output. With default priors the modes are almost always ranked continuous < perfusion < fed-batch within a world, so feasibility of 70% (perfusion) and 30% (continuous) gives roughly the same shares and costs as the 20/50/30 weights. The rule favors whichever mode has the fewest downsides modeled: mode-specific equipment, consumable and contamination costs are not yet included. [Method and caveats](docs.qmd#least-cost-mode-selection).
 
 For reference, at default settings plants drawn as fed-batch come in under \$25/kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous. Treat this with caution: it follows largely from our fed-batch density prior (5–30 g/L). [Humbird (2021)](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) reaches about 110 g/L in fed-batch with a metabolically improved cell line, and in his base case fed-batch is the *cheaper* mode (\$37/kg vs \$51/kg for perfusion). The 20/50/30 default weights are not anchored to a specific source.
 
@@ -1495,7 +1505,7 @@ stats = {
 
 ### Results Summary
 
-**Quantity being modeled:** manufacturing cost per kg of wet cultured-chicken biomass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. Commercialization probability is unmodeled; dollars retain mixed source years.
+**Quantity being modeled:** manufacturing cost per kg of wet cultured-chicken biomass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
 
 
 []{#output-cautions}
@@ -1609,6 +1619,11 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         prob_under_25: +stats.prob_25.toFixed(1),
         prob_under_50: +stats.prob_50.toFixed(1),
         prob_under_100: +stats.prob_100.toFixed(1)
+      },
+      process_mode: {
+        rule: results.effective_params.mode_selection,
+        shares: {fedbatch: results.pct_fedbatch, perfusion: results.pct_perfusion, continuous: results.pct_continuous},
+        selection_stats: results.mode_selection_stats
       },
       component_means_per_kg: {
         media: +mean(results.cost_media).toFixed(2),
@@ -2253,7 +2268,9 @@ structural_comparison_rows = {
     ["Density-derived media", {media_use_model: "density"}],
     ["Direct fresh media", {media_use_model: "direct"}],
     ["Separate GF dose prior", {gf_dose_model: "per_kg"}],
-    ["Media-linked GF dose", {gf_dose_model: "media_linked"}]
+    ["Media-linked GF dose", {gf_dose_model: "media_linked"}],
+    ["Mode drawn by weights", {mode_selection: "mixture"}],
+    ["Cheapest feasible mode", {mode_selection: "least_cost"}]
   ];
   return alternatives.map(([scenario, changes]) => {
     const unchanged = Object.entries(changes).every(([key, value]) => results.effective_params[key] === value);

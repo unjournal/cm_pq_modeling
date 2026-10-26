@@ -10,7 +10,8 @@ const n = 2000;
 test('finite costs and exact component accounting across production modes', () => {
   for (const options of [{}, {bundled_media: true}, {cdmo_mode: true}, {include_downstream: true},
     {include_capex: false, include_fixed_opex: false}, {override_mode_constraints: true},
-    {ep_media_p10: 1, ep_media_p90: 10, ep_gf_p10: 1, ep_gf_p90: 20}]) {
+    {ep_media_p10: 1, ep_media_p90: 10, ep_gf_p10: 1, ep_gf_p90: 20},
+    {mode_selection: 'least_cost'}, {mode_selection: 'least_cost', mode_choice_noise: 0.5, cdmo_mode: true}]) {
     const r = simulate(n, 42, options);
     r.unit_cost.forEach((cost, i) => {
       assert.ok(Number.isFinite(cost) && cost >= 0);
@@ -64,6 +65,58 @@ test('invalid process weights and ranges are handled explicitly', () => {
   assert.throws(() => simulate(n, 42, {plant_kta_p5: 50, plant_kta_p95: 10}), RangeError);
   assert.throws(() => simulate(n, 42, {p_fedbatch: -1}), RangeError);
   assert.throws(() => simulate(n, 42, {uptime_mean: 0}), RangeError);
+});
+
+const forcedModes = options => ['fedbatch', 'perfusion', 'continuous'].map(mode =>
+  simulate(n, 42, {...options, p_fedbatch: +(mode === 'fedbatch'), p_perfusion: +(mode === 'perfusion'), p_continuous: +(mode === 'continuous')}));
+
+test('least-cost selection keeps the cheapest feasible mode in each world', () => {
+  assert.deepEqual(simulate(n, 42, {mode_selection: 'mixture'}).unit_cost, simulate(n, 42).unit_cost);
+  const runs = forcedModes({});
+  const all = simulate(n, 42, {mode_selection: 'least_cost', p_feasible_perfusion: 1, p_feasible_continuous: 1});
+  all.unit_cost.forEach((v, i) => {
+    const costs = runs.map(r => r.unit_cost[i]);
+    const k = costs.indexOf(Math.min(...costs));
+    assert.equal(v, costs[k]);
+    assert.equal(all.density_samples[i], runs[k].density_samples[i]);
+    assert.equal(all.cost_capex[i], runs[k].cost_capex[i]);
+  });
+  assert.ok(Math.abs(all.pct_fedbatch + all.pct_perfusion + all.pct_continuous - 1) < 1e-12);
+  assert.equal(all.mode_selection_stats.feasibility_binding_share, 0);
+  // With only the fallback feasible, every world is fed-batch.
+  const none = simulate(n, 42, {mode_selection: 'least_cost', p_feasible_perfusion: 0, p_feasible_continuous: 0});
+  assert.deepEqual(none.unit_cost, runs[0].unit_cost);
+  assert.equal(none.pct_fedbatch, 1);
+  // Partial feasibility never beats the all-feasible frontier and never loses to fed-batch.
+  const some = simulate(n, 42, {mode_selection: 'least_cost'});
+  some.unit_cost.forEach((v, i) => assert.ok(v >= all.unit_cost[i] && v <= runs[0].unit_cost[i]));
+  assert.equal(some.mode_selection_stats.not_cheapest_feasible_share, 0);
+  assert.equal(some.effective_params.mode_selection, 'least_cost');
+});
+
+test('decision noise gives logit choice shares and leaves feasibility draws unchanged', () => {
+  const big = 20000, beta = 0.5;
+  const options = {p_feasible_perfusion: 1, p_feasible_continuous: 1};
+  const runs = ['fedbatch', 'perfusion', 'continuous'].map(mode => simulate(big, 42,
+    {p_fedbatch: +(mode === 'fedbatch'), p_perfusion: +(mode === 'perfusion'), p_continuous: +(mode === 'continuous')}));
+  const r = simulate(big, 42, {...options, mode_selection: 'least_cost', mode_choice_noise: beta});
+  const expected = [0, 1, 2].map(k => model.mean(runs[0].unit_cost.map((_, i) => {
+    const w = runs.map(run => Math.pow(run.unit_cost[i], -1 / beta));
+    return w[k] / (w[0] + w[1] + w[2]);
+  })));
+  [r.pct_fedbatch, r.pct_perfusion, r.pct_continuous].forEach((share, k) => assert.ok(Math.abs(share - expected[k]) < 0.012, `mode ${k}`));
+  const strict = simulate(n, 42, {mode_selection: 'least_cost'});
+  const noisy = simulate(n, 42, {mode_selection: 'least_cost', mode_choice_noise: 1});
+  assert.deepEqual(strict.mode_selection_stats.feasible_share, noisy.mode_selection_stats.feasible_share);
+  assert.ok(model.mean(noisy.unit_cost) > model.mean(strict.unit_cost));
+});
+
+test('mode-selection inputs are validated and the constraint override disables selection', () => {
+  for (const p of [{mode_selection: 'cheapest'}, {p_feasible_perfusion: 1.2}, {p_feasible_continuous: -0.1}, {mode_choice_noise: -1}, {mode_choice_noise: NaN}])
+    assert.throws(() => simulate(n, 42, p), RangeError);
+  const r = simulate(n, 42, {mode_selection: 'least_cost', override_mode_constraints: true});
+  assert.deepEqual(r.unit_cost, simulate(n, 42, {override_mode_constraints: true}).unit_cost);
+  assert.ok(r.warnings.some(w => w.includes('Least-cost mode selection ignored')));
 });
 
 test('sampler boundaries and zero-rate capital recovery remain finite', () => {

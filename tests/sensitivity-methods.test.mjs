@@ -135,7 +135,8 @@ function pageParams(cell, globals) {
 }
 test('URL state adapter reproduces the Advanced page parameters', () => {
   const epNull = {media_p10: null, media_p50: null, media_p90: null, gf_p10: null, gf_p50: null, gf_p90: null, density_p10: null, density_p50: null, density_p90: null};
-  const structure = {dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 8, fresh_media_p95: 60, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4};
+  const structure = {dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 8, fresh_media_p95: 60, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
+    mode_selection: 'mixture', p_feasible_perfusion: 0.7, p_feasible_continuous: 0.3, mode_choice_noise: 0};
   const defaults = {
     structure_settings: structure, simpleMode: true, target_year: 2036, maturity: 0.5, plant_capacity: 20,
     uptime: 0.9, p_hydro: 0.75, p_recfactors: 0.5, p_supp_protein: 0.7,
@@ -153,7 +154,9 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
       ep_media_p10: '4', ep_media_p50: '9', ep_media_p90: '30', ep_density_p10: '20', ep_density_p90: '90'},
      {simpleMode: false, maturity: 0.7, target_year: 2044, plant_capacity: 35, wacc_lo: 6, include_capex: false, cdmo_mode: true,
       structure_settings: {...structure, dependence_mode: 'independent_maturity', media_use_model: 'direct', fresh_media_p95: 80}, p_fedbatch: 0.6,
-      expert_priors_adv: {...epNull, media_p10: 4, media_p50: 9, media_p90: 30, density_p10: 20, density_p90: 90}}]
+      expert_priors_adv: {...epNull, media_p10: 4, media_p50: 9, media_p90: 30, density_p10: 20, density_p90: 90}}],
+    [{mode_selection: 'least_cost', p_feasible_perfusion: '0.9', p_feasible_continuous: '0.5', mode_choice_noise: '0.25'},
+     {structure_settings: {...structure, mode_selection: 'least_cost', p_feasible_perfusion: 0.9, p_feasible_continuous: 0.5, mode_choice_noise: 0.25}}]
   ];
   for (const [state, overrides] of cases) {
     const expected = pageParams('simParams', {...defaults, ...overrides});
