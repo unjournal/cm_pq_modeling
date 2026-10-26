@@ -44,7 +44,9 @@ format:
 
 **October 26 (target and basis, documentation only):** the team set the model's target: unconditional and hypothetical cost of a large plant built with the best technology available in 2036, whether or not such plants exist, in 2026 US dollars ([estimand](limits.qmd#estimand)). It also set a planned standard output basis, washed cell biomass at a fixed solids content plus cost per kg of protein ([output basis](docs.qmd#output-basis)). The "downstream processing" switch is relabelled "forming and texturization" (outside the estimate). No model outputs changed.
 
-This page runs the **current model** (engine `2026-10-26.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+**October 26 (engine `2026-10-26.2`):** results are also shown per kg at a target solids content and per kg of protein, using placeholder conversions you can change under *Structural stress tests*. A placeholder harvest, washing and dewatering cost is available under *Model Structure*, off by default. Default results are unchanged.
+
+This page runs the **current model** (engine `2026-10-26.2`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 
@@ -664,12 +666,14 @@ viewof filler_cost = Inputs.range([1, 10], {
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: urlBool("include_capex", true)})
 viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: urlBool("include_fixed_opex", true)})
 viewof include_downstream = Inputs.toggle({label: "Include forming and texturization (outside the estimate)", value: urlBool("include_downstream", false)})
+viewof include_harvest_dewater = Inputs.toggle({label: "Include harvest, washing and dewatering (placeholder)", value: urlBool("include_harvest_dewater", false)})
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - *CAPEX*: Bioreactor and facility capital costs, annualized. On by default because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
 - *Plant overhead OPEX*: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* On by default for the same reason as CAPEX. Toggle off to focus on marginal costs only.
 - *Forming and texturization*: Scaffolding, texturization, forming, blending and packaging for structured products. Off by default because these steps are **outside** the estimate, which is unstructured cell biomass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2–15/kg. (This switch was previously labelled "downstream processing"; its URL parameter is still `include_downstream`.) Harvest, washing and dewatering to the standard solids basis are a different step: they belong **inside** the estimate but are not yet modeled explicitly. See [downstream processing](docs.qmd#downstream-scope).
+- *Harvest, washing and dewatering (placeholder)*: adds a placeholder $0.50–3.00/kg (5th–95th percentile) for bringing harvested cells to the standard solids basis. Off by default so published results do not change; the range is not sourced and will be replaced with values from a process model.
 
 Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
@@ -1318,7 +1322,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
   const defaults = {
     ...costModel.DEFAULT_PARAMS,
     simpleMode: true, include_blending: false, blending_share: 0.25, filler_cost: 3,
-    include_capex: true, include_fixed_opex: true, include_downstream: false,
+    include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
     cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
     bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
     plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
@@ -1334,7 +1338,7 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     ...structure_settings,
     ...Object.fromEntries(Object.entries(expert_priors_adv).map(([k, v]) => [`ep_${k}`, v])),
     simpleMode, include_blending, blending_share, filler_cost,
-    include_capex, include_fixed_opex, include_downstream,
+    include_capex, include_fixed_opex, include_downstream, include_harvest_dewater,
     cdmo_mode, cdmo_toll_p5, cdmo_toll_p95,
     bundled_media, bundled_media_p5, bundled_media_p95,
     plant_capacity, uptime, maturity, target_year,
@@ -1419,6 +1423,7 @@ simParams = {
     include_capex: simpleMode ? true : include_capex,
     include_fixed_opex: simpleMode ? true : include_fixed_opex,
     include_downstream: simpleMode ? false : include_downstream,
+    include_harvest_dewater: simpleMode ? false : include_harvest_dewater,
     gf_progress: gf_progress,
     cdmo_mode: cdmo_mode,
     cdmo_toll_p5: cdmo_toll_p5,
@@ -1545,6 +1550,10 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 </div>
 
+<div style="background: #f4f6f8; border-left: 4px solid #7f8c8d; padding: 0.8rem 1rem; margin-bottom: 0.5rem; font-size: 0.9em;">
+<strong>Same results on other bases (provisional):</strong> median <strong>$${quantile(results.unit_cost_target_solids, 0.5).toFixed(1)}/kg</strong> at ${(results.effective_params.target_solids_fraction * 100).toFixed(1)}% solids, and <strong>$${quantile(results.unit_cost_protein, 0.5).toFixed(0)}/kg protein</strong>, assuming the wet biomass above is ${(results.effective_params.solids_fraction * 100).toFixed(0)}% solids and ${(results.effective_params.protein_fraction_of_solids * 100).toFixed(0)}% of solids is protein. These are placeholder conversions, not new estimates; washing losses are not modeled. Change them under <em>Structural stress tests</em>. <a href="docs.html#output-basis">Why the basis matters</a>
+</div>
+
 ${include_blending ? html`<div style="background: #eaf7ea; border-left: 4px solid #27ae60; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
 <strong>Blended product estimate (${Math.round(blending_share * 100)}% CM, ${Math.round((1-blending_share)*100)}% filler at $${filler_cost}/kg):</strong>
 Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.blended_p5.toFixed(1)} – $${stats.blended_p95.toFixed(1)}/kg
@@ -1578,7 +1587,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   function downloadCSV() {
-    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_supp_protein", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream"];
+    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_supp_protein", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream", "cost_harvest", "unit_cost_target_solids", "unit_cost_protein"];
     const metaCols = ["model_version", "seed", "sample_count", "effective_params_json"];
     const quote = v => '"' + String(v).replaceAll('"', '""') + '"';
     const meta = [results.model_version, results.seed, results.sample_count].map(quote);
@@ -1603,7 +1612,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
       shareable_link: window.location.href,
       parameters: {
         simpleMode, include_blending, blending_share, filler_cost,
-        include_capex, include_fixed_opex, include_downstream,
+        include_capex, include_fixed_opex, include_downstream, include_harvest_dewater,
         cdmo_mode, cdmo_toll_p5, cdmo_toll_p95,
         plant_capacity, uptime, maturity, target_year,
         p_hydro, p_recfactors, gf_progress,
@@ -1633,13 +1642,19 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         capex_annualized: +mean(results.cost_capex).toFixed(2),
         fixed_opex: +mean(results.cost_fixed).toFixed(2),
         cdmo_toll: +mean(results.cost_cdmo_toll).toFixed(2),
-        downstream: +mean(results.cost_downstream).toFixed(2)
+        downstream: +mean(results.cost_downstream).toFixed(2),
+        harvest_wash_dewater: +mean(results.cost_harvest).toFixed(2)
+      },
+      other_bases_median_per_kg: {
+        target_solids: +quantile(results.unit_cost_target_solids, 0.5).toFixed(2),
+        protein: +quantile(results.unit_cost_protein, 0.5).toFixed(2),
+        factors: results.basis_factors
       },
       notes: {
         units: "USD per kg of cultured chicken cell biomass on the model's wet-biomass basis",
         currency_basis: "Mixed source-year USD; not yet normalized to a common real-dollar year",
         conditioning: "Intended estimand (decided 2026-10-26): unconditional and hypothetical cost of a large plant built with the best technology available in the target year, whether or not such plants exist; parameter ranges not yet re-checked against this target",
-        planned_basis: "Planned: per kg washed cell biomass at a fixed solids content (placeholder 25-30% dry matter) and per kg protein; current output is wet-basis",
+        planned_basis: "Planned: per kg washed cell biomass at a fixed solids content (placeholder 25-30% dry matter) and per kg protein; headline output is still wet-basis, with provisional conversions in other_bases_median_per_kg",
         simulation_seed: 42,
         monte_carlo_samples: 30000
       }
@@ -1977,7 +1992,8 @@ These percentages answer: "What's the chance that production costs fall below ke
     {name: "CAPEX (annualized)",     value: mean(results.cost_capex),         color: "#e74c3c"},
     {name: "Plant overhead OPEX",    value: mean(results.cost_fixed),         color: "#f39c12"},
     {name: "CDMO Toll",              value: mean(results.cost_cdmo_toll),     color: "#e67e22"},
-    {name: "Downstream",             value: mean(results.cost_downstream),    color: "#1abc9c"}
+    {name: "Forming & texturization", value: mean(results.cost_downstream),   color: "#1abc9c"},
+    {name: "Harvest, wash & dewater", value: mean(results.cost_harvest),      color: "#16a085"}
   ];
   // Filter out zero-value components (e.g., downstream when not included)
   const components = allComponents.filter(c => c.value > 0.001).sort((a, b) => b.value - a.value);
@@ -2090,7 +2106,8 @@ function formatCost(val) {
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
     {name: "Plant overhead OPEX", data: results.cost_fixed, color: "#f39c12"},
     {name: "CDMO Toll", data: results.cost_cdmo_toll, color: "#e67e22"},
-    {name: "Downstream", data: results.cost_downstream, color: "#1abc9c"}
+    {name: "Forming & texturization", data: results.cost_downstream, color: "#1abc9c"},
+    {name: "Harvest, wash & dewater", data: results.cost_harvest, color: "#16a085"}
   ];
 
   // Filter out components with all zeros (e.g., downstream when not included)

@@ -70,7 +70,7 @@ This document provides complete technical documentation for the cultured chicken
 
 ## What the model estimates: basis, target and scope {#estimand-basis}
 
-*AI-drafted (Claude, 26 October 2026) from design decisions made by David Reinstein on 26 October 2026 (also recorded on the team hub in Notion); not yet reviewed by a person. The model code does not yet implement the planned basis; see the status notes below.*
+*AI-drafted (Claude, 26 October 2026) from design decisions made by David Reinstein on 26 October 2026 (also recorded on the team hub in Notion); not yet reviewed by a person. The headline result is still on the wet basis; provisional conversions to the planned basis are described in the status notes below.*
 
 ::: {.callout-important}
 ## Current output basis versus planned standard basis
@@ -93,7 +93,17 @@ The planned standard is cost per kg of washed cell biomass at a fixed solids con
 
 Mixing these bases without conversion can shift a density estimate, and therefore the medium cost per kg, by a factor of several. When entering or comparing density values, state which basis the source used.
 
-**Status:** documented; not yet in the code by default. A planned option will add the solids content of the harvested biomass the costs refer to, a target solids content, and the protein share of solids, and report cost at the target solids basis and per kg protein. The default will keep the current behaviour so that published audit numbers do not silently change.
+**Status (engine `2026-10-26.2`):** the headline result is still per wet kg, so published numbers do not change. The engine now also reports two converted results, shown under the headline figures on the [Advanced page](index.qmd) and in the exports:
+
+$$\text{cost per kg at target solids} = \text{cost per wet kg} \times \frac{\texttt{target\_solids\_fraction}}{\texttt{solids\_fraction}}, \qquad \text{cost per kg protein} = \frac{\text{cost per wet kg}}{\texttt{solids\_fraction} \times \texttt{protein\_fraction\_of\_solids}}$$
+
+| Parameter | Default | Meaning and status |
+|---|---|---|
+| `solids_fraction` | 0.20 | Solids content of the harvested biomass the costs refer to. 0.20 matches the 80%-water reference in the CM_01 question; the density sources do not report it consistently. |
+| `target_solids_fraction` | 0.275 | Solids content of the standard basis; midpoint of the 25–30% placeholder, to be agreed. |
+| `protein_fraction_of_solids` | 0.65 | Share of cell dry matter that is protein. Unverified placeholder. |
+
+At the defaults, cost per kg at 27.5% solids is 1.375 times the wet-basis cost (default median about \$59 rather than \$43), and cost per kg protein is about 7.7 times it. These conversions assume washing and dewatering lose no cells and cost nothing; the harvest placeholder below adds a cost but not losses. They are fixed scalars, not uncertain inputs, and they change under *Structural stress tests* on the Advanced page.
 
 ### Target quantity (estimand) {#estimand}
 
@@ -114,7 +124,7 @@ Two caveats are recorded in [Limits](limits.qmd#estimand): the technology availa
 
 | Step | In the estimate? | Currently modeled? |
 |---|---|---|
-| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Not explicitly. A placeholder cost per kg is planned (off by default); Katharina Brenner's process model is the planned source for its values. |
+| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$0.50–3.00/kg (`harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Turning it on moves the default median from about \$43 to \$44 and P(cost < \$10/kg) from 2.7% to 1.4%. |
 | **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. |
 
 ### Elicit primitive drivers, not derived quantities {#elicit-fundamentals}
@@ -1041,7 +1051,7 @@ The full model implementation is available in multiple formats:
 
 | Format | Location | Notes |
 |--------|----------|-------|
-| **JavaScript** (interactive and CLI) | [cost-model.mjs](cost-model.mjs) | Shared calculation engine for Simple and Advanced; version 2026-09-07.1 |
+| **JavaScript** (interactive and CLI) | [cost-model.mjs](cost-model.mjs) | Shared calculation engine for Simple and Advanced; version 2026-10-26.2 |
 | **Python** (reference) | [dashboard/model.py](https://github.com/unjournal/cm_pq_modeling/blob/main/dashboard/model.py) | Historical implementation; not synchronized and not a current dashboard reference |
 
 ::: {.callout-note collapse="true"}
@@ -1084,7 +1094,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
 
-8. **Output composition is not standardized** — Wet-biomass hydration, dry matter, protein content, and recovery yield are not explicit parameters. A standard basis (washed biomass at a fixed solids content, plus per kg protein) is planned; see [why the basis matters](#output-basis).
+8. **Output composition is not standardized** — The headline result is per wet kg. Converted results per kg at a target solids content and per kg protein are reported using placeholder solids and protein shares; recovery losses during washing and dewatering are not modeled. See [why the basis matters](#output-basis).
 
 ### Recommendations for Use
 

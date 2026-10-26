@@ -1,7 +1,7 @@
 {
-  "model_version": "2026-10-26.1",
-  "engine_sha256": "3f358a8388c81d8097c7b2fde0da4d12a7caf002fe6ad2b39e158273f84954f3",
-  "methods_sha256": "3cc374fe1806f7437c04998484cb2f61e145417f123dbd394365876416d90e15",
+  "model_version": "2026-10-26.2",
+  "engine_sha256": "b5deeadc372f94741ed3faa06bc1411823cb89291de37ddaa5cc0c68037b57f0",
+  "methods_sha256": "cc1216d64604135b611b48d8a372111c833a5648e8b947fe51ca9102ce199a7f",
   "generated": "2026-10-26",
   "basis": "Advanced-page default scenario (maturity 0.5 mapped to 2036), seed 42, 30,000 draws; USD/kg wet biomass in mixed source-year dollars.",
   "interpretation": "Exploratory uncertainty attribution among displayed inputs. Variance shares are not research value. The nearest-neighbour Shapley estimator is biased toward zero or below for inputs that add little information, and breaks down with many inputs at these subsample sizes; compare runs before reading small differences.",
@@ -55,6 +55,12 @@
     "p_feasible_perfusion": 0.7,
     "p_feasible_continuous": 0.3,
     "mode_choice_noise": 0,
+    "solids_fraction": 0.2,
+    "target_solids_fraction": 0.275,
+    "protein_fraction_of_solids": 0.65,
+    "include_harvest_dewater": false,
+    "harvest_dewater_p5": 0.5,
+    "harvest_dewater_p95": 3,
     "target_year": 2036
   },
   "reduced_inputs": [
@@ -535,7 +541,7 @@
       "subsample": 3000,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 2.9,
+      "seconds": 2.3,
       "explained_share": 0.7503060064848807,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -590,7 +596,7 @@
       "subsample": 3000,
       "subsample_seed": 2,
       "k": 10,
-      "seconds": 2.7,
+      "seconds": 2.3,
       "explained_share": 0.7454512882995664,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -645,7 +651,7 @@
       "subsample": 3000,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 2.5,
+      "seconds": 2.3,
       "explained_share": 0.5759406045470382,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -700,7 +706,7 @@
       "subsample": 3000,
       "subsample_seed": 2,
       "k": 10,
-      "seconds": 2.8,
+      "seconds": 2.4,
       "explained_share": 0.5719674234756948,
       "rank_r2_same_inputs": 0.7196769131425611,
       "inputs": [
@@ -755,7 +761,7 @@
       "subsample": 1500,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 24,
+      "seconds": 19.9,
       "explained_share": 0.5611827452683992,
       "rank_r2_same_inputs": 0.7278097358539521,
       "inputs": [

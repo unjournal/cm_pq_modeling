@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-09-17.1",
-  "engine_sha256": "81c4537e86a52900ac36568c8c7b8711f1892667ea19a3f5385ec4da1b6f8028",
+  "model_version": "2026-10-26.2",
+  "engine_sha256": "b5deeadc372f94741ed3faa06bc1411823cb89291de37ddaa5cc0c68037b57f0",
   "n": 30000,
   "seed": 42,
   "default_parameters": {
@@ -48,9 +48,19 @@
     "fresh_media_p95": 60,
     "gf_dose_model": "per_kg",
     "gf_concentration_mg_L": 0.102,
-    "gf_cheap_dose_fraction": 0.4
+    "gf_cheap_dose_fraction": 0.4,
+    "mode_selection": "mixture",
+    "p_feasible_perfusion": 0.7,
+    "p_feasible_continuous": 0.3,
+    "mode_choice_noise": 0,
+    "solids_fraction": 0.2,
+    "target_solids_fraction": 0.275,
+    "protein_fraction_of_solids": 0.65,
+    "include_harvest_dewater": false,
+    "harvest_dewater_p5": 0.5,
+    "harvest_dewater_p95": 3
   },
-  "units": "USD/kg wet biomass; mixed source-year dollars; scenario distribution, not a conditional commercialization forecast",
+  "units": "USD/kg wet biomass (other_bases: provisional per kg at target solids and per kg protein); mixed source-year dollars; scenario distribution, not a calibrated forecast",
   "scenarios": {
     "default": {
       "overrides": {},
@@ -68,7 +78,16 @@
         "capex": 7.892155468063746,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 58.59926180820128,
+        "protein_p50": 327.82803808783933,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "fedbatch_only": {
@@ -91,7 +110,16 @@
         "capex": 19.984406574060742,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 151.14855307189669,
+        "protein_p50": 845.5863108917296,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "perfusion_only": {
@@ -114,7 +142,16 @@
         "capex": 5.405603713419604,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 57.44821777602284,
+        "protein_p50": 321.38863091481306,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "continuous_only": {
@@ -137,7 +174,16 @@
         "capex": 3.8961375121528925,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 32.917926864521405,
+        "protein_p50": 184.15623420711273,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "low_utilization": {
@@ -158,7 +204,16 @@
         "capex": 10.95685989364159,
         "fixed": 4.899281713642827,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 63.48723702495286,
+        "protein_p50": 355.1733539857502,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "cdmo": {
@@ -179,7 +234,16 @@
         "capex": 0,
         "fixed": 0,
         "cdmo_toll": 16.027242928910933,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 69.52966737835712,
+        "protein_p50": 388.97716015864114,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "no_capex": {
@@ -200,7 +264,16 @@
         "capex": 0,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 50.501421849908056,
+        "protein_p50": 282.5254369225625,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     "complete_medium": {
@@ -221,7 +294,46 @@
         "capex": 7.892155468063746,
         "fixed": 3.529174805029392,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 6808.037135597513,
+        "protein_p50": 38086.92103830776,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
+      }
+    },
+    "harvest_dewater_placeholder": {
+      "overrides": {
+        "include_harvest_dewater": true
+      },
+      "p5": 13.330021519801306,
+      "p50": 44.04644075607453,
+      "p95": 234.3675123687346,
+      "mean": 74.78609283825205,
+      "probability_under_10": 0.014333333333333333,
+      "probability_under_25": 0.2518,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 1.4221709837431238
+      },
+      "other_bases": {
+        "target_solids_p50": 60.56385603960247,
+        "protein_p50": 338.8187750467271,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     }
   },
@@ -242,7 +354,16 @@
         "capex": 7.931315033061011,
         "fixed": 3.5417801943609897,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 58.413945367654364,
+        "protein_p50": 326.7913027561083,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     {
@@ -261,7 +382,16 @@
         "capex": 7.858086672129659,
         "fixed": 3.5148454880419577,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 58.03108789101877,
+        "protein_p50": 324.64944274695813,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     {
@@ -280,7 +410,16 @@
         "capex": 7.8156634762841035,
         "fixed": 3.527088714491237,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 58.06645596666881,
+        "protein_p50": 324.84730610723807,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     },
     {
@@ -299,7 +438,16 @@
         "capex": 7.676327696753517,
         "fixed": 3.515261449116707,
         "cdmo_toll": 0,
-        "downstream": 0
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases": {
+        "target_solids_p50": 59.24822613125571,
+        "protein_p50": 331.45860772730464,
+        "factors": {
+          "target_solids": 1.375,
+          "protein": 7.692307692307692
+        }
       }
     }
   ],

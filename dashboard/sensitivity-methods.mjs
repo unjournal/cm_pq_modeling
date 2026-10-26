@@ -434,7 +434,8 @@ export const THRESHOLD_PROFILE_COMPONENTS = [
 
 // `result` is the output of simulate(). Statistics for the subset are null when no
 // draw qualifies. "other" is unit cost minus the four listed components (supplemental
-// proteins, other variable costs, contract-manufacturing toll, downstream).
+// proteins, other variable costs, contract-manufacturing toll, forming and
+// texturization, harvest and dewatering).
 export function thresholdProfile(result, threshold, {minDraws = 300} = {}) {
   if (!(threshold > 0)) throw new RangeError("Threshold must be a positive cost in $/kg.");
   const uc = result.unit_cost;
@@ -497,6 +498,9 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     p_feasible_perfusion: num("p_feasible_perfusion", DEFAULT_PARAMS.p_feasible_perfusion),
     p_feasible_continuous: num("p_feasible_continuous", DEFAULT_PARAMS.p_feasible_continuous),
     mode_choice_noise: num("mode_choice_noise", DEFAULT_PARAMS.mode_choice_noise),
+    solids_fraction: num("solids_fraction", DEFAULT_PARAMS.solids_fraction),
+    target_solids_fraction: num("target_solids_fraction", DEFAULT_PARAMS.target_solids_fraction),
+    protein_fraction_of_solids: num("protein_fraction_of_solids", DEFAULT_PARAMS.protein_fraction_of_solids),
     target_year,
     plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
     plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,
@@ -516,6 +520,7 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     include_capex: simpleMode ? true : bool("include_capex", true),
     include_fixed_opex: simpleMode ? true : bool("include_fixed_opex", true),
     include_downstream: simpleMode ? false : bool("include_downstream", false),
+    include_harvest_dewater: simpleMode ? false : bool("include_harvest_dewater", false),
     gf_progress: num("gf_progress", 50),
     cdmo_mode: bool("cdmo_mode", false),
     cdmo_toll_p5: num("cdmo_toll_p5", 4),

@@ -4,11 +4,11 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as model from '../dashboard/cost-model.mjs';
 const {simulate, DEFAULT_PARAMS, crf, conditionalSwing, sampleBetaMeanStdev, mulberry32} = model;
-const components = ['media', 'recf', 'supp_protein', 'other_var', 'capex', 'fixed', 'cdmo_toll', 'downstream'];
+const components = ['media', 'recf', 'supp_protein', 'other_var', 'capex', 'fixed', 'cdmo_toll', 'downstream', 'harvest'];
 const n = 2000;
 
 test('finite costs and exact component accounting across production modes', () => {
-  for (const options of [{}, {bundled_media: true}, {cdmo_mode: true}, {include_downstream: true},
+  for (const options of [{}, {bundled_media: true}, {cdmo_mode: true}, {include_downstream: true}, {include_harvest_dewater: true},
     {include_capex: false, include_fixed_opex: false}, {override_mode_constraints: true},
     {ep_media_p10: 1, ep_media_p90: 10, ep_gf_p10: 1, ep_gf_p90: 20},
     {mode_selection: 'least_cost'}, {mode_selection: 'least_cost', mode_choice_noise: 0.5, cdmo_mode: true}]) {
@@ -25,6 +25,37 @@ test('turning off CAPEX changes only CAPEX, including with downstream enabled', 
   const b = simulate(n, 42, {include_downstream: true, include_capex: false});
   for (const k of components.filter(k => k !== 'capex')) assert.deepEqual(a['cost_' + k], b['cost_' + k]);
   a.unit_cost.forEach((v, i) => assert.ok(Math.abs(v - b.unit_cost[i] - a.cost_capex[i]) < 1e-8));
+});
+
+test('harvest placeholder is off by default and adds only its own cost when on', () => {
+  const a = simulate(n, 42, {});
+  const b = simulate(n, 42, {include_harvest_dewater: true});
+  assert.ok(a.cost_harvest.every(v => v === 0));
+  for (const k of components.filter(k => k !== 'harvest')) assert.deepEqual(a['cost_' + k], b['cost_' + k]);
+  b.unit_cost.forEach((v, i) => assert.ok(Math.abs(v - a.unit_cost[i] - b.cost_harvest[i]) < 1e-8));
+  const med = model.quantile(b.cost_harvest, 0.5);
+  assert.ok(med > DEFAULT_PARAMS.harvest_dewater_p5 && med < DEFAULT_PARAMS.harvest_dewater_p95);
+  assert.throws(() => simulate(10, 1, {include_harvest_dewater: true, harvest_dewater_p5: 3, harvest_dewater_p95: 1}), RangeError);
+});
+
+test('solids and protein bases rescale the wet-basis cost and leave it unchanged', () => {
+  const a = simulate(n, 42, {});
+  const b = simulate(n, 42, {solids_fraction: 0.15, target_solids_fraction: 0.30, protein_fraction_of_solids: 0.5});
+  // Conversions are reporting only: every wet-basis output is identical.
+  assert.deepEqual(a.unit_cost, b.unit_cost);
+  a.unit_cost.forEach((v, i) => {
+    assert.ok(Math.abs(a.unit_cost_target_solids[i] - v * 0.275 / 0.20) < 1e-9);
+    assert.ok(Math.abs(a.unit_cost_protein[i] - v / (0.20 * 0.65)) < 1e-9);
+    // A paste at 15% solids carries half the solids of one at 30%: twice the cost per target kg.
+    assert.ok(Math.abs(b.unit_cost_target_solids[i] - 2 * v) < 1e-9);
+    assert.ok(Math.abs(b.unit_cost_protein[i] - v / 0.075) < 1e-9);
+  });
+  assert.deepEqual(b.basis_factors, {target_solids: 2, protein: 1 / 0.075});
+  for (const bad of [{solids_fraction: 0}, {target_solids_fraction: 1.2}, {protein_fraction_of_solids: NaN}])
+    assert.throws(() => simulate(10, 1, bad), RangeError);
+  // Least-cost selection carries the converted arrays with the chosen mode.
+  const lc = simulate(n, 42, {mode_selection: 'least_cost'});
+  lc.unit_cost.forEach((v, i) => assert.ok(Math.abs(lc.unit_cost_target_solids[i] - v * lc.basis_factors.target_solids) < 1e-9));
 });
 
 test('CDMO comparison preserves all shared costs draw for draw', () => {
@@ -149,7 +180,7 @@ test('Simple and Advanced adapters yield identical draws at matching settings', 
         uptime: 0.9, p_hydro: 0.75, p_recfactors: 0.5, p_supp_protein: 0.7,
         wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
         density_lo: 30, density_hi: 200, media_turnover_lo: 0.5, media_turnover_hi: 3,
-        include_capex: true, include_fixed_opex: true, include_downstream: false,
+        include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
         gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
         p_fedbatch: 0.2, p_perfusion: 0.5, p_continuous: 0.3, override_mode_constraints: false,
         bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull

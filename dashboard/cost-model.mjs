@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-10-26.1";
+export const MODEL_VERSION = "2026-10-26.2";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -20,7 +20,11 @@ export const DEFAULT_PARAMS = Object.freeze({
   gf_dose_model: "per_kg", gf_concentration_mg_L: 0.102,
   gf_cheap_dose_fraction: 0.4,
   mode_selection: "mixture", p_feasible_perfusion: 0.70, p_feasible_continuous: 0.30,
-  mode_choice_noise: 0
+  mode_choice_noise: 0,
+  // Output basis. unit_cost stays per kg of wet biomass at solids_fraction; the
+  // target-solids and protein views are extra outputs and leave it unchanged.
+  solids_fraction: 0.20, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65,
+  include_harvest_dewater: false, harvest_dewater_p5: 0.5, harvest_dewater_p95: 3.0
 });
 
 // Review-driven structural alternatives. These are scenario choices, not new evidence.
@@ -29,6 +33,8 @@ export const REVIEW_PROVENANCE = Object.freeze({
   dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
   media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 8–60 L/kg p5–p95 is an illustrative stress range, not an elicited or fitted prior.",
   gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
+  basis: "October 26, 2026 design decision. Cost per wet kg is not a stable unit, so results are also reported per kg at a target solids content and per kg protein: × target/solids and ÷ (solids × protein share). 0.20 solids matches the 80%-water reference used in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of cell solids is an unverified placeholder. Recovery losses are not modeled.",
+  harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $0.50–3.00/kg p5–p95 range is a placeholder until values from the planned process model are available (see docs); off by default.",
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific equipment, consumable and contamination costs are not modeled, so selection favors the least-specified modes."
 });
 
@@ -308,6 +314,11 @@ function simulateDrawnMode(n, seed, params) {
     if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
   }
   validateRange(params.fresh_media_p5, params.fresh_media_p95);
+  for (const key of ["solids_fraction", "target_solids_fraction", "protein_fraction_of_solids"]) {
+    if (!Number.isFinite(params[key]) || params[key] <= 0 || params[key] > 1)
+      throw new RangeError(`${key} must be above 0 and at most 1.`);
+  }
+  if (params.include_harvest_dewater) validateRange(params.harvest_dewater_p5, params.harvest_dewater_p95);
   if (!Number.isFinite(params.gf_concentration_mg_L) || params.gf_concentration_mg_L < 0
       || !Number.isFinite(params.gf_cheap_dose_fraction) || params.gf_cheap_dose_fraction < 0 || params.gf_cheap_dose_fraction > 1)
     throw new RangeError("GF concentration must be nonnegative and dose fraction between 0 and 1.");
@@ -586,8 +597,19 @@ function simulateDrawnMode(n, seed, params) {
     downstream_perkg = sampleLognormalP5P95(rng, 2.0, 15.0, n);
   }
 
+  rng = namedStream(seed, "harvest-dewater");
+  // Harvest, washing and dewatering to the standard basis: inside the estimate,
+  // unlike forming/texturization above. Placeholder range; see REVIEW_PROVENANCE.harvest.
+  let harvest_perkg = new Array(n).fill(0);
+  if (params.include_harvest_dewater) {
+    harvest_perkg = sampleLognormalP5P95(rng, params.harvest_dewater_p5, params.harvest_dewater_p95, n);
+  }
+
   // Total unit cost
-  const unit_cost = add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg);
+  const unit_cost = add(add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg), harvest_perkg);
+  // A kg at the target basis needs target/solids wet kg; a wet kg holds solids × protein share of protein.
+  const target_solids_factor = params.target_solids_fraction / params.solids_fraction;
+  const protein_factor = 1 / (params.solids_fraction * params.protein_fraction_of_solids);
 
   return {
     unit_cost,
@@ -604,6 +626,10 @@ function simulateDrawnMode(n, seed, params) {
     cost_fixed: fixed_perkg,
     cost_cdmo_toll: cdmo_toll_perkg,
     cost_downstream: downstream_perkg,
+    cost_harvest: harvest_perkg,
+    unit_cost_target_solids: scale(unit_cost, target_solids_factor),
+    unit_cost_protein: scale(unit_cost, protein_factor),
+    basis_factors: {target_solids: target_solids_factor, protein: protein_factor},
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
     // Process mode realized shares — stored as scalars (not the full 30k string array)
