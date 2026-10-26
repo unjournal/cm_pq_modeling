@@ -173,10 +173,17 @@ be materializing.
 
 That does not simply move our cost prior downward. It exposes a question the present
 pipeline must answer first: are we forecasting (a) the best feasible plant, (b) the
-average qualifying commercial plant, or (c) a capacity-weighted sector average,
-conditional on large-scale production existing? CM_01 says "average production cost"
-and conditions on commercial scale being achieved; our model does not yet implement that
-conditioning, while Pablo's interpretation is closer to a frontier scenario. The 22,000-L
+average qualifying commercial plant, or (c) a capacity-weighted sector average? And is
+the cost conditional on large-scale production existing, or hypothetical? The CM_01
+beliefs question was reworded on 10 September 2026 to be unconditional and hypothetical.
+Its central part, A1, asks for "the production-weighted average cost per kg of
+cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant
+per year", considering the hypothetical cost if no plants operate at that scale
+([question changes](https://uj-cm-workshop.netlify.app/question-changes.html)); conditional
+actual cost is now a separate question (A2). On 26 October 2026 we decided that the cost
+model targets the same unconditional, hypothetical framing but for the *best available*
+plant (option a), in 2026 dollars, which is closer to Pablo's frontier interpretation than
+A1's production-weighted average ([estimand note](limits.qmd#estimand)). The 22,000-L
 figure is also a company claim, not a public cost-and-yield validation dataset. The hack
 should model these estimands separately rather than average them together.
 
@@ -420,7 +427,10 @@ behavioural structure are modeled properly.
   canonical numerical baseline.
 - *Fix the estimand first.* Separate P(qualifying large-scale production exists) from the
   cost conditional on existence, and report frontier, average-plant, and capacity-weighted
-  sector scenarios separately.
+  sector scenarios separately. (Update, 26 October 2026: the cost model now targets the
+  unconditional, hypothetical best-available-plant cost in 2026 dollars; see the
+  [estimand note](limits.qmd#estimand). The demand bridge will need the separate
+  probability and average-plant quantities if it is to model actual adoption.)
 - *Harmonize the value chain and currency basis.* Convert all monetary inputs to one
   constant-dollar year, then bridge biomass cost to retail price with explicit recovery,
   inclusion rate, other ingredients, processing, packaging, distribution, tax, and margin.

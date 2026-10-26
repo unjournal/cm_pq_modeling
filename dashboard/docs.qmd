@@ -68,6 +68,73 @@ This document provides complete technical documentation for the cultured chicken
 
 ---
 
+## What the model estimates: basis, target and scope {#estimand-basis}
+
+*AI-drafted (Claude, 26 October 2026) from design decisions made by David Reinstein on 26 October 2026 (also recorded on the team hub in Notion); not yet reviewed by a person. The model code does not yet implement the planned basis; see the status notes below.*
+
+::: {.callout-important}
+## Current output basis versus planned standard basis
+**Current:** cost per kg of *wet* cell biomass, as the code treats the density inputs (grams of wet biomass per litre at harvest).
+
+**Planned:** cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), plus cost per kg of protein.
+:::
+
+### Why the output basis matters {#output-basis}
+
+Harvested cells are mostly water. A "kg of wet cell biomass" can include more or less residual medium and interstitial water, depending on how thoroughly the cells are washed and dewatered. A paste at 15% solids carries about half the protein of a paste at 30% solids, so the same production run can be reported as costing either $X or roughly $X/2 per wet kg. Cost per wet kg is therefore not a stable unit for comparing studies, forecasts, or products.
+
+The planned standard is cost per kg of washed cell biomass at a fixed solids content close to chicken meat (chicken muscle is roughly 25–30% dry matter; the exact figure is still to be agreed), together with cost per kg of protein. Protein is the nutritionally relevant quantity and does not depend on how much water is left in the paste.
+
+**Density inputs may be on different bases.** The model's cell-density parameter is read as grams of *wet* biomass per litre. Source studies report density in at least three ways:
+
+- **wet weight** per litre (grams of harvested paste, with whatever water and medium it carries);
+- **dry weight** per litre (grams of solids after drying), typically 3–5 times smaller than the wet figure for the same culture;
+- **cell counts** per millilitre multiplied by an assumed mass per cell, which inherits the uncertainty of that assumed cell mass and of whether it is a wet or dry mass.
+
+Mixing these bases without conversion can shift a density estimate, and therefore the medium cost per kg, by a factor of several. When entering or comparing density values, state which basis the source used.
+
+**Status:** documented; not yet in the code by default. A planned option will add the solids content of the harvested biomass the costs refer to, a target solids content, and the protein share of solids, and report cost at the target solids basis and per kg protein. The default will keep the current behaviour so that published audit numbers do not silently change.
+
+### Target quantity (estimand) {#estimand}
+
+The model's intended target, decided on 26 October 2026:
+
+- **Unconditional and hypothetical.** The cost of a large ("nth-of-a-kind") plant built with the technology available in 2036, whether or not such plants exist. The model does not need a separate stage for the probability that commercial plants are built.
+- **Best available plant**, not the industry average.
+- **2026 US dollars.**
+- **No retail-price modeling.** The output is a production cost at the factory gate.
+
+Two caveats are recorded in [Limits](limits.qmd#estimand): the technology available in 2036 depends on investment and learning before then, and first-of-a-kind plants typically cost more than the nth-of-a-kind plant described here.
+
+**Alignment with other surfaces.** The CM_01 beliefs question was reworded on 10 September 2026 to be unconditional and hypothetical as well. Its central part, A1, asks: "What will be the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year?", and adds: "If you imagine no plants producing at this scale, consider the hypothetical cost at this scale" ([question changes](https://uj-cm-workshop.netlify.app/question-changes.html)). A1 and the model now share the unconditional, hypothetical framing, but differ in three ways that still need reconciling: A1 asks for a production-weighted average and explicitly not the cheapest plant, whereas the model targets the best available plant; A1 uses 2025 dollars, the model 2026 dollars; and A1 uses wet weight with 80% water as its reference, whereas the planned model basis is 25–30% solids (70–75% water). The [CM_01 Metaculus question](https://www.metaculus.com/c/unjournal/38815/) keeps its own older wording.
+
+### Downstream processing: inside versus outside the estimate {#downstream-scope}
+
+"Downstream" covers two different groups of steps:
+
+| Step | In the estimate? | Currently modeled? |
+|---|---|---|
+| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Not explicitly. A placeholder cost per kg is planned (off by default); Katharina Brenner's process model is the planned source for its values. |
+| **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. |
+
+### Elicit primitive drivers, not derived quantities {#elicit-fundamentals}
+
+Respondents find it hard to give coherent beliefs about derived quantities such as overall cost per kg or litres of medium per kg, and differences in those numbers often reflect hidden differences in assumptions. The plan is to elicit beliefs about a short list (six to eight) of primitive drivers on which experts can genuinely differ, possibly conditional on process mode, and compute costs from them:
+
+1. **Process mode** (fed-batch, perfusion, continuous) and its feasibility at scale;
+2. **Achievable cell density** at harvest, on a stated basis;
+3. **Nutrient yield**: kilograms of cells produced per litre of medium consumed;
+4. **Growth-factor requirement** per kg of cells (or per litre of medium);
+5. **Input prices**: basal medium per litre and growth factors per gram;
+6. **Bioreactor cost per cubic metre** of working volume (installed);
+7. optionally, **plant scale and utilization**, and the **cost of capital**.
+
+Each respondent would also give one or two derived numbers, such as their overall cost per kg, as a consistency check against the cost computed from their primitive answers. Large gaps flag either a missing cost component or an assumption the respondent holds but did not state.
+
+**Medium per kg and density.** The default media equation derives litres of medium per kg as 1000 / density × a media-use multiplier, so higher density mechanically means less medium per kg. Two independent reviewers argue instead that medium consumed per kg depends on **nutrient yield** (how many kilograms of cells the nutrients in a litre can support) and is roughly invariant to density: concentrating cells in less liquid does not reduce the nutrients they consume. A planned option (`media_use_model: "yield"`) will derive litres per kg from a yield primitive rather than from density. The [threshold profile](sensitivity.qmd) shows why this matters: most simulated draws under $10/kg rely on the density-derived medium assumption.
+
+---
+
 ## Model Formulas {#model-formulas}
 
 This section presents the model structure **top-down**: starting with the final output and unpacking each component.
@@ -104,13 +171,13 @@ $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \
 The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
-**Intended output basis — factory-gate cell biomass:** Costs are expressed per kg on the model's wet-biomass basis. The calculation treats cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry matter, protein content, and recovery yield may therefore differ across the source studies being combined.
+**Current output basis — factory-gate wet cell biomass:** Costs are expressed per kg on the model's wet-biomass basis. The calculation treats cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry matter, protein content, and recovery yield may therefore differ across the source studies being combined. **Planned standard basis:** washed cell biomass at a fixed solids content (placeholder 25–30% dry matter) plus cost per kg protein; see [why the basis matters](#output-basis).
 
-**Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities.
+**Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities. Harvest, washing and dewatering belong here too but are not yet modeled explicitly.
 
-**Excludes:** Texturization/scaffolding, blending with plant-based ingredients, packaging, distribution, R&D amortization, regulatory costs.
+**Excludes:** Forming, texturization/scaffolding, blending with plant-based ingredients, packaging, distribution, R&D amortization, regulatory costs.
 
-**Alignment with other surfaces:** The dashboard, beliefs form, and Metaculus questions intend to target the same broad upstream object, but they are not yet fully harmonized. In particular, harvested wet biomass is not automatically a standardized edible ingredient, and CM_01 conditions on commercial scale being achieved while this model has no separate commercialization hurdle.
+**Alignment with other surfaces:** The CM_01 beliefs question is now unconditional and hypothetical. Its central part (A1) asks: "What will be the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year?", considering hypothetical production if no plants operate at that scale ([question changes](https://uj-cm-workshop.netlify.app/question-changes.html)). The model shares that framing but targets the best available plant in 2026 dollars, whereas A1 asks for a production-weighted average in 2025 dollars; see [target quantity](#estimand). Harvested wet biomass is also not automatically a standardized edible ingredient.
 
 See our [TEA comparison page](compare.qmd) for how this compares to published TEA figures, which often differ in output basis (hybrid products, dry weight, retail price).
 :::
@@ -123,7 +190,7 @@ See our [TEA comparison page](compare.qmd) for how this compares to published TE
 | **VOC** | Variable operating costs — inputs that scale with production | $5–100/kg |
 | **CAPEX/kg** | Annualized capital costs (bioreactors, facilities) | $1–20/kg |
 | **Fixed OPEX/kg** | Labor, maintenance, overhead | $1–10/kg |
-| **Downstream/kg** | Scaffolding, texturization (for structured products) | $2–15/kg if enabled |
+| **Downstream/kg** | Forming, scaffolding, texturization (structured products; outside the estimate) | $2–15/kg if enabled |
 
 </details>
 
@@ -977,7 +1044,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
-2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
+2. **Forming and texturization are outside the estimate** — Scaffolding, texturization, and forming costs can be added via toggle (+$2-15/kg for structured products). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly; see [downstream processing](#downstream-scope).
 
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
@@ -985,11 +1052,11 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
 
-6. **Conditional-success mismatch** — The model does not separate P(large-scale commercialization by the target date) from cost conditional on that event, and it does not distinguish a frontier plant from an average or capacity-weighted commercial plant.
+6. **Estimand not yet reflected in the parameter ranges** — The target is now unconditional and hypothetical (the best available large plant with 2036 technology, whether or not such plants exist; see [target quantity](#estimand)), so a separate commercialization stage is no longer required. But the ranges were not built for that target, and the model does not yet distinguish a frontier plant from an average or capacity-weighted commercial plant.
 
 7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
 
-8. **Output composition is not standardized** — Wet-biomass hydration, dry matter, protein content, and recovery yield are not explicit parameters.
+8. **Output composition is not standardized** — Wet-biomass hydration, dry matter, protein content, and recovery yield are not explicit parameters. A standard basis (washed biomass at a fixed solids content, plus per kg protein) is planned; see [why the basis matters](#output-basis).
 
 ### Recommendations for Use
 

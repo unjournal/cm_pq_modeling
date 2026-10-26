@@ -38,6 +38,15 @@ Two supplied research critiques prompted optional median-preserving priors, expl
 This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For a more detailed exploration with many more parameters, use the [Advanced Model](index.qmd).
 :::
 
+::: {.callout-important}
+## Output basis: what "per kg" means here
+**Current basis.** Costs are per kg of *wet* cell biomass, because the code treats the cell-density inputs as grams of wet biomass per litre at harvest. Harvested cells are mostly water, and a wet kg can carry more or less residual medium depending on washing and dewatering: a paste at 15% solids carries about half the protein of one at 30%.
+
+**Planned standard basis (team decision, 26 October 2026).** Cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), reported alongside cost per kg of protein. Until then, read every number here as wet-basis. [Why the basis matters →](docs.qmd#output-basis)
+
+*AI-drafted (Claude, 26 October 2026) from the team's design decision; not yet reviewed by a person.*
+:::
+
 ::: {.callout-note collapse="true"}
 ## How to use this page
 
@@ -260,7 +269,7 @@ viewof p_continuous_s = Inputs.range([0, 100], {
 | Plant capacity | 10–40 kTA (lognormal) | Ranges from small-scale (10 kTA) to large (40 kTA) commercial facilities. |
 | CAPEX | Included | Bioreactor and facility capital costs, annualised via CRF. |
 | Fixed overhead | Included. \$1–6/kg at reference 20 kTA scale; scales sub-linearly. | Labour, maintenance, plant overhead. |
-| Downstream costs | Not included (pure cell-mass basis). Downstream costs (scaffolding, texturization) are available in the Advanced Model. | Output here is unstructured cell mass at the bioreactor gate. |
+| Forming and texturization | Not included: outside the estimate. Scaffolding, texturization and forming can be added in the Advanced Model. | Output here is unstructured cell mass at the bioreactor gate. Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly. |
 | GF cost progress | 50% | Midpoint toward industry price targets |
 | Filler cost | $3/kg | Plant protein / mycoprotein estimate |
 
@@ -386,7 +395,7 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-All values are <strong>manufacturing cost per kg on the model's wet-biomass basis</strong> — a factory-gate ingredient cost, not a consumer-product price. The code treats density as wet-biomass g/L; it does not separately standardize hydration, dry matter, protein content, or recovery yield. Source dollars are not yet normalized to one real-dollar year, and the model does not separate P(commercial scale exists) from cost conditional on success. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+All values are <strong>manufacturing cost per kg on the model's wet-biomass basis</strong> — a factory-gate ingredient cost, not a consumer-product price. The code treats density as wet-biomass g/L; it does not separately standardize hydration, dry matter, protein content, or recovery yield. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
 </div>`
 ```

@@ -42,6 +42,8 @@ format:
 ::: {.callout-note collapse="true"}
 ## Model version and September 17–20 updates
 
+**October 26 (target and basis, documentation only):** the team set the model's target: unconditional and hypothetical cost of a large plant built with the best technology available in 2036, whether or not such plants exist, in 2026 US dollars ([estimand](limits.qmd#estimand)). It also set a planned standard output basis, washed cell biomass at a fixed solids content plus cost per kg of protein ([output basis](docs.qmd#output-basis)). The "downstream processing" switch is relabelled "forming and texturization" (outside the estimate). No model outputs changed.
+
 This page runs the **current model** (engine `2026-09-17.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
@@ -64,11 +66,20 @@ Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusin
 ## Important: Model Status & Limitations
 This model is *largely AI-generated* and, as of September 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
-**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; wet-biomass water content is not standardized; and the model does not separate the probability of reaching commercial scale from cost *conditional on* reaching it. The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
+**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; wet-biomass water content is not standardized (see the output-basis note below); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
 
 **[Read the full critique and our responses → Limits/Critique](limits.html)**
 
 We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources-how-they-inform-the-model).
+:::
+
+::: {.callout-important}
+## Output basis: what "per kg" means here
+**Current basis.** Costs are per kg of *wet* cell biomass, because the code treats the cell-density inputs as grams of wet biomass per litre at harvest. Harvested cells are mostly water, and a wet kg can carry more or less residual medium depending on washing and dewatering: a paste at 15% solids carries about half the protein of one at 30%. So "cost per kg of wet cell biomass" is not a stable unit.
+
+**Planned standard basis (team decision, 26 October 2026).** Cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), reported alongside cost per kg of protein. Until that conversion is switched on, read every number on this page as wet-basis. [Why the basis matters →](docs.qmd#output-basis)
+
+*AI-drafted (Claude, 26 October 2026) from the team's design decision; not yet reviewed by a person.*
 :::
 
 ::: {.callout-note collapse="true"}
@@ -650,13 +661,13 @@ viewof filler_cost = Inputs.range([1, 10], {
 //| echo: false
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: urlBool("include_capex", true)})
 viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: urlBool("include_fixed_opex", true)})
-viewof include_downstream = Inputs.toggle({label: "Include downstream processing", value: urlBool("include_downstream", false)})
+viewof include_downstream = Inputs.toggle({label: "Include forming and texturization (outside the estimate)", value: urlBool("include_downstream", false)})
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - *CAPEX*: Bioreactor and facility capital costs, annualized. On by default because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
 - *Plant overhead OPEX*: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* On by default for the same reason as CAPEX. Toggle off to focus on marginal costs only.
-- *Downstream*: Scaffolding, texturization, and forming for structured products. Off by default because the base model estimates cost of unstructured cell mass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2–15/kg.
+- *Forming and texturization*: Scaffolding, texturization, forming, blending and packaging for structured products. Off by default because these steps are **outside** the estimate, which is unstructured cell biomass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2–15/kg. (This switch was previously labelled "downstream processing"; its URL parameter is still `include_downstream`.) Harvest, washing and dewatering to the standard solids basis are a different step: they belong **inside** the estimate but are not yet modeled explicitly. See [downstream processing](docs.qmd#downstream-scope).
 
 Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
 </details>
@@ -1496,7 +1507,7 @@ html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px so
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. Assessing retail parity still requires a matched product and the remaining value-chain costs.
 <br><br>
-<strong>Three cautions before using the output:</strong> (1) source costs are not yet normalized to one real-dollar base year; (2) the CM_01 beliefs question conditions on large-scale commercial production being achieved, while this simulation also contains low-maturity draws and has no separate probability-of-commercialization stage; and (3) factory-gate biomass cost cannot be compared directly with retail chicken prices without matching inclusion rate, solids/protein basis, downstream yield, other ingredients, packaging, distribution, margin, geography, and currency year. The simple blended-product arithmetic below is an ingredient-cost scenario, not a price-parity result.
+<strong>Three cautions before using the output:</strong> (1) source costs are not yet normalized to one real-dollar base year; (2) the CM_01 beliefs question is now unconditional and hypothetical: its central part (A1) asks for "the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year", including hypothetical production if no such plants operate (<a href="https://uj-cm-workshop.netlify.app/question-changes.html">question changes</a>). This model now targets the same unconditional, hypothetical framing, but A1 asks for a production-weighted average in 2025 dollars while the model's decided target is the best available plant in 2026 dollars (<a href="limits.html#estimand">estimand note</a>); and (3) factory-gate biomass cost cannot be compared directly with retail chicken prices without matching inclusion rate, solids/protein basis, downstream yield, other ingredients, packaging, distribution, margin, geography, and currency year. The simple blended-product arithmetic below is an ingredient-cost scenario, not a price-parity result.
 </div>`
 ```
 
@@ -1612,7 +1623,8 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
       notes: {
         units: "USD per kg of cultured chicken cell biomass on the model's wet-biomass basis",
         currency_basis: "Mixed source-year USD; not yet normalized to a common real-dollar year",
-        conditioning: "Does not separately model P(large-scale commercialization); not a clean conditional-on-success forecast",
+        conditioning: "Intended estimand (decided 2026-10-26): unconditional and hypothetical cost of a large plant built with the best technology available in the target year, whether or not such plants exist; parameter ranges not yet re-checked against this target",
+        planned_basis: "Planned: per kg washed cell biomass at a fixed solids content (placeholder 25-30% dry matter) and per kg protein; current output is wet-basis",
         simulation_seed: 42,
         monte_carlo_samples: 30000
       }
@@ -2512,7 +2524,7 @@ The [versioned September audit](review-2026-09.qmd#what-the-revised-defaults-imp
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
-2. **Downstream is optional** — Scaffolding, texturization, and forming costs can be included via toggle (+$2-15/kg for structured products).
+2. **Forming and texturization are outside the estimate** — Scaffolding, texturization, and forming costs can be added via toggle (+$2-15/kg for structured products). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly.
 
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 

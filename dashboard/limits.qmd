@@ -16,6 +16,15 @@ format:
 **Earlier September review and fixes:** [Read the code audit, corrected source comparison, and priorities for the next model](review-2026-09.qmd). Both browser views now share one tested calculation engine. Utilization accounting, complete-medium double counting, probability endpoints, and several misleading explanations have been corrected. Physical feasibility and calibration remain open.
 :::
 
+::: {.callout-important}
+## Output basis and target: current versus planned (26 October 2026)
+**Output basis.** The current output is cost per kg of *wet* cell biomass, as the code treats the density inputs. That is not a stable unit: harvested cells are mostly water, and a paste at 15% solids carries about half the protein of one at 30%. The planned standard is cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), plus cost per kg of protein. See [Target quantity](#target-quantity) and [why the basis matters](docs.qmd#output-basis).
+
+**Target (estimand).** Unconditional and hypothetical: the cost of a large ("nth-of-a-kind") plant built with the technology available in 2036, whether or not such plants exist; the best available plant, not the industry average; 2026 US dollars; no retail-price modeling. See [Estimand](#estimand).
+
+*AI-drafted (Claude, 26 October 2026) from David Reinstein's design decisions; not yet reviewed by a person.*
+:::
+
 ::: {.callout-warning collapse="true"}
 ## Review provenance and team assessment
 
@@ -54,19 +63,48 @@ We agree. This model is designed to support structured exploration and deliberat
 
 ---
 
-### Target quantity: wet biomass, solids content, and the harvest gate
+### Target quantity: wet biomass, solids content, and the harvest gate {#target-quantity}
 
 **Issue.** The model intends to estimate pure cultured chicken cell biomass around the harvest gate, before product formulation. But "wet kg" is not a stable accounting unit unless water content, residual media, washing, dewatering, dry matter, and protein content are standardized. The code treats cell-density inputs as grams of wet biomass per litre; it does **not** separately apply the 80% hydration assumption previously stated in the interface. Harvested biomass is also not automatically identical to an edible finished ingredient: recovery and washing losses may sit between the bioreactor and the usable input.
 
-**Status: Partly addressed.** The interface now states what the code actually does. A proper fix is to report at least two normalized outputs — cost per kg at a specified dry-matter fraction and cost per kg protein — alongside the wet-biomass result, with explicit recovery losses.
+**Status: Partly addressed; standard basis decided.** The interface now states what the code actually does. On 26 October 2026 the team decided the standard: cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), plus cost per kg of protein. Density inputs from different sources may be on different bases (wet weight, dry weight, or cell counts multiplied by an assumed cell mass), which the [documentation](docs.qmd#output-basis) now flags. Still to do: implement the conversion (solids content of the harvested biomass, target solids content, protein share of solids) behind an option that keeps current outputs by default, and model harvest, washing and dewatering losses and costs explicitly ([downstream scope](docs.qmd#downstream-scope)).
+
+*Status note AI-drafted (Claude, 26 October 2026); not yet reviewed by a person.*
 
 ---
 
-### Conditional success versus probability of commercialization
+### Conditional success versus probability of commercialization {#estimand}
 
-**Issue.** CM_01 asks for cost in 2036 **assuming large-scale commercial production is achieved**. The model, however, samples low-maturity/high-cost worlds without separately modeling the probability that a qualifying commercial plant exists. It therefore mixes two different uncertainties: whether commercialization occurs and what cost is conditional on occurrence. It also leaves ambiguous whether the target is an average commercial plant, a capacity-weighted sector average, or the frontier/best feasible plant.
+**Issue (as raised).** CM_01 asked for cost in 2036 **assuming large-scale commercial production is achieved**. The model, however, samples low-maturity/high-cost worlds without separately modeling the probability that a qualifying commercial plant exists. It therefore mixed two different uncertainties: whether commercialization occurs and what cost is conditional on occurrence. It also left ambiguous whether the target is an average commercial plant, a capacity-weighted sector average, or the frontier/best feasible plant.
 
-**Status: Open and high priority.** The next version should use a hurdle structure: (1) probability that qualifying large-scale capacity exists by the target date; (2) cost distribution conditional on that event; and (3) capacity-weighted output or an explicitly labeled frontier scenario. This distinction also matters when comparing the model with the workshop beliefs and Pablo AMC's more frontier-oriented interpretation of the TEAs.
+**Status: Resolved by reframing the target (26 October 2026); hurdle model kept as an option.** The team decided that the model estimates an **unconditional, hypothetical** quantity:
+
+- the cost of a large ("nth-of-a-kind") plant built with the technology available in 2036, **whether or not such plants exist**;
+- the **best available plant**, not the industry average;
+- in **2026 US dollars**;
+- with **no retail-price modeling**.
+
+Because the target no longer conditions on commercialization happening, the model does not need a separate probability-of-commercialization stage. The hurdle structure recommended earlier, (1) probability that qualifying large-scale capacity exists by the target date, (2) cost conditional on that event, and (3) capacity-weighted output, is no longer the default path. It remains an optional extension, for example to answer CM_01 parts A2 (conditional actual cost) and B (probability of production) below.
+
+**Caveats on the reframed target.**
+
+1. **The 2036 technology level is not exogenous.** What technology is available in 2036 depends on investment and learning between now and then, which in turn depend on how well the industry does commercially. An unconditional "technology available in 2036" still embeds beliefs about that path.
+2. **First-of-a-kind plants typically cost more.** The early plants actually built in or before 2036 are likely to cost more than the nth-of-a-kind plant this target describes, because of design margins, commissioning problems and lack of learning. The model's output should not be read as the cost of the first commercial plants.
+
+**Alignment with CM_01.** The CM_01 beliefs question was reworded on 10 September 2026 and is now unconditional and hypothetical as well ([question changes](https://uj-cm-workshop.netlify.app/question-changes.html)). Its central part, A1, reads: "What will be the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year?", with the instruction "If you imagine no plants producing at this scale, consider the hypothetical cost at this scale." Conditional actual cost (A2) and the probability of production (B) are now separate questions. Three differences between A1 and the model's target remain open:
+
+- **Best plant versus average.** A1 asks for a production-weighted average and says "Do not use the cheapest plant or a single representative plant"; the model targets the best available plant. Comparisons between model output and A1 responses should treat the model as closer to a lower bound.
+- **Dollar year.** A1 uses 2025 US dollars; the model's target is 2026 US dollars (and its inputs are not yet normalized to either; see below).
+- **Weight basis.** A1 uses wet weight with 80% water as its reference; the planned model basis is 25–30% solids (70–75% water).
+
+The [CM_01 Metaculus question](https://www.metaculus.com/c/unjournal/38815/) keeps its older wording: the average production cost "across all large-scale plants in the world", wet weight at harvest, 2025 dollars, resolved by asking an AI model about current costs. That is an actual-outcome average, so it is neither the unconditional hypothetical framing nor the best-plant target. We have not changed it.
+
+**Parity reference.** The team hub's parity reference for conventional chicken (about $9–10/kg) looks like a retail-type price. A factory-gate production cost should be compared with conventional chicken at a comparable point in the supply chain (for example, processor or wholesale cost per kg of edible meat), as CM_01 part C now specifies.
+
+This distinction also matters when comparing the model with the workshop beliefs and Pablo AMC's more frontier-oriented interpretation of the TEAs.
+
+*Status update AI-drafted (Claude, 26 October 2026) from David Reinstein's decisions; not yet reviewed by a person.*
+
 
 ---
 
@@ -74,7 +112,7 @@ We agree. This model is designed to support structured exploration and deliberat
 
 **Issue.** Inputs drawn from different publications and years are not yet normalized to one constant-dollar base year. The demand bridge then compares a future factory-gate biomass-cost scenario with approximate 2025 conventional retail prices. Even perfect inflation adjustment would not solve the factory-gate-versus-retail mismatch.
 
-**Status: Open and high priority.** Choose and display a real-dollar base year; document the deflator for every imported monetary input; and add a separate value-chain bridge covering inclusion rate, recovery yield, non-cell ingredients, downstream processing, packaging, distribution, tax, and retail margin before making price-parity comparisons.
+**Status: Open and high priority; base year chosen.** The target is now 2026 US dollars (decided 26 October 2026; CM_01 A1 uses 2025 dollars). Display it; document the deflator for every imported monetary input; and add a separate value-chain bridge covering inclusion rate, recovery yield, non-cell ingredients, downstream processing, packaging, distribution, tax, and retail margin before making price-parity comparisons.
 
 ---
 

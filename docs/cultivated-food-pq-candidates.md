@@ -131,6 +131,12 @@ Resolves **YES** if, before 31 December 2035, a peer-reviewed or pre-registered 
 
 ## Question 3 — Average production cost of cultivated chicken at commercial scale in 2036
 
+> **Update, 26 October 2026 (AI-drafted by Claude; not yet reviewed by a person).** The CM_01 beliefs question this candidate was built around has since been reworded (10 September 2026) to be **unconditional and hypothetical**. Its central part, A1, now reads: "What will be the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year?" with the instruction "If you imagine no plants producing at this scale, consider the hypothetical cost at this scale." Conditional actual cost (A2), probability of production (B), a conventional-chicken cost benchmark (C) and quantity sold (D) are separate questions. Full wording: [question changes](https://uj-cm-workshop.netlify.app/question-changes.html). The draft below predates that change: it uses an actual-outcome, capacity-weighted average with a pilot-plant fallback, a ≥10,000 L / ≥100 tonne scale threshold rather than 2,000 tonnes per plant per year, and a wet-weight basis. Align it with A1 before any use.
+>
+> **Planned standard basis.** The cost model plans to report cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed) plus cost per kg of protein, because "wet weight at harvest" is not a stable unit (a paste at 15% solids carries half the protein of one at 30%). CM_01 A1 currently references wet weight with 80% water. See the model's [output basis note](https://unjournal.github.io/cm_pq_modeling/docs.html#output-basis).
+>
+> **Metaculus.** The [CM_01 Metaculus question](https://www.metaculus.com/c/unjournal/38815/) still uses the older actual-outcome wording ("across all large-scale plants in the world"); it has not been changed.
+
 ### Title
 What will be the average production cost ($/kg, factory-gate wet weight) of cultivated chicken cell biomass at large-scale commercial plants globally, as of December 2036? [2025 USD]
 
