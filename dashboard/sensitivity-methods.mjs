@@ -402,6 +402,70 @@ export function interventionContrasts(results, params, {n = 20000, seed = 42, ta
 }
 
 // ---------------------------------------------------------------------------
+// Threshold profile: what the draws under a cost threshold look like compared
+// with all draws. Descriptive, like the tail contrasts: it conditions on the
+// outcome, so it says which inputs the cheap draws share, not what causes them.
+// ---------------------------------------------------------------------------
+
+export const THRESHOLD_PROFILE_CONTINUOUS = [
+  {key: "L_per_kg",       name: "Fresh medium (L per kg)",              sample: "L_per_kg_samples"},
+  {key: "density",        name: "Cell density (g/L)",                   sample: "density_samples"},
+  {key: "media_turnover", name: "Media-use multiplier (×)",             sample: "media_turnover_samples"},
+  {key: "media_cost_L",   name: "Medium price ($/L)",                   sample: "media_cost_L_samples"},
+  {key: "g_recf",         name: "Growth factor quantity (g/kg)",        sample: "g_recf_samples"},
+  {key: "price_recf",     name: "Growth factor price ($/g)",            sample: "price_recf_samples"},
+  {key: "maturity",       name: "Industry maturity (0–1)",              sample: "maturity_samples"},
+  {key: "plant_kta",      name: "Plant capacity (thousand tonnes/yr)",  sample: "plant_kta_samples"},
+  {key: "uptime",         name: "Utilization (share of year)",          sample: "uptime_samples"},
+  {key: "wacc",           name: "Cost of capital (WACC)",               sample: "wacc_samples"}
+];
+
+export const THRESHOLD_PROFILE_BINARY = [
+  {key: "is_hydro",      name: "Uses hydrolysates (cheap amino-acid source)", sample: "is_hydro_samples"},
+  {key: "is_recf_cheap", name: "Cheap recombinant growth factors",           sample: "is_recf_cheap_samples"}
+];
+
+export const THRESHOLD_PROFILE_COMPONENTS = [
+  {key: "media", name: "Medium",                      sample: "cost_media"},
+  {key: "recf",  name: "Recombinant growth factors",  sample: "cost_recf"},
+  {key: "capex", name: "Capital (annualized)",        sample: "cost_capex"},
+  {key: "fixed", name: "Fixed operating costs",       sample: "cost_fixed"}
+];
+
+// `result` is the output of simulate(). Statistics for the subset are null when no
+// draw qualifies. "other" is unit cost minus the four listed components (supplemental
+// proteins, other variable costs, contract-manufacturing toll, downstream).
+export function thresholdProfile(result, threshold, {minDraws = 300} = {}) {
+  if (!(threshold > 0)) throw new RangeError("Threshold must be a positive cost in $/kg.");
+  const uc = result.unit_cost;
+  const n = uc.length;
+  const idx = [];
+  for (let i = 0; i < n; i++) if (uc[i] < threshold) idx.push(i);
+  const count = idx.length;
+  const pick = arr => idx.map(i => arr[i]);
+  const spread = arr => ({p10: quantile(arr, 0.1), p50: quantile(arr, 0.5), p90: quantile(arr, 0.9)});
+  const componentMeans = sel => {
+    const out = {};
+    for (const c of THRESHOLD_PROFILE_COMPONENTS) out[c.key] = mean(sel(result[c.sample]));
+    out.unit_cost = mean(sel(uc));
+    out.other = out.unit_cost - THRESHOLD_PROFILE_COMPONENTS.reduce((s, c) => s + out[c.key], 0);
+    return out;
+  };
+  const all = arr => arr;
+  return {
+    threshold, n, count, share: count / n, minDraws,
+    warning: count < minDraws
+      ? `Only ${count} of ${n.toLocaleString("en-US")} draws are under $${threshold}/kg, so the figures for that group are imprecise.`
+      : null,
+    continuous: THRESHOLD_PROFILE_CONTINUOUS.map(s => ({key: s.key, name: s.name,
+      all: spread(result[s.sample]), under: count ? spread(pick(result[s.sample])) : null})),
+    binary: THRESHOLD_PROFILE_BINARY.map(s => ({key: s.key, name: s.name,
+      all: mean(result[s.sample]), under: count ? mean(pick(result[s.sample])) : null})),
+    components: {all: componentMeans(all), under: count ? componentMeans(pick) : null}
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Advanced-page URL state -> engine parameters. Mirrors the simParams adapter in
 // index.qmd so sensitivity.qmd can analyze a scenario shared from that page.
 // ---------------------------------------------------------------------------

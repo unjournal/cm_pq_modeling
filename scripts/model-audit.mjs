@@ -2,6 +2,7 @@
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {simulate, quantile, mean, MODEL_VERSION, DEFAULT_PARAMS} from '../dashboard/cost-model.mjs';
+import {thresholdProfile} from '../dashboard/sensitivity-methods.mjs';
 const n = 30000;
 const componentKeys = ['media', 'recf', 'supp_protein', 'other_var', 'capex', 'fixed', 'cdmo_toll', 'downstream'];
 function summary(r) {
@@ -25,5 +26,7 @@ console.log(JSON.stringify({
   n, seed: 42, default_parameters: DEFAULT_PARAMS,
   units: 'USD/kg wet biomass; mixed source-year dollars; scenario distribution, not a conditional commercialization forecast',
   scenarios: Object.fromEntries(Object.entries(scenarios).map(([name, overrides]) => [name, {overrides, ...summary(simulate(n, 42, overrides))}])),
-  seed_checks: [1, 7, 99, 2026].map(seed => ({seed, ...summary(simulate(n, seed))}))
+  seed_checks: [1, 7, 99, 2026].map(seed => ({seed, ...summary(simulate(n, seed))})),
+  // What the default draws under $10/kg look like versus all draws (sensitivity.qmd, Section 4).
+  threshold_profile_default_under_10: thresholdProfile(simulate(n, 42), 10)
 }, null, 2));

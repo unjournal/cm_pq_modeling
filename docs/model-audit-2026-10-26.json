@@ -1,0 +1,488 @@
+{
+  "model_version": "2026-09-17.1",
+  "engine_sha256": "81c4537e86a52900ac36568c8c7b8711f1892667ea19a3f5385ec4da1b6f8028",
+  "n": 30000,
+  "seed": 42,
+  "default_parameters": {
+    "plant_kta_p5": 10,
+    "plant_kta_p95": 40,
+    "uptime_mean": 0.9,
+    "maturity_mean": 0.4,
+    "p_hydro_mean": 0.75,
+    "p_recfactors_mean": 0.5,
+    "p_supp_protein_mean": 0.7,
+    "wacc_p5": 0.08,
+    "wacc_p95": 0.2,
+    "asset_life_lo": 8,
+    "asset_life_hi": 20,
+    "density_gL_p5": 30,
+    "density_gL_p95": 200,
+    "media_turnover_p5": 0.5,
+    "media_turnover_p95": 3,
+    "p_fedbatch": 0.2,
+    "p_perfusion": 0.5,
+    "p_continuous": 0.3,
+    "gf_progress": 50,
+    "include_capex": true,
+    "include_fixed_opex": true,
+    "include_downstream": false,
+    "cdmo_mode": false,
+    "cdmo_toll_p5": 4,
+    "cdmo_toll_p95": 40,
+    "bundled_media": false,
+    "bundled_media_p5": 50,
+    "bundled_media_p95": 500,
+    "override_mode_constraints": false,
+    "ep_media_p10": null,
+    "ep_media_p90": null,
+    "ep_gf_p10": null,
+    "ep_gf_p90": null,
+    "ep_density_p10": null,
+    "ep_density_p90": null,
+    "ep_media_p50": null,
+    "ep_gf_p50": null,
+    "ep_density_p50": null,
+    "dependence_mode": "shared",
+    "media_use_model": "density",
+    "fresh_media_p5": 8,
+    "fresh_media_p95": 60,
+    "gf_dose_model": "per_kg",
+    "gf_concentration_mg_L": 0.102,
+    "gf_cheap_dose_fraction": 0.4
+  },
+  "units": "USD/kg wet biomass; mixed source-year dollars; scenario distribution, not a conditional commercialization forecast",
+  "scenarios": {
+    "default": {
+      "overrides": {},
+      "p5": 11.966312930355825,
+      "p50": 42.61764495141911,
+      "p95": 232.76619117410706,
+      "mean": 73.36392185451011,
+      "probability_under_10": 0.026833333333333334,
+      "probability_under_25": 0.27663333333333334,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "fedbatch_only": {
+      "overrides": {
+        "p_fedbatch": 1,
+        "p_perfusion": 0,
+        "p_continuous": 0
+      },
+      "p5": 34.83497483836828,
+      "p50": 109.92622041592486,
+      "p95": 391.45647790616033,
+      "mean": 148.72768986143282,
+      "probability_under_10": 0.0002,
+      "probability_under_25": 0.0157,
+      "component_means": {
+        "media": 104.18574387129254,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 19.984406574060742,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "perfusion_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 1,
+        "p_continuous": 0
+      },
+      "p5": 14.02614490488238,
+      "p50": 41.7805220189257,
+      "p95": 171.36847800969642,
+      "mean": 62.22846844961334,
+      "probability_under_10": 0.0122,
+      "probability_under_25": 0.23686666666666667,
+      "component_means": {
+        "media": 32.26532532011411,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 5.405603713419604,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "continuous_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 0,
+        "p_continuous": 1
+      },
+      "p5": 9.157003880999525,
+      "p50": 23.940310446924656,
+      "p95": 115.44562672551801,
+      "mean": 40.253191277878,
+      "probability_under_10": 0.07126666666666667,
+      "probability_under_25": 0.5242666666666667,
+      "component_means": {
+        "media": 11.799514349646007,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 3.8961375121528925,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "low_utilization": {
+      "overrides": {
+        "uptime_mean": 0.65
+      },
+      "p5": 13.920001997484821,
+      "p50": 46.17253601814753,
+      "p95": 242.37722789259104,
+      "mean": 77.7987331887013,
+      "probability_under_10": 0.013566666666666666,
+      "probability_under_25": 0.23213333333333333,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 10.95685989364159,
+        "fixed": 4.899281713642827,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "cdmo": {
+      "overrides": {
+        "cdmo_mode": true
+      },
+      "p5": 16.23696938710717,
+      "p50": 50.56703082062336,
+      "p95": 224.90675392889256,
+      "mean": 77.9698345103273,
+      "probability_under_10": 0.0066,
+      "probability_under_25": 0.16623333333333334,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 0,
+        "fixed": 0,
+        "cdmo_toll": 16.027242928910933,
+        "downstream": 0
+      }
+    },
+    "no_capex": {
+      "overrides": {
+        "include_capex": false
+      },
+      "p5": 9.385112722122757,
+      "p50": 36.72830679993313,
+      "p95": 211.10873146921682,
+      "mean": 65.47176638644534,
+      "probability_under_10": 0.0602,
+      "probability_under_25": 0.3485,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 0,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    "complete_medium": {
+      "overrides": {
+        "bundled_media": true
+      },
+      "p5": 680.6138434148803,
+      "p50": 4951.29973498001,
+      "p95": 40201.90559799294,
+      "mean": 10730.685356653736,
+      "probability_under_10": 0,
+      "probability_under_25": 0,
+      "component_means": {
+        "media": 10718.048135436655,
+        "recf": 0,
+        "supp_protein": 0,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    }
+  },
+  "seed_checks": [
+    {
+      "seed": 1,
+      "p5": 11.716387085709437,
+      "p50": 42.48286935829408,
+      "p95": 236.10608688917438,
+      "mean": 74.58332840575261,
+      "probability_under_10": 0.027533333333333333,
+      "probability_under_25": 0.2837,
+      "component_means": {
+        "media": 40.29457771555287,
+        "recf": 20.913466706504234,
+        "supp_protein": 0.6873336610606631,
+        "other_var": 1.2148550952135921,
+        "capex": 7.931315033061011,
+        "fixed": 3.5417801943609897,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 7,
+      "p5": 11.765798838773998,
+      "p50": 42.20442755710456,
+      "p95": 230.1243114915269,
+      "mean": 73.1389482101938,
+      "probability_under_10": 0.0281,
+      "probability_under_25": 0.2775,
+      "component_means": {
+        "media": 40.42949089655749,
+        "recf": 19.42773510445731,
+        "supp_protein": 0.6886207438837779,
+        "other_var": 1.2201693051238487,
+        "capex": 7.858086672129659,
+        "fixed": 3.5148454880419577,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 99,
+      "p5": 11.937759155706944,
+      "p50": 42.23014979394095,
+      "p95": 228.42996596128498,
+      "mean": 72.88781755644625,
+      "probability_under_10": 0.024633333333333333,
+      "probability_under_25": 0.2795,
+      "component_means": {
+        "media": 39.73130313140149,
+        "recf": 19.913287818035943,
+        "supp_protein": 0.6874972906727382,
+        "other_var": 1.2129771255606012,
+        "capex": 7.8156634762841035,
+        "fixed": 3.527088714491237,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    },
+    {
+      "seed": 2026,
+      "p5": 11.901629120792132,
+      "p50": 43.089619004549604,
+      "p95": 235.06730607502737,
+      "mean": 73.71735255278142,
+      "probability_under_10": 0.023666666666666666,
+      "probability_under_25": 0.2724666666666667,
+      "component_means": {
+        "media": 41.05440338698834,
+        "recf": 19.564807011495738,
+        "supp_protein": 0.6885334592737266,
+        "other_var": 1.2180195491535835,
+        "capex": 7.676327696753517,
+        "fixed": 3.515261449116707,
+        "cdmo_toll": 0,
+        "downstream": 0
+      }
+    }
+  ],
+  "threshold_profile_default_under_10": {
+    "threshold": 10,
+    "n": 30000,
+    "count": 805,
+    "share": 0.026833333333333334,
+    "minDraws": 300,
+    "warning": null,
+    "continuous": [
+      {
+        "key": "L_per_kg",
+        "name": "Fresh medium (L per kg)",
+        "all": {
+          "p10": 8.492226817029703,
+          "p50": 31.053012940714147,
+          "p90": 126.98265923769767
+        },
+        "under": {
+          "p10": 3.4865550438623174,
+          "p50": 6.908159264893586,
+          "p90": 14.543001490300945
+        }
+      },
+      {
+        "key": "density",
+        "name": "Cell density (g/L)",
+        "all": {
+          "p10": 12.326230872535923,
+          "p50": 66.70384575751733,
+          "p90": 137.28770072845543
+        },
+        "under": {
+          "p10": 80.04578556136397,
+          "p50": 132.24284534228929,
+          "p90": 224.06291084453
+        }
+      },
+      {
+        "key": "media_turnover",
+        "name": "Media-use multiplier (×)",
+        "all": {
+          "p10": 0.8877278627638903,
+          "p50": 1.661893194924772,
+          "p90": 3.4930869640426234
+        },
+        "under": {
+          "p10": 0.47481209731169693,
+          "p50": 0.947859660028911,
+          "p90": 1.7640330546233478
+        }
+      },
+      {
+        "key": "media_cost_L",
+        "name": "Medium price ($/L)",
+        "all": {
+          "p10": 0.2687610565315658,
+          "p50": 0.606416116424912,
+          "p90": 1.4371352387100158
+        },
+        "under": {
+          "p10": 0.169638905016963,
+          "p50": 0.3362251761000976,
+          "p90": 0.6394587965723253
+        }
+      },
+      {
+        "key": "g_recf",
+        "name": "Growth factor quantity (g/kg)",
+        "all": {
+          "p10": 0.0007003263840654397,
+          "p50": 0.0015250376919778382,
+          "p90": 0.003918370496776133
+        },
+        "under": {
+          "p10": 0.0006210312705313885,
+          "p50": 0.0010638322436164328,
+          "p90": 0.0019288539147162644
+        }
+      },
+      {
+        "key": "price_recf",
+        "name": "Growth factor price ($/g)",
+        "all": {
+          "p10": 32.582213454363504,
+          "p50": 833.5633779111986,
+          "p90": 16840.20305372398
+        },
+        "under": {
+          "p10": 16.2524563866967,
+          "p50": 120.70220247006758,
+          "p90": 774.3004480542997
+        }
+      },
+      {
+        "key": "maturity",
+        "name": "Industry maturity (0–1)",
+        "all": {
+          "p10": 0.14384674293544852,
+          "p50": 0.3863691210494319,
+          "p90": 0.6826680082663896
+        },
+        "under": {
+          "p10": 0.18047333603257476,
+          "p50": 0.4446982192001185,
+          "p90": 0.7133106952623196
+        }
+      },
+      {
+        "key": "plant_kta",
+        "name": "Plant capacity (thousand tonnes/yr)",
+        "all": {
+          "p10": 11.599835835461075,
+          "p50": 20.002845689992448,
+          "p90": 34.05354453921098
+        },
+        "under": {
+          "p10": 12.320379910209855,
+          "p50": 20.874917971840276,
+          "p90": 37.00503249305877
+        }
+      },
+      {
+        "key": "uptime",
+        "name": "Utilization (share of year)",
+        "all": {
+          "p10": 0.8313787925161027,
+          "p50": 0.9075430822138357,
+          "p90": 0.957566351125058
+        },
+        "under": {
+          "p10": 0.8405377480721605,
+          "p50": 0.9125654839584421,
+          "p90": 0.9596538208339924
+        }
+      },
+      {
+        "key": "wacc",
+        "name": "Cost of capital (WACC)",
+        "all": {
+          "p10": 0.09078729871529988,
+          "p50": 0.12952120864861072,
+          "p90": 0.18474013269455875
+        },
+        "under": {
+          "p10": 0.08920207815176322,
+          "p50": 0.12706990670099458,
+          "p90": 0.18135700559447876
+        }
+      }
+    ],
+    "binary": [
+      {
+        "key": "is_hydro",
+        "name": "Uses hydrolysates (cheap amino-acid source)",
+        "all": 0.7271,
+        "under": 0.937888198757764
+      },
+      {
+        "key": "is_recf_cheap",
+        "name": "Cheap recombinant growth factors",
+        "all": 0.4775333333333333,
+        "under": 0.8782608695652174
+      }
+    ],
+    "components": {
+      "all": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "unit_cost": 73.36392185451011,
+        "other": 1.898051622409028
+      },
+      "under": {
+        "media": 2.6577757340440047,
+        "recf": 0.3807615425243996,
+        "capex": 1.3132730936559,
+        "fixed": 2.5209090909945897,
+        "unit_cost": 8.216616765115397,
+        "other": 1.3438973038965027
+      }
+    }
+  }
+}

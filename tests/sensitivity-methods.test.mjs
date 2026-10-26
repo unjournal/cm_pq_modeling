@@ -95,6 +95,37 @@ test('interventions pin exactly one input and leave the paired draws intact', ()
   assert.equal(sm.interventionSpecs({cdmo_mode: true}).map(s => s.key).join(), 'density');
 });
 
+test('threshold profile compares the draws under a threshold with all draws', () => {
+  const p = sm.thresholdProfile(base, 25);
+  const under = base.unit_cost.filter(v => v < 25).length;
+  assert.equal(p.count, under);
+  assert.equal(p.share, under / n);
+  assert.equal(p.continuous.length, 10);
+  assert.deepEqual(p.binary.map(b => b.key), ['is_hydro', 'is_recf_cheap']);
+  const density = p.continuous.find(c => c.key === 'density');
+  assert.equal(density.all.p50, model.quantile(base.density_samples, 0.5));
+  assert.ok(density.under.p10 <= density.under.p50 && density.under.p50 <= density.under.p90);
+  // Cheap draws use less medium per kg and are more often in the cheap growth-factor regime.
+  assert.ok(p.continuous.find(c => c.key === 'L_per_kg').under.p50 < p.continuous.find(c => c.key === 'L_per_kg').all.p50);
+  assert.ok(p.binary[1].under > p.binary[1].all);
+  // Components plus "other" reproduce mean unit cost, and the subset mean sits under the threshold.
+  for (const g of ['all', 'under']) {
+    const c = p.components[g];
+    assert.ok(Math.abs(c.media + c.recf + c.capex + c.fixed + c.other - c.unit_cost) < 1e-9);
+  }
+  assert.ok(p.components.under.unit_cost < 25 && p.components.all.unit_cost === model.mean(base.unit_cost));
+  // Warning below the minimum count; null subset statistics when nothing qualifies.
+  assert.equal(p.warning === null, under >= 300);
+  assert.match(sm.thresholdProfile(base, 25, {minDraws: under + 1}).warning, /imprecise/);
+  const none = sm.thresholdProfile(base, 1e-6);
+  assert.equal(none.count, 0);
+  assert.equal(none.continuous[0].under, null);
+  assert.equal(none.binary[0].under, null);
+  assert.equal(none.components.under, null);
+  assert.ok(none.warning);
+  assert.throws(() => sm.thresholdProfile(base, 0), RangeError);
+});
+
 // The URL adapter must match the Advanced page's own parameter cell.
 function pageParams(cell, globals) {
   const source = readFileSync(new URL('../dashboard/index.qmd', import.meta.url), 'utf8');

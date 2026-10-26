@@ -1487,6 +1487,8 @@ stats = {
 **Quantity being modeled:** manufacturing cost per kg of wet cultured-chicken biomass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. Commercialization probability is unmodeled; dollars retain mixed source years.
 
 
+[]{#output-cautions}
+
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
