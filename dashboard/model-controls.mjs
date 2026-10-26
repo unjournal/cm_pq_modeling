@@ -13,9 +13,9 @@ export function expertPriorControl(initial = new URLSearchParams()) {
   details.append(intro);
   const fields = {};
   const rows = [
-    ['media', 'Media cost ($/kg wet biomass)', 'Basal medium excluding proteins in separable mode; all medium inputs in complete-medium mode. Replaces the L/kg × $/L calculation.'],
-    ['gf', 'Growth-factor cost ($/kg wet biomass)', 'Total external growth-factor cost; overrides dose, price and adoption settings. Ignored when complete medium already includes proteins.'],
-    ['density', 'Representative harvest density (g/L)', 'Density for the hypothetical plant being modeled, not a frontier maximum. Changes CAPEX and, in density-derived media mode, L/kg.']
+    ['media', 'Media cost ($/kg dry cell mass)', 'Basal medium excluding proteins in separable mode; all medium inputs in complete-medium mode. Replaces the L/kg × $/L calculation. Per kg dry cell mass since October 26, 2026 (divide by the solids content, e.g. ×5 at 20%, to convert a per-wet-kg figure).'],
+    ['gf', 'Growth-factor cost ($/kg dry cell mass)', 'Total external growth-factor cost; overrides dose, price and adoption settings. Ignored when complete medium already includes proteins. Per kg dry cell mass.'],
+    ['density', 'Representative harvest density (g dry cells/L)', 'Density for the hypothetical plant being modeled, not a frontier maximum. Changes CAPEX and, in density-derived media mode, L/kg. In g dry cells per litre: multiply a wet g/L figure by its solids content (e.g. 50 g wet/L × 0.20 = 10 g dry/L).']
   ];
   for (const [key, label, hint] of rows) {
     const group = document.createElement('fieldset');
@@ -93,16 +93,17 @@ export function structuralControl(initial = new URLSearchParams()) {
   const container = document.createElement('div');
   const details = document.createElement('details');
   const summary = document.createElement('summary');
-  summary.textContent = 'Structural stress tests (provisional)';
+  summary.textContent = 'Structural stress tests and cost basis (provisional)';
   details.append(summary);
   const fields = {};
   const specs = [
+    ['cost_basis', 'Cost basis', [['dry', 'Per kg dry cell mass (default)'], ['wet', 'Per kg wet biomass (before October 26, 2026)']], REVIEW_PROVENANCE.basis],
     ['dependence_mode', 'Maturity dependence', [['shared', 'Shared maturity (baseline)'], ['independent_maturity', 'Independent maturity channels']], REVIEW_PROVENANCE.dependence],
     ['media_use_model', 'Fresh-media calculation', [['density', 'Density-derived (baseline)'], ['direct', 'Direct fresh L/kg'], ['yield', 'From nutrient yield (density-invariant)']], REVIEW_PROVENANCE.media + ' ' + REVIEW_PROVENANCE.media_yield],
-    ['fresh_media_p5', 'Fresh media p5 (L/kg)', null, REVIEW_PROVENANCE.media],
-    ['fresh_media_p95', 'Fresh media p95 (L/kg)', null, REVIEW_PROVENANCE.media],
-    ['nutrient_yield_p5', 'Nutrient yield p5 (g cell solids per L of medium)', null, REVIEW_PROVENANCE.media_yield],
-    ['nutrient_yield_p95', 'Nutrient yield p95 (g cell solids per L of medium)', null, REVIEW_PROVENANCE.media_yield],
+    ['fresh_media_p5', 'Fresh media p5 (L per kg dry cell mass)', null, REVIEW_PROVENANCE.media],
+    ['fresh_media_p95', 'Fresh media p95 (L per kg dry cell mass)', null, REVIEW_PROVENANCE.media],
+    ['nutrient_yield_p5', 'Nutrient yield p5 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
+    ['nutrient_yield_p95', 'Nutrient yield p95 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
     ['gf_dose_model', 'Growth-factor dosage', [['per_kg', 'Separate g/kg prior (baseline)'], ['media_linked', 'Concentration × fresh L/kg']], REVIEW_PROVENANCE.gf],
     ['gf_concentration_mg_L', 'GF concentration (mg/L)', null, REVIEW_PROVENANCE.gf],
     ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf],
@@ -110,9 +111,9 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['p_feasible_perfusion', 'P(perfusion feasible at scale) (0–1)', null, 'Probability that perfusion works at commercial scale and is permitted by the projection year. Fed-batch is always feasible as the fallback. ' + REVIEW_PROVENANCE.mode_selection],
     ['p_feasible_continuous', 'P(continuous feasible at scale) (0–1)', null, 'Probability that continuous culture works at commercial scale and is permitted by the projection year, drawn independently of perfusion. ' + REVIEW_PROVENANCE.mode_selection],
     ['mode_choice_noise', 'Choice sharpness: decision noise β (0 = always cheapest)', null, 'β = 0: each world uses its cheapest feasible mode. β > 0: firms choose on noisy cost estimates, and a mode costing half as much as another is chosen 2^(1/β) times as often (β = 0.25: 16×; 0.5: 4×; 1: 2×). Realized cost of the chosen mode is reported.'],
-    ['solids_fraction', 'Solids content of the harvested biomass the costs refer to (0–1)', null, 'Share of the wet kg that is dry matter. Used only to convert the wet-basis result to the other bases. ' + REVIEW_PROVENANCE.basis],
-    ['target_solids_fraction', 'Target solids content for the standard basis (0–1)', null, REVIEW_PROVENANCE.basis],
-    ['protein_fraction_of_solids', 'Protein share of cell solids (0–1)', null, REVIEW_PROVENANCE.basis]
+    ['solids_fraction', 'Solids content of wet biomass (0–1)', null, 'Share of a wet kg that is dry matter. Converts wet-basis sources, built-in priors and plant capacity (tonnes of wet biomass) to dry mass, and gives the wet-basis output. ' + REVIEW_PROVENANCE.basis],
+    ['target_solids_fraction', 'Chicken-meat-equivalent solids content (0–1)', null, 'Meat-equivalent cost = dry cost × this. Used for thresholds and blending. ' + REVIEW_PROVENANCE.basis],
+    ['protein_fraction_of_solids', 'Protein share of dry cell mass (0–1)', null, REVIEW_PROVENANCE.basis]
   ];
   for (const [key, text, choices, provenance] of specs) {
     const label = document.createElement('label');
@@ -132,7 +133,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     label.append(el); details.append(label);
   }
   const note = document.createElement('p');
-  note.textContent = 'Direct-media range 8–60 L/kg, the nutrient-yield range 3–25 g/L, the GF dose fraction, the feasibility defaults and the solids and protein shares are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
+  note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–25 g dry cells/L, the GF dose fraction, the feasibility defaults and the solids and protein shares are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
   link.href = 'review-response-2026-09.html#structures'; link.textContent = 'Sources, justification and open questions';
   const modeLink = document.createElement('a');

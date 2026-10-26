@@ -9,6 +9,11 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
+::: {.callout-important}
+## Units: the published figures here are mostly per *wet* kg
+Since October 26, 2026 the interactive model's headline cost is per kg of **dry** cell mass, about five times a per-wet-kg figure at 20% solids. The TEA figures on this page are mostly per kg of wet cell mass (and Humbird's wet basis is itself ambiguous; see [the basis note](docs.qmd#output-basis)). To compare, switch the model to the wet basis (*Structural stress tests → Cost basis*) or divide its dry figures by about 5.
+:::
+
 ::: {.callout-important collapse="true"}
 ## Source correction and review status
 

@@ -38,41 +38,68 @@ test('harvest placeholder is off by default and adds only its own cost when on',
   assert.throws(() => simulate(10, 1, {include_harvest_dewater: true, harvest_dewater_p5: 3, harvest_dewater_p95: 1}), RangeError);
 });
 
-test('solids and protein bases rescale the wet-basis cost and leave it unchanged', () => {
-  const a = simulate(n, 42, {});
-  const b = simulate(n, 42, {solids_fraction: 0.15, target_solids_fraction: 0.30, protein_fraction_of_solids: 0.5});
-  // Conversions are reporting only: every wet-basis output is identical.
-  assert.deepEqual(a.unit_cost, b.unit_cost);
-  a.unit_cost.forEach((v, i) => {
-    assert.ok(Math.abs(a.unit_cost_target_solids[i] - v * 0.275 / 0.20) < 1e-9);
-    assert.ok(Math.abs(a.unit_cost_protein[i] - v / (0.20 * 0.65)) < 1e-9);
-    // A paste at 15% solids carries half the solids of one at 30%: twice the cost per target kg.
-    assert.ok(Math.abs(b.unit_cost_target_solids[i] - 2 * v) < 1e-9);
-    assert.ok(Math.abs(b.unit_cost_protein[i] - v / 0.075) < 1e-9);
+const close = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b));
+
+test('dry basis is the default and the wet switch is an exact rescaling', () => {
+  const dry = simulate(n, 42, {});
+  const wet = simulate(n, 42, {cost_basis: 'wet'});
+  assert.equal(dry.basis.cost_basis, 'dry');
+  dry.unit_cost.forEach((v, i) => {
+    // At 20% solids, a dry kg costs five wet kg; every component scales the same way.
+    assert.ok(close(v * 0.2, wet.unit_cost[i]));
+    for (const k of components) assert.ok(close(dry['cost_' + k][i] * 0.2, wet['cost_' + k][i]));
+    assert.ok(close(dry.L_per_kg_samples[i] * 0.2, wet.L_per_kg_samples[i]));
+    assert.ok(close(dry.unit_cost_meat_equiv[i], v * 0.275));
+    assert.ok(close(dry.unit_cost_protein[i], v / 0.65));
+    assert.ok(close(dry.threshold_cost[i], dry.unit_cost_meat_equiv[i]));
+    assert.ok(close(wet.threshold_cost[i], wet.unit_cost[i]));
   });
-  assert.deepEqual(b.basis_factors, {target_solids: 2, protein: 1 / 0.075});
-  for (const bad of [{solids_fraction: 0}, {target_solids_fraction: 1.2}, {protein_fraction_of_solids: NaN}])
+  // Densities are reported in g dry/L whatever the cost basis; the defaults span 1–40.
+  assert.deepEqual(dry.density_samples, wet.density_samples);
+  assert.ok(model.quantile(dry.density_samples, 0.01) > 0.5 && model.quantile(dry.density_samples, 0.99) < 60);
+  for (const bad of [{solids_fraction: 0}, {target_solids_fraction: 1.2}, {protein_fraction_of_solids: NaN}, {cost_basis: 'cells'}])
     assert.throws(() => simulate(10, 1, bad), RangeError);
-  // Least-cost selection carries the converted arrays with the chosen mode.
-  const lc = simulate(n, 42, {mode_selection: 'least_cost'});
-  lc.unit_cost.forEach((v, i) => assert.ok(Math.abs(lc.unit_cost_target_solids[i] - v * lc.basis_factors.target_solids) < 1e-9));
+  // Least-cost selection picks the same modes on either basis and carries the converted arrays.
+  const lcDry = simulate(n, 42, {mode_selection: 'least_cost'});
+  const lcWet = simulate(n, 42, {mode_selection: 'least_cost', cost_basis: 'wet'});
+  assert.equal(lcDry.pct_perfusion, lcWet.pct_perfusion);
+  lcDry.unit_cost.forEach((v, i) => assert.ok(close(lcDry.unit_cost_meat_equiv[i], v * 0.275)));
+});
+
+test('dry-basis inputs convert at the solids fraction', () => {
+  // A density prior in g dry/L: the same dry cells mean the same medium per dry kg,
+  // whatever water content the wet-basis bookkeeping assumes.
+  const prior = {ep_density_p10: 10, ep_density_p90: 30, include_capex: false, include_fixed_opex: false};
+  const a = simulate(n, 42, prior);
+  const b = simulate(n, 42, {...prior, solids_fraction: 0.25});
+  assert.deepEqual(a.density_samples.map(v => +v.toFixed(9)), b.density_samples.map(v => +v.toFixed(9)));
+  a.cost_media.forEach((v, i) => assert.ok(close(v, b.cost_media[i])));
+  // Dollar priors are per kg dry: the reported media cost equals the prior's draws.
+  const p = simulate(n, 42, {ep_media_p10: 20, ep_media_p90: 80});
+  assert.ok(Math.abs(model.quantile(p.cost_media, 0.5) - 40) < 2);
+  const toll = simulate(n, 42, {cdmo_mode: true});
+  const tm = model.quantile(toll.cost_cdmo_toll, 0.5);
+  assert.ok(tm > DEFAULT_PARAMS.cdmo_toll_p5 && tm < DEFAULT_PARAMS.cdmo_toll_p95);
 });
 
 test('yield media rule derives L/kg from nutrient yield and is invariant to density', () => {
   const r = simulate(n, 42, {media_use_model: 'yield'});
-  r.L_per_kg_samples.forEach((l, i) => assert.ok(Math.abs(l - 1000 * 0.2 / r.nutrient_yield_samples[i]) < 1e-9));
+  // Per kg dry cell mass, litres = 1000 / (g dry cells per litre of medium).
+  r.L_per_kg_samples.forEach((l, i) => assert.ok(close(l, 1000 / r.nutrient_yield_samples[i])));
   assert.ok(Math.abs(model.quantile(r.nutrient_yield_samples, 0.5) - Math.sqrt(3 * 25)) < 1);
   // Changing density moves capital but not medium, unlike the density rule.
-  const dense = simulate(n, 42, {media_use_model: 'yield', ep_density_p10: 150, ep_density_p90: 200});
+  const dense = simulate(n, 42, {media_use_model: 'yield', ep_density_p10: 30, ep_density_p90: 40});
   assert.deepEqual(dense.cost_media, r.cost_media);
   assert.notDeepEqual(dense.cost_capex, r.cost_capex);
   // Only the medium volume changes relative to the default rule; other components are paired.
   const base = simulate(n, 42, {});
   for (const k of ['supp_protein', 'other_var', 'capex', 'fixed']) assert.deepEqual(base['cost_' + k], r['cost_' + k]);
   assert.equal(base.nutrient_yield_samples, null);
-  // More solids per wet kg needs proportionally more medium.
+  // Medium per dry kg ignores the water content; per wet kg it scales with solids.
   const wetter = simulate(n, 42, {media_use_model: 'yield', solids_fraction: 0.1});
-  wetter.L_per_kg_samples.forEach((l, i) => assert.ok(Math.abs(l * 2 - r.L_per_kg_samples[i]) < 1e-9));
+  wetter.L_per_kg_samples.forEach((l, i) => assert.ok(close(l, r.L_per_kg_samples[i])));
+  const wetBasis = simulate(n, 42, {media_use_model: 'yield', solids_fraction: 0.1, cost_basis: 'wet'});
+  wetBasis.L_per_kg_samples.forEach((l, i) => assert.ok(close(l * 10, r.L_per_kg_samples[i])));
   assert.throws(() => simulate(10, 1, {media_use_model: 'yield', nutrient_yield_p5: 0}), RangeError);
   assert.throws(() => simulate(10, 1, {media_use_model: 'volume'}), RangeError);
 });
@@ -198,9 +225,9 @@ test('Simple and Advanced adapters yield identical draws at matching settings', 
         structure_settings: {}, simpleMode: false, target_year: year, maturity: 0.5, plant_capacity: 20,
         uptime: 0.9, p_hydro: 0.75, p_recfactors: 0.5, p_supp_protein: 0.7,
         wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
-        density_lo: 30, density_hi: 200, media_turnover_lo: 0.5, media_turnover_hi: 3,
+        density_lo: 6, density_hi: 40, media_turnover_lo: 0.5, media_turnover_hi: 3,
         include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
-        gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
+        gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
         p_fedbatch: 0.2, p_perfusion: 0.5, p_continuous: 0.3, override_mode_constraints: false,
         bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull
       });

@@ -1,30 +1,35 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-10-26.3";
+export const MODEL_VERSION = "2026-10-26.4";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
   p_supp_protein_mean: 0.70, wacc_p5: 0.08, wacc_p95: 0.20,
-  asset_life_lo: 8, asset_life_hi: 20, density_gL_p5: 30, density_gL_p95: 200,
+  // Density inputs are g dry cells per litre (override range and expert prior).
+  asset_life_lo: 8, asset_life_hi: 20, density_gL_p5: 6, density_gL_p95: 40,
   media_turnover_p5: 0.5, media_turnover_p95: 3,
   p_fedbatch: 0.20, p_perfusion: 0.50, p_continuous: 0.30,
   gf_progress: 50, include_capex: true, include_fixed_opex: true,
-  include_downstream: false, cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
+  // User-facing $/kg inputs (toll, expert cost priors) are per kg dry cell mass.
+  include_downstream: false, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
   bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
   override_mode_constraints: false,
   ep_media_p10: null, ep_media_p90: null, ep_gf_p10: null, ep_gf_p90: null,
   ep_density_p10: null, ep_density_p90: null,
   ep_media_p50: null, ep_gf_p50: null, ep_density_p50: null,
   dependence_mode: "shared", media_use_model: "density",
-  fresh_media_p5: 8, fresh_media_p95: 60,
+  fresh_media_p5: 40, fresh_media_p95: 300,  // L per kg dry cell mass
   gf_dose_model: "per_kg", gf_concentration_mg_L: 0.102,
   gf_cheap_dose_fraction: 0.4,
   mode_selection: "mixture", p_feasible_perfusion: 0.70, p_feasible_continuous: 0.30,
   mode_choice_noise: 0,
-  // Output basis. unit_cost stays per kg of wet biomass at solids_fraction; the
-  // target-solids and protein views are extra outputs and leave it unchanged.
+  // Cost basis. "dry": unit_cost per kg dry cell mass (default since 2026-10-26.4);
+  // "wet": per kg wet biomass at solids_fraction, the earlier headline. solids_fraction
+  // also converts the built-in wet-basis priors and plant capacity (tonnes of wet
+  // biomass) to dry mass. Meat-equivalent cost = dry cost × target_solids_fraction.
+  cost_basis: "dry",
   solids_fraction: 0.20, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65,
-  include_harvest_dewater: false, harvest_dewater_p5: 0.5, harvest_dewater_p95: 3.0,
+  include_harvest_dewater: false, harvest_dewater_p5: 2.5, harvest_dewater_p95: 15,
   // media_use_model "yield": grams of cell solids per litre of medium consumed.
   nutrient_yield_p5: 3, nutrient_yield_p95: 25
 });
@@ -33,11 +38,11 @@ export const DEFAULT_PARAMS = Object.freeze({
 export const REVIEW_PROVENANCE = Object.freeze({
   quantiles: "Report 5, Belief elicitation: preserve p10/p50/p90. Two-piece lognormal; tails remain assumed.",
   dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
-  media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 8–60 L/kg p5–p95 is an illustrative stress range, not an elicited or fitted prior.",
-  media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per wet kg = 1000 × solids fraction ÷ yield (g cell solids per L of medium consumed). 3–25 g/L p5–p95 is illustrative, chosen so that at 20% solids it implies about 8–67 L/kg, close to the direct stress range; not elicited or fitted.",
+  media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 40–300 L per kg dry cell mass p5–p95 (8–60 L per wet kg at 20% solids) is an illustrative stress range, not an elicited or fitted prior.",
+  media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per kg dry cell mass = 1000 ÷ yield (g dry cells per L of medium consumed). 3–25 g/L p5–p95 is illustrative, chosen so that it implies about 40–330 L per dry kg (8–67 per wet kg at 20% solids), close to the direct stress range; not elicited or fitted.",
   gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
-  basis: "October 26, 2026 design decision. Cost per wet kg is not a stable unit, so results are also reported per kg at a target solids content and per kg protein: × target/solids and ÷ (solids × protein share). 0.20 solids matches the 80%-water reference used in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of cell solids is an unverified placeholder. Recovery losses are not modeled.",
-  harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $0.50–3.00/kg p5–p95 range is a placeholder until values from the planned process model are available (see docs); off by default.",
+  basis: "October 26, 2026 design decision (David Reinstein). Cost per wet kg is not a stable unit, so the primary basis is kg dry cell mass, with cost per kg protein (÷ protein share) and a chicken-meat equivalent (× target solids) alongside; the earlier wet-basis output is available with cost_basis \"wet\". 0.20 solids, used to convert wet-basis sources, built-in priors and plant capacity, matches the 80%-water reference in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of dry cell mass is an unverified placeholder. Recovery losses are not modeled.",
+  harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $2.50–15/kg dry p5–p95 range ($0.50–3.00 per wet kg at 20% solids) is a placeholder until values from the planned process model are available (see docs); off by default.",
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific equipment, consumable and contamination costs are not modeled, so selection favors the least-specified modes."
 });
 
@@ -313,7 +318,7 @@ function simulateDrawnMode(n, seed, params) {
   if (!Number.isFinite(params.gf_progress) || params.gf_progress < 0 || params.gf_progress > 100)
     throw new RangeError("GF progress must be between 0 and 100.");
   validateRange(params.asset_life_lo, params.asset_life_hi);
-  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"]})) {
+  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"], cost_basis: ["dry", "wet"]})) {
     if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
   }
   validateRange(params.fresh_media_p5, params.fresh_media_p95);
@@ -332,6 +337,12 @@ function simulateDrawnMode(n, seed, params) {
     validateRange(lo, hi);
     if (mid != null) threeQuantileTransform(0, lo, mid, hi);
   }
+  // The calculation below runs per kg of wet biomass at solids fraction s, as the
+  // engine always has, so random streams and wet-basis priors are untouched. Dry
+  // inputs enter through these conversions; outputs are converted back at the end.
+  const s = params.solids_fraction;
+  const dryToWetDensity = arr => arr.map(v => v / s);      // g dry/L → g wet/L
+  const dryToWetPerKg = arr => arr.map(v => v * s);        // per kg dry → per kg wet
   const warnings = [];
   const modeKeys = ["p_fedbatch", "p_perfusion", "p_continuous"];
   if (modeKeys.some(k => !Number.isFinite(params[k]) || params[k] < 0))
@@ -380,7 +391,7 @@ function simulateDrawnMode(n, seed, params) {
   let density_gL, media_turnover, mode_labels;
   if (params.override_mode_constraints) {
     // Expert override: use manually specified density and turnover ranges directly.
-    density_gL = sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n);
+    density_gL = dryToWetDensity(sampleLognormalP5P95(rng, params.density_gL_p5, params.density_gL_p95, n));
     media_turnover = sampleLognormalP5P95(rng, params.media_turnover_p5, params.media_turnover_p95, n);
     mode_labels = new Array(n).fill("override");
   } else {
@@ -389,9 +400,11 @@ function simulateDrawnMode(n, seed, params) {
     const p_total = params.p_fedbatch + params.p_perfusion + params.p_continuous;
     const p0  = params.p_fedbatch / p_total;
     const p01 = p0 + params.p_perfusion / p_total;
-    const d_fb = sampleLognormalP5P95(rng, 5, 30, n);    // Fed-batch density
-    const d_pf = sampleLognormalP5P95(rng, 30, 150, n);  // Perfusion density
-    const d_ct = sampleLognormalP5P95(rng, 50, 200, n);  // Continuous density
+    // Densities in g dry cells/L: the earlier wet ranges (5–30, 30–150, 50–200 g/L)
+    // converted at 20% solids. Fixed, so the dry densities do not move with solids_fraction.
+    const d_fb = dryToWetDensity(sampleLognormalP5P95(rng, 1, 6, n));    // Fed-batch density
+    const d_pf = dryToWetDensity(sampleLognormalP5P95(rng, 6, 30, n));   // Perfusion density
+    const d_ct = dryToWetDensity(sampleLognormalP5P95(rng, 10, 40, n));  // Continuous density
     const t_fb = sampleLognormalP5P95(rng, 1.0, 2.0, n); // Fed-batch media-use multiplier
     const t_pf = sampleLognormalP5P95(rng, 1.0, 5.0, n); // Perfusion media-use multiplier
     const t_ct = sampleLognormalP5P95(rng, 0.5, 3.0, n); // Continuous media-use multiplier
@@ -406,18 +419,19 @@ function simulateDrawnMode(n, seed, params) {
   rng = namedStream(seed, "density-override");
   // Expert prior override: cell density — must precede L_per_kg so CAPEX also sees it
   if (params.ep_density_p10 != null) {
-    density_gL = sampleExpertPrior(rng, params, "density", n);
+    density_gL = dryToWetDensity(sampleExpertPrior(rng, params, "density", n));
   }
 
-  // "yield": medium consumed per kg follows from how much cell solids the nutrients
+  // "yield": medium consumed per kg follows from how much dry cell mass the nutrients
   // in a litre support, independent of how concentrated the cells are at harvest.
   const nutrient_yield = params.media_use_model === "yield"
     ? sampleLognormalP5P95(namedStream(seed, "nutrient-yield"), params.nutrient_yield_p5, params.nutrient_yield_p95, n)
     : null;
+  // L_per_kg here is per kg wet biomass; the dry figure is returned.
   const L_per_kg = params.media_use_model === "direct"
-    ? sampleLognormalP5P95(namedStream(seed, "fresh-media"), params.fresh_media_p5, params.fresh_media_p95, n)
+    ? dryToWetPerKg(sampleLognormalP5P95(namedStream(seed, "fresh-media"), params.fresh_media_p5, params.fresh_media_p95, n))
     : params.media_use_model === "yield"
-    ? nutrient_yield.map(y => 1000 * params.solids_fraction / y)
+    ? nutrient_yield.map(y => 1000 * s / y)
     : mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
 
   rng = namedStream(seed, "media");
@@ -518,16 +532,16 @@ function simulateDrawnMode(n, seed, params) {
   }
 
   // In bundled mode a media override means complete medium; no separate proteins.
-  // These bypass the regime-switching logic and express direct beliefs in $/kg biomass.
+  // These bypass the regime-switching logic and express direct beliefs in $/kg dry cell mass.
   if (params.ep_media_p10 != null) {
     rng = namedStream(seed, "media-override");
-    cost_media_eff = sampleExpertPrior(rng, params, "media", n);
+    cost_media_eff = dryToWetPerKg(sampleExpertPrior(rng, params, "media", n));
   }
   if (params.bundled_media && params.ep_gf_p10 && params.ep_gf_p90)
     warnings.push("Separate growth-factor override ignored: complete medium already includes all proteins.");
   if (!params.bundled_media && params.ep_gf_p10 != null) {
     rng = namedStream(seed, "gf-override");
-    cost_recf_eff = sampleExpertPrior(rng, params, "gf", n);
+    cost_recf_eff = dryToWetPerKg(sampleExpertPrior(rng, params, "gf", n));
   }
   if (params.media_use_model !== "density" && params.ep_media_p10 != null)
     warnings.push("Direct media cost prior overrides fresh L/kg for media cost; fresh L/kg still affects media-linked GF dosage when active.");
@@ -543,7 +557,7 @@ function simulateDrawnMode(n, seed, params) {
   // VOC (media, GFs) remain as direct company costs.
   let cdmo_toll_perkg = new Array(n).fill(0);
   if (params.cdmo_mode) {
-    cdmo_toll_perkg = sampleLognormalP5P95(rng, params.cdmo_toll_p5, params.cdmo_toll_p95, n);
+    cdmo_toll_perkg = dryToWetPerKg(sampleLognormalP5P95(rng, params.cdmo_toll_p5, params.cdmo_toll_p95, n));
   }
 
   rng = namedStream(seed, "finance");
@@ -613,34 +627,40 @@ function simulateDrawnMode(n, seed, params) {
   // unlike forming/texturization above. Placeholder range; see REVIEW_PROVENANCE.harvest.
   let harvest_perkg = new Array(n).fill(0);
   if (params.include_harvest_dewater) {
-    harvest_perkg = sampleLognormalP5P95(rng, params.harvest_dewater_p5, params.harvest_dewater_p95, n);
+    harvest_perkg = dryToWetPerKg(sampleLognormalP5P95(rng, params.harvest_dewater_p5, params.harvest_dewater_p95, n));
   }
 
-  // Total unit cost
-  const unit_cost = add(add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg), harvest_perkg);
-  // A kg at the target basis needs target/solids wet kg; a wet kg holds solids × protein share of protein.
-  const target_solids_factor = params.target_solids_fraction / params.solids_fraction;
-  const protein_factor = 1 / (params.solids_fraction * params.protein_fraction_of_solids);
+  // Total unit cost per kg wet biomass at solids fraction s
+  const unit_cost_wet = add(add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg), harvest_perkg);
+  // Reported per-kg quantities: per kg dry cell mass (default) or per wet kg. A fixed
+  // rescaling, so least-cost mode selection on unit_cost is unaffected by the basis.
+  const out = params.cost_basis === "dry" ? 1 / s : 1;
+  const unit_cost_dry = scale(unit_cost_wet, 1 / s);
+  // A kg of chicken-meat equivalent holds target_solids_fraction kg dry mass.
+  const unit_cost_meat_equiv = scale(unit_cost_dry, params.target_solids_fraction);
 
   return {
-    unit_cost,
+    unit_cost: scale(unit_cost_wet, out),
     model_version: MODEL_VERSION,
     seed, sample_count: n,
     provenance: REVIEW_PROVENANCE,
     effective_params: params,
     warnings,
-    cost_media: cost_media_eff,
-    cost_recf: cost_recf_eff,
-    cost_supp_protein,
-    cost_other_var: other_var,
-    cost_capex: capex_perkg,
-    cost_fixed: fixed_perkg,
-    cost_cdmo_toll: cdmo_toll_perkg,
-    cost_downstream: downstream_perkg,
-    cost_harvest: harvest_perkg,
-    unit_cost_target_solids: scale(unit_cost, target_solids_factor),
-    unit_cost_protein: scale(unit_cost, protein_factor),
-    basis_factors: {target_solids: target_solids_factor, protein: protein_factor},
+    cost_media: scale(cost_media_eff, out),
+    cost_recf: scale(cost_recf_eff, out),
+    cost_supp_protein: scale(cost_supp_protein, out),
+    cost_other_var: scale(other_var, out),
+    cost_capex: scale(capex_perkg, out),
+    cost_fixed: scale(fixed_perkg, out),
+    cost_cdmo_toll: scale(cdmo_toll_perkg, out),
+    cost_downstream: scale(downstream_perkg, out),
+    cost_harvest: scale(harvest_perkg, out),
+    unit_cost_dry, unit_cost_wet, unit_cost_meat_equiv,
+    unit_cost_protein: scale(unit_cost_dry, 1 / params.protein_fraction_of_solids),
+    // Thresholds and chicken comparisons: meat equivalent on the dry basis, wet cost on the wet basis.
+    threshold_cost: params.cost_basis === "dry" ? unit_cost_meat_equiv : unit_cost_wet,
+    basis: {cost_basis: params.cost_basis, solids_fraction: s,
+      target_solids_fraction: params.target_solids_fraction, protein_fraction_of_solids: params.protein_fraction_of_solids},
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
     // Process mode realized shares — stored as scalars (not the full 30k string array)
@@ -652,14 +672,14 @@ function simulateDrawnMode(n, seed, params) {
     mode_selection_stats: null,
     // Input parameters for sensitivity analysis
     maturity_samples: maturity,
-    density_samples: density_gL,
+    density_samples: scale(density_gL, s),  // g dry cells per litre
     media_turnover_samples: media_turnover,
-    L_per_kg_samples: L_per_kg,
+    L_per_kg_samples: scale(L_per_kg, out),
     nutrient_yield_samples: nutrient_yield,
     media_cost_L_samples: media_cost_L_eff,
     is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
     is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
-    g_recf_samples: g_recf,
+    g_recf_samples: scale(g_recf, out),
     price_recf_samples: price_recf,
     plant_kta_samples: plant_kta,
     uptime_samples: uptime,

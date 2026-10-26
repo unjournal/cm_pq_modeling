@@ -48,6 +48,11 @@ isCustom = Object.keys(urlState).length > 0
 scenarioParams = sm.advancedUrlStateToParams(urlState, costModel.maturityForYear)
 results = costModel.simulate(30000, 42, scenarioParams)
 uc = results.unit_cost
+// Probability thresholds use the chicken-meat equivalent on the dry basis (wet cost on the wet basis).
+tc = results.threshold_cost
+dryBasis = results.basis.cost_basis === "dry"
+costUnit = dryBasis ? "per kg dry cell mass" : "per kg wet biomass"
+thresholdUnit = dryBasis ? "meat-equivalent" : "wet"
 logUc = uc.map(Math.log)
 inputs = sm.displayedInputs(results, scenarioParams)
 quantile = costModel.quantile
@@ -65,10 +70,11 @@ pct = v => (100 * v).toFixed(0) + "%"
   if (isCustom) setTimeout(() => {
     try { history.replaceState(null, "", location.pathname + "?" + new URLSearchParams(urlState).toString() + location.hash); } catch (e) {}
   }, 300);
-  const cap = v => (100 * uc.filter(c => c < v).length / uc.length).toFixed(0);
+  const cap = v => (100 * tc.filter(c => c < v).length / tc.length).toFixed(0);
   return html`<div style="border:1px solid #bcc8cc; border-left:4px solid #1a5276; padding:0.6rem 0.9rem; margin:0.5rem 0 1rem; font-size:0.95em;">
     <strong>Scenario analyzed:</strong> ${isCustom ? "custom settings carried over from the Advanced page link" : "the Advanced page defaults (maturity 0.5 mapped to 2036, seed 42)"}.
-    Unit cost p10 / p50 / p90 = ${usd(quantile(uc, 0.1))} / ${usd(quantile(uc, 0.5))} / ${usd(quantile(uc, 0.9))}; mean ${usd(mean(uc))}; standard deviation ${usd(Math.sqrt(sm.variance(uc)))}; P(cost &lt; $25/kg) = ${cap(25)}%.
+    Unit cost ${costUnit}: p10 / p50 / p90 = ${usd(quantile(uc, 0.1))} / ${usd(quantile(uc, 0.5))} / ${usd(quantile(uc, 0.9))}; mean ${usd(mean(uc))}; standard deviation ${usd(Math.sqrt(sm.variance(uc)))}; P(cost &lt; $25/kg ${thresholdUnit}) = ${cap(25)}%.
+    ${dryBasis ? html`<br><em>Costs are per kg dry cell mass (since October 26, 2026). Thresholds such as $10 or $25/kg apply to the chicken-meat equivalent, dry cost × ${(results.basis.target_solids_fraction * 100).toFixed(1)}% solids.</em>` : ""}
     ${inputs.length} inputs are active in the chart. To analyze a different scenario, set it up on the <a href="index.html">Advanced page</a> and use the “Analyze this scenario” link under its tornado chart.
     ${results.warnings.length ? html`<div style="margin-top:0.4rem;"><strong>Scenario notes:</strong> ${results.warnings.join(" ")}</div>` : ""}
   </div>`;
@@ -101,7 +107,7 @@ The chart lists inputs side by side as if each were an independent dial. In the 
 
 | Coupling in the engine | What it does to the bars |
 |---|---|
-| **Process mode → density and media-use multiplier.** Each draw first picks fed-batch, perfusion or continuous, then draws density and the multiplier from that mode's range (fed-batch 5–30 g/L with multiplier 1–2; perfusion 30–150 g/L, 1–5; continuous 50–200 g/L, 0.5–3). | The top density decile is almost entirely continuous and perfusion draws; the bottom decile is fed-batch. The density bar is partly a process-mode bar, and it is entangled with the multiplier bar. |
+| **Process mode → density and media-use multiplier.** Each draw first picks fed-batch, perfusion or continuous, then draws density and the multiplier from that mode's range (fed-batch 1–6 g dry/L with multiplier 1–2; perfusion 6–30 g dry/L, 1–5; continuous 10–40 g dry/L, 0.5–3; i.e. 5–30, 30–150 and 50–200 g wet/L at 20% solids). | The top density decile is almost entirely continuous and perfusion draws; the bottom decile is fed-batch. The density bar is partly a process-mode bar, and it is entangled with the multiplier bar. |
 | **Maturity → adoption, financing and equipment.** One latent maturity draw shifts the hydrolysate and cheap-GF adoption probabilities, the supplemental-protein regime, WACC and the custom-reactor share. | The maturity bar bundles all of those channels. It overlaps with the Media $/L, GF price, GF quantity and WACC bars, which already carry the regime effects it induces. |
 | **Regime switches inside the mixtures.** "Media $/L" mixes a hydrolysate regime and a pharma-grade regime; "GF price" and "GF quantity" mix a cheap and an expensive regime, and both switch together. | The GF price and GF quantity bars share the same coin flip, so they overlap heavily. Each mixture bar is a regime effect plus a within-regime effect. |
 | **Deterministic identities.** Fresh media L/kg = 1000 / density × multiplier; GF cost = quantity × price. | Removed from the chart for this reason, but the parents still co-determine cost in a multiplicative way. |
@@ -137,12 +143,12 @@ The couplings above are the ones the engine builds in. There are others it leave
 
 ### 2.3 "Top 10% versus bottom 10%" and "mean cost" are choices {#tail-and-statistic}
 
-Nothing in the method fixes the 10% cut or the mean. Comparing the top and bottom 5% gives bigger bars (more extreme worlds); comparing the top and bottom halves gives smaller ones. The mean cost is dominated by the right tail (in the default scenario the mean is about $73/kg against a median of $43/kg), so a bar mostly reports what happens in the expensive tail. If the question is whether cultivated chicken can get under $25/kg, the relevant statistic is a threshold probability, and that ranks the inputs differently. Try it:
+Nothing in the method fixes the 10% cut or the mean. Comparing the top and bottom 5% gives bigger bars (more extreme worlds); comparing the top and bottom halves gives smaller ones. The mean cost is dominated by the right tail (in the default scenario the mean is about $367 against a median of $213 per kg dry cell mass), so a bar mostly reports what happens in the expensive tail. If the question is whether cultivated chicken can get under $25/kg, the relevant statistic is a threshold probability, and that ranks the inputs differently. Try it:
 
 ```{ojs}
 //| echo: false
 viewof tailFrac = Inputs.radio(new Map([["5%", 0.05], ["10% (chart default)", 0.10], ["25%", 0.25], ["50% (top half vs bottom half)", 0.50]]), {value: 0.10, label: "Tail width"})
-viewof statKey = Inputs.radio(new Map([["Mean cost ($/kg)", "mean"], ["Median cost ($/kg)", "median"], ["P(cost < $10/kg), percentage points", "below10"], ["P(cost < $25/kg), percentage points", "below25"], ["P(cost < $50/kg), percentage points", "below50"]]), {value: "mean", label: "Output statistic"})
+viewof statKey = Inputs.radio(new Map([["Mean cost ($/kg)", "mean"], ["Median cost ($/kg)", "median"], ["P(cost < $10/kg, meat-equivalent on the dry basis), percentage points", "below10"], ["P(cost < $25/kg, meat-equivalent), percentage points", "below25"], ["P(cost < $50/kg, meat-equivalent), percentage points", "below50"]]), {value: "mean", label: "Output statistic"})
 ```
 
 ```{ojs}
@@ -150,7 +156,7 @@ viewof statKey = Inputs.radio(new Map([["Mean cost ($/kg)", "mean"], ["Median co
 statSpec = ({mean: {type: "mean"}, median: {type: "median"}, below10: {type: "below", threshold: 10}, below25: {type: "below", threshold: 25}, below50: {type: "below", threshold: 50}})[statKey]
 statIsShare = statKey.startsWith("below")
 contrastRows = inputs.map(i => {
-  const d = sm.tailContrastDetail(i.data, uc, {tailFrac, stat: statSpec});
+  const d = sm.tailContrastDetail(i.data, statIsShare ? tc : uc, {tailFrac, stat: statSpec});
   const scale = statIsShare ? 100 : 1;
   return {name: i.name, value: d.contrast * scale, se: d.se * scale, abs: Math.abs(d.contrast * scale)};
 }).sort((a, b) => b.abs - a.abs)
@@ -367,11 +373,11 @@ Reproduce with `node scripts/sensitivity-shapley.mjs`, which writes [`sensitivit
 
 The sections above ask which inputs move cost. This one turns the question around: take the draws that come in under a cost threshold and see how they differ from the draws as a whole. If nearly every cheap draw has high cell density, density is something that has to be true for cheap cultivated meat in this model. Like the tornado chart, this conditions rather than intervenes: it shows what the cheap draws have in common, not what would make a real plant cheap, and it inherits every assumption the engine makes.
 
-**What $10/kg means here.** The model's output is the cost of wet cell biomass at the factory gate, in a mix of the source studies' dollar years. A draw under $10/kg is not retail price parity with chicken. Getting from one to the other needs a matched product (most products blend cells with plant ingredients), the solids and protein basis, downstream processing, packaging, distribution and margins, and one currency year. The [cautions under the main results](index.qmd#output-cautions) set this out. Read the $10 line as "very cheap biomass", not as "price parity".
+**What $10/kg means here.** Since October 26, 2026 the model's headline output is the cost per kg of dry cell mass at the factory gate, in a mix of the source studies' dollar years. The thresholds here apply to the **chicken-meat equivalent**: dry cost × the target solids content (27.5% placeholder), roughly the cost of a kilogram of cell biomass at the water content of chicken meat. $10/kg meat-equivalent is about $36 per kg dry cell mass, or $7.30 per wet kg at 20% solids, so it is a stricter line than the $10 per wet kg used before. A draw under $10/kg is not retail price parity with chicken. Getting from one to the other needs a matched product (most products blend cells with plant ingredients), the solids and protein basis, downstream processing, packaging, distribution and margins, and one currency year. The [cautions under the main results](index.qmd#output-cautions) set this out. Read the $10 line as "very cheap biomass", not as "price parity".
 
 ```{ojs}
 //| echo: false
-viewof profileThreshold = Inputs.radio(new Map([["$10/kg", 10], ["$25/kg", 25], ["$50/kg", 50]]), {value: 10, label: "Cost threshold"})
+viewof profileThreshold = Inputs.radio(new Map([["$10/kg", 10], ["$25/kg", 25], ["$50/kg", 50]]), {value: 10, label: "Cost threshold (chicken-meat equivalent)"})
 ```
 
 ```{ojs}
@@ -384,7 +390,7 @@ profile = sm.thresholdProfile(results, profileThreshold)
 {
   const p = profile;
   const fmt = {
-    L_per_kg: v => v.toFixed(1), density: v => v.toFixed(0), media_turnover: v => v.toFixed(2),
+    L_per_kg: v => v.toFixed(0), density: v => v.toFixed(1), media_turnover: v => v.toFixed(2),
     media_cost_L: v => "$" + v.toFixed(2), g_recf: v => (1000 * v).toPrecision(2), price_recf: v => "$" + (v >= 1000 ? Math.round(v).toLocaleString() : v.toPrecision(3)),
     maturity: v => v.toFixed(2), plant_kta: v => v.toFixed(0), uptime: v => pct(v), wacc: v => (100 * v).toFixed(1) + "%"
   };
@@ -393,7 +399,7 @@ profile = sm.thresholdProfile(results, profileThreshold)
   const usd2 = v => v == null ? "—" : "$" + v.toFixed(2);
   const comps = [["media", "Medium"], ["recf", "Recombinant growth factors"], ["capex", "Capital (annualized)"], ["fixed", "Fixed operating costs"], ["other", "Everything else (other variable costs, supplemental proteins, any toll or downstream cost)"], ["unit_cost", "Total (mean unit cost)"]];
   const c = p.components;
-  return html`<p><strong>${p.count.toLocaleString()} of ${p.n.toLocaleString()} draws (${(100 * p.share).toFixed(1)}%) come in under $${p.threshold}/kg.</strong></p>
+  return html`<p><strong>${p.count.toLocaleString()} of ${p.n.toLocaleString()} draws (${(100 * p.share).toFixed(1)}%) come in under $${p.threshold}/kg ${thresholdUnit}.</strong> ${dryBasis ? `Litres of medium, growth-factor quantity and cost components below are per kg dry cell mass.` : ""}</p>
   ${p.warning ? html`<div style="border-left:4px solid #c0392b; background:#fdf2f2; padding:0.5rem 0.8rem; margin:0.5rem 0; font-size:0.92em;"><strong>Small group:</strong> ${p.warning} Medians and percentiles for fewer than ${p.minDraws} draws shift noticeably with the random seed.</div>` : ""}
   <table style="font-size:0.9em;"><thead><tr><th>Input</th><th>All draws: median (10th–90th percentile)</th><th>Draws under $${p.threshold}/kg</th></tr></thead>
   <tbody>
@@ -406,13 +412,13 @@ profile = sm.thresholdProfile(results, profileThreshold)
 }
 ```
 
-In the default scenario (seed 42), 2.7% of draws come in under $10/kg. Compared with all draws, those draws use about a fifth as much fresh medium per kilogram (median 6.9 against 31 litres), mainly because they have about twice the cell density (132 against 67 g/L) and a lower media-use multiplier (0.95 against 1.66). Nearly all of them use hydrolysates (94% against 73%) and cheap recombinant growth factors (88% against 48%). Plant capacity, utilization and the cost of capital barely differ between the two groups. The cheap draws are cheap because medium and growth factors become small, not because of scale or financing; capital and fixed operating costs, about $1.30 and $2.50 per kg, then make up close to half of what is left.
+In the default scenario (seed 42), 0.7% of draws (197 of 30,000) come in under $10/kg meat-equivalent: too few for precise figures, but the pattern matches the 15.8% under $25. Compared with all draws, the under-$10 draws use about a fifth as much fresh medium per kilogram of dry cell mass (median 28 against 155 litres), mainly because they have about twice the cell density (28 against 13 g dry/L) and a lower media-use multiplier (0.87 against 1.66). Nearly all of them use hydrolysates (96% against 73%) and cheap recombinant growth factors (89% against 48%). Plant capacity, utilization and the cost of capital barely differ between the two groups. The cheap draws are cheap because medium and growth factors become small, not because of scale or financing; capital and fixed operating costs, about $4.80 and $9.50 per kg dry, then make up close to half of what is left (a mean of $31 per kg dry). These figures are for engine `2026-10-26.4`.
 
 ### 4.1 Structure check: how much depends on the medium rule {#structure-check}
 
 The model's default derives fresh medium per kilogram of cells from density: litres per kg = 1000 / density × media-use multiplier. So any draw with high density automatically uses little medium, and since medium is the largest cost component, high density lowers cost twice, once through reactor size and once through medium. Two independent reviews dispute the medium half of that. The [September scientific review](review-2026-09.qmd#make-a-small-physical-core-before-eliciting-more-priors) and an outside audit (Report 5 in the [review response](review-response-2026-09.qmd#structures)) both argue that medium per kg is set by how much of each nutrient the cells consume per kg of growth (nutrient yield), which is roughly the same whatever density the culture reaches; concentrating a culture does not undo the medium it has already used. Under that view, density mainly sets reactor size.
 
-The Advanced page has an alternative rule that draws fresh medium per kg directly (default range 8–60 litres per kg, 5th–95th percentile, an illustrative stress range rather than a sourced estimate) and leaves density to set reactor volume and capital cost only. A second alternative (October 2026) derives medium per kg from **nutrient yield**, the grams of cell solids the nutrients in a litre of medium support: litres per wet kg = 1000 × solids fraction / yield (default yield range 3–25 g per litre, 5th–95th percentile, also illustrative; at 20% solids that is about 8–67 litres per kg). Density then affects only reactor size. The table runs the current scenario under each rule with the same seed, so every other input is identical draw for draw. Row (c) also adds the forming and texturization cost for structured products ($2–15/kg), which is outside the estimate and which the default leaves out.
+The Advanced page has an alternative rule that draws fresh medium per kg directly (default range 40–300 litres per kg dry cell mass, 5th–95th percentile, i.e. 8–60 per wet kg at 20% solids; an illustrative stress range rather than a sourced estimate) and leaves density to set reactor volume and capital cost only. A second alternative (October 2026) derives medium per kg from **nutrient yield**, the grams of dry cell mass the nutrients in a litre of medium support: litres per kg dry = 1000 / yield (default yield range 3–25 g dry cells per litre, 5th–95th percentile, also illustrative; about 40–330 litres per kg dry). Density then affects only reactor size. The table runs the current scenario under each rule with the same seed, so every other input is identical draw for draw. Row (c) also adds the forming and texturization cost for structured products ($2–15/kg), which is outside the estimate and which the default leaves out.
 
 ```{ojs}
 //| echo: false
@@ -423,7 +429,7 @@ structureRuns = {
     {key: "c", label: "(c) Direct medium, plus forming and texturization", params: {...scenarioParams, media_use_model: "direct", include_downstream: true}},
     {key: "d", label: "(d) Medium from nutrient yield (density-invariant)", params: {...scenarioParams, media_use_model: "yield"}}
   ];
-  return rules.map(r => ({...r, uc: costModel.simulate(30000, 42, r.params).unit_cost}));
+  return rules.map(r => { const s = costModel.simulate(30000, 42, r.params); return {...r, uc: s.unit_cost, tc: s.threshold_cost}; });
 }
 ```
 
@@ -434,17 +440,19 @@ structureRuns = {
   const pct1 = v => (100 * v).toFixed(1) + "%";
   const [a, b] = structureRuns;
   const cheapA = [], keep = [];
-  for (let i = 0; i < a.uc.length; i++) if (a.uc[i] < 10) { cheapA.push(i); if (b.uc[i] < 10) keep.push(i); }
+  for (let i = 0; i < a.tc.length; i++) if (a.tc[i] < 10) { cheapA.push(i); if (b.tc[i] < 10) keep.push(i); }
   const lost = cheapA.length ? 1 - keep.length / cheapA.length : 0;
   const override = scenarioParams.ep_media_p10 != null;
   const current = scenarioParams.media_use_model === "yield" ? "d" : scenarioParams.media_use_model !== "direct" ? "a" : scenarioParams.include_downstream ? "c" : "b";
-  return html`<table style="font-size:0.9em;"><thead><tr><th>Medium rule</th><th>P(cost &lt; $10/kg)</th><th>P(cost &lt; $25/kg)</th><th>Median cost</th></tr></thead>
-  <tbody>${structureRuns.map(r => html`<tr><td>${r.label}${r.key === current ? html` <em style="color:#666;">— this scenario's setting</em>` : ""}</td><td><strong>${pct1(below(r.uc, 10))}</strong></td><td>${pct1(below(r.uc, 25))}</td><td>${usd(quantile(r.uc, 0.5))}</td></tr>`)}</tbody></table>
+  return html`<table style="font-size:0.9em;"><thead><tr><th>Medium rule</th><th>P(cost &lt; $10/kg ${thresholdUnit})</th><th>P(cost &lt; $25/kg ${thresholdUnit})</th><th>Median cost (${costUnit})</th></tr></thead>
+  <tbody>${structureRuns.map(r => html`<tr><td>${r.label}${r.key === current ? html` <em style="color:#666;">— this scenario's setting</em>` : ""}</td><td><strong>${pct1(below(r.tc, 10))}</strong></td><td>${pct1(below(r.tc, 25))}</td><td>${usd(quantile(r.uc, 0.5))}</td></tr>`)}</tbody></table>
   ${override ? html`<p style="font-size:0.9em;"><strong>Note:</strong> this scenario sets medium cost directly with a custom prior, which takes precedence over both rules, so rows (a) and (b) differ only through other channels.</p>` : html`<p>Of the <strong>${cheapA.length.toLocaleString()}</strong> draws under $10/kg with the default rule, <strong>${(cheapA.length - keep.length).toLocaleString()} (${pct(lost)})</strong> rise above $10/kg when only the medium rule changes to the direct rule (b). ${lost > 0.5 ? html`<strong>Most of the under-$10 draws depend on the density-derived medium assumption.</strong>` : "Fewer than half of them depend on the density-derived medium assumption here."} The direct rule produces some cheap draws of its own (draws where the direct medium draw happens to be low), which is why P(cost &lt; $10/kg) falls by less than this.</p>`}`;
 }
 ```
 
-In the default scenario the direct rule lowers the chance of a draw under $10/kg from 2.7% to 1.7%, and adding forming and texturization brings it to 0.1%. The nutrient-yield rule gives a similar picture: 1.6% under $10/kg, 30.4% under $25/kg and a median of $35.69, and 607 of the 805 default under-$10 draws rise above $10 under it. The chance of a draw under $25/kg moves the other way at first (27.7% to 32.1%), because the direct range has a much thinner high-use tail (90th percentile about 48 litres per kg, against about 127 under the density rule, where low-density draws need a great deal of medium), and then falls to 17.6% with downstream costs. Holding every other input fixed, about three quarters of the default under-$10 draws (589 of 805) are above $10 under the direct rule. The very cheap tail of this model rests mainly on the assumption that dense cultures use proportionally less medium, which is the assumption the reviewers question. Anyone using the under-$10 share should report it alongside the direct-rule or yield-rule figure. These figures are for engine `2026-10-26.3` and should be rerun after engine changes.
+In the default scenario (thresholds on the chicken-meat equivalent) the direct rule lowers the chance of a draw under $10/kg from 0.7% to 0.3%, and adding forming and texturization brings it to essentially zero. The nutrient-yield rule gives a similar picture: 0.3% under $10/kg, 15.2% under $25/kg and a median of $178 per kg dry cell mass (against $213 under the density rule), and 168 of the 197 default under-$10 draws rise above $10 under it. The chance of a draw under $25/kg barely moves at first (15.8% to 16.1% under the direct rule), because the direct range has a much thinner high-use tail (90th percentile about 240 litres per kg dry, against about 635 under the density rule, where low-density draws need a great deal of medium), and then falls to 5.2% with forming and texturization. Holding every other input fixed, about four fifths of the default under-$10 draws (160 of 197) are above $10 under the direct rule; at $25 it is 2,204 of 4,749 (46%). The very cheap tail of this model rests mainly on the assumption that dense cultures use proportionally less medium, which is the assumption the reviewers question. Anyone using the under-$10 share should report it alongside the direct-rule or yield-rule figure. These figures are for engine `2026-10-26.4` and should be rerun after engine changes.
+
+*Before October 26, 2026 these thresholds applied to wet biomass, where 2.7% of draws were under $10 per wet kg and 27.7% under $25. Those figures are reproduced exactly by the wet cost basis.*
 
 ## 5. Summary {#summary}
 

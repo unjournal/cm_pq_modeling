@@ -8,11 +8,15 @@ const componentKeys = ['media', 'recf', 'supp_protein', 'other_var', 'capex', 'f
 function summary(r) {
   return {
     p5: quantile(r.unit_cost, 0.05), p50: quantile(r.unit_cost, 0.5), p95: quantile(r.unit_cost, 0.95),
-    mean: mean(r.unit_cost), probability_under_10: mean(r.unit_cost.map(v => +(v < 10))),
-    probability_under_25: mean(r.unit_cost.map(v => +(v < 25))),
+    mean: mean(r.unit_cost),
+    // Thresholds on threshold_cost: chicken-meat equivalent on the dry basis (docs.qmd#output-basis).
+    probability_threshold_basis: r.basis.cost_basis === 'dry' ? 'chicken-meat equivalent' : 'wet biomass',
+    probability_under_10: mean(r.threshold_cost.map(v => +(v < 10))),
+    probability_under_25: mean(r.threshold_cost.map(v => +(v < 25))),
+    probability_under_50: mean(r.threshold_cost.map(v => +(v < 50))),
     component_means: Object.fromEntries(componentKeys.map(k => [k, mean(r['cost_' + k])])),
-    // Provisional conversions of the wet-basis result (docs.qmd#output-basis).
-    other_bases: {target_solids_p50: quantile(r.unit_cost_target_solids, 0.5), protein_p50: quantile(r.unit_cost_protein, 0.5), factors: r.basis_factors}
+    other_bases_p50: {dry: quantile(r.unit_cost_dry, 0.5), wet: quantile(r.unit_cost_wet, 0.5),
+      meat_equivalent: quantile(r.unit_cost_meat_equiv, 0.5), protein: quantile(r.unit_cost_protein, 0.5)}
   };
 }
 const scenarios = {
@@ -25,13 +29,15 @@ const scenarios = {
   // Medium-rule structure check (sensitivity.qmd, Section 4.1).
   media_direct: {media_use_model: 'direct'},
   media_direct_with_forming: {media_use_model: 'direct', include_downstream: true},
-  media_yield: {media_use_model: 'yield'}
+  media_yield: {media_use_model: 'yield'},
+  // The pre-October 26 headline: reproduces earlier wet-basis snapshots exactly.
+  wet_basis: {cost_basis: 'wet'}
 };
 console.log(JSON.stringify({
   model_version: MODEL_VERSION,
   engine_sha256: createHash('sha256').update(readFileSync(new URL('../dashboard/cost-model.mjs', import.meta.url))).digest('hex'),
   n, seed: 42, default_parameters: DEFAULT_PARAMS,
-  units: 'USD/kg wet biomass (other_bases: provisional per kg at target solids and per kg protein); mixed source-year dollars; scenario distribution, not a calibrated forecast',
+  units: 'USD per kg dry cell mass (cost_basis "dry", default since 2026-10-26.4; the wet_basis scenario gives per wet kg); probability thresholds on the chicken-meat equivalent (dry × 0.275); mixed source-year dollars; scenario distribution, not a calibrated forecast',
   scenarios: Object.fromEntries(Object.entries(scenarios).map(([name, overrides]) => [name, {overrides, ...summary(simulate(n, 42, overrides))}])),
   seed_checks: [1, 7, 99, 2026].map(seed => ({seed, ...summary(simulate(n, seed))})),
   // What the default draws under $10/kg look like versus all draws (sensitivity.qmd, Section 4).

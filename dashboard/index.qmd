@@ -48,7 +48,9 @@ format:
 
 **October 26 (engine `2026-10-26.3`):** a third *Fresh-media calculation* option under *Structural stress tests* derives medium per kg from nutrient yield (grams of cell solids per litre of medium), so it no longer falls automatically as density rises. Off by default; default results are unchanged. See the [structure check](sensitivity.qmd#structure-check).
 
-This page runs the **current model** (engine `2026-10-26.3`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+**October 26 (engine `2026-10-26.4`): default results change.** The headline cost is now per kg of dry cell mass (about five times the old wet figures), thresholds and blending use a chicken-meat equivalent, density inputs are g dry/L and \$/kg inputs are per kg dry. Cost basis "wet" under *Structural stress tests* reproduces the earlier results exactly. See the basis note above.
+
+This page runs the **current model** (engine `2026-10-26.4`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 
@@ -72,7 +74,7 @@ Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusin
 ## Important: Model Status & Limitations
 This model is *largely AI-generated* and, as of September 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
-**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; wet-biomass water content is not standardized (see the output-basis note below); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
+**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; source data on different weight bases are converted with a single assumed solids content (see the basis note below); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
 
 **[Read the full critique and our responses → Limits/Critique](limits.html)**
 
@@ -80,12 +82,14 @@ We especially welcome expert review of: growth factor quantities and prices, bio
 :::
 
 ::: {.callout-important}
-## Output basis: what "per kg" means here
-**Current basis.** Costs are per kg of *wet* cell biomass, because the code treats the cell-density inputs as grams of wet biomass per litre at harvest. Harvested cells are mostly water, and a wet kg can carry more or less residual medium depending on washing and dewatering: a paste at 15% solids carries about half the protein of one at 30%. So "cost per kg of wet cell biomass" is not a stable unit.
+## Basis change: costs are now per kg of DRY cell mass
+**Since October 26, 2026 (engine `2026-10-26.4`), the headline cost is per kg of dry cell mass**, not per kg of wet biomass. Dry-mass figures are about five times the old wet figures (the default median is about \$213/kg dry, against \$43 per wet kg before), because a kg of harvested cells is only about 20% solids. Nothing about the underlying scenario changed.
 
-**Planned standard basis (team decision, 26 October 2026).** Cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), reported alongside cost per kg of protein. Until that conversion is switched on, read every number on this page as wet-basis. [Why the basis matters →](docs.qmd#output-basis)
+**Why.** Harvested cells are mostly water, and washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing or dewatering, maps to nutrition, and is the natural basis for nutrient stoichiometry (how much medium it takes to build a gram of cells).
 
-*AI-drafted (Claude, 26 October 2026) from the team's design decision; not yet reviewed by a person.*
+**What else you'll see.** Cost per kg of **protein**, and a **chicken-meat equivalent**: dry cost × a fixed solids content close to chicken meat (placeholder 27.5%, within 25–30%, to be agreed). The probability thresholds (\$10, \$25 …), the blended-product arithmetic and chicken comparisons use the meat equivalent. Cell density is entered in **g dry cells per litre**, and \$/kg inputs are per kg dry. **The old wet-basis output is one switch away** (*Structural stress tests → Cost basis*) and reproduces the earlier numbers exactly. Shared links made before this change that set density or \$/kg priors will now be read as dry-basis values. [Why the basis matters, and how sources report it →](docs.qmd#output-basis)
+
+*AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
 
 ::: {.callout-note collapse="true"}
@@ -754,13 +758,13 @@ A side-by-side comparison appears in the results below. &nbsp;
 
 ```{ojs}
 //| echo: false
-viewof cdmo_toll_p5 = Inputs.range([1, 20], {
-  value: urlNum("cdmo_toll_p5", 4), step: 1,
-  label: "CDMO Toll p5 ($/kg)"
+viewof cdmo_toll_p5 = Inputs.range([5, 100], {
+  value: urlNum("cdmo_toll_p5", 20), step: 5,
+  label: "CDMO Toll p5 ($/kg dry cell mass)"
 })
-viewof cdmo_toll_p95 = Inputs.range([10, 100], {
-  value: urlNum("cdmo_toll_p95", 40), step: 2,
-  label: "CDMO Toll p95 ($/kg)"
+viewof cdmo_toll_p95 = Inputs.range([50, 500], {
+  value: urlNum("cdmo_toll_p95", 200), step: 10,
+  label: "CDMO Toll p95 ($/kg dry cell mass)"
 })
 ```
 
@@ -873,15 +877,15 @@ This scaling is mechanical (linear interpolation), not fit to historical data. *
 //| echo: false
 viewof p_fedbatch = Inputs.range([0, 1], {
   value: urlNum("p_fedbatch", 0.20), step: 0.05,
-  label: html`P(Fed-batch) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Low density (5–30 g/L), moderate media use (1–2×). Nutrient-concentrated feeds added periodically. Simpler to operate but lower cell density than perfusion.">(?)</abbr>`
+  label: html`P(Fed-batch) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Low density (1–6 g dry/L, i.e. 5–30 g wet/L at 20% solids), moderate media use (1–2×). Nutrient-concentrated feeds added periodically. Simpler to operate but lower cell density than perfusion.">(?)</abbr>`
 })
 viewof p_perfusion = Inputs.range([0, 1], {
   value: urlNum("p_perfusion", 0.50), step: 0.05,
-  label: html`P(Perfusion) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Medium-high density (30–150 g/L), higher media throughput (1–5×). Continuous media exchange with cell retention. Currently the industry standard for high-density CM production.">(?)</abbr>`
+  label: html`P(Perfusion) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Medium-high density (6–30 g dry/L, i.e. 30–150 g wet/L), higher media throughput (1–5×). Continuous media exchange with cell retention. Currently the industry standard for high-density CM production.">(?)</abbr>`
 })
 viewof p_continuous = Inputs.range([0, 1], {
   value: urlNum("p_continuous", 0.30), step: 0.05,
-  label: html`P(Continuous) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Highest density (50–200 g/L), efficient media use (0.5–3×). Near-steady-state operation; cells grown and harvested continuously with optimized recycling.">(?)</abbr>`
+  label: html`P(Continuous) <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Highest density (10–40 g dry/L, i.e. 50–200 g wet/L), efficient media use (0.5–3×). Near-steady-state operation; cells grown and harvested continuously with optimized recycling.">(?)</abbr>`
 })
 ```
 
@@ -920,13 +924,15 @@ These weights set the probability of each bioreactor process mode being drawn pe
 
 **Alternative: cheapest feasible mode.** Under **Structural stress tests → Process-mode selection**, you can instead give the probability that perfusion and continuous culture each *work* at commercial scale. The model then prices every world under each mode and uses the cheapest feasible one; fed-batch is the fallback. The selected shares become an output. With default priors the modes are almost always ranked continuous < perfusion < fed-batch within a world, so feasibility of 70% (perfusion) and 30% (continuous) gives roughly the same shares and costs as the 20/50/30 weights. The rule favors whichever mode has the fewest downsides modeled: mode-specific equipment, consumable and contamination costs are not yet included. [Method and caveats](docs.qmd#least-cost-mode-selection).
 
-For reference, at default settings plants drawn as fed-batch come in under \$25/kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous. Treat this with caution: it follows largely from our fed-batch density prior (5–30 g/L). [Humbird (2021)](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) reaches about 110 g/L in fed-batch with a metabolically improved cell line, and in his base case fed-batch is the *cheaper* mode (\$37/kg vs \$51/kg for perfusion). The 20/50/30 default weights are not anchored to a specific source.
+For reference, at default settings plants drawn as fed-batch come in under \$25 per wet kg in only about 2% of draws (about 4% even with optimistic maturity, hydrolysate and growth-factor settings), compared with about 24% for perfusion and 52% for continuous (wet-basis figures from before the October 26, 2026 basis change). Treat this with caution: it follows largely from our fed-batch density prior (5–30 g wet/L, 1–6 g dry/L). [Humbird (2021)](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/) reaches about 110 g/L in fed-batch with a metabolically improved cell line, and in his base case fed-batch is the *cheaper* mode (\$37/kg vs \$51/kg for perfusion). The 20/50/30 default weights are not anchored to a specific source.
 
-| Mode | Density (g/L) | Media-use (×) | Typical application |
-|------|--------------|--------------|---------------------|
-| Fed-batch | 5–30 | 1.0–2.0 | Periodic nutrient addition; lower achievable densities |
-| Perfusion | 30–150 | 1.0–5.0 | Continuous exchange with cell retention (hollow fiber / centrifuge) |
-| Continuous | 50–200 | 0.5–3.0 | Near-steady-state with recycling; highest densities |
+| Mode | Density (g dry/L) | Same, wet (g/L at 20% solids) | Media-use (×) | Typical application |
+|------|--------------|--------------|--------------|---------------------|
+| Fed-batch | 1–6 | 5–30 | 1.0–2.0 | Periodic nutrient addition; lower achievable densities |
+| Perfusion | 6–30 | 30–150 | 1.0–5.0 | Continuous exchange with cell retention (hollow fiber / centrifuge) |
+| Continuous | 10–40 | 50–200 | 0.5–3.0 | Near-steady-state with recycling; highest densities |
+
+*The dry ranges are the earlier wet ranges converted at 20% solids; the draws are identical.*
 
 Pure batch (single fill-and-dump) is excluded — not considered commercially viable for cultured meat at scale (expert reviewer feedback, April 2026).
 
@@ -976,6 +982,8 @@ viewof p_hydro = Inputs.range([0.3, 0.95], {
 
 ::: {.callout-note appearance="minimal" icon=false collapse=false}
 **Basal media** = the bulk nutrient broth cells grow in (water + amino acids + glucose + salts + vitamins) — *everything except* the expensive recombinant growth factors, which we model on a separate line. **Hydrolysates** are cheap enzymatically-digested plant or yeast proteins; they replace the *purified pharmaceutical-grade amino acids* (vegan but ~10× more expensive) that dominate Humbird's basal-media cost.
+
+*The worked figures in this note are per kg wet biomass with wet densities; per kg dry cell mass at 20% solids, multiply litres and dollars by 5 and divide densities by 5.*
 
 **Note on \$/L vs \$/kg output:** The model uses \$/L as an internal parameter, but the economically meaningful unit is **\$/kg of cell biomass produced** — which equals (\$/L) × (L consumed per kg output). L per kg = 1000/density(g/L) × media_turnover_multiplier. In an illustrative scenario (60 g/L density, 1.5× multiplier), this is ~25 L/kg: a \$0.70/L hydrolysate medium costs ~\$17.5/kg output; a \$1.25/L pharma-grade medium costs ~\$31/kg. At 200 g/L perfusion with 1.0× turnover (~5 L/kg), the same formulations cost \$3.5/kg and \$6.25/kg respectively — illustrating the inverse-density relationship when all other inputs are fixed; both density and price have unit elasticity in this formula. The "Media" bar in the cost breakdown chart already shows this \$/kg result directly.
 
@@ -1207,7 +1215,7 @@ These two parameters together determine the **Capital Recovery Factor** (<abbr t
 
 ---
 
-**Cell Density / Media-Use Override** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="In the default model, cell density is not a free slider — it is sampled automatically from mode-specific ranges (fed-batch: 5–30 g/L; perfusion: 30–150 g/L; continuous: 50–200 g/L) based on the process mode probabilities above. This reflects the fact that density is physically determined by operating mode, not independently chosen. Enable 'Override' below to set density ranges directly — useful if you have a specific bioreactor configuration in mind.">(?)</abbr>
+**Cell Density / Media-Use Override** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#555;" title="In the default model, cell density is not a free slider — it is sampled automatically from mode-specific ranges (fed-batch: 1–6 g dry/L; perfusion: 6–30; continuous: 10–40, i.e. 5–30, 30–150 and 50–200 g wet/L at 20% solids) based on the process mode probabilities above. This reflects the fact that density is physically determined by operating mode, not independently chosen. Enable 'Override' below to set density ranges directly — useful if you have a specific bioreactor configuration in mind.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
@@ -1223,28 +1231,30 @@ viewof override_mode_constraints = Inputs.toggle({
 
 ```{ojs}
 //| echo: false
-viewof density_lo = Inputs.range([10, 100], {
-  value: urlNum("density_lo", 30), step: 10,
-  label: "Cell Density Low (g/L)"
+viewof density_lo = Inputs.range([2, 20], {
+  value: urlNum("density_lo", 6), step: 1,
+  label: "Cell Density Low (g dry cells/L)"
 })
-viewof density_hi = Inputs.range([50, 300], {
-  value: urlNum("density_hi", 200), step: 10,
-  label: "Cell Density High (g/L)"
+viewof density_hi = Inputs.range([10, 60], {
+  value: urlNum("density_hi", 40), step: 2,
+  label: "Cell Density High (g dry cells/L)"
 })
 ```
 <details><summary>What is cell density and why does it matter so much? (click to expand)</summary>
 
-**Cell density** (g/L at harvest) determines how much meat you get per liter of bioreactor volume. Higher density means less media per kilogram of product, which directly reduces the largest variable cost.
+**Cell density** (grams of dry cell mass per litre at harvest, since October 26, 2026) determines how much meat you get per liter of bioreactor volume. Under the default medium rule, higher density means less media per kilogram of product, which directly reduces the largest variable cost.
 
-| Density | Media per kg | Typical context |
-|---------|-------------|-----------------|
-| 10 g/L | ~100 L/kg | Current lab scale |
-| 50 g/L | ~20 L/kg | Near-term commercial target |
-| 200 g/L | ~5 L/kg | Optimistic TEA projection |
+**Units.** Sources report density in three ways: wet weight per litre, dry weight per litre, or cell counts per millilitre times an assumed mass per cell. Dry and wet differ by the solids content (about 20% for harvested cells, so 50 g wet/L ≈ 10 g dry/L). Cell counts depend on an assumed mass per cell, which varies roughly twofold with growth rate and phase. The figures below give both.
 
-**This is multiplicative.** If media costs $1/L, going from 10 to 50 g/L cuts media cost from $100/kg to $20/kg. Going to 200 g/L cuts it to $5/kg. Cell density is arguably the single most important technical parameter for cost reduction.
+| Density (wet, as usually reported) | Density (dry, at 20% solids) | Media per kg wet / per kg dry | Typical context |
+|---------|---------|-------------|-----------------|
+| 10 g/L | 2 g/L | ~100 / ~500 L | Current lab scale |
+| 50 g/L | 10 g/L | ~20 / ~100 L | Near-term commercial target |
+| 200 g/L | 40 g/L | ~5 / ~25 L | Optimistic TEA projection |
 
-**Current state:** Most published data shows 10-50 g/L. Some companies claim higher, but these claims are difficult to verify independently. Lever VC's 2025 report claims 60-90 g/L has been achieved by "second generation" companies. Whether 200 g/L is achievable by 2036 is a genuine open question.
+**This is multiplicative.** If media costs $1/L, going from 10 to 50 g wet/L cuts media cost from $100 to $20 per wet kg ($500 to $100 per dry kg). Going to 200 g wet/L cuts it to $5 per wet kg. Cell density is arguably the single most important technical parameter for cost reduction.
+
+**Current state:** Most published data shows 10-50 g/L (wet). Some companies claim higher, but these claims are difficult to verify independently. Lever VC's 2025 report claims 60-90 g/L has been achieved by "second generation" companies. Whether 200 g/L wet (40 g dry/L) is achievable by 2036 is a genuine open question.
 
 </details>
 
@@ -1325,14 +1335,14 @@ viewof media_turnover_hi = Inputs.range([1, 10], {
     ...costModel.DEFAULT_PARAMS,
     simpleMode: true, include_blending: false, blending_share: 0.25, filler_cost: 3,
     include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
-    cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
+    cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
     bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
     plant_capacity: 20, uptime: 0.90, maturity: 0.5, target_year: 2036,
     p_fedbatch: 0.20, p_perfusion: 0.50, p_continuous: 0.30,
     override_mode_constraints: false,
     p_hydro: 0.75, p_recfactors: 0.5, gf_progress: 50, p_supp_protein: 0.70,
     wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
-    density_lo: 30, density_hi: 200,
+    density_lo: 6, density_hi: 40,
     media_turnover_lo: 0.5, media_turnover_hi: 3.0
   };
 
@@ -1475,23 +1485,43 @@ inhouse_results = {
   return simulate(30000, 42, {...simParams, cdmo_mode: false});
 }
 
+// Units for labels. On the dry basis, thresholds, blending and chicken comparisons
+// use the chicken-meat equivalent (dry cost × target solids); on the wet basis, wet cost.
+basisLabels = {
+  const dry = results.basis.cost_basis === "dry";
+  const pctSolids = (results.basis.target_solids_fraction * 100).toFixed(1).replace(/\.0$/, "");
+  return {
+    dry,
+    cost: dry ? "$/kg dry cell mass" : "$/kg wet biomass",
+    costShort: dry ? "dry" : "wet",
+    threshold: dry ? `$/kg chicken-meat equivalent (${pctSolids}% solids)` : "$/kg wet biomass",
+    thresholdShort: dry ? "meat-equivalent" : "wet",
+    // Where a meat-equivalent threshold sits on the headline cost axis
+    toCostAxis: t => dry ? t / results.basis.target_solids_fraction : t
+  };
+}
+
 // Calculate statistics (pure cell and blended product)
 stats = {
   const uc = results.unit_cost;
+  const tc = results.threshold_cost;
   const bs = typeof blending_share === "number" ? blending_share : 0.25;
   const fc = typeof filler_cost === "number" ? filler_cost : 3;
-  const blended = uc.map(c => c * bs + fc * (1 - bs));
+  const blended = tc.map(c => c * bs + fc * (1 - bs));
   const pct = (arr, threshold) => arr.filter(x => x < threshold).length / arr.length * 100;
   return {
     n: uc.length,
     p5: quantile(uc, 0.05),
     p50: quantile(uc, 0.50),
     p95: quantile(uc, 0.95),
-    // Pure cell thresholds
-    prob_10:  pct(uc, 10),
-    prob_25:  pct(uc, 25),
-    prob_50:  pct(uc, 50),
-    prob_100: pct(uc, 100),
+    t_p5: quantile(tc, 0.05),
+    t_p50: quantile(tc, 0.50),
+    t_p95: quantile(tc, 0.95),
+    // Pure cell thresholds (meat-equivalent on the dry basis)
+    prob_10:  pct(tc, 10),
+    prob_25:  pct(tc, 25),
+    prob_50:  pct(tc, 50),
+    prob_100: pct(tc, 100),
     // Blended product thresholds (same $/kg price points, but for the blended product)
     bprob_10:  pct(blended, 10),
     bprob_25:  pct(blended, 25),
@@ -1512,7 +1542,7 @@ stats = {
 
 ### Results Summary
 
-**Quantity being modeled:** manufacturing cost per kg of wet cultured-chicken biomass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
+**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass (by default; wet biomass is one switch away under *Structural stress tests*) for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
 
 
 []{#output-cautions}
@@ -1520,7 +1550,7 @@ stats = {
 ```{ojs}
 //| echo: false
 html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px solid #3498db; margin-bottom: 1.5rem; font-size: 0.95em; line-height: 1.6;">
-<strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (<span title="Intended basis: wet cell biomass around the harvest gate. The calculation treats the cell-density inputs as grams of wet biomass per litre; it does not separately apply or standardize an 80% hydration factor. Washing, dewatering, residual media, dry-matter content, and protein content can therefore differ across source studies. Includes media, growth factors, annualized bioreactor capital, plant overhead, and utilities. Excludes product formulation, texturization, packaging, distribution, and retail margins." style="text-decoration: underline dotted; cursor: help;">wet-biomass basis &#9432;</span>) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is a factory-gate ingredient-cost estimate, not a consumer-product price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
+<strong>What these numbers represent:</strong> Simulated manufacturing cost per kg of cultured chicken cell biomass (${basisLabels.dry ? html`<span title="Per kg dry cell mass. Dry mass does not change with washing or dewatering, maps to nutrition, and is the natural basis for nutrient stoichiometry. Density inputs are g dry cells per litre. Wet-basis sources and built-in priors are converted at ${(results.basis.solids_fraction * 100).toFixed(0)}% solids. Probability thresholds and the blended-product arithmetic use the chicken-meat equivalent, dry cost × ${(results.basis.target_solids_fraction * 100).toFixed(1)}% solids. Includes media, growth factors, annualized bioreactor capital, plant overhead, and utilities. Excludes product formulation, texturization, packaging, distribution, and retail margins." style="text-decoration: underline dotted; cursor: help;">dry cell mass &#9432;</span>` : html`<span title="Per kg wet biomass at ${(results.basis.solids_fraction * 100).toFixed(0)}% solids: the headline basis before October 26, 2026. Wet kg is not a stable unit, because washing and dewatering change what it contains." style="text-decoration: underline dotted; cursor: help;">wet-biomass basis &#9432;</span>`}) in ${target_year}, based on ${stats.n.toLocaleString()} Monte Carlo simulations. This is a factory-gate ingredient-cost estimate, not a consumer-product price. <a href="compare.html" style="font-size: 0.9em;">[Compare to published TEAs →]</a>
 <br><br>
 <strong><span title="UPSIDE Foods' chicken cutlet is a blend of cultured chicken cells and plant-based ingredients. SuperMeat's chicken burger used ~30% cultured cells. The GFI State of the Industry 2024 report notes that 'hybrid products combining cultivated and plant-based ingredients are the most likely near-term path to market.' Eat Just/GOOD Meat's Singapore-approved product uses cultured chicken in a plant-protein matrix." style="text-decoration: underline dotted; cursor: help;">Pure cells vs. consumer products:</span></strong> Most cultivated meat products on the market or in development are <em>hybrid products</em> — blending a fraction of cultured cells with plant-based or mycoprotein ingredients. A product with (say) 20% cultured cells and 80% plant-based filler at $3/kg would have a blended ingredient cost far below the pure-cell cost shown here. Assessing retail parity still requires a matched product and the remaining value-chain costs.
 <br><br>
@@ -1534,33 +1564,33 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Median Pure Cell Mass Cost (p50)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p50)}/kg</h2>
-<small>$/kg cell biomass (wet weight, at harvest) — half of simulations above, half below</small>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p50)}/kg ${basisLabels.costShort}</h2>
+<small>${basisLabels.cost}${basisLabels.dry ? ` (≈ $${Math.round(stats.t_p50)}/kg chicken-meat equivalent)` : " (at harvest)"} — half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Optimistic (p5)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p5)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p5)}/kg ${basisLabels.costShort}</h2>
 <small>Only 5% of simulations cheaper</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p95)}/kg</h2>
+<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p95)}/kg ${basisLabels.costShort}</h2>
 <small>95% of simulations cheaper</small>
 </div>
 
 </div>
 
 <div style="background: #f4f6f8; border-left: 4px solid #7f8c8d; padding: 0.8rem 1rem; margin-bottom: 0.5rem; font-size: 0.9em;">
-<strong>Same results on other bases (provisional):</strong> median <strong>$${quantile(results.unit_cost_target_solids, 0.5).toFixed(1)}/kg</strong> at ${(results.effective_params.target_solids_fraction * 100).toFixed(1)}% solids, and <strong>$${quantile(results.unit_cost_protein, 0.5).toFixed(0)}/kg protein</strong>, assuming the wet biomass above is ${(results.effective_params.solids_fraction * 100).toFixed(0)}% solids and ${(results.effective_params.protein_fraction_of_solids * 100).toFixed(0)}% of solids is protein. These are placeholder conversions, not new estimates; washing losses are not modeled. Change them under <em>Structural stress tests</em>. <a href="docs.html#output-basis">Why the basis matters</a>
+<strong>Same results on other bases:</strong> median <strong>$${quantile(results.unit_cost_dry, 0.5).toFixed(0)}/kg dry cell mass</strong>; <strong>$${quantile(results.unit_cost_meat_equiv, 0.5).toFixed(1)}/kg chicken-meat equivalent</strong> at ${(results.basis.target_solids_fraction * 100).toFixed(1)}% solids; <strong>$${quantile(results.unit_cost_protein, 0.5).toFixed(0)}/kg protein</strong> (${(results.basis.protein_fraction_of_solids * 100).toFixed(0)}% of dry mass); and <strong>$${quantile(results.unit_cost_wet, 0.5).toFixed(1)}/kg wet biomass</strong> at ${(results.basis.solids_fraction * 100).toFixed(0)}% solids, the headline basis before October 26, 2026. The solids and protein shares are placeholders; washing losses are not modeled. Change them, or switch the headline basis, under <em>Structural stress tests</em>. <a href="docs.html#output-basis">Why the basis matters</a>
 </div>
 
 ${include_blending ? html`<div style="background: #eaf7ea; border-left: 4px solid #27ae60; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
-<strong>Blended product estimate (${Math.round(blending_share * 100)}% CM, ${Math.round((1-blending_share)*100)}% filler at $${filler_cost}/kg):</strong>
+<strong>Blended product estimate (${Math.round(blending_share * 100)}% CM${basisLabels.dry ? " as chicken-meat equivalent" : ""}, ${Math.round((1-blending_share)*100)}% filler at $${filler_cost}/kg):</strong>
 Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.blended_p5.toFixed(1)} – $${stats.blended_p95.toFixed(1)}/kg
 </div>` : html`<div style="background: #fef9e7; border-left: 4px solid #f39c12; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
-<strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$${(stats.p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median). Enable "Show blended product cost" in the sidebar to adjust these assumptions.
+<strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$${(stats.t_p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median${basisLabels.dry ? ", using the chicken-meat-equivalent cell cost" : ""}). Enable "Show blended product cost" in the sidebar to adjust these assumptions.
 </div>`}
 
 </div>`
@@ -1589,7 +1619,7 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
   const stamp = () => new Date().toISOString().slice(0, 10);
 
   function downloadCSV() {
-    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_supp_protein", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream", "cost_harvest", "unit_cost_target_solids", "unit_cost_protein"];
+    const cols = ["unit_cost", "cost_media", "cost_recf", "cost_supp_protein", "cost_other_var", "cost_capex", "cost_fixed", "cost_cdmo_toll", "cost_downstream", "cost_harvest", "unit_cost_dry", "unit_cost_wet", "unit_cost_meat_equiv", "unit_cost_protein"];
     const metaCols = ["model_version", "seed", "sample_count", "effective_params_json"];
     const quote = v => '"' + String(v).replaceAll('"', '""') + '"';
     const meta = [results.model_version, results.seed, results.sample_count].map(quote);
@@ -1629,7 +1659,9 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         prob_under_10: +stats.prob_10.toFixed(1),
         prob_under_25: +stats.prob_25.toFixed(1),
         prob_under_50: +stats.prob_50.toFixed(1),
-        prob_under_100: +stats.prob_100.toFixed(1)
+        prob_under_100: +stats.prob_100.toFixed(1),
+        cost_unit: basisLabels.cost,
+        threshold_unit: basisLabels.threshold
       },
       process_mode: {
         rule: results.effective_params.mode_selection,
@@ -1647,16 +1679,18 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
         downstream: +mean(results.cost_downstream).toFixed(2),
         harvest_wash_dewater: +mean(results.cost_harvest).toFixed(2)
       },
-      other_bases_median_per_kg: {
-        target_solids: +quantile(results.unit_cost_target_solids, 0.5).toFixed(2),
+      median_per_kg_by_basis: {
+        dry_cell_mass: +quantile(results.unit_cost_dry, 0.5).toFixed(2),
+        chicken_meat_equivalent: +quantile(results.unit_cost_meat_equiv, 0.5).toFixed(2),
         protein: +quantile(results.unit_cost_protein, 0.5).toFixed(2),
-        factors: results.basis_factors
+        wet_biomass: +quantile(results.unit_cost_wet, 0.5).toFixed(2),
+        basis: results.basis
       },
       notes: {
-        units: "USD per kg of cultured chicken cell biomass on the model's wet-biomass basis",
+        units: `USD per kg; headline ${basisLabels.cost}; thresholds ${basisLabels.threshold}`,
         currency_basis: "Mixed source-year USD; not yet normalized to a common real-dollar year",
         conditioning: "Intended estimand (decided 2026-10-26): unconditional and hypothetical cost of a large plant built with the best technology available in the target year, whether or not such plants exist; parameter ranges not yet re-checked against this target",
-        planned_basis: "Planned: per kg washed cell biomass at a fixed solids content (placeholder 25-30% dry matter) and per kg protein; headline output is still wet-basis, with provisional conversions in other_bases_median_per_kg",
+        basis_change: "Since engine 2026-10-26.4 the default basis is kg dry cell mass (density inputs g dry/L; $/kg inputs per kg dry). cost_basis 'wet' reproduces the earlier wet-basis results",
         simulation_seed: 42,
         monte_carlo_samples: 30000
       }
@@ -1730,7 +1764,7 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
       height: h,
       marginLeft: 60,
       marginBottom: 50,
-      x: { label: "Cell Biomass Manufacturing Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      x: { label: `Cell Biomass Manufacturing Cost (${basisLabels.cost})`, domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       style: { fontSize: fontSize || 13 },
       marks: [
@@ -1742,9 +1776,9 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
         // p20 / p80 grey dashed
         Plot.ruleX([p20], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
         Plot.ruleX([p80], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
-        // Reference cost thresholds
-        Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
-        Plot.ruleX([25], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        // Reference cost thresholds ($10 and $25, meat-equivalent on the dry basis)
+        Plot.ruleX([basisLabels.toCostAxis(10)], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        Plot.ruleX([basisLabels.toCostAxis(25)], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
         // Labels
         Plot.text([
           {x: stats.p5  + 1.5, y: yLabel1, text: `p5: $${stats.p5.toFixed(1)}`},
@@ -1815,6 +1849,8 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 - **Dark green dotted**: $10/kg reference (ingredient cost only; excludes retail costs)
 - **Orange dotted**: $25/kg reference (premium product viable)
 
+On the default dry basis the two reference lines are $10 and $25 per kg of *chicken-meat equivalent*, so they sit at about $36 and $91 per kg dry cell mass (÷ 27.5% solids).
+
 The **width** of the distribution shows uncertainty. Narrow = confident. Wide = uncertain.
 </details>
 
@@ -1828,7 +1864,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
   const uc_cdmo = results.unit_cost;
   const uc_inhouse = inhouse_results.unit_cost;
 
-  const clipVal = Math.min(quantile(uc_inhouse, 0.97), 250);
+  const clipVal = Math.min(quantile(uc_inhouse, 0.97), basisLabels.dry ? 1250 : 250);
 
   const cdmo_p5  = quantile(uc_cdmo, 0.05);
   const cdmo_p50 = quantile(uc_cdmo, 0.50);
@@ -1854,7 +1890,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
     height: 340,
     marginLeft: 60,
     marginBottom: 50,
-    x: {label: "Manufacturing Cost ($/kg, wet weight at harvest)", domain: [0, clipVal * 1.02]},
+    x: {label: `Manufacturing Cost (${basisLabels.cost})`, domain: [0, clipVal * 1.02]},
     y: {label: "Frequency", grid: true},
     color: {
       domain: ["In-House", "CDMO"],
@@ -1868,8 +1904,8 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
         Plot.binX({y: "count"}, {x: "x", fill: "#e67e22", fillOpacity: 0.55})),
       Plot.ruleX([ih_p50],   {stroke: "#3498db", strokeWidth: 2.5}),
       Plot.ruleX([cdmo_p50], {stroke: "#e67e22", strokeWidth: 2.5}),
-      Plot.ruleX([10], {stroke: "darkgreen", strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
-      Plot.ruleX([25], {stroke: "orange",    strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
+      Plot.ruleX([basisLabels.toCostAxis(10)], {stroke: "darkgreen", strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
+      Plot.ruleX([basisLabels.toCostAxis(25)], {stroke: "orange",    strokeWidth: 1.5, strokeDasharray: "3,3", strokeOpacity: 0.6}),
       Plot.text([
         {x: ih_p50   + 1.5, y: 900, text: `In-House p50: $${ih_p50.toFixed(0)}`},
         {x: cdmo_p50 + 1.5, y: 750, text: `CDMO p50: $${cdmo_p50.toFixed(0)}`}
@@ -1911,7 +1947,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
       ${tbody}
     </table>
     <p style="font-size:0.82em; color:#777; margin-top:0.6rem;">
-      Both runs use seed 42 and identical VOC parameters. The difference isolates the capital cost structure: in-house (sampled CAPEX + fixed OPEX) vs. CDMO toll (lognormal p5=$${cdmo_toll_p5}, p95=$${cdmo_toll_p95}/kg).
+      Both runs use seed 42 and identical VOC parameters. The difference isolates the capital cost structure: in-house (sampled CAPEX + fixed OPEX) vs. CDMO toll (lognormal p5=$${cdmo_toll_p5}, p95=$${cdmo_toll_p95} per kg dry cell mass).
     </p>
   </div>`;
 }
@@ -1919,7 +1955,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above.
+These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. On the default dry basis the price points apply to the **chicken-meat equivalent**: dry-cell-mass cost × the target solids content (27.5% placeholder), roughly what a kilogram of chicken-like cell biomass would cost. On the wet basis they apply to wet biomass, as before October 26, 2026.
 
 ```{ojs}
 //| echo: false
@@ -1933,7 +1969,7 @@ These percentages answer: "What's the chance that production costs fall below ke
          </div>`
       : '';
     return `<div class="card" style="border: 2px solid ${borderColor}; padding: 1rem; border-radius: 8px; text-align: center;">
-      <h5 style="margin-bottom:0.3rem;">P(Pure cells &lt; $${threshold}/kg)</h5>
+      <h5 style="margin-bottom:0.3rem;">P(Pure cells &lt; $${threshold}/kg${basisLabels.dry ? " meat-eq." : ""})</h5>
       <h2 style="color: ${color}; margin:0.2rem 0;">${pureProb.toFixed(1)}%</h2>
       <small style="color:#555;">${label}</small>
       ${blendLine}
@@ -2033,7 +2069,7 @@ These percentages answer: "What's the chance that production costs fall below ke
       marginLeft: 200,
       marginRight: 140,
       x: {
-        label: "Average Cost ($/kg)",
+        label: `Average Cost (${basisLabels.cost})`,
         grid: true
       },
       y: {
@@ -2230,7 +2266,7 @@ sensitivityMethods = import(new URL("./sensitivity-methods.mjs", window.location
     marginLeft: 290,
     marginRight: 120,
     x: {
-      label: "Dollar swing in mean unit cost ($/kg) — larger bar = stronger cost association",
+      label: `Dollar swing in mean unit cost (${basisLabels.cost}) — larger bar = stronger cost association`,
       domain: [0, maxAbs + pad],
       grid: true,
       labelOffset: 40,
@@ -2264,7 +2300,7 @@ sensitivityMethods = import(new URL("./sensitivity-methods.mjs", window.location
 }
 ```
 
-*Red bars: high values occur with higher costs. Green bars: high values occur with lower costs. Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is an association, not an intervention effect or variance decomposition. Correlated inputs overlap; bars should not be summed or interpreted as research value. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements. Bars of a few dollars per kilogram are within simulation noise.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
+*Red bars: high values occur with higher costs. Green bars: high values occur with lower costs. Bar length = conditional-mean dollar swing between top 10% vs. bottom 10% of that parameter's distribution across the 30,000 Monte Carlo draws. This is an association, not an intervention effect or variance decomposition. Correlated inputs overlap; bars should not be summed or interpreted as research value. Industry Maturity is a latent variable whose bar captures the bundled effect of correlated improvements. Bars of a few dollars per wet kilogram (about five times that per dry kilogram) are within simulation noise.* [Full methodology →](docs.html#sensitivity-analysis-dollar-swing-metric){target="_blank"}
 
 ```{=html}
 <p style="margin:0.5rem 0 1.5rem;">
@@ -2296,7 +2332,7 @@ structural_comparison_rows = {
     const unchanged = Object.entries(changes).every(([key, value]) => results.effective_params[key] === value);
     const r = unchanged ? results : simulate(30000, 42, {...simParams, ...changes});
     return {scenario, p50: quantile(r.unit_cost, 0.5), p90: quantile(r.unit_cost, 0.9),
-      under25: 100 * r.unit_cost.filter(c => c < 25).length / r.unit_cost.length,
+      under25: 100 * r.threshold_cost.filter(c => c < 25).length / r.threshold_cost.length,
       notes: r.warnings.join(" ")};
   });
 }
@@ -2309,7 +2345,7 @@ html`<div class="structural-comparison-table">
 <table>
   <colgroup><col style="width:27%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:34%"></colgroup>
   <caption>Same seed and settings; one structural choice changed per row.</caption>
-  <thead><tr><th scope="col">Structure</th><th scope="col">p50 ($/kg)</th><th scope="col">p90 ($/kg)</th><th scope="col">P(&lt;$25), %</th><th scope="col">Override notes</th></tr></thead>
+  <thead><tr><th scope="col">Structure</th><th scope="col">p50 ($/kg ${basisLabels.costShort})</th><th scope="col">p90 ($/kg ${basisLabels.costShort})</th><th scope="col">P(&lt;$25 ${basisLabels.thresholdShort}), %</th><th scope="col">Override notes</th></tr></thead>
   <tbody>${structural_comparison_rows.map(r => html`<tr><th scope="row">${r.scenario}</th><td>${r.p50.toFixed(2)}</td><td>${r.p90.toFixed(2)}</td><td>${r.under25.toFixed(1)}</td><td>${r.notes || "None"}</td></tr>`)}</tbody>
 </table></div>`
 ```
@@ -2383,8 +2419,8 @@ Use **Structural stress tests → Maturity dependence** to compare shared and in
     marginBottom: 40,
     marginTop: 10,
     x: {
-      label: "Cell Density (g/L)",
-      domain: [0, Math.min(quantile(results.density_samples, 0.98) * 1.1, 350)]
+      label: "Cell Density (g dry cells/L)",
+      domain: [0, Math.min(quantile(results.density_samples, 0.98) * 1.1, 70)]
     },
     y: {
       label: "Frequency",
@@ -2397,7 +2433,7 @@ Use **Structural stress tests → Maturity dependence** to compare shared and in
       Plot.ruleX([denP95], {stroke: "black", strokeWidth: 1.5, strokeDasharray: "3,3"})
     ]
   });
-  const denLabel = `Cell Density Distribution (median: ${denP50.toFixed(0)} g/L, 90% CI: ${denP5.toFixed(0)} – ${denP95.toFixed(0)})`;
+  const denLabel = `Cell Density Distribution (median: ${denP50.toFixed(1)} g dry/L, 90% CI: ${denP5.toFixed(1)} – ${denP95.toFixed(1)})`;
 
   return html`<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1rem 0;">
     <div style="font-size: 0.9em;">
@@ -2439,12 +2475,12 @@ Use **Structural stress tests → Maturity dependence** to compare shared and in
       domain: [0, 1]
     },
     y: {
-      label: "Unit Cost ($/kg)",
-      domain: [0, Math.min(quantile(results.unit_cost, 0.95), 150)],
+      label: `Unit Cost (${basisLabels.cost})`,
+      domain: [0, Math.min(quantile(results.unit_cost, 0.95), basisLabels.dry ? 750 : 150)],
       grid: true
     },
     color: {
-      label: "Cell Density (g/L)",
+      label: "Cell Density (g dry/L)",
       scheme: "viridis",
       legend: true
     },

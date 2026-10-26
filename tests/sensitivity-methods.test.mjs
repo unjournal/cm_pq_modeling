@@ -100,7 +100,9 @@ test('interventions pin exactly one input and leave the paired draws intact', ()
 
 test('threshold profile compares the draws under a threshold with all draws', () => {
   const p = sm.thresholdProfile(base, 25);
-  const under = base.unit_cost.filter(v => v < 25).length;
+  // Draws are selected on the chicken-meat-equivalent cost (dry basis default).
+  const under = base.threshold_cost.filter(v => v < 25).length;
+  assert.ok(base.threshold_cost.every((v, i) => Math.abs(v - base.unit_cost[i] * 0.275) < 1e-9 * base.unit_cost[i]));
   assert.equal(p.count, under);
   assert.equal(p.share, under / n);
   assert.equal(p.continuous.length, 10);
@@ -116,7 +118,8 @@ test('threshold profile compares the draws under a threshold with all draws', ()
     const c = p.components[g];
     assert.ok(Math.abs(c.media + c.recf + c.capex + c.fixed + c.other - c.unit_cost) < 1e-9);
   }
-  assert.ok(p.components.under.unit_cost < 25 && p.components.all.unit_cost === model.mean(base.unit_cost));
+  // Component means are on the headline (dry) basis: under $25 meat-equivalent is under $25 / 0.275 dry.
+  assert.ok(p.components.under.unit_cost < 25 / 0.275 && p.components.all.unit_cost === model.mean(base.unit_cost));
   // Warning below the minimum count; null subset statistics when nothing qualifies.
   assert.equal(p.warning === null, under >= 300);
   assert.match(sm.thresholdProfile(base, 25, {minDraws: under + 1}).warning, /imprecise/);
@@ -138,16 +141,16 @@ function pageParams(cell, globals) {
 }
 test('URL state adapter reproduces the Advanced page parameters', () => {
   const epNull = {media_p10: null, media_p50: null, media_p90: null, gf_p10: null, gf_p50: null, gf_p90: null, density_p10: null, density_p50: null, density_p90: null};
-  const structure = {dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 8, fresh_media_p95: 60, nutrient_yield_p5: 3, nutrient_yield_p95: 25, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
+  const structure = {cost_basis: 'dry', dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 40, fresh_media_p95: 300, nutrient_yield_p5: 3, nutrient_yield_p95: 25, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
     mode_selection: 'mixture', p_feasible_perfusion: 0.7, p_feasible_continuous: 0.3, mode_choice_noise: 0,
     solids_fraction: 0.2, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65};
   const defaults = {
     structure_settings: structure, simpleMode: true, target_year: 2036, maturity: 0.5, plant_capacity: 20,
     uptime: 0.9, p_hydro: 0.75, p_recfactors: 0.5, p_supp_protein: 0.7,
     wacc_lo: 8, wacc_hi: 20, asset_life_lo: 8, asset_life_hi: 20,
-    density_lo: 30, density_hi: 200, media_turnover_lo: 0.5, media_turnover_hi: 3,
+    density_lo: 6, density_hi: 40, media_turnover_lo: 0.5, media_turnover_hi: 3,
     include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
-    gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 4, cdmo_toll_p95: 40,
+    gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
     p_fedbatch: 0.2, p_perfusion: 0.5, p_continuous: 0.3, override_mode_constraints: false,
     bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull
   };
@@ -165,7 +168,8 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
       media_use_model: 'yield', nutrient_yield_p5: '4', nutrient_yield_p95: '30'},
      {simpleMode: false, include_harvest_dewater: true,
       structure_settings: {...structure, solids_fraction: 0.15, target_solids_fraction: 0.3, protein_fraction_of_solids: 0.6,
-        media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30}}]
+        media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30}}],
+    [{cost_basis: 'wet'}, {structure_settings: {...structure, cost_basis: 'wet'}}]
   ];
   for (const [state, overrides] of cases) {
     const expected = pageParams('simParams', {...defaults, ...overrides});

@@ -314,7 +314,7 @@ export function subsampleIndices(n, size, seed = 1) {
 // ---------------------------------------------------------------------------
 
 const DISPLAYED_INPUT_SPECS = [
-  {key: "density",        name: "Cell Density (g/L)",                  sample: "density_samples",        kind: "primitive"},
+  {key: "density",        name: "Cell Density (g dry/L)",              sample: "density_samples",        kind: "primitive"},
   {key: "media_turnover", name: "Media-use multiplier (×)",            sample: "media_turnover_samples", kind: "primitive"},
   {key: "media_cost_L",   name: "Media $/L (incl. hydrolysate regime)", sample: "media_cost_L_samples",  kind: "mixture"},
   {key: "price_recf",     name: "GF Price ($/g, incl. regime)",        sample: "price_recf_samples",     kind: "mixture"},
@@ -391,16 +391,23 @@ export function interventionSpecs(params) {
 // For each pinnable input: the conditional contrast at the tail set-points versus
 // the contrast from actually setting the input to those values. Uses the same
 // seed so that everything else is held draw for draw.
+// The cost a statistic is computed on: probability thresholds use threshold_cost
+// (chicken-meat equivalent on the dry basis, wet cost on the wet basis); means and
+// quantiles use the headline unit_cost.
+export function outcomeFor(result, stat = {type: "mean"}) {
+  return stat.type === "below" && result.threshold_cost ? result.threshold_cost : result.unit_cost;
+}
+
 export function interventionContrasts(results, params, {n = 20000, seed = 42, tailFrac = 0.10, stat = {type: "mean"}} = {}) {
   const inputs = displayedInputs(results, params);
   const byKey = Object.fromEntries(inputs.map(i => [i.key, i]));
   return interventionSpecs(params).filter(s => byKey[s.key]).map(spec => {
     const input = byKey[spec.key];
     const {lo, hi} = tailMeans(input.data, tailFrac);
-    const conditional = tailContrast(input.data, results.unit_cost, {tailFrac, stat});
+    const conditional = tailContrast(input.data, outcomeFor(results, stat), {tailFrac, stat});
     const rLo = simulate(n, seed, {...params, ...spec.set(lo)});
     const rHi = simulate(n, seed, {...params, ...spec.set(hi)});
-    const intervention = summaryStat(rHi.unit_cost, stat) - summaryStat(rLo.unit_cost, stat);
+    const intervention = summaryStat(outcomeFor(rHi, stat), stat) - summaryStat(outcomeFor(rLo, stat), stat);
     return {key: spec.key, name: input.name, lo, hi, conditional, intervention, note: spec.note,
       warnings: [...new Set([...rLo.warnings, ...rHi.warnings])]};
   });
@@ -414,7 +421,7 @@ export function interventionContrasts(results, params, {n = 20000, seed = 42, ta
 
 export const THRESHOLD_PROFILE_CONTINUOUS = [
   {key: "L_per_kg",       name: "Fresh medium (L per kg)",              sample: "L_per_kg_samples"},
-  {key: "density",        name: "Cell density (g/L)",                   sample: "density_samples"},
+  {key: "density",        name: "Cell density (g dry/L)",               sample: "density_samples"},
   {key: "media_turnover", name: "Media-use multiplier (×)",             sample: "media_turnover_samples"},
   {key: "media_cost_L",   name: "Medium price ($/L)",                   sample: "media_cost_L_samples"},
   {key: "g_recf",         name: "Growth factor quantity (g/kg)",        sample: "g_recf_samples"},
@@ -437,16 +444,18 @@ export const THRESHOLD_PROFILE_COMPONENTS = [
   {key: "fixed", name: "Fixed operating costs",       sample: "cost_fixed"}
 ];
 
-// `result` is the output of simulate(). Statistics for the subset are null when no
-// draw qualifies. "other" is unit cost minus the four listed components (supplemental
-// proteins, other variable costs, contract-manufacturing toll, forming and
-// texturization, harvest and dewatering).
+// `result` is the output of simulate(). Draws are selected on threshold_cost (the
+// chicken-meat equivalent on the dry basis); component means are on the headline
+// basis. Statistics for the subset are null when no draw qualifies. "other" is unit
+// cost minus the four listed components (supplemental proteins, other variable
+// costs, contract-manufacturing toll, forming and texturization, harvest and dewatering).
 export function thresholdProfile(result, threshold, {minDraws = 300} = {}) {
   if (!(threshold > 0)) throw new RangeError("Threshold must be a positive cost in $/kg.");
   const uc = result.unit_cost;
+  const tc = result.threshold_cost || uc;
   const n = uc.length;
   const idx = [];
-  for (let i = 0; i < n; i++) if (uc[i] < threshold) idx.push(i);
+  for (let i = 0; i < n; i++) if (tc[i] < threshold) idx.push(i);
   const count = idx.length;
   const pick = arr => idx.map(i => arr[i]);
   const spread = arr => ({p10: quantile(arr, 0.1), p50: quantile(arr, 0.5), p90: quantile(arr, 0.9)});
@@ -493,6 +502,7 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
   return {
     ...DEFAULT_PARAMS,
     dependence_mode: choice("dependence_mode", DEFAULT_PARAMS.dependence_mode, ["shared", "independent_maturity"]),
+    cost_basis: choice("cost_basis", DEFAULT_PARAMS.cost_basis, ["dry", "wet"]),
     media_use_model: choice("media_use_model", DEFAULT_PARAMS.media_use_model, ["density", "direct", "yield"]),
     fresh_media_p5: num("fresh_media_p5", DEFAULT_PARAMS.fresh_media_p5),
     fresh_media_p95: num("fresh_media_p95", DEFAULT_PARAMS.fresh_media_p95),
@@ -520,8 +530,8 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     wacc_p95: simpleMode ? 0.20 : num("wacc_hi", 20) / 100,
     asset_life_lo: simpleMode ? 8 : num("asset_life_lo", 8),
     asset_life_hi: simpleMode ? 20 : num("asset_life_hi", 20),
-    density_gL_p5: num("density_lo", 30),
-    density_gL_p95: num("density_hi", 200),
+    density_gL_p5: num("density_lo", 6),
+    density_gL_p95: num("density_hi", 40),
     media_turnover_p5: simpleMode ? 0.5 : num("media_turnover_lo", 0.5),
     media_turnover_p95: simpleMode ? 3.0 : num("media_turnover_hi", 3.0),
     include_capex: simpleMode ? true : bool("include_capex", true),
@@ -530,8 +540,8 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     include_harvest_dewater: simpleMode ? false : bool("include_harvest_dewater", false),
     gf_progress: num("gf_progress", 50),
     cdmo_mode: bool("cdmo_mode", false),
-    cdmo_toll_p5: num("cdmo_toll_p5", 4),
-    cdmo_toll_p95: num("cdmo_toll_p95", 40),
+    cdmo_toll_p5: num("cdmo_toll_p5", 20),
+    cdmo_toll_p95: num("cdmo_toll_p95", 200),
     p_fedbatch: num("p_fedbatch", 0.20),
     p_perfusion: num("p_perfusion", 0.50),
     p_continuous: num("p_continuous", 0.30),

@@ -27,7 +27,7 @@ format:
 ::: {.callout-note collapse="true"}
 ## Model version and September 17 update
 
-This page runs the **current model** (engine `2026-10-26.3`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-10-26.4`; headline cost per kg dry cell mass since October 26). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 :::
@@ -39,12 +39,14 @@ This model is *largely AI-generated* and has not been fully validated. It is pro
 :::
 
 ::: {.callout-important}
-## Output basis: what "per kg" means here
-**Current basis.** Costs are per kg of *wet* cell biomass, because the code treats the cell-density inputs as grams of wet biomass per litre at harvest. Harvested cells are mostly water, and a wet kg can carry more or less residual medium depending on washing and dewatering: a paste at 15% solids carries about half the protein of one at 30%.
+## Basis change: costs are now per kg of DRY cell mass
+**Since October 26, 2026, the headline cost is per kg of dry cell mass**, about five times the old per-wet-kg figures (a kg of harvested cells is only about 20% solids). Nothing about the underlying scenario changed.
 
-**Planned standard basis (team decision, 26 October 2026).** Cost per kg of washed cell biomass at a fixed solids content close to chicken meat (placeholder 25–30% dry matter, to be agreed), reported alongside cost per kg of protein. Until then, read every number here as wet-basis. [Why the basis matters →](docs.qmd#output-basis)
+**Why.** Washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing, maps to nutrition, and is the natural basis for nutrient stoichiometry.
 
-*AI-drafted (Claude, 26 October 2026) from the team's design decision; not yet reviewed by a person.*
+**Thresholds and blending** use a **chicken-meat equivalent**: dry cost × a solids content close to chicken meat (placeholder 27.5%, to be agreed). The old wet-basis view is available on the [Advanced Model](index.qmd) under *Structural stress tests → Cost basis*. [Why the basis matters →](docs.qmd#output-basis)
+
+*AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
 
 ::: {.callout-note collapse="true"}
@@ -234,19 +236,19 @@ viewof p_continuous_s = Inputs.range([0, 100], {
 <tbody>
 <tr style="border-bottom:1px solid #f0f0f0;">
   <td style="padding:3px 4px;"><strong>Fed-batch</strong></td>
-  <td style="padding:3px 4px;">5–30 g/L</td>
+  <td style="padding:3px 4px;">1–6 g dry/L</td>
   <td style="padding:3px 4px;">1–2×</td>
   <td style="padding:3px 4px; color:#c0392b;">Higher cost (less dense)</td>
 </tr>
 <tr style="border-bottom:1px solid #f0f0f0;">
   <td style="padding:3px 4px;"><strong>Perfusion</strong></td>
-  <td style="padding:3px 4px;">30–150 g/L</td>
+  <td style="padding:3px 4px;">6–30 g dry/L</td>
   <td style="padding:3px 4px;">1–5×</td>
   <td style="padding:3px 4px; color:#e67e22;">Medium cost</td>
 </tr>
 <tr>
   <td style="padding:3px 4px;"><strong>Continuous</strong></td>
-  <td style="padding:3px 4px;">50–200 g/L</td>
+  <td style="padding:3px 4px;">10–40 g dry/L</td>
   <td style="padding:3px 4px;">0.5–3×</td>
   <td style="padding:3px 4px; color:#27ae60;">Lower cost (denser)</td>
 </tr>
@@ -268,7 +270,7 @@ viewof p_continuous_s = Inputs.range([0, 100], {
 | Asset life | 8–20 years (uniform) | Typical bioreactor/facility lifecycle; Risner et al. and Humbird use 10–15 yr. |
 | Plant capacity | 10–40 kTA (lognormal) | Ranges from small-scale (10 kTA) to large (40 kTA) commercial facilities. |
 | CAPEX | Included | Bioreactor and facility capital costs, annualised via CRF. |
-| Fixed overhead | Included. \$1–6/kg at reference 20 kTA scale; scales sub-linearly. | Labour, maintenance, plant overhead. |
+| Fixed overhead | Included. \$1–6 per wet kg (\$5–30 per kg dry) at reference 20 kTA (thousand tonnes of wet biomass a year) scale; scales sub-linearly. | Labour, maintenance, plant overhead. |
 | Forming and texturization | Not included: outside the estimate. Scaffolding, texturization and forming can be added in the Advanced Model. | Output here is unstructured cell mass at the bioreactor gate. Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly. |
 | GF cost progress | 50% | Midpoint toward industry price targets |
 | Filler cost | $3/kg | Plant protein / mycoprotein estimate |
@@ -363,16 +365,20 @@ scenarioNotes = html`<div role="status">${results_s.warnings.map(w => html`<p><s
 
 ```{ojs}
 //| echo: false
+// Headline cost is per kg dry cell mass; thresholds and blending use the
+// chicken-meat equivalent (dry cost × target solids), as on the Advanced page.
 stats_s = {
   const uc = results_s.unit_cost;
+  const tc = results_s.threshold_cost;
   const bs = blending_share_s / 100;
   const fc = 3.0;
-  const blended = uc.map(c => c * bs + fc * (1 - bs));
+  const blended = tc.map(c => c * bs + fc * (1 - bs));
   const pct = (arr, t) => arr.filter(x => x < t).length / arr.length * 100;
   return {
     p5: quantile(uc, 0.05), p20: quantile(uc, 0.20),
     p50: quantile(uc, 0.50), p80: quantile(uc, 0.80), p95: quantile(uc, 0.95),
-    prob_10: pct(uc, 10), prob_25: pct(uc, 25), prob_50: pct(uc, 50), prob_100: pct(uc, 100),
+    t_p50: quantile(tc, 0.50), toAxis: t => t / results_s.basis.target_solids_fraction,
+    prob_10: pct(tc, 10), prob_25: pct(tc, 25), prob_50: pct(tc, 50), prob_100: pct(tc, 100),
     bprob_5: pct(blended, 5), bprob_8: pct(blended, 8), bprob_12: pct(blended, 12),
     bprob_10: pct(blended, 10), bprob_25: pct(blended, 25),
     blended_p50: quantile(blended, 0.50),
@@ -389,13 +395,13 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 
 ### Results
 
-**Quantity being modeled:** manufacturing cost per kg of wet cultured-chicken biomass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. Commercialization probability is unmodeled; dollars retain mixed source years.
+**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. Commercialization probability is unmodeled; dollars retain mixed source years.
 
 
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-All values are <strong>manufacturing cost per kg on the model's wet-biomass basis</strong> — a factory-gate ingredient cost, not a consumer-product price. The code treats density as wet-biomass g/L; it does not separately standardize hydration, dry matter, protein content, or recovery yield. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+Headline values are <strong>manufacturing cost per kg of dry cell mass</strong> — a factory-gate ingredient cost, not a consumer-product price. The median is about $${Math.round(stats_s.t_p50)}/kg as <strong>chicken-meat equivalent</strong> (dry cost × ${(results_s.basis.target_solids_fraction * 100).toFixed(1)}% solids, a placeholder), which is what the probability thresholds and blended-product figures use. Recovery losses in washing and dewatering are not modeled. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
 </div>`
 ```
@@ -406,21 +412,21 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
 <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Median Cost (p50)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p50)}/kg</h2>
-  <small>Half of simulations above, half below</small>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p50)}/kg dry</h2>
+  <small>Per kg dry cell mass (≈ $${Math.round(stats_s.t_p50)}/kg chicken-meat equivalent). Half of simulations above, half below</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended: $${stats_s.blended_p50.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Optimistic (p5)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p5)}/kg</h2>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p5)}/kg dry</h2>
   <small>Only 5% of simulations cheaper</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p5: $${stats_s.blended_p5.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Pessimistic (p95)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p95)}/kg</h2>
+  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p95)}/kg dry</h2>
   <small>95% of simulations cheaper</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p95: $${stats_s.blended_p95.toFixed(1)}/kg</div>` : ''}
 </div>
@@ -440,7 +446,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
   function card(thresh, prob, label, color) {
     const bc = prob > 30 ? color : '#ddd';
     return `<div style="border:2px solid ${bc}; padding:0.9rem; border-radius:8px; text-align:center;">
-      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg)</h5>
+      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg meat-eq.)</h5>
       <h2 style="color:${color}; margin:0.2rem 0;">${prob.toFixed(1)}%</h2>
       <small style="color:#666;">${label}</small>
     </div>`;
@@ -496,7 +502,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
   function makeChart(w, h) {
     return Plot_s.plot({
       width: w, height: h, marginLeft: 60, marginBottom: 45,
-      x: { label: "Cell Biomass Manufacturing Cost ($/kg, wet weight)", domain: [0, clipVal * 1.05] },
+      x: { label: "Cell Biomass Manufacturing Cost ($/kg dry cell mass)", domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       marks: [
         Plot_s.rectY(clipped, Plot_s.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
@@ -505,8 +511,9 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
         Plot_s.ruleX([stats_s.p95], {stroke: "red",   strokeWidth: 2, strokeDasharray: "5,5"}),
         Plot_s.ruleX([p20], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
         Plot_s.ruleX([p80], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
-        Plot_s.ruleX([10], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
-        Plot_s.ruleX([25], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        // $10 and $25 meat-equivalent, placed on the dry-cost axis
+        Plot_s.ruleX([stats_s.toAxis(10)], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
+        Plot_s.ruleX([stats_s.toAxis(25)], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
         Plot_s.text([
           {x: stats_s.p5+1.5, y: h*6, text: `p5: $${stats_s.p5.toFixed(0)}`},
           {x: stats_s.p50+1.5, y: h*7.5, text: `p50: $${stats_s.p50.toFixed(0)}`},

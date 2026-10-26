@@ -8,8 +8,10 @@ const variants = {
   direct_media: {media_use_model: 'direct'}, media_linked_gf: {gf_dose_model: 'media_linked'},
   direct_media_and_linked_gf: {media_use_model: 'direct', gf_dose_model: 'media_linked'}
 };
+// Pinned to the wet basis so the figures quoted on the September review pages stay
+// comparable; the engine default has been per kg dry cell mass since 2026-10-26.4.
 function summarize(n, seed, overrides) {
-  const r = simulate(n, seed, overrides);
+  const r = simulate(n, seed, {cost_basis: 'wet', ...overrides});
   return {n, seed, p50: quantile(r.unit_cost, .5), p90: quantile(r.unit_cost, .9),
     p95: quantile(r.unit_cost, .95), mean: mean(r.unit_cost),
     p_under10: mean(r.unit_cost.map(c => +(c < 10))),
@@ -18,7 +20,7 @@ function summarize(n, seed, overrides) {
 }
 console.log(JSON.stringify({
   model_version: MODEL_VERSION, engine_sha256: hash('../dashboard/cost-model.mjs'),
-  basis: 'Hypothetical plant/process scenarios; USD/kg wet biomass; mixed dollar years; no commercialization conditioning',
+  basis: 'Hypothetical plant/process scenarios; USD/kg wet biomass (cost_basis "wet"; the engine default is per kg dry cell mass since 2026-10-26.4); mixed dollar years; no commercialization conditioning',
   default_parameters: DEFAULT_PARAMS,
   variants: Object.fromEntries(Object.entries(variants).map(([key, overrides]) => [key, {
     overrides, runs: [42, 7, 99].map(seed => summarize(30000, seed, overrides))
