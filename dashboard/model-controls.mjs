@@ -164,3 +164,31 @@ export function structuralControl(initial = new URLSearchParams()) {
   if (specs.some(([key]) => initial.has(key))) details.open = true;
   return container;
 }
+
+// The chicken-meat equivalent is a fixed unit conversion of the dry-cell-mass cost,
+// shown beside it everywhere. Both pages use this wording and axis.
+export function meatEquivalentNote(solids) {
+  const pct = (solids * 100).toFixed(1).replace(/\.0$/, '');
+  return `Chicken-meat equivalent: the dry-cell-mass cost converted to the water content of chicken meat, by multiplying by ${pct}% solids. This is a fixed convention, not an uncertain input: $/kg meat equivalent = $/kg dry × ${solids}. It means the same mass and moisture as chicken meat, not the same protein, taste, texture or finished product; cultured cell mass may carry less protein per kg than chicken. Forming, blending and packaging are not included. The solids content can be changed under Structural stress tests on the Advanced page.`;
+}
+
+export function formatMeatEquivalent(cost) {
+  return cost >= 10 ? Math.round(cost).toString() : cost.toFixed(1);
+}
+
+// Explicit x axes for a dry-cost chart: the cost axis at the bottom, and the same
+// positions labelled as chicken-meat equivalent on top. Plot drops its implicit
+// x axis once an axis mark is given, so both are returned.
+export function meatEquivalentAxes(Plot, domainMax, solids) {
+  const max = domainMax * solids;
+  const rough = max / 6, magnitude = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 5, 10].map(m => m * magnitude).find(s => s >= rough);
+  const decimals = Math.max(0, -Math.floor(Math.log10(step)));
+  const ticks = [];
+  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(t);
+  return [
+    Plot.axisX({anchor: 'bottom'}),
+    Plot.axisX(ticks.map(t => t / solids), {anchor: 'top', label: '$/kg chicken-meat equivalent',
+      tickFormat: d => '$' + (d * solids).toFixed(decimals)})
+  ];
+}

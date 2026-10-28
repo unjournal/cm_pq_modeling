@@ -283,7 +283,7 @@ There is also a **cost-basis mismatch** before the demand equation begins. `cbio
 future factory-gate biomass cost; the comparison prices are approximate 2025 US retail
 prices. It must be per kg of *product weight*: since October 26, 2026 the cost model's
 headline is per kg of dry cell mass (about five times a wet figure), so use its
-chicken-meat equivalent (dry cost × 27.5% placeholder solids; about \$59 at defaults) or
+chicken-meat equivalent (dry cost × 27.5% solids, a fixed convention; about \$59 at defaults) or
 the wet basis, not the dry-mass figure. The toy assumes 100% cell inclusion and adds only scaffold (for cuts) plus a
 generic markup. It omits recovery yield, non-cell ingredients, formulation,
 texturization, packaging, distribution, tax, retail margin, future conventional prices,

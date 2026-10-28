@@ -87,7 +87,7 @@ We especially welcome expert review of: growth factor quantities and prices, bio
 
 **Why.** Harvested cells are mostly water, and washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing or dewatering, maps to nutrition, and is the natural basis for nutrient stoichiometry (how much medium it takes to build a gram of cells).
 
-**What else you'll see.** Cost per kg of **protein**, and a **chicken-meat equivalent**: dry cost × a fixed solids content close to chicken meat (placeholder 27.5%, within 25–30%, to be agreed). The probability thresholds (\$10, \$25 …), the blended-product arithmetic and chicken comparisons use the meat equivalent. Cell density is entered in **g dry cells per litre**, and \$/kg inputs are per kg dry. **The old wet-basis output is one switch away** (*Structural stress tests → Cost basis*) and reproduces the earlier numbers exactly. Shared links made before this change that set density or \$/kg priors will now be read as dry-basis values. [Why the basis matters, and how sources report it →](docs.qmd#output-basis)
+**What else you'll see.** Cost per kg of **protein**, and a **chicken-meat equivalent**: dry cost × a fixed solids content close to chicken meat (27.5%, a convention agreed on 28 October 2026). It is shown beside every dry-basis cost. The probability thresholds (\$10, \$25 …), the blended-product arithmetic and chicken comparisons use the meat equivalent. Cell density is entered in **g dry cells per litre**, and \$/kg inputs are per kg dry. **The old wet-basis output is one switch away** (*Structural stress tests → Cost basis*) and reproduces the earlier numbers exactly. Shared links made before this change that set density or \$/kg priors will now be read as dry-basis values. [Why the basis matters, and how sources report it →](docs.qmd#output-basis)
 
 *AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
@@ -1497,7 +1497,12 @@ basisLabels = {
     threshold: dry ? `$/kg chicken-meat equivalent (${pctSolids}% solids)` : "$/kg wet biomass",
     thresholdShort: dry ? "meat-equivalent" : "wet",
     // Where a meat-equivalent threshold sits on the headline cost axis
-    toCostAxis: t => dry ? t / results.basis.target_solids_fraction : t
+    toCostAxis: t => dry ? t / results.basis.target_solids_fraction : t,
+    solids: results.basis.target_solids_fraction,
+    meatNote: modelControls.meatEquivalentNote(results.basis.target_solids_fraction),
+    // Second x axis in meat-equivalent dollars on dry-cost charts; none on the wet basis
+    meatAxes: domainMax => dry ? modelControls.meatEquivalentAxes(Plot, domainMax, results.basis.target_solids_fraction) : [],
+    marginTop: dry ? 45 : undefined
   };
 }
 
@@ -1542,7 +1547,7 @@ stats = {
 
 ### Results Summary
 
-**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass (by default; wet biomass is one switch away under *Structural stress tests*) for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
+**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass, shown alongside the same cost as **chicken-meat equivalent** (dry × 27.5% solids, a fixed convention for chicken's water content). Wet biomass is one switch away under *Structural stress tests*. Each figure is for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
 
 
 []{#output-cautions}
@@ -1560,30 +1565,38 @@ html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px so
 
 ```{ojs}
 //| echo: false
-html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+{
+  // Dry cost and its chicken-meat equivalent at equal size; the wet basis shows one number.
+  // Built per card: a DOM node can only appear in one place.
+  const meatTag = () => html`<span title="${basisLabels.meatNote}" style="cursor: help; text-decoration: underline dotted;">chicken-meat equivalent &#9432;</span>`;
+  const costs = (dryCost, meatCost) => basisLabels.dry
+    ? html`<h2 style="margin: 0.5rem 0 0;">$${Math.round(dryCost)}<span style="font-size: 0.55em; font-weight: 400;">/kg dry cell mass</span></h2>
+<h2 style="margin: 0 0 0.5rem;">$${modelControls.formatMeatEquivalent(meatCost)}<span style="font-size: 0.55em; font-weight: 400;">/kg ${meatTag()}</span></h2>`
+    : html`<h2 style="margin: 0.5rem 0;">$${Math.round(dryCost)}/kg wet</h2>`;
+  return html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
 <div class="card" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Median Pure Cell Mass Cost (p50)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p50)}/kg ${basisLabels.costShort}</h2>
-<small>${basisLabels.cost}${basisLabels.dry ? ` (≈ $${Math.round(stats.t_p50)}/kg chicken-meat equivalent)` : " (at harvest)"} — half of simulations above, half below</small>
+${costs(stats.p50, stats.t_p50)}
+<small>${basisLabels.dry ? "" : "Per kg wet biomass at harvest. "}Half of simulations above, half below</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Optimistic (p5)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p5)}/kg ${basisLabels.costShort}</h2>
+${costs(stats.p5, stats.t_p5)}
 <small>Only 5% of simulations cheaper</small>
 </div>
 
 <div class="card" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
 <h4 style="margin: 0; opacity: 0.9;">Pessimistic (p95)</h4>
-<h2 style="margin: 0.5rem 0;">$${Math.round(stats.p95)}/kg ${basisLabels.costShort}</h2>
+${costs(stats.p95, stats.t_p95)}
 <small>95% of simulations cheaper</small>
 </div>
 
 </div>
 
 <div style="background: #f4f6f8; border-left: 4px solid #7f8c8d; padding: 0.8rem 1rem; margin-bottom: 0.5rem; font-size: 0.9em;">
-<strong>Same results on other bases:</strong> median <strong>$${quantile(results.unit_cost_dry, 0.5).toFixed(0)}/kg dry cell mass</strong>; <strong>$${quantile(results.unit_cost_meat_equiv, 0.5).toFixed(1)}/kg chicken-meat equivalent</strong> at ${(results.basis.target_solids_fraction * 100).toFixed(1)}% solids; <strong>$${quantile(results.unit_cost_protein, 0.5).toFixed(0)}/kg protein</strong> (${(results.basis.protein_fraction_of_solids * 100).toFixed(0)}% of dry mass); and <strong>$${quantile(results.unit_cost_wet, 0.5).toFixed(1)}/kg wet biomass</strong> at ${(results.basis.solids_fraction * 100).toFixed(0)}% solids, the headline basis before October 26, 2026. The solids and protein shares are placeholders; washing losses are not modeled. Change them, or switch the headline basis, under <em>Structural stress tests</em>. <a href="docs.html#output-basis">Why the basis matters</a>
+${basisLabels.dry ? html`<strong>Two numbers, one cost.</strong> Dry cell mass is the model's basis: it does not change with washing or dewatering and is the natural unit for nutrients. The chicken-meat equivalent is the same cost at the water content of chicken meat (dry × ${(basisLabels.solids * 100).toFixed(1)}% solids, a fixed convention), for comparison with chicken. It is not a protein or finished-product equivalent.` : ""} <strong>Other bases:</strong> median <strong>$${quantile(results.unit_cost_protein, 0.5).toFixed(0)}/kg protein</strong> (${(results.basis.protein_fraction_of_solids * 100).toFixed(0)}% of dry mass) and <strong>$${quantile(results.unit_cost_wet, 0.5).toFixed(1)}/kg wet biomass</strong> at ${(results.basis.solids_fraction * 100).toFixed(0)}% solids, the headline basis before October 26, 2026.${basisLabels.dry ? "" : html` On the default dry basis: <strong>$${quantile(results.unit_cost_dry, 0.5).toFixed(0)}/kg dry cell mass</strong> and <strong>$${modelControls.formatMeatEquivalent(quantile(results.unit_cost_meat_equiv, 0.5))}/kg chicken-meat equivalent</strong>.`} The solids and protein shares are placeholders; washing losses are not modeled. Change them, or switch the headline basis, under <em>Structural stress tests</em>. <a href="docs.html#output-basis">Why the basis matters</a>
 </div>
 
 ${include_blending ? html`<div style="background: #eaf7ea; border-left: 4px solid #27ae60; padding: 0.8rem 1rem; margin-top: 0.5rem; font-size: 0.9em;">
@@ -1593,7 +1606,8 @@ Median <strong>$${stats.blended_p50.toFixed(1)}/kg</strong> · 90% CI: $${stats.
 <strong>Hybrid product estimate:</strong> At a CM inclusion rate of ~25% with plant-based filler at ~$3/kg, the blended ingredient cost would be approximately <strong>$${(stats.t_p50 * 0.25 + 3 * 0.75).toFixed(1)}/kg</strong> (median${basisLabels.dry ? ", using the chicken-meat-equivalent cell cost" : ""}). Enable "Show blended product cost" in the sidebar to adjust these assumptions.
 </div>`}
 
-</div>`
+</div>`;
+}
 ```
 
 ```{ojs}
@@ -1764,10 +1778,12 @@ Plot = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
       height: h,
       marginLeft: 60,
       marginBottom: 50,
+      marginTop: basisLabels.marginTop,
       x: { label: `Cell Biomass Manufacturing Cost (${basisLabels.cost})`, domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       style: { fontSize: fontSize || 13 },
       marks: [
+        ...basisLabels.meatAxes(clipVal * 1.05),
         Plot.rectY(clipped, Plot.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
         // p5 / p50 / p95 coloured lines
         Plot.ruleX([stats.p5],  {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
@@ -1890,6 +1906,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
     height: 340,
     marginLeft: 60,
     marginBottom: 50,
+    marginTop: basisLabels.marginTop,
     x: {label: `Manufacturing Cost (${basisLabels.cost})`, domain: [0, clipVal * 1.02]},
     y: {label: "Frequency", grid: true},
     color: {
@@ -1898,6 +1915,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
       legend: true
     },
     marks: [
+      ...basisLabels.meatAxes(clipVal * 1.02),
       Plot.rectY(plotData.filter(d => d.mode === "In-House"),
         Plot.binX({y: "count"}, {x: "x", fill: "#3498db", fillOpacity: 0.55})),
       Plot.rectY(plotData.filter(d => d.mode === "CDMO"),
@@ -1955,7 +1973,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. On the default dry basis the price points apply to the **chicken-meat equivalent**: dry-cell-mass cost × the target solids content (27.5% placeholder), roughly what a kilogram of chicken-like cell biomass would cost. On the wet basis they apply to wet biomass, as before October 26, 2026.
+These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. On the default dry basis the price points apply to the **chicken-meat equivalent**: dry-cell-mass cost × 27.5% solids, a fixed convention for the water content of chicken meat. Each card also gives the same price point per kg dry cell mass. A kilogram of meat equivalent has chicken's moisture, not necessarily its protein, taste or texture. On the wet basis they apply to wet biomass, as before October 26, 2026.
 
 ```{ojs}
 //| echo: false
@@ -1969,7 +1987,7 @@ These percentages answer: "What's the chance that production costs fall below ke
          </div>`
       : '';
     return `<div class="card" style="border: 2px solid ${borderColor}; padding: 1rem; border-radius: 8px; text-align: center;">
-      <h5 style="margin-bottom:0.3rem;">P(Pure cells &lt; $${threshold}/kg${basisLabels.dry ? " meat-eq." : ""})</h5>
+      <h5 style="margin-bottom:0.3rem;">P(Pure cells &lt; $${threshold}/kg${basisLabels.dry ? ` meat-eq. = $${Math.round(basisLabels.toCostAxis(threshold))}/kg dry` : ""})</h5>
       <h2 style="color: ${color}; margin:0.2rem 0;">${pureProb.toFixed(1)}%</h2>
       <small style="color:#555;">${label}</small>
       ${blendLine}
@@ -2063,19 +2081,23 @@ These percentages answer: "What's the chance that production costs fall below ke
     const w = large ? 1200 : 1000;
     const h = large ? 700 : 580;
     const fontSize = large ? 14 : 13;
+    const xMax = Math.max(...components.map(c => c.value)) * 1.05;
     return Plot.plot({
       width: w,
       height: h,
       marginLeft: 200,
       marginRight: 140,
+      marginTop: basisLabels.marginTop,
       x: {
         label: `Average Cost (${basisLabels.cost})`,
-        grid: true
+        grid: true,
+        domain: [0, xMax]
       },
       y: {
         label: null
       },
       marks: [
+        ...(basisLabels.dry ? [Plot.gridX(), ...basisLabels.meatAxes(xMax)] : []),
         Plot.barX(components, {
           y: "name",
           x: "value",

@@ -44,7 +44,7 @@ This model is *largely AI-generated* and has not been fully validated. It is pro
 
 **Why.** Washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing, maps to nutrition, and is the natural basis for nutrient stoichiometry.
 
-**Thresholds and blending** use a **chicken-meat equivalent**: dry cost × a solids content close to chicken meat (placeholder 27.5%, to be agreed). The old wet-basis view is available on the [Advanced Model](index.qmd) under *Structural stress tests → Cost basis*. [Why the basis matters →](docs.qmd#output-basis)
+**Thresholds and blending** use a **chicken-meat equivalent**: dry cost × a solids content close to chicken meat (27.5%, a fixed convention), shown beside every dry-basis cost. The old wet-basis view is available on the [Advanced Model](index.qmd) under *Structural stress tests → Cost basis*. [Why the basis matters →](docs.qmd#output-basis)
 
 *AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
@@ -377,7 +377,8 @@ stats_s = {
   return {
     p5: quantile(uc, 0.05), p20: quantile(uc, 0.20),
     p50: quantile(uc, 0.50), p80: quantile(uc, 0.80), p95: quantile(uc, 0.95),
-    t_p50: quantile(tc, 0.50), toAxis: t => t / results_s.basis.target_solids_fraction,
+    t_p5: quantile(tc, 0.05), t_p50: quantile(tc, 0.50), t_p95: quantile(tc, 0.95),
+    toAxis: t => t / results_s.basis.target_solids_fraction,
     prob_10: pct(tc, 10), prob_25: pct(tc, 25), prob_50: pct(tc, 50), prob_100: pct(tc, 100),
     bprob_5: pct(blended, 5), bprob_8: pct(blended, 8), bprob_12: pct(blended, 12),
     bprob_10: pct(blended, 10), bprob_25: pct(blended, 25),
@@ -401,37 +402,45 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-Headline values are <strong>manufacturing cost per kg of dry cell mass</strong> — a factory-gate ingredient cost, not a consumer-product price. The median is about $${Math.round(stats_s.t_p50)}/kg as <strong>chicken-meat equivalent</strong> (dry cost × ${(results_s.basis.target_solids_fraction * 100).toFixed(1)}% solids, a placeholder), which is what the probability thresholds and blended-product figures use. Recovery losses in washing and dewatering are not modeled. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
+Each headline value is given twice: <strong>per kg of dry cell mass</strong>, the model's basis, and as <strong>chicken-meat equivalent</strong>, the same cost at the water content of chicken meat (dry cost × ${(results_s.basis.target_solids_fraction * 100).toFixed(1)}% solids, a fixed convention). The meat equivalent is for comparison with chicken; it is not a protein or finished-product equivalent. The probability thresholds and blended-product figures use it. Both are factory-gate ingredient costs, not consumer-product prices. Recovery losses in washing and dewatering are not modeled. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
 </div>`
 ```
 
 ```{ojs}
 //| echo: false
-html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+{
+  // Dry cost and its chicken-meat equivalent at equal size, as on the Advanced page.
+  // Built per card: a DOM node can only appear in one place.
+  const meatTag = () => html`<span title="${modelControls.meatEquivalentNote(results_s.basis.target_solids_fraction)}" style="cursor: help; text-decoration: underline dotted;">chicken-meat equivalent &#9432;</span>`;
+  const small = text => html`<span style="font-size: 0.55em; font-weight: 400;">${text}</span>`;
+  const costs = (dryCost, meatCost) => html`<h2 style="margin:0.5rem 0 0;">$${Math.round(dryCost)}${small("/kg dry cell mass")}</h2>
+  <h2 style="margin:0 0 0.5rem;">$${modelControls.formatMeatEquivalent(meatCost)}${small(html`/kg ${meatTag()}`)}</h2>`;
+  return html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
 <div style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Median Cost (p50)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p50)}/kg dry</h2>
-  <small>Per kg dry cell mass (≈ $${Math.round(stats_s.t_p50)}/kg chicken-meat equivalent). Half of simulations above, half below</small>
+  ${costs(stats_s.p50, stats_s.t_p50)}
+  <small>Half of simulations above, half below</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended: $${stats_s.blended_p50.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Optimistic (p5)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p5)}/kg dry</h2>
+  ${costs(stats_s.p5, stats_s.t_p5)}
   <small>Only 5% of simulations cheaper</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p5: $${stats_s.blended_p5.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Pessimistic (p95)</h4>
-  <h2 style="margin:0.5rem 0;">$${Math.round(stats_s.p95)}/kg dry</h2>
+  ${costs(stats_s.p95, stats_s.t_p95)}
   <small>95% of simulations cheaper</small>
   ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p95: $${stats_s.blended_p95.toFixed(1)}/kg</div>` : ''}
 </div>
 
-</div>`
+</div>`;
+}
 ```
 
 ### Probability Thresholds
@@ -446,7 +455,7 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
   function card(thresh, prob, label, color) {
     const bc = prob > 30 ? color : '#ddd';
     return `<div style="border:2px solid ${bc}; padding:0.9rem; border-radius:8px; text-align:center;">
-      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg meat-eq.)</h5>
+      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg meat-eq. = $${Math.round(stats_s.toAxis(thresh))}/kg dry)</h5>
       <h2 style="color:${color}; margin:0.2rem 0;">${prob.toFixed(1)}%</h2>
       <small style="color:#666;">${label}</small>
     </div>`;
@@ -501,10 +510,11 @@ html`<div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; 
 
   function makeChart(w, h) {
     return Plot_s.plot({
-      width: w, height: h, marginLeft: 60, marginBottom: 45,
+      width: w, height: h, marginLeft: 60, marginBottom: 45, marginTop: 45,
       x: { label: "Cell Biomass Manufacturing Cost ($/kg dry cell mass)", domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       marks: [
+        ...modelControls.meatEquivalentAxes(Plot_s, clipVal * 1.05, results_s.basis.target_solids_fraction),
         Plot_s.rectY(clipped, Plot_s.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
         Plot_s.ruleX([stats_s.p5],  {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
         Plot_s.ruleX([stats_s.p50], {stroke: "blue",  strokeWidth: 3}),

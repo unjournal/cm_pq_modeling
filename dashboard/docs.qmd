@@ -74,7 +74,7 @@ This document provides complete technical documentation for the cultured chicken
 
 ::: {.callout-important}
 ## Basis change (engine `2026-10-26.4`): dry cell mass is now the primary basis
-**Headline:** cost per kg of **dry cell mass**. **Secondary:** cost per kg of **protein**, and a **chicken-meat equivalent** (dry cost × a fixed solids content close to chicken meat; placeholder 27.5%, within 25–30%) for intuition. Probability thresholds, the blended-product arithmetic and chicken comparisons use the meat equivalent.
+**Headline:** cost per kg of **dry cell mass**. **Secondary:** cost per kg of **protein**, and a **chicken-meat equivalent** (dry cost × a fixed solids content close to chicken meat; 27.5%, a convention agreed on 28 October 2026) for intuition. The dry and meat-equivalent costs are shown side by side on the headline cards, and the main cost charts carry a second axis in meat-equivalent dollars. The meat equivalent has chicken's water content, not necessarily its protein, taste or texture. Probability thresholds, the blended-product arithmetic and chicken comparisons use the meat equivalent.
 
 **Inputs:** density in g dry cells per litre; \$/kg inputs (contract toll, expert cost priors) per kg dry; direct medium use in litres per kg dry; nutrient yield in g dry cells per litre of medium.
 
@@ -103,7 +103,7 @@ The **chicken-meat equivalent** is there for intuition and for comparisons with 
 |---|---|---|
 | `cost_basis` | `"dry"` | Headline basis: `"dry"` (per kg dry cell mass) or `"wet"` (per kg wet biomass at `solids_fraction`; the pre-October 26 headline). |
 | `solids_fraction` | 0.20 | Solids content used to convert wet-basis sources, built-in priors and plant capacity to dry mass, and for the wet output. |
-| `target_solids_fraction` | 0.275 | Solids content of the chicken-meat equivalent; midpoint of the 25–30% placeholder, to be agreed. |
+| `target_solids_fraction` | 0.275 | Solids content of the chicken-meat equivalent; a fixed convention (midpoint of 25–30%), agreed on 28 October 2026. |
 | `protein_fraction_of_solids` | 0.65 | Share of dry cell mass that is protein. Unverified placeholder. |
 
 $$\text{cost per kg meat-equivalent} = \text{cost per kg dry} \times \texttt{target\_solids\_fraction}, \qquad \text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
@@ -190,7 +190,7 @@ $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \
 The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
-**Output basis — factory-gate dry cell mass (since engine `2026-10-26.4`):** Costs are expressed per kg of dry cell mass, with cost per kg protein and a chicken-meat equivalent (dry cost × 27.5% placeholder solids) alongside; the earlier per-wet-kg output is available with `cost_basis: "wet"`. Wet-basis sources and the model's built-in wet-basis priors are converted at `solids_fraction` (0.20). See [why the basis matters](#output-basis). *The worked examples in the formula sections below were written per wet kg with wet densities; per kg dry at 20% solids, multiply litres and dollars per kg by 5 and divide densities by 5.*
+**Output basis — factory-gate dry cell mass (since engine `2026-10-26.4`):** Costs are expressed per kg of dry cell mass, with cost per kg protein and a chicken-meat equivalent (dry cost × 27.5% solids, a fixed convention) alongside; the earlier per-wet-kg output is available with `cost_basis: "wet"`. Wet-basis sources and the model's built-in wet-basis priors are converted at `solids_fraction` (0.20). See [why the basis matters](#output-basis). *The worked examples in the formula sections below were written per wet kg with wet densities; per kg dry at 20% solids, multiply litres and dollars per kg by 5 and divide densities by 5.*
 
 **Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities. Harvest, washing and dewatering belong here too but are not yet modeled explicitly.
 

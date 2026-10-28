@@ -311,3 +311,23 @@ test('actual CSV exporter includes reproducible configuration with valid quote e
   assert.ok(lines[2].endsWith(',""'));
   assert.ok(lines[1].includes(`"${model.MODEL_VERSION}","42","2"`));
 });
+
+test('meat-equivalent axis labels dry-cost positions with the fixed conversion', async () => {
+  const controls = await import('../dashboard/model-controls.mjs');
+  const fakePlot = {axisX: (a, b) => b === undefined ? {options: a} : {data: a, options: b}};
+  const [bottom, top] = controls.meatEquivalentAxes(fakePlot, 400, 0.275);
+  assert.equal(bottom.options.anchor, 'bottom');
+  assert.equal(top.options.anchor, 'top');
+  // Ticks are round meat-equivalent values placed at dry-cost positions inside the domain
+  top.data.forEach(x => {
+    assert.ok(x >= 0 && x <= 400 + 1e-9);
+    assert.match(top.options.tickFormat(x), /^\$\d+$/);
+  });
+  assert.equal(top.options.tickFormat(20 / 0.275), '$20');
+  assert.ok(top.data.length >= 4);
+  assert.equal(controls.formatMeatEquivalent(58.6), '59');
+  assert.equal(controls.formatMeatEquivalent(3.34), '3.3');
+  assert.match(controls.meatEquivalentNote(0.275), /27\.5% solids/);
+  const r = simulate(n, 42);
+  r.unit_cost.forEach((v, i) => assert.ok(Math.abs(v * r.basis.target_solids_fraction - r.unit_cost_meat_equiv[i]) < 1e-9));
+});
