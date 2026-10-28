@@ -10,14 +10,9 @@ format:
 ::: {.callout-tip collapse="true"}
 ## Share Your Feedback
 
-**For substantive or longer-form discussion — please use [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions)** so the conversation can get involved, get threaded replies, and stay organized. See the curated [📖 Discussion Map](discuss.html). Four hubs:
+<!-- GitHub Discussions call-to-action hidden for now (David, 28 Oct 2026). Restore from git history when wanted. -->
 
-- 🧠 [**Substantive** (bio / econ / stats / welfare — the unified main event)](https://github.com/unjournal/cm_pq_modeling/discussions/3)
-- 🎯 [PQ framing](https://github.com/unjournal/cm_pq_modeling/discussions/4) — how we *define* the questions
-- 💬 [Workshop logistics](https://github.com/unjournal/cm_pq_modeling/discussions/2) — session prep, agenda
-- 🖥️ [Platform & UX](https://github.com/unjournal/cm_pq_modeling/discussions/16) — dashboard, visuals, commenting process
-
-For **quick inline notes** on specific text, use the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge). For anything beyond a brief highlight, prefer GitHub Discussions.
+**Comment on specific text** with the [Hypothesis](https://hypothes.is/) sidebar (click the `<` button on the right edge). For longer comments, email [contact@unjournal.org](mailto:contact@unjournal.org).
 :::
 
 ## The Unjournal Pivotal Questions Project

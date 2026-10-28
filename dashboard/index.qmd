@@ -71,7 +71,7 @@ Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusin
 
 
 ::: {.callout-warning collapse="true"}
-## Important: Model Status & Limitations
+## Model Status & Limitations
 This model is *largely AI-generated* and, as of September 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
 **Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; source data on different weight bases are converted with a single assumed solids content (see the basis note below); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
@@ -81,7 +81,7 @@ This model is *largely AI-generated* and, as of September 2026, has not been ind
 We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources-how-they-inform-the-model).
 :::
 
-::: {.callout-important}
+::: {.callout-important collapse="true"}
 ## Basis change: costs are now per kg of DRY cell mass
 **Since October 26, 2026 (engine `2026-10-26.4`), the headline cost is per kg of dry cell mass**, not per kg of wet biomass. Dry-mass figures are about five times the old wet figures (the default median is about \$213/kg dry, against \$43 per wet kg before), because a kg of harvested cells is only about 20% solids. Nothing about the underlying scenario changed.
 
@@ -106,16 +106,11 @@ The named beliefs-analysis dashboard remains an internal review artifact and is 
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
 
-**For substantive or longer-form discussion — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions).** That's where the conversation can get involved, where others can reply and build on each other, and where everything stays threaded and organized. See the [📖 Discussion Map](discuss.html) for where to post what, or jump to a hub:
+<!-- GitHub Discussions call-to-action hidden for now (David, 28 Oct 2026: too much friction for most people). Restore from git history when wanted. -->
 
-- 🧠 [**Substantive hub**](https://github.com/unjournal/cm_pq_modeling/discussions/3) — bio / econ / stats / engineering / welfare (**the main event**)
-- 🎯 [PQ framing](https://github.com/unjournal/cm_pq_modeling/discussions/4) · 💬 [Workshop logistics](https://github.com/unjournal/cm_pq_modeling/discussions/2) · 🖥️ [Platform & UX](https://github.com/unjournal/cm_pq_modeling/discussions/16)
+**Comment on specific text or a parameter** with [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For longer comments, email [contact@unjournal.org](mailto:contact@unjournal.org) or [open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new).
 
-**For quick inline notes** on specific text or a parameter, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer GitHub Discussions so the conversation stays organized and discoverable.
-
-**[🎧 Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
-
-**Other ways to reach us:** [Open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new) · [Email contact@unjournal.org](mailto:contact@unjournal.org)
+**[Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
 :::
 
 ```{=html}
@@ -1030,7 +1025,7 @@ Basal micronutrients (vitamins, minerals, trace salts) are not modeled separatel
 ```
 
 ::: {.callout-note appearance="minimal" icon=false}
-<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes. *For background on what growth factors do, why they're expensive, and which technologies might reduce costs, see [Learn → Step 5: Growth Factors](learn.html#step-5-growth-factors-a-key-cost-driver).*
+<abbr title="Growth factors (GFs) are signaling proteins — FGF-2, IGF-1, TGF-β, etc. — that tell cells to divide. At current research-grade prices they can dominate media costs (55–95% of media $/L).">**Growth factors (GFs)**</abbr> signal cells to proliferate — at current research-grade prices, they can dominate media costs. The slider below sets P(at least one scalable production route — e.g., autocrine cell lines, plant-based farming, or precision fermentation — reaches commercial scale by the projection year), switching between "expensive" and "cheap" GF price regimes. *For background on what growth factors do and why they're expensive, see [Learn → Step 5: Growth Factors](learn.html#step-5-growth-factors-a-key-cost-driver); the production routes this slider refers to are compared in [Solutions being developed](learn.html#gf-solutions).*
 :::
 
 ```{ojs}
@@ -1973,7 +1968,7 @@ The **width** of the distribution shows uncertainty. Narrow = confident. Wide = 
 
 ### Probability Thresholds
 
-These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. On the default dry basis the price points apply to the **chicken-meat equivalent**: dry-cell-mass cost × 27.5% solids, a fixed convention for the water content of chicken meat. Each card also gives the same price point per kg dry cell mass. A kilogram of meat equivalent has chicken's moisture, not necessarily its protein, taste or texture. On the wet basis they apply to wet biomass, as before October 26, 2026.
+These percentages answer: "What's the chance that production costs fall below key price points?" — based on the parameter distributions you've set above. On the default dry basis the price points apply to the **chicken-meat equivalent**: dry-cell-mass cost × 27.5% solids, a fixed convention for the water content of chicken meat. Each card also gives the same price point per kg dry cell mass. A kilogram of meat equivalent has chicken's moisture, not necessarily its protein, taste or texture. If you switch *Structural stress tests → Cost basis* to wet, the price points apply per kg of wet biomass instead, as they did before October 26, 2026.
 
 ```{ojs}
 //| echo: false

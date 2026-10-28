@@ -38,7 +38,7 @@ Two supplied research critiques prompted optional median-preserving priors, expl
 This model is *largely AI-generated* and has not been fully validated. It is provided to **fix ideas, illustrate the modeling approach, and enable exploration** — not as authoritative cost estimates. For a more detailed exploration with many more parameters, use the [Advanced Model](index.qmd).
 :::
 
-::: {.callout-important}
+::: {.callout-important collapse="true"}
 ## Basis change: costs are now per kg of DRY cell mass
 **Since October 26, 2026, the headline cost is per kg of dry cell mass**, about five times the old per-wet-kg figures (a kg of harvested cells is only about 20% solids). Nothing about the underlying scenario changed.
 

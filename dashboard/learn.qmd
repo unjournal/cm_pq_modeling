@@ -106,14 +106,9 @@ abbr[title]:hover::before {
 ::: {.callout-note collapse="true"}
 ## We Want Your Feedback
 
-For substantive debate on biology, costs, or welfare — please post on [💬 GitHub Discussions](https://github.com/unjournal/cm_pq_modeling/discussions). That's where threaded conversation can get involved, with replies others can reply to and build on. Direct links:
+<!-- GitHub Discussions call-to-action hidden for now (David, 28 Oct 2026). Restore from git history when wanted. -->
 
-- 🧠 [**Substantive hub**](https://github.com/unjournal/cm_pq_modeling/discussions/3) — for biology, economics, engineering, and welfare debate (**the main event**)
-- 🎯 [PQ framing hub](https://github.com/unjournal/cm_pq_modeling/discussions/4) — for how we *define* the questions (jurisdiction forks, resolution criteria)
-- 💬 [Workshop hub](https://github.com/unjournal/cm_pq_modeling/discussions/2) — for session prep, agenda, and logistics
-- 📖 [Full Discussion Map](discuss.html) — the curated index
-
-For **quick inline notes** on specific text, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer GitHub Discussions so the conversation stays organized.
+**Comment on specific text** with [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For longer comments, email [contact@unjournal.org](mailto:contact@unjournal.org).
 :::
 
 ::: {.callout-tip}
@@ -982,7 +977,7 @@ Usage: typically 10-100 <abbr title="nanograms per milliliter — billionths of 
 
 Current growth factors are produced for medical research markets where volumes are tiny (milligrams), purity requirements are extreme, and customers pay premium prices. Per [GFI](https://gfi.org/resource/cultivated-meat-growth-factor-volume-and-cost-analysis/): "99% cost reduction may be required for some recombinant proteins compared to how they are currently produced for the biopharmaceutical industry." To hit $10/kg meat with GFs at 10% of cost, "<abbr title="Albumin is a carrier protein — the most abundant protein in blood serum. It is not a growth factor itself but is used in media to stabilize growth factors, transport lipids, and buffer pH. It is needed in much larger quantities than GFs (grams/L vs nanograms/mL).">albumin</abbr> would need to be produced at $10/kg, <abbr title="Insulin and transferrin are supplementary proteins added to serum-free media. Insulin mimics IGF-1 signaling at higher concentrations; transferrin delivers iron to cells. Both are needed at microgram/mL levels — intermediate between bulk nutrients and trace growth factors.">insulin and transferrin</abbr> at $1,000/kg, and growth factors at $100,000/kg."
 
-### Solutions Being Developed for All Expensive Growth Factors
+### Solutions Being Developed for All Expensive Growth Factors {#gf-solutions}
 
 The approaches below aim to reduce costs for all the expensive recombinant proteins above (FGF-2, IGF-1, TGF-β, EGF), not just one specific factor. Each approach could in principle produce any protein cheaply at scale.
 

@@ -51,9 +51,9 @@ format:
 ::: {.callout-note collapse="true"}
 ## Feedback & Annotations
 
-**For substantive questions, corrections, methodology debates, or alternative-source suggestions — please post in the [🧠 Substantive discussion hub →](https://github.com/unjournal/cm_pq_modeling/discussions/3).** That's where technical debate can get involved, with threaded replies others can build on. See the [📖 Discussion Map](discuss.html) for domain-organized sub-threads (media, growth factors, bioreactors, correlations, welfare).
+<!-- GitHub Discussions call-to-action hidden for now (David, 28 Oct 2026). Restore from git history when wanted. -->
 
-For **quick inline notes** on a specific equation or parameter, use [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For anything beyond a brief highlight, prefer the Substantive hub so the conversation stays organized and discoverable.
+**Comment on a specific equation or parameter** with [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For longer comments, corrections or alternative sources, email [contact@unjournal.org](mailto:contact@unjournal.org).
 :::
 
 ## Overview
@@ -698,7 +698,7 @@ $$
 | Technology | Base Prob | $k$ | Effect on cost | Notes |
 |------------|-----------|-----|----------------|-------|
 | [Hydrolysates](learn.qmd#hydrolysates-the-big-win-for-amino-acids) | 75% | 0.25 | Reduces media $/L by ~70% | Plant/yeast protein digests replace purified amino acids |
-| [Scalable GF technology](learn.qmd#step-5-growth-factors-a-key-cost-driver) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
+| [Scalable GF technology](learn.qmd#gf-solutions) | 50% | 0.25 | Switches to "cheap" GF prices ([see price tables](#gf-scenarios)) | Any breakthrough: autocrine, plant farming, precision fermentation. See [binary toggle rationale](#the-binary-cheap-vs-expensive-toggle) |
 
 *Note: an earlier version of this table included a "Food-grade micronutrients" adoption parameter (65% base prob). This was removed — vitamins, minerals, and trace salts are now folded into basal media $/L. See the [model change log](index.html#micronutrient-change-note) for the full rationale.*
 
