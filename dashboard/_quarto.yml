@@ -27,21 +27,36 @@ website:
       - text: "Advanced Model"
         href: index.qmd
       - text: "Learn"
-        href: learn.qmd
-      - text: "TEA Comparison"
-        href: compare.qmd
-      - text: "Cost → Demand"
-        href: demand.qmd
-      - text: "Model formulas & metrics"
-        href: docs.qmd
-      - text: "Sensitivity"
-        href: sensitivity.qmd
-      - text: "Discuss"
-        href: discuss.qmd
-      - text: "Limits/Critique"
-        href: limits.qmd
+        menu:
+          - text: "How cultured chicken is made"
+            href: learn.qmd
+          - text: "TEA comparison"
+            href: compare.qmd
+          - text: "Cost → Demand"
+            href: demand.qmd
+      - text: "Methods"
+        menu:
+          - text: "Model formulas & metrics"
+            href: docs.qmd
+          - text: "Sensitivity"
+            href: sensitivity.qmd
+      - text: "Limits & review"
+        menu:
+          - text: "Limits/Critique"
+            href: limits.qmd
+          - text: "Model review: September 2026"
+            href: review-2026-09.qmd
+          - text: "Responses to two model critiques"
+            href: review-response-2026-09.qmd
       - text: "About"
-        href: about.qmd
+        menu:
+          - text: "About this model"
+            href: about.qmd
+          - text: "Discussion map"
+            href: discuss.qmd
+          - text: "Workshop site ↗"
+            href: https://uj-cm-workshop.netlify.app/
+            target: _blank
     right:
       - text: "an Unjournal project ↗"
         href: https://unjournal.org
