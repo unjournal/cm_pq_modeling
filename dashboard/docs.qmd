@@ -948,7 +948,7 @@ Weights are user-adjustable in the dashboard and auto-normalised to sum to 1. Th
 
 ### Least-cost mode selection (opt-in, October 2026) {#least-cost-mode-selection}
 
-*Used in:* **Structural stress tests → Process-mode selection** on the [Advanced model page](index.qmd#structural-comparison). Default: off ("Draw mode by weights").
+*Used in:* **How the mode is chosen**, beside the process-mode weights on the [Advanced model page](index.qmd#process-mode-controls). Default: off ("Draw mode by weights").
 
 **Why.** A process mode is only used if it is the cheapest method that is technically feasible and permitted. The baseline weights ask the user to make that comparison mentally, and the drawn mode cannot respond to other inputs in the same world. For example, Ark Biotech's TEA finds fed-batch lower in COGS when medium is expensive and continuous lower in CapEx ([Ark Biotech, 2023](https://uploads-ssl.webflow.com/628c84a07fc3884718667dbf/64acb656a98483e9a5921b83_Ark%20TEA%20v20230710.pdf)). The alternative asks for feasibility instead and lets the model make the cost comparison.
 
@@ -963,7 +963,7 @@ and reports $C_{ik^*}$ and all components and inputs of the chosen mode.
 
 The mode weights are unused in this setting. The page shows the selected shares and the share of worlds where feasibility, not cost, decides the mode (the cheapest mode overall is infeasible). The JSON export records both. The override toggle for process-mode constraints disables selection, with a warning.
 
-**Default feasibility.** With default priors the modes are almost always ranked continuous < perfusion < fed-batch within a world (fed-batch is cheaper than continuous in about 0.4% of worlds). Selection then acts like a fallback chain, so $P(\text{continuous}) \approx q_C$, $P(\text{perfusion}) \approx (1-q_C)q_P$ and $P(\text{fed-batch}) \approx (1-q_C)(1-q_P)$. The defaults 0.70/0.30 reproduce the 20/50/30 weights this way and give nearly the same costs (seed 42, 30,000 draws: median \$210 vs \$213 per kg dry cell mass; \$42.1 vs \$42.6 on the wet basis). They are a bridge from the old setting, not elicited values. With every mode always feasible, continuous is chosen in 84% of worlds and the median falls to about \$115 per kg dry (\$23 wet), so the result hinges on $q_C$. Because the dry and wet bases differ by a fixed factor, the choice of mode is the same on either basis.
+**Default feasibility.** With default priors fed-batch is almost never the cheapest mode in a world (it is cheaper than continuous in about 0.4% of worlds), and continuous is cheaper than perfusion in about 84% of worlds. Selection then acts roughly like a fallback chain, so $P(\text{continuous}) \approx q_C$, $P(\text{perfusion}) \approx (1-q_C)q_P$ and $P(\text{fed-batch}) \approx (1-q_C)(1-q_P)$. The defaults 0.70/0.30 reproduce the 20/50/30 weights this way and give nearly the same costs (seed 42, 30,000 draws: median \$210 vs \$213 per kg dry cell mass; \$42.1 vs \$42.6 on the wet basis). They are a bridge from the old setting, not elicited values. With every mode always feasible, continuous is chosen in 84% of worlds and the median falls to about \$115 per kg dry (\$23 wet), so the result hinges on $q_C$. Because the dry and wet bases differ by a fixed factor, the choice of mode is the same on either basis.
 
 **Caveats.**
 

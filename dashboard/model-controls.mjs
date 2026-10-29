@@ -115,6 +115,17 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['target_solids_fraction', 'Chicken-meat-equivalent solids content (0–1)', null, 'Water content at which cells are counted in the hybrid product: hybrid cost = dry cost × this × inclusion rate + filler. Used for thresholds. ' + REVIEW_PROVENANCE.basis],
     ['protein_fraction_of_solids', 'Protein share of dry cell mass (0–1)', null, REVIEW_PROVENANCE.basis]
   ];
+  // The process-mode fields are drawn in their own box (container.modeSection), which
+  // the Advanced page places beside the process-mode weights. They stay in this
+  // control's value, so simParams, URL state and the tests see one settings object.
+  const modeKeys = ['mode_selection', 'p_feasible_perfusion', 'p_feasible_continuous', 'mode_choice_noise'];
+  const modeSection = document.createElement('div');
+  modeSection.style.cssText = 'border:1px solid #ddd;border-radius:6px;padding:6px 10px;margin:6px 0 10px 0;';
+  const modeHeading = document.createElement('strong');
+  modeHeading.textContent = 'How the mode is chosen';
+  modeHeading.style.fontSize = '0.9rem';
+  modeSection.append(modeHeading);
+  const modeLabels = {};
   for (const [key, text, choices, provenance] of specs) {
     const label = document.createElement('label');
     label.textContent = text;
@@ -130,16 +141,26 @@ export function structuralControl(initial = new URLSearchParams()) {
     } else Object.assign(el, {type: 'number', min: '0', step: 'any'});
     el.value = initial.get(key) ?? DEFAULT_PARAMS[key];
     fields[key] = el;
-    label.append(el); details.append(label);
+    label.append(el);
+    if (modeKeys.includes(key)) { modeLabels[key] = label; modeSection.append(label); }
+    else details.append(label);
   }
+  const modeNote = document.createElement('p');
+  modeNote.style.cssText = 'font-size:0.8rem;color:#555;margin:4px 0;';
+  modeNote.append('Cheapest feasible mode ignores the weights above: it prices every simulated world under each mode and uses the cheapest one that works (fed-batch always works). The feasibility defaults are illustrative, and mode-specific equipment, extra medium throughput and contamination costs are not yet modeled. ');
+  const modeLink = document.createElement('a');
+  modeLink.href = 'docs.html#least-cost-mode-selection'; modeLink.textContent = 'Method and caveats';
+  modeNote.append(modeLink);
+  modeSection.append(modeNote);
+  // Events here don't bubble to `container`, so re-dispatch for OJS's viewof.
+  modeSection.addEventListener('input', () => container.dispatchEvent(new Event('input', {bubbles: true})));
+  container.modeSection = modeSection;
   const note = document.createElement('p');
-  note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–25 g dry cells/L, the GF dose fraction, the feasibility defaults and the solids and protein shares are illustrative assumptions. Cheapest-feasible selection ignores the process-mode weights above. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
+  note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–25 g dry cells/L, the GF dose fraction and the solids and protein shares are illustrative assumptions. Process-mode selection is set beside the process-mode weights. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
   link.href = 'review-response-2026-09.html#structures'; link.textContent = 'Sources, justification and open questions';
-  const modeLink = document.createElement('a');
-  modeLink.href = 'docs.html#least-cost-mode-selection'; modeLink.textContent = 'Least-cost mode selection: method and caveats';
   const links = document.createElement('p');
-  links.append(link, document.createElement('br'), modeLink);
+  links.append(link);
   const status = document.createElement('p'); status.setAttribute('role', 'status');
   details.append(note, links, status); container.append(details);
   let committed = Object.fromEntries(specs.map(([key]) => [key, DEFAULT_PARAMS[key]]));
@@ -156,12 +177,13 @@ export function structuralControl(initial = new URLSearchParams()) {
     fields.fresh_media_p5.disabled = fields.fresh_media_p95.disabled = values.media_use_model !== 'direct';
     fields.nutrient_yield_p5.disabled = fields.nutrient_yield_p95.disabled = values.media_use_model !== 'yield';
     fields.gf_concentration_mg_L.disabled = fields.gf_cheap_dose_fraction.disabled = values.gf_dose_model !== 'media_linked';
-    fields.p_feasible_perfusion.disabled = fields.p_feasible_continuous.disabled = fields.mode_choice_noise.disabled = values.mode_selection !== 'least_cost';
+    for (const key of modeKeys.slice(1)) modeLabels[key].style.display = values.mode_selection === 'least_cost' ? 'flex' : 'none';
+    modeNote.style.display = values.mode_selection === 'least_cost' ? '' : 'none';
   }
   container.addEventListener('input', update);
   Object.defineProperty(container, 'value', {get: () => ({...committed})});
   update();
-  if (specs.some(([key]) => initial.has(key))) details.open = true;
+  if (specs.some(([key]) => !modeKeys.includes(key) && initial.has(key))) details.open = true;
   return container;
 }
 
