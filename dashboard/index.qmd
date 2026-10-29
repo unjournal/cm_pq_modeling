@@ -1465,10 +1465,27 @@ html`<div role="status">${results.warnings.map(w => html`<p><strong>Scenario not
 ```{ojs}
 //| echo: false
 
+// Wait for inputs to settle before simulating. Each change of simParams invalidates
+// the cell below, which cancels its pending timer, so the model runs once after
+// 300 ms without changes instead of on every step of a slider drag or keystroke.
+// (An `await` delay inside one cell is not enough: the runtime queues each new
+// evaluation behind the previous one, which throttles rather than debounces.)
+mutable debouncedParams = null
+
+{
+  const params = simParams;
+  const timer = setTimeout(() => { mutable debouncedParams = params; }, 300);
+  invalidation.then(() => clearTimeout(timer));
+  return html`<span style="display:none;"></span>`;
+}
+
+// Downstream cells stay pending until the first settled value arrives.
+settledParams = debouncedParams ?? new Promise(() => {})
+
 // Primary simulation run (uses whatever mode is selected)
 // N=30,000 balances browser responsiveness and sampling precision.
 // Repeat-seed variability is reported by scripts/model-audit.mjs.
-results = simulate(30000, 42, simParams)
+results = simulate(30000, 42, settledParams)
 
 // Comparison run: when CDMO mode is on, also run the in-house baseline
 // (same seed so VOC components are paired; only capital structure differs)
@@ -1476,7 +1493,7 @@ results = simulate(30000, 42, simParams)
 // causes OJS to render the literal text "null" in the document.
 inhouse_results = {
   if (!cdmo_mode) return html`<span style="display:none;"></span>`;
-  return simulate(30000, 42, {...simParams, cdmo_mode: false});
+  return simulate(30000, 42, {...settledParams, cdmo_mode: false});
 }
 
 // Units for labels. On the dry basis, thresholds and chicken comparisons use a hybrid
@@ -2192,7 +2209,7 @@ sensitivityMethods = import(new URL("./sensitivity-methods.mjs", window.location
   // shared with the sensitivity page. L/kg and the two regime switches are absent
   // by design: L/kg is density × media-use multiplier, and the switches sit inside
   // the Media $/L and GF bars.
-  const activeParams = sensitivityMethods.displayedInputs(results, simParams);
+  const activeParams = sensitivityMethods.displayedInputs(results, settledParams);
 
   // Compute signed swings: positive = high param → higher cost (red); negative = high param → lower cost (green)
   const swingsRaw = activeParams.map(p => ({
@@ -2280,13 +2297,22 @@ structural_comparison_rows = {
     ["Mode drawn by weights", {mode_selection: "mixture"}],
     ["Cheapest feasible mode", {mode_selection: "least_cost"}]
   ];
-  return alternatives.map(([scenario, changes]) => {
+  // Up to nine extra engine runs (three engine passes each under cheapest-feasible
+  // selection). Yield to the browser between runs so input stays responsive, and
+  // stop early if the inputs change.
+  let stale = false;
+  invalidation.then(() => { stale = true; });
+  const rows = [];
+  for (const [scenario, changes] of alternatives) {
+    await new Promise(resolve => setTimeout(resolve, 0));
+    if (stale) return rows;
     const unchanged = Object.entries(changes).every(([key, value]) => results.effective_params[key] === value);
-    const r = unchanged ? results : simulate(30000, 42, {...simParams, ...changes});
-    return {scenario, p50: quantile(r.unit_cost, 0.5), p90: quantile(r.unit_cost, 0.9),
+    const r = unchanged ? results : simulate(30000, 42, {...settledParams, ...changes});
+    rows.push({scenario, p50: quantile(r.unit_cost, 0.5), p90: quantile(r.unit_cost, 0.9),
       under25: 100 * r.threshold_cost.filter(c => c < 25).length / r.threshold_cost.length,
-      notes: r.warnings.join(" ")};
-  });
+      notes: r.warnings.join(" ")});
+  }
+  return rows;
 }
 html`<div class="structural-comparison-table">
 <style>
@@ -2404,7 +2430,7 @@ Use **Structural stress tests → Maturity dependence** to compare shared and in
 //| echo: false
 {
   // Sample subset for scatter plot (too many points otherwise)
-  if (simParams.dependence_mode !== "shared") return html`<p>The common-maturity scatter plot is omitted: independent-channel mode has no single maturity draw driving total cost.</p>`;
+  if (settledParams.dependence_mode !== "shared") return html`<p>The common-maturity scatter plot is omitted: independent-channel mode has no single maturity draw driving total cost.</p>`;
   const sampleSize = 2000;
   const step = Math.floor(results.unit_cost.length / sampleSize);
   const scatterData = [];
