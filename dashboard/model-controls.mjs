@@ -112,7 +112,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['p_feasible_continuous', 'P(continuous feasible at scale) (0–1)', null, 'Probability that continuous culture works at commercial scale and is permitted by the projection year, drawn independently of perfusion. ' + REVIEW_PROVENANCE.mode_selection],
     ['mode_choice_noise', 'Choice sharpness: decision noise β (0 = always cheapest)', null, 'β = 0: each world uses its cheapest feasible mode. β > 0: firms choose on noisy cost estimates, and a mode costing half as much as another is chosen 2^(1/β) times as often (β = 0.25: 16×; 0.5: 4×; 1: 2×). Realized cost of the chosen mode is reported.'],
     ['solids_fraction', 'Solids content of wet biomass (0–1)', null, 'Share of a wet kg that is dry matter. Converts wet-basis sources, built-in priors and plant capacity (tonnes of wet biomass) to dry mass, and gives the wet-basis output. ' + REVIEW_PROVENANCE.basis],
-    ['target_solids_fraction', 'Chicken-meat-equivalent solids content (0–1)', null, 'Meat-equivalent cost = dry cost × this. Used for thresholds and blending. ' + REVIEW_PROVENANCE.basis],
+    ['target_solids_fraction', 'Chicken-meat-equivalent solids content (0–1)', null, 'Water content at which cells are counted in the hybrid product: hybrid cost = dry cost × this × inclusion rate + filler. Used for thresholds. ' + REVIEW_PROVENANCE.basis],
     ['protein_fraction_of_solids', 'Protein share of dry cell mass (0–1)', null, REVIEW_PROVENANCE.basis]
   ];
   for (const [key, text, choices, provenance] of specs) {
@@ -165,11 +165,28 @@ export function structuralControl(initial = new URLSearchParams()) {
   return container;
 }
 
-// The chicken-meat equivalent is a fixed unit conversion of the dry-cell-mass cost,
-// shown beside it everywhere. Both pages use this wording and axis.
-export function meatEquivalentNote(solids) {
-  const pct = (solids * 100).toFixed(1).replace(/\.0$/, '');
-  return `Chicken-meat equivalent: the dry-cell-mass cost converted to the water content of chicken meat, by multiplying by ${pct}% solids. This is a fixed convention, not an uncertain input: $/kg meat equivalent = $/kg dry × ${solids}. It means the same mass and moisture as chicken meat, not the same protein, taste, texture or finished product; cultured cell mass may carry less protein per kg than chicken. Forming, blending and packaging are not included. The solids content can be changed under Structural stress tests on the Advanced page.`;
+// The comparison number shown beside every dry-cell-mass cost is a hybrid product:
+// cell_inclusion_rate kg of cells at chicken-meat moisture plus non-cell filler, per kg.
+// It is linear in the dry cost. Both pages use this wording and axis.
+export function hybridCost(dry, basis) {
+  const r = basis.cell_inclusion_rate;
+  return dry * basis.target_solids_fraction * r + basis.filler_cost * (1 - r);
+}
+
+export function hybridToDry(hybrid, basis) {
+  const r = basis.cell_inclusion_rate;
+  return (hybrid - basis.filler_cost * (1 - r)) / (basis.target_solids_fraction * r);
+}
+
+const pctText = x => (x * 100).toFixed(1).replace(/\.0$/, '');
+
+export function hybridLabel(basis) {
+  return `hybrid product (${pctText(basis.cell_inclusion_rate)}% cells)`;
+}
+
+export function hybridNote(basis) {
+  const r = basis.cell_inclusion_rate, s = basis.target_solids_fraction, f = basis.filler_cost;
+  return `Hybrid product: cultivated meat products will not be made entirely of cells, so this is the ingredient cost of a kg of product with ${pctText(r)}% cultivated cells and ${pctText(1 - r)}% plant-based ingredients at $${f}/kg. The cells are counted at the water content of chicken meat (${pctText(s)}% solids). $/kg hybrid = $/kg dry × ${s} × ${r} + ${f} × ${+(1 - r).toFixed(4)}. There is no consensus inclusion rate (GOOD Meat 3 had 3% cells; hybrids are often described as 20–50% non-meat); ${pctText(r)}% is a convention. Forming, texturization, packaging and margins are not included. Change the inclusion rate and filler cost under Hybrid product on the Advanced page.`;
 }
 
 export function formatMeatEquivalent(cost) {
@@ -177,18 +194,18 @@ export function formatMeatEquivalent(cost) {
 }
 
 // Explicit x axes for a dry-cost chart: the cost axis at the bottom, and the same
-// positions labelled as chicken-meat equivalent on top. Plot drops its implicit
+// positions labelled as hybrid-product cost on top. Plot drops its implicit
 // x axis once an axis mark is given, so both are returned.
-export function meatEquivalentAxes(Plot, domainMax, solids) {
-  const max = domainMax * solids;
-  const rough = max / 6, magnitude = 10 ** Math.floor(Math.log10(rough));
+export function hybridAxes(Plot, domainMax, basis) {
+  const min = hybridCost(0, basis), max = hybridCost(domainMax, basis);
+  const rough = (max - min) / 8, magnitude = 10 ** Math.floor(Math.log10(rough));
   const step = [1, 2, 5, 10].map(m => m * magnitude).find(s => s >= rough);
   const decimals = Math.max(0, -Math.floor(Math.log10(step)));
   const ticks = [];
-  for (let t = 0; t <= max + 1e-9; t += step) ticks.push(t);
+  for (let t = Math.ceil(min / step - 1e-9) * step; t <= max + 1e-9; t += step) ticks.push(t);
   return [
     Plot.axisX({anchor: 'bottom'}),
-    Plot.axisX(ticks.map(t => t / solids), {anchor: 'top', label: '$/kg chicken-meat equivalent',
-      tickFormat: d => '$' + (d * solids).toFixed(decimals)})
+    Plot.axisX(ticks.map(t => hybridToDry(t, basis)), {anchor: 'top', label: `$/kg ${hybridLabel(basis)}`,
+      tickFormat: d => '$' + hybridCost(d, basis).toFixed(decimals)})
   ];
 }

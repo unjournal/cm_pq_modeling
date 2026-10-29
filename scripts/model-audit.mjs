@@ -9,14 +9,15 @@ function summary(r) {
   return {
     p5: quantile(r.unit_cost, 0.05), p50: quantile(r.unit_cost, 0.5), p95: quantile(r.unit_cost, 0.95),
     mean: mean(r.unit_cost),
-    // Thresholds on threshold_cost: chicken-meat equivalent on the dry basis (docs.qmd#output-basis).
-    probability_threshold_basis: r.basis.cost_basis === 'dry' ? 'chicken-meat equivalent' : 'wet biomass',
+    // Thresholds on threshold_cost: hybrid product on the dry basis (docs.qmd#output-basis).
+    probability_threshold_basis: r.basis.cost_basis === 'dry' ? 'hybrid product (cell_inclusion_rate cells at target solids, rest filler)' : 'wet biomass',
+    probability_under_5: mean(r.threshold_cost.map(v => +(v < 5))),
     probability_under_10: mean(r.threshold_cost.map(v => +(v < 10))),
     probability_under_25: mean(r.threshold_cost.map(v => +(v < 25))),
     probability_under_50: mean(r.threshold_cost.map(v => +(v < 50))),
     component_means: Object.fromEntries(componentKeys.map(k => [k, mean(r['cost_' + k])])),
     other_bases_p50: {dry: quantile(r.unit_cost_dry, 0.5), wet: quantile(r.unit_cost_wet, 0.5),
-      meat_equivalent: quantile(r.unit_cost_meat_equiv, 0.5), protein: quantile(r.unit_cost_protein, 0.5)}
+      meat_equivalent: quantile(r.unit_cost_meat_equiv, 0.5), hybrid: quantile(r.unit_cost_hybrid, 0.5), protein: quantile(r.unit_cost_protein, 0.5)}
   };
 }
 const scenarios = {
@@ -37,9 +38,9 @@ console.log(JSON.stringify({
   model_version: MODEL_VERSION,
   engine_sha256: createHash('sha256').update(readFileSync(new URL('../dashboard/cost-model.mjs', import.meta.url))).digest('hex'),
   n, seed: 42, default_parameters: DEFAULT_PARAMS,
-  units: 'USD per kg dry cell mass (cost_basis "dry", default since 2026-10-26.4; the wet_basis scenario gives per wet kg); probability thresholds on the chicken-meat equivalent (dry × 0.275); mixed source-year dollars; scenario distribution, not a calibrated forecast',
+  units: 'USD per kg dry cell mass (cost_basis "dry", default since 2026-10-26.4; the wet_basis scenario gives per wet kg); probability thresholds on a hybrid product (25% cells at 27.5% solids + 75% filler at $3/kg); mixed source-year dollars; scenario distribution, not a calibrated forecast',
   scenarios: Object.fromEntries(Object.entries(scenarios).map(([name, overrides]) => [name, {overrides, ...summary(simulate(n, 42, overrides))}])),
   seed_checks: [1, 7, 99, 2026].map(seed => ({seed, ...summary(simulate(n, seed))})),
-  // What the default draws under $10/kg look like versus all draws (sensitivity.qmd, Section 4).
-  threshold_profile_default_under_10: thresholdProfile(simulate(n, 42), 10)
+  // What the default draws under $5/kg hybrid look like versus all draws (sensitivity.qmd, Section 4).
+  threshold_profile_default_under_5: thresholdProfile(simulate(n, 42), 5)
 }, null, 2));

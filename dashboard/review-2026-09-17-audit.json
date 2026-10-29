@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-10-26.4",
-  "engine_sha256": "ed71ffcb00bff299b503fce4effee750bf32dd65f99f8da5a7e813a103ede0d2",
+  "model_version": "2026-10-29.1",
+  "engine_sha256": "8e9e2811291dfdcb28d921441cbfb84b43e5eb03e81f3969e06bafa97dc79923",
   "basis": "Hypothetical plant/process scenarios; USD/kg wet biomass (cost_basis \"wet\"; the engine default is per kg dry cell mass since 2026-10-26.4); mixed dollar years; no commercialization conditioning",
   "default_parameters": {
     "plant_kta_p5": 10,
@@ -56,6 +56,8 @@
     "solids_fraction": 0.2,
     "target_solids_fraction": 0.275,
     "protein_fraction_of_solids": 0.65,
+    "cell_inclusion_rate": 0.25,
+    "filler_cost": 3,
     "include_harvest_dewater": false,
     "harvest_dewater_p5": 2.5,
     "harvest_dewater_p95": 15,

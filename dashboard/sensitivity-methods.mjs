@@ -518,6 +518,9 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     solids_fraction: num("solids_fraction", DEFAULT_PARAMS.solids_fraction),
     target_solids_fraction: num("target_solids_fraction", DEFAULT_PARAMS.target_solids_fraction),
     protein_fraction_of_solids: num("protein_fraction_of_solids", DEFAULT_PARAMS.protein_fraction_of_solids),
+    // The Advanced page's hybrid-product sliders keep their earlier URL names.
+    cell_inclusion_rate: num("blending_share", DEFAULT_PARAMS.cell_inclusion_rate),
+    filler_cost: num("filler_cost", DEFAULT_PARAMS.filler_cost),
     target_year,
     plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
     plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,

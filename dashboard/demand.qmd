@@ -283,8 +283,9 @@ There is also a **cost-basis mismatch** before the demand equation begins. `cbio
 future factory-gate biomass cost; the comparison prices are approximate 2025 US retail
 prices. It must be per kg of *product weight*: since October 26, 2026 the cost model's
 headline is per kg of dry cell mass (about five times a wet figure), so use its
-chicken-meat equivalent (dry cost × 27.5% solids, a fixed convention; about \$59 at defaults) or
-the wet basis, not the dry-mass figure. The toy assumes 100% cell inclusion and adds only scaffold (for cuts) plus a
+hybrid-product cost (25% cells at chicken-meat moisture plus 75% plant-based ingredients at
+\$3/kg; about \$17 at defaults) or, for an all-cell cut, the all-cell meat equivalent (dry cost
+× 27.5%; about \$59), not the dry-mass figure. The toy adds only scaffold (for cuts) plus a
 generic markup. It omits recovery yield, non-cell ingredients, formulation,
 texturization, packaging, distribution, tax, retail margin, future conventional prices,
 and inflation. Until those are harmonized, the resulting price ratio and share are useful
@@ -293,7 +294,7 @@ only for illustrating the mechanism.
 
 ```{ojs}
 //| echo: false
-viewof cbio = Inputs.range([5, 120], {value: 42, step: 1, label: "Cultivated biomass cost ($/kg of product weight: meat-equivalent or wet)"})
+viewof cbio = Inputs.range([5, 120], {value: 42, step: 1, label: "Cultivated product cost ($/kg of product weight: hybrid, all-cell or wet)"})
 ```
 
 ```{ojs}
@@ -322,7 +323,8 @@ viewof scaffold_cut = Inputs.range([0, 12], {value: 6, step: 0.5, label: "Scaffo
     <span style="font-size:12.5px; color:#555;">Reference cost points — click to load:</span>
     ${btn("Our model default p50 on 10 Jul, per wet kg ($42)", 42)}
     ${btn("Our model default p5 on 10 Jul, per wet kg ($12)", 12)}
-    ${btn("Our model p50 on 26 Oct, chicken-meat equivalent ($59)", 59)}
+    ${btn("Our model p50 on 29 Oct, hybrid product, 25% cells ($17)", 17)}
+    ${btn("Same, all cells at chicken-meat moisture ($59)", 59)}
     ${btn("Pablo optimistic (~$25)", 25)}
     ${btn("Pasitka best future (~$22)", 22)}
   </div>`;

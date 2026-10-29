@@ -1,0 +1,796 @@
+{
+  "model_version": "2026-10-29.1",
+  "engine_sha256": "8e9e2811291dfdcb28d921441cbfb84b43e5eb03e81f3969e06bafa97dc79923",
+  "n": 30000,
+  "seed": 42,
+  "default_parameters": {
+    "plant_kta_p5": 10,
+    "plant_kta_p95": 40,
+    "uptime_mean": 0.9,
+    "maturity_mean": 0.4,
+    "p_hydro_mean": 0.75,
+    "p_recfactors_mean": 0.5,
+    "p_supp_protein_mean": 0.7,
+    "wacc_p5": 0.08,
+    "wacc_p95": 0.2,
+    "asset_life_lo": 8,
+    "asset_life_hi": 20,
+    "density_gL_p5": 6,
+    "density_gL_p95": 40,
+    "media_turnover_p5": 0.5,
+    "media_turnover_p95": 3,
+    "p_fedbatch": 0.2,
+    "p_perfusion": 0.5,
+    "p_continuous": 0.3,
+    "gf_progress": 50,
+    "include_capex": true,
+    "include_fixed_opex": true,
+    "include_downstream": false,
+    "cdmo_mode": false,
+    "cdmo_toll_p5": 20,
+    "cdmo_toll_p95": 200,
+    "bundled_media": false,
+    "bundled_media_p5": 50,
+    "bundled_media_p95": 500,
+    "override_mode_constraints": false,
+    "ep_media_p10": null,
+    "ep_media_p90": null,
+    "ep_gf_p10": null,
+    "ep_gf_p90": null,
+    "ep_density_p10": null,
+    "ep_density_p90": null,
+    "ep_media_p50": null,
+    "ep_gf_p50": null,
+    "ep_density_p50": null,
+    "dependence_mode": "shared",
+    "media_use_model": "density",
+    "fresh_media_p5": 40,
+    "fresh_media_p95": 300,
+    "gf_dose_model": "per_kg",
+    "gf_concentration_mg_L": 0.102,
+    "gf_cheap_dose_fraction": 0.4,
+    "mode_selection": "mixture",
+    "p_feasible_perfusion": 0.7,
+    "p_feasible_continuous": 0.3,
+    "mode_choice_noise": 0,
+    "cost_basis": "dry",
+    "solids_fraction": 0.2,
+    "target_solids_fraction": 0.275,
+    "protein_fraction_of_solids": 0.65,
+    "cell_inclusion_rate": 0.25,
+    "filler_cost": 3,
+    "include_harvest_dewater": false,
+    "harvest_dewater_p5": 2.5,
+    "harvest_dewater_p95": 15,
+    "nutrient_yield_p5": 3,
+    "nutrient_yield_p95": 25
+  },
+  "units": "USD per kg dry cell mass (cost_basis \"dry\", default since 2026-10-26.4; the wet_basis scenario gives per wet kg); probability thresholds on a hybrid product (25% cells at 27.5% solids + 75% filler at $3/kg); mixed source-year dollars; scenario distribution, not a calibrated forecast",
+  "scenarios": {
+    "default": {
+      "overrides": {},
+      "p5": 59.83156465177908,
+      "p50": 213.08822475709547,
+      "p95": 1163.8309558705353,
+      "mean": 366.81960927254636,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0102,
+      "probability_under_10": 0.2359,
+      "probability_under_25": 0.6720666666666667,
+      "probability_under_50": 0.8752,
+      "component_means": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 213.08822475709547,
+        "wet": 42.617644951419095,
+        "meat_equivalent": 58.59926180820126,
+        "hybrid": 16.89981545205032,
+        "protein": 327.8280380878392
+      }
+    },
+    "fedbatch_only": {
+      "overrides": {
+        "p_fedbatch": 1,
+        "p_perfusion": 0,
+        "p_continuous": 0
+      },
+      "p5": 174.1748741918414,
+      "p50": 549.6311020796243,
+      "p95": 1957.282389530801,
+      "mean": 743.6384493071661,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0001,
+      "probability_under_10": 0.0101,
+      "probability_under_25": 0.2432,
+      "probability_under_50": 0.6236333333333334,
+      "component_means": {
+        "media": 520.928719356464,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 99.92203287030337,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 549.6311020796243,
+        "wet": 109.92622041592486,
+        "meat_equivalent": 151.14855307189669,
+        "hybrid": 40.03713826797417,
+        "protein": 845.5863108917297
+      }
+    },
+    "perfusion_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 1,
+        "p_continuous": 0
+      },
+      "p5": 70.13072452441189,
+      "p50": 208.90261009462859,
+      "p95": 856.842390048482,
+      "mean": 311.1423422480656,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0036666666666666666,
+      "probability_under_10": 0.1932,
+      "probability_under_25": 0.7170333333333333,
+      "probability_under_50": 0.9243333333333333,
+      "component_means": {
+        "media": 161.3266266005708,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 27.028018567098034,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 208.90261009462859,
+        "wet": 41.78052201892572,
+        "meat_equivalent": 57.44821777602287,
+        "hybrid": 16.612054444005715,
+        "protein": 321.38863091481323
+      }
+    },
+    "continuous_only": {
+      "overrides": {
+        "p_fedbatch": 0,
+        "p_perfusion": 0,
+        "p_continuous": 1
+      },
+      "p5": 45.78501940499761,
+      "p50": 119.7015522346232,
+      "p95": 577.22813362759,
+      "mean": 201.2659563893879,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0276,
+      "probability_under_10": 0.46676666666666666,
+      "probability_under_25": 0.8781,
+      "probability_under_50": 0.9621666666666666,
+      "component_means": {
+        "media": 58.997571748229554,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 19.48068756076459,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 119.7015522346232,
+        "wet": 23.94031044692464,
+        "meat_equivalent": 32.91792686452138,
+        "hybrid": 10.479481716130344,
+        "protein": 184.15623420711262
+      }
+    },
+    "low_utilization": {
+      "overrides": {
+        "uptime_mean": 0.65
+      },
+      "p5": 69.60000998742412,
+      "p50": 230.86268009073763,
+      "p95": 1211.8861394629548,
+      "mean": 388.9936659435049,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.004833333333333334,
+      "probability_under_10": 0.1915,
+      "probability_under_25": 0.6490666666666667,
+      "probability_under_50": 0.8653666666666666,
+      "component_means": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 54.784299468207784,
+        "fixed": 24.49640856821371,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 230.86268009073763,
+        "wet": 46.172536018147525,
+        "meat_equivalent": 63.48723702495285,
+        "hybrid": 18.121809256238212,
+        "protein": 355.17335398575017
+      }
+    },
+    "cdmo": {
+      "overrides": {
+        "cdmo_mode": true
+      },
+      "p5": 81.18484693553587,
+      "p50": 252.83515410311676,
+      "p95": 1124.5337696444628,
+      "mean": 389.8491725516375,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0020666666666666667,
+      "probability_under_10": 0.13203333333333334,
+      "probability_under_25": 0.6308333333333334,
+      "probability_under_50": 0.8755,
+      "component_means": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 0,
+        "fixed": 0,
+        "cdmo_toll": 80.13621464455466,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 252.83515410311676,
+        "wet": 50.56703082062335,
+        "meat_equivalent": 69.52966737835712,
+        "hybrid": 19.63241684458928,
+        "protein": 388.97716015864114
+      }
+    },
+    "no_capex": {
+      "overrides": {
+        "include_capex": false
+      },
+      "p5": 46.925563610613786,
+      "p50": 183.64153399966565,
+      "p95": 1055.5436573460843,
+      "mean": 327.35883193222804,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.027633333333333333,
+      "probability_under_10": 0.30816666666666664,
+      "probability_under_25": 0.7165,
+      "probability_under_50": 0.8946333333333333,
+      "component_means": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 0,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 183.64153399966565,
+        "wet": 36.72830679993313,
+        "meat_equivalent": 50.501421849908056,
+        "hybrid": 14.875355462477014,
+        "protein": 282.5254369225625
+      }
+    },
+    "complete_medium": {
+      "overrides": {
+        "bundled_media": true
+      },
+      "p5": 3403.0692170744,
+      "p50": 24756.49867490003,
+      "p95": 201009.5279899647,
+      "mean": 53653.42678326876,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0,
+      "probability_under_10": 0,
+      "probability_under_25": 0,
+      "probability_under_50": 0.0006333333333333333,
+      "component_means": {
+        "media": 53590.240677183334,
+        "recf": 0,
+        "supp_protein": 0,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 24756.49867490003,
+        "wet": 4951.299734980006,
+        "meat_equivalent": 6808.0371355975085,
+        "hybrid": 1704.2592838993771,
+        "protein": 38086.92103830773
+      }
+    },
+    "harvest_dewater_placeholder": {
+      "overrides": {
+        "include_harvest_dewater": true
+      },
+      "p5": 66.65010759900652,
+      "p50": 220.23220378037266,
+      "p95": 1171.837561843673,
+      "mean": 373.93046419126347,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.004633333333333333,
+      "probability_under_10": 0.2108,
+      "probability_under_25": 0.6643666666666667,
+      "probability_under_50": 0.8732,
+      "component_means": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 7.110854918715538
+      },
+      "other_bases_p50": {
+        "dry": 220.23220378037266,
+        "wet": 44.04644075607453,
+        "meat_equivalent": 60.563856039602484,
+        "hybrid": 17.39096400990062,
+        "protein": 338.8187750467271
+      }
+    },
+    "media_direct": {
+      "overrides": {
+        "media_use_model": "direct"
+      },
+      "p5": 63.77785502430169,
+      "p50": 172.44200184029455,
+      "p95": 720.3568405009133,
+      "mean": 262.25876752521214,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.004433333333333333,
+      "probability_under_10": 0.2642333333333333,
+      "probability_under_25": 0.7978,
+      "probability_under_50": 0.9463333333333334,
+      "component_means": {
+        "media": 100.01029310449832,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 172.44200184029455,
+        "wet": 34.48840036805891,
+        "meat_equivalent": 47.421550506081005,
+        "hybrid": 14.105387626520251,
+        "protein": 265.29538744660704
+      }
+    },
+    "media_direct_with_forming": {
+      "overrides": {
+        "media_use_model": "direct",
+        "include_downstream": true
+      },
+      "p5": 90.31115098044194,
+      "p50": 207.4723739480785,
+      "p95": 751.420452928574,
+      "mean": 295.3787410564256,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.00016666666666666666,
+      "probability_under_10": 0.12486666666666667,
+      "probability_under_25": 0.7573666666666666,
+      "probability_under_50": 0.9415,
+      "component_means": {
+        "media": 100.01029310449832,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 33.119973531211215,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 207.4723739480785,
+        "wet": 41.4944747896157,
+        "meat_equivalent": 57.05490283572159,
+        "hybrid": 16.5137257089304,
+        "protein": 319.1882676124285
+      }
+    },
+    "media_yield": {
+      "overrides": {
+        "media_use_model": "yield"
+      },
+      "p5": 64.67904987076909,
+      "p50": 178.4548839075611,
+      "p95": 743.6712701049099,
+      "mean": 270.6212240002706,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.0047,
+      "probability_under_10": 0.25053333333333333,
+      "probability_under_25": 0.7823,
+      "probability_under_50": 0.9431666666666667,
+      "component_means": {
+        "media": 108.3727495795557,
+        "recf": 95.65156494320813,
+        "supp_protein": 3.410803391931648,
+        "other_var": 6.079454720108194,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 178.4548839075611,
+        "wet": 35.69097678151222,
+        "meat_equivalent": 49.075093074579314,
+        "hybrid": 14.518773268644829,
+        "protein": 274.5459752424017
+      }
+    },
+    "wet_basis": {
+      "overrides": {
+        "cost_basis": "wet"
+      },
+      "p5": 11.966312930355818,
+      "p50": 42.617644951419095,
+      "p95": 232.76619117410706,
+      "mean": 73.36392185451011,
+      "probability_threshold_basis": "wet biomass",
+      "probability_under_5": 0.0006333333333333333,
+      "probability_under_10": 0.026833333333333334,
+      "probability_under_25": 0.27663333333333334,
+      "probability_under_50": 0.5663333333333334,
+      "component_means": {
+        "media": 40.91422697036626,
+        "recf": 19.13031298864169,
+        "supp_protein": 0.6821606783863239,
+        "other_var": 1.2158909440216332,
+        "capex": 7.892155468063746,
+        "fixed": 3.529174805029392,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 213.08822475709547,
+        "wet": 42.617644951419095,
+        "meat_equivalent": 58.59926180820126,
+        "hybrid": 16.89981545205032,
+        "protein": 327.8280380878392
+      }
+    }
+  },
+  "seed_checks": [
+    {
+      "seed": 1,
+      "p5": 58.581935428547204,
+      "p50": 212.41434679147045,
+      "p95": 1180.5304344458725,
+      "mean": 372.91664202875967,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.009166666666666667,
+      "probability_under_10": 0.2437,
+      "probability_under_25": 0.6693666666666667,
+      "probability_under_50": 0.8734666666666666,
+      "component_means": {
+        "media": 201.47288857776115,
+        "recf": 104.56733353252221,
+        "supp_protein": 3.4366683053033293,
+        "other_var": 6.074275476067976,
+        "capex": 39.65657516530532,
+        "fixed": 17.70890097180499,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 212.41434679147045,
+        "wet": 42.48286935829408,
+        "meat_equivalent": 58.41394536765438,
+        "hybrid": 16.853486341913595,
+        "protein": 326.79130275610834
+      }
+    },
+    {
+      "seed": 7,
+      "p5": 58.828994193869974,
+      "p50": 211.02213778552272,
+      "p95": 1150.6215574576352,
+      "mean": 365.69474105096964,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.01,
+      "probability_under_10": 0.23786666666666667,
+      "probability_under_25": 0.6721,
+      "probability_under_50": 0.8762666666666666,
+      "component_means": {
+        "media": 202.14745448278828,
+        "recf": 97.13867552228677,
+        "supp_protein": 3.4431037194188847,
+        "other_var": 6.100846525619259,
+        "capex": 39.29043336064779,
+        "fixed": 17.574227440209924,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 211.02213778552272,
+        "wet": 42.204427557104545,
+        "meat_equivalent": 58.03108789101876,
+        "hybrid": 16.75777197275469,
+        "protein": 324.649442746958
+      }
+    },
+    {
+      "seed": 99,
+      "p5": 59.68879577853471,
+      "p50": 211.15074896970475,
+      "p95": 1142.149829806425,
+      "mean": 364.439087782233,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.009233333333333333,
+      "probability_under_10": 0.23773333333333332,
+      "probability_under_25": 0.6730333333333334,
+      "probability_under_50": 0.8772666666666666,
+      "component_means": {
+        "media": 198.65651565700753,
+        "recf": 99.56643909017954,
+        "supp_protein": 3.437486453363719,
+        "other_var": 6.064885627803042,
+        "capex": 39.0783173814206,
+        "fixed": 17.635443572456037,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 211.15074896970475,
+        "wet": 42.23014979394095,
+        "meat_equivalent": 58.06645596666881,
+        "hybrid": 16.7666139916672,
+        "protein": 324.84730610723807
+      }
+    },
+    {
+      "seed": 2026,
+      "p5": 59.50814560396067,
+      "p50": 215.448095022748,
+      "p95": 1175.3365303751375,
+      "mean": 368.58676276391327,
+      "probability_threshold_basis": "hybrid product (cell_inclusion_rate cells at target solids, rest filler)",
+      "probability_under_5": 0.008333333333333333,
+      "probability_under_10": 0.23233333333333334,
+      "probability_under_25": 0.6709333333333334,
+      "probability_under_50": 0.8759333333333333,
+      "component_means": {
+        "media": 205.27201693493993,
+        "recf": 97.82403505747916,
+        "supp_protein": 3.442667296368633,
+        "other_var": 6.090097745767958,
+        "capex": 38.381638483767624,
+        "fixed": 17.57630724558344,
+        "cdmo_toll": 0,
+        "downstream": 0,
+        "harvest": 0
+      },
+      "other_bases_p50": {
+        "dry": 215.448095022748,
+        "wet": 43.0896190045496,
+        "meat_equivalent": 59.248226131255706,
+        "hybrid": 17.062056532813926,
+        "protein": 331.4586077273046
+      }
+    }
+  ],
+  "threshold_profile_default_under_5": {
+    "threshold": 5,
+    "n": 30000,
+    "count": 306,
+    "share": 0.0102,
+    "minDraws": 300,
+    "warning": null,
+    "continuous": [
+      {
+        "key": "L_per_kg",
+        "name": "Fresh medium (L per kg)",
+        "all": {
+          "p10": 42.461134085148466,
+          "p50": 155.26506470357066,
+          "p90": 634.9132961884887
+        },
+        "under": {
+          "p10": 15.359513917927163,
+          "p50": 31.032039506305523,
+          "p90": 63.7792729335571
+        }
+      },
+      {
+        "key": "density",
+        "name": "Cell density (g dry/L)",
+        "all": {
+          "p10": 2.465246174507185,
+          "p50": 13.340769151503475,
+          "p90": 27.457540145691098
+        },
+        "under": {
+          "p10": 17.206882672336494,
+          "p50": 27.605185485332598,
+          "p90": 47.475404059775215
+        }
+      },
+      {
+        "key": "media_turnover",
+        "name": "Media-use multiplier (×)",
+        "all": {
+          "p10": 0.8877278627638903,
+          "p50": 1.661893194924772,
+          "p90": 3.4930869640426234
+        },
+        "under": {
+          "p10": 0.44218468532607613,
+          "p50": 0.8768255842379833,
+          "p90": 1.5931230610912706
+        }
+      },
+      {
+        "key": "media_cost_L",
+        "name": "Medium price ($/L)",
+        "all": {
+          "p10": 0.2687610565315658,
+          "p50": 0.606416116424912,
+          "p90": 1.4371352387100158
+        },
+        "under": {
+          "p10": 0.15434296112570223,
+          "p50": 0.31287008946225425,
+          "p90": 0.5642970416485569
+        }
+      },
+      {
+        "key": "g_recf",
+        "name": "Growth factor quantity (g/kg)",
+        "all": {
+          "p10": 0.003501631920327199,
+          "p50": 0.007625188459889191,
+          "p90": 0.01959185248388067
+        },
+        "under": {
+          "p10": 0.0030371349101907287,
+          "p50": 0.005278582710782966,
+          "p90": 0.009465734243374293
+        }
+      },
+      {
+        "key": "price_recf",
+        "name": "Growth factor price ($/g)",
+        "all": {
+          "p10": 32.582213454363504,
+          "p50": 833.5633779111986,
+          "p90": 16840.20305372398
+        },
+        "under": {
+          "p10": 16.558838255663673,
+          "p50": 111.90457997531877,
+          "p90": 739.1277314730256
+        }
+      },
+      {
+        "key": "maturity",
+        "name": "Industry maturity (0–1)",
+        "all": {
+          "p10": 0.14384674293544852,
+          "p50": 0.3863691210494319,
+          "p90": 0.6826680082663896
+        },
+        "under": {
+          "p10": 0.17612427917687298,
+          "p50": 0.4676542641538375,
+          "p90": 0.7359401004576147
+        }
+      },
+      {
+        "key": "plant_kta",
+        "name": "Plant capacity (thousand tonnes/yr)",
+        "all": {
+          "p10": 11.599835835461075,
+          "p50": 20.002845689992448,
+          "p90": 34.05354453921098
+        },
+        "under": {
+          "p10": 12.247806617268573,
+          "p50": 20.86911902354181,
+          "p90": 35.752598335979116
+        }
+      },
+      {
+        "key": "uptime",
+        "name": "Utilization (share of year)",
+        "all": {
+          "p10": 0.8313787925161027,
+          "p50": 0.9075430822138357,
+          "p90": 0.957566351125058
+        },
+        "under": {
+          "p10": 0.8475377723494684,
+          "p50": 0.9155237597894507,
+          "p90": 0.96217329133961
+        }
+      },
+      {
+        "key": "wacc",
+        "name": "Cost of capital (WACC)",
+        "all": {
+          "p10": 0.09078729871529988,
+          "p50": 0.12952120864861072,
+          "p90": 0.18474013269455875
+        },
+        "under": {
+          "p10": 0.08885317435672266,
+          "p50": 0.12560357256723115,
+          "p90": 0.17722616424550552
+        }
+      }
+    ],
+    "binary": [
+      {
+        "key": "is_hydro",
+        "name": "Uses hydrolysates (cheap amino-acid source)",
+        "all": 0.7271,
+        "under": 0.9640522875816994
+      },
+      {
+        "key": "is_recf_cheap",
+        "name": "Cheap recombinant growth factors",
+        "all": 0.4775333333333333,
+        "under": 0.8823529411764706
+      }
+    ],
+    "components": {
+      "all": {
+        "media": 204.57113485183234,
+        "recf": 95.65156494320813,
+        "capex": 39.460777340318664,
+        "fixed": 17.64587402514717,
+        "unit_cost": 366.81960927254636,
+        "other": 9.490258112040067
+      },
+      "under": {
+        "media": 10.585285221842371,
+        "recf": 1.4731313024080734,
+        "capex": 5.109441002539258,
+        "fixed": 10.609973142164863,
+        "unit_cost": 33.61030904768652,
+        "other": 5.832478378731956
+      }
+    }
+  }
+}

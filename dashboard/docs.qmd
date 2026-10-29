@@ -74,7 +74,7 @@ This document provides complete technical documentation for the cultured chicken
 
 ::: {.callout-important}
 ## Basis change (engine `2026-10-26.4`): dry cell mass is now the primary basis
-**Headline:** cost per kg of **dry cell mass**. **Secondary:** cost per kg of **protein**, and a **chicken-meat equivalent** (dry cost × a fixed solids content close to chicken meat; 27.5%, a convention agreed on 28 October 2026) for intuition. The dry and meat-equivalent costs are shown side by side on the headline cards, and the main cost charts carry a second axis in meat-equivalent dollars. The meat equivalent has chicken's water content, not necessarily its protein, taste or texture. Probability thresholds, the blended-product arithmetic and chicken comparisons use the meat equivalent.
+**Headline:** cost per kg of **dry cell mass**. **Beside it:** the ingredient cost per kg of a **hybrid product** (since engine `2026-10-29.1`): 25% cultivated cells, counted at the water content of chicken meat (27.5% solids, a convention agreed on 28 October 2026), and 75% plant-based ingredients at \$3/kg. Products will not be made entirely of cells, so an all-cell figure would mislead. The dry and hybrid costs are shown side by side on the headline cards, the main cost charts carry a second axis in hybrid-product dollars, and probability thresholds and chicken comparisons use the hybrid product. Cost per kg of **protein** is reported too.
 
 **Inputs:** density in g dry cells per litre; \$/kg inputs (contract toll, expert cost priors) per kg dry; direct medium use in litres per kg dry; nutrient yield in g dry cells per litre of medium.
 
@@ -87,7 +87,7 @@ Harvested cells are mostly water. A "kg of wet cell biomass" can include more or
 
 **Dry cell mass** does not change with washing or dewatering, maps directly to nutrition (protein is a fixed share of it), and is the natural basis for nutrient stoichiometry: how many grams of glucose, amino acids or litres of medium it takes to build a gram of cells. That is why it is now the primary basis. Cell number is not used as a cost basis, because mass per cell varies with growth rate and phase.
 
-The **chicken-meat equivalent** is there for intuition and for comparisons with chicken: chicken muscle is roughly 25–30% dry matter, so a kilogram of chicken-like product holds about 0.275 kg of dry cell mass at the placeholder. Cost per kg **protein** is reported because protein is the nutritionally relevant quantity.
+The **hybrid product** is there for intuition and for comparisons with chicken. Cells are first put on chicken meat's water content (chicken muscle is roughly 25–30% dry matter, so a kilogram of all-cell, chicken-like mass holds 0.275 kg of dry cell mass); a kilogram of hybrid product then contains `cell_inclusion_rate` kg of that (25%) and the rest plant-based ingredients at `filler_cost` (\$3/kg). There is no consensus inclusion rate. GOOD Meat 3, sold in Singapore from 2024, was 3% cultivated chicken; hybrid meat products are often described as 20–50% non-meat; earlier products were reported at around 30–70% cells. 25% and \$3/kg were the Advanced page's existing blend defaults and are conventions, adjustable under *Hybrid product*. The figure is an ingredient cost: forming, texturization, packaging and margins are excluded, and the filler cost is a rough placeholder. Cost per kg **protein** is reported because protein is the nutritionally relevant quantity.
 
 **How sources report their basis, and how the model converts.** Source studies report density and cost in at least three ways:
 
@@ -103,12 +103,16 @@ The **chicken-meat equivalent** is there for intuition and for comparisons with 
 |---|---|---|
 | `cost_basis` | `"dry"` | Headline basis: `"dry"` (per kg dry cell mass) or `"wet"` (per kg wet biomass at `solids_fraction`; the pre-October 26 headline). |
 | `solids_fraction` | 0.20 | Solids content used to convert wet-basis sources, built-in priors and plant capacity to dry mass, and for the wet output. |
-| `target_solids_fraction` | 0.275 | Solids content of the chicken-meat equivalent; a fixed convention (midpoint of 25–30%), agreed on 28 October 2026. |
+| `target_solids_fraction` | 0.275 | Solids content at which cells are counted in the hybrid product (chicken meat's water content); a fixed convention (midpoint of 25–30%), agreed on 28 October 2026. |
+| `cell_inclusion_rate` | 0.25 | Share of the hybrid product that is cultivated cells (at `target_solids_fraction`). A convention, not a consensus figure; set on 29 October 2026. URL parameter `blending_share`. |
+| `filler_cost` | 3 | \$/kg of the plant-based ingredients making up the rest of the hybrid product. Rough placeholder. |
 | `protein_fraction_of_solids` | 0.65 | Share of dry cell mass that is protein. Unverified placeholder. |
 
-$$\text{cost per kg meat-equivalent} = \text{cost per kg dry} \times \texttt{target\_solids\_fraction}, \qquad \text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
+$$\text{cost per kg hybrid} = \text{cost per kg dry} \times \texttt{target\_solids\_fraction} \times r + \texttt{filler\_cost} \times (1 - r), \quad r = \texttt{cell\_inclusion\_rate}$$
 
-At the defaults (seed 42, 30,000 draws) the median is about \$213 per kg dry cell mass, \$58.60 per kg meat-equivalent and \$328 per kg protein; the wet basis gives \$42.62. On the meat-equivalent thresholds, 0.7% of draws are under \$10/kg, 15.8% under \$25 and 43.4% under \$50 (on the old wet thresholds: 2.7% and 27.7%). The \$10 meat-equivalent line is stricter than the old \$10 wet line because a kg of meat equivalent holds 0.275 kg of dry mass, more than a wet kg's 0.20. The conversions assume washing and dewatering lose no cells; the harvest placeholder below adds a cost but not losses.
+$$\text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
+
+At the defaults (seed 42, 30,000 draws) the median is about \$213 per kg dry cell mass, \$16.90 per kg of hybrid product and \$328 per kg protein; all-cell mass at chicken-meat moisture would be \$58.60 per kg, and the wet basis gives \$42.62. On the hybrid-product thresholds, 1.0% of draws are under \$5/kg, 23.6% under \$10, 67.2% under \$25 and 87.5% under \$50. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) The conversions assume washing and dewatering lose no cells; the harvest placeholder below adds a cost but not losses.
 
 ### Target quantity (estimand) {#estimand}
 
@@ -129,7 +133,7 @@ Two caveats are recorded in [Limits](limits.qmd#estimand): the technology availa
 
 | Step | In the estimate? | Currently modeled? |
 |---|---|---|
-| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$2.50–15 per kg dry (\$0.50–3.00 per wet kg at 20% solids; `harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Turning it on moves the default median from about \$213 to \$220 per kg dry and P(meat-equivalent cost < \$10/kg) from 0.7% to 0.2%. |
+| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$2.50–15 per kg dry (\$0.50–3.00 per wet kg at 20% solids; `harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Turning it on moves the default median from about \$213 to \$220 per kg dry, P(hybrid-product cost < \$5/kg) from 1.0% to 0.5% and P(< \$10/kg) from 23.6% to 21.1%. |
 | **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. |
 
 ### Elicit primitive drivers, not derived quantities {#elicit-fundamentals}
@@ -150,7 +154,7 @@ Each respondent would also give one or two derived numbers, such as their overal
 
 $$\text{L of medium per kg dry cell mass} = \frac{1000}{\text{nutrient yield (g dry cells per L of medium consumed)}}$$
 
-Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–25 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`). That range is illustrative, not elicited or fitted: it implies about 40–330 litres per kg dry (8–67 per wet kg at 20% solids), close to the direct stress range. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. In the default scenario this rule gives 0.3% of draws under \$10/kg meat-equivalent (against 0.7% under the density rule), 15.2% under \$25, and a median of \$178 per kg dry (against \$213); 168 of the 197 default draws under \$10 rise above \$10 under it. The [structure check](sensitivity.qmd#structure-check) shows why this matters: most simulated draws under \$10/kg rely on the density-derived medium assumption.
+Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–25 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`). That range is illustrative, not elicited or fitted: it implies about 40–330 litres per kg dry (8–67 per wet kg at 20% solids), close to the direct stress range. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. In the default scenario this rule gives 0.5% of draws under \$5/kg of hybrid product (against 1.0% under the density rule), 25.1% under \$10, and a median of \$178 per kg dry (against \$213); 252 of the 306 default draws under \$5 rise above \$5 under it. The [structure check](sensitivity.qmd#structure-check) shows why this matters: most of the very cheapest simulated draws rely on the density-derived medium assumption.
 
 ---
 
@@ -190,7 +194,7 @@ $$\boxed{\text{Unit Cost (CDMO)} = \underbrace{\text{VOC}}_{\text{variable}} + \
 The CDMO toll is sampled from a lognormal distribution (default p5 = \$4/kg, p95 = \$40/kg) representing the range of per-kg fees a future food-grade contract manufacturer might charge. The toll is expressed as **\$/kg of cultured cell mass** — the all-in contract manufacturing fee per kilogram of finished cells delivered. This is the standard reporting basis for TEA comparisons; it bundles the CDMO's CAPEX, fixed overhead, and margin, and excludes the customer's own input costs (media, growth factors). See the [CDMO mode section below](#cdmo-production-model) for a full description.
 
 ::: {.callout-note}
-**Output basis — factory-gate dry cell mass (since engine `2026-10-26.4`):** Costs are expressed per kg of dry cell mass, with cost per kg protein and a chicken-meat equivalent (dry cost × 27.5% solids, a fixed convention) alongside; the earlier per-wet-kg output is available with `cost_basis: "wet"`. Wet-basis sources and the model's built-in wet-basis priors are converted at `solids_fraction` (0.20). See [why the basis matters](#output-basis). *The worked examples in the formula sections below were written per wet kg with wet densities; per kg dry at 20% solids, multiply litres and dollars per kg by 5 and divide densities by 5.*
+**Output basis — factory-gate dry cell mass (since engine `2026-10-26.4`):** Costs are expressed per kg of dry cell mass, with cost per kg protein and the cost per kg of a hybrid product (25% cells at chicken-meat moisture, 75% plant-based ingredients at \$3/kg) alongside; the earlier per-wet-kg output is available with `cost_basis: "wet"`. Wet-basis sources and the model's built-in wet-basis priors are converted at `solids_fraction` (0.20). See [why the basis matters](#output-basis). *The worked examples in the formula sections below were written per wet kg with wet densities; per kg dry at 20% solids, multiply litres and dollars per kg by 5 and divide densities by 5.*
 
 **Includes:** Basal media, growth factors, bioreactor and facility capital (annualized), plant overhead, utilities. Harvest, washing and dewatering belong here too but are not yet modeled explicitly.
 
@@ -1105,7 +1109,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
 
-8. **Basis conversions rest on placeholders** — The headline result is per kg dry cell mass. Converting wet-basis sources and built-in priors uses a single assumed solids content (20%); the chicken-meat equivalent and protein figures use placeholder solids (27.5%) and protein (65%) shares; cell-count sources have no mass-per-cell parameter yet; and recovery losses during washing and dewatering are not modeled. See [why the basis matters](#output-basis).
+8. **Basis conversions rest on placeholders** — The headline result is per kg dry cell mass. Converting wet-basis sources and built-in priors uses a single assumed solids content (20%); the hybrid-product and protein figures use placeholder solids (27.5%), inclusion (25%), filler cost (\$3/kg) and protein (65%) values; cell-count sources have no mass-per-cell parameter yet; and recovery losses during washing and dewatering are not modeled. See [why the basis matters](#output-basis).
 
 ### Recommendations for Use
 

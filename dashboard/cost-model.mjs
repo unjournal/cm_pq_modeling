@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-10-26.4";
+export const MODEL_VERSION = "2026-10-29.1";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -29,6 +29,9 @@ export const DEFAULT_PARAMS = Object.freeze({
   // biomass) to dry mass. Meat-equivalent cost = dry cost × target_solids_fraction.
   cost_basis: "dry",
   solids_fraction: 0.20, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65,
+  // Hybrid product: cell_inclusion_rate kg of cells (at meat moisture) per kg of product,
+  // the rest non-cell ingredients at filler_cost $/kg. Drives thresholds on the dry basis.
+  cell_inclusion_rate: 0.25, filler_cost: 3,
   include_harvest_dewater: false, harvest_dewater_p5: 2.5, harvest_dewater_p95: 15,
   // media_use_model "yield": grams of cell solids per litre of medium consumed.
   nutrient_yield_p5: 3, nutrient_yield_p95: 25
@@ -42,6 +45,7 @@ export const REVIEW_PROVENANCE = Object.freeze({
   media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per kg dry cell mass = 1000 ÷ yield (g dry cells per L of medium consumed). 3–25 g/L p5–p95 is illustrative, chosen so that it implies about 40–330 L per dry kg (8–67 per wet kg at 20% solids), close to the direct stress range; not elicited or fitted.",
   gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
   basis: "October 26, 2026 design decision (David Reinstein). Cost per wet kg is not a stable unit, so the primary basis is kg dry cell mass, with cost per kg protein (÷ protein share) and a chicken-meat equivalent (× target solids) alongside; the earlier wet-basis output is available with cost_basis \"wet\". 0.20 solids, used to convert wet-basis sources, built-in priors and plant capacity, matches the 80%-water reference in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of dry cell mass is an unverified placeholder. Recovery losses are not modeled.",
+  hybrid: "October 29, 2026 design decision (David Reinstein). Products will not be made entirely of cultivated cells, so the reader-facing comparison is a hybrid product: 25% cultivated cells at chicken-meat moisture plus 75% plant-based ingredients at $3/kg (ingredient cost only; forming, packaging and margins excluded). There is no consensus inclusion rate: GOOD Meat 3 (Singapore, 2024) is 3% cells, and hybrids are usually described as 20–50% non-meat. 25% and $3/kg were the dashboard's existing blend defaults; both are conventions, adjustable on the Advanced page.",
   harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $2.50–15/kg dry p5–p95 range ($0.50–3.00 per wet kg at 20% solids) is a placeholder until values from the planned process model are available (see docs); off by default.",
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific equipment, consumable and contamination costs are not modeled, so selection favors the least-specified modes."
 });
@@ -326,6 +330,10 @@ function simulateDrawnMode(n, seed, params) {
     if (!Number.isFinite(params[key]) || params[key] <= 0 || params[key] > 1)
       throw new RangeError(`${key} must be above 0 and at most 1.`);
   }
+  if (!Number.isFinite(params.cell_inclusion_rate) || params.cell_inclusion_rate <= 0 || params.cell_inclusion_rate > 1)
+    throw new RangeError("cell_inclusion_rate must be above 0 and at most 1.");
+  if (!Number.isFinite(params.filler_cost) || params.filler_cost < 0)
+    throw new RangeError("filler_cost must be zero or more.");
   if (params.include_harvest_dewater) validateRange(params.harvest_dewater_p5, params.harvest_dewater_p95);
   if (params.media_use_model === "yield") validateRange(params.nutrient_yield_p5, params.nutrient_yield_p95);
   if (!Number.isFinite(params.gf_concentration_mg_L) || params.gf_concentration_mg_L < 0
@@ -638,6 +646,9 @@ function simulateDrawnMode(n, seed, params) {
   const unit_cost_dry = scale(unit_cost_wet, 1 / s);
   // A kg of chicken-meat equivalent holds target_solids_fraction kg dry mass.
   const unit_cost_meat_equiv = scale(unit_cost_dry, params.target_solids_fraction);
+  // A kg of hybrid product: cell_inclusion_rate kg of cells at meat moisture plus filler.
+  const unit_cost_hybrid = unit_cost_meat_equiv.map(c =>
+    c * params.cell_inclusion_rate + params.filler_cost * (1 - params.cell_inclusion_rate));
 
   return {
     unit_cost: scale(unit_cost_wet, out),
@@ -655,12 +666,13 @@ function simulateDrawnMode(n, seed, params) {
     cost_cdmo_toll: scale(cdmo_toll_perkg, out),
     cost_downstream: scale(downstream_perkg, out),
     cost_harvest: scale(harvest_perkg, out),
-    unit_cost_dry, unit_cost_wet, unit_cost_meat_equiv,
+    unit_cost_dry, unit_cost_wet, unit_cost_meat_equiv, unit_cost_hybrid,
     unit_cost_protein: scale(unit_cost_dry, 1 / params.protein_fraction_of_solids),
-    // Thresholds and chicken comparisons: meat equivalent on the dry basis, wet cost on the wet basis.
-    threshold_cost: params.cost_basis === "dry" ? unit_cost_meat_equiv : unit_cost_wet,
+    // Thresholds and chicken comparisons: hybrid product on the dry basis, wet cost on the wet basis.
+    threshold_cost: params.cost_basis === "dry" ? unit_cost_hybrid : unit_cost_wet,
     basis: {cost_basis: params.cost_basis, solids_fraction: s,
-      target_solids_fraction: params.target_solids_fraction, protein_fraction_of_solids: params.protein_fraction_of_solids},
+      target_solids_fraction: params.target_solids_fraction, protein_fraction_of_solids: params.protein_fraction_of_solids,
+      cell_inclusion_rate: params.cell_inclusion_rate, filler_cost: params.filler_cost},
     pct_hydro: is_hydro.filter(x => x).length / n,
     pct_recf_cheap: is_recf_cheap.filter(x => x).length / n,
     // Process mode realized shares — stored as scalars (not the full 30k string array)

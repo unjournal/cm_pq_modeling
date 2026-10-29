@@ -100,9 +100,9 @@ test('interventions pin exactly one input and leave the paired draws intact', ()
 
 test('threshold profile compares the draws under a threshold with all draws', () => {
   const p = sm.thresholdProfile(base, 25);
-  // Draws are selected on the chicken-meat-equivalent cost (dry basis default).
+  // Draws are selected on the hybrid-product cost (dry basis default).
   const under = base.threshold_cost.filter(v => v < 25).length;
-  assert.ok(base.threshold_cost.every((v, i) => Math.abs(v - base.unit_cost[i] * 0.275) < 1e-9 * base.unit_cost[i]));
+  assert.ok(base.threshold_cost.every((v, i) => Math.abs(v - (base.unit_cost[i] * 0.275 * 0.25 + 2.25)) < 1e-9 * base.unit_cost[i]));
   assert.equal(p.count, under);
   assert.equal(p.share, under / n);
   assert.equal(p.continuous.length, 10);
@@ -118,8 +118,8 @@ test('threshold profile compares the draws under a threshold with all draws', ()
     const c = p.components[g];
     assert.ok(Math.abs(c.media + c.recf + c.capex + c.fixed + c.other - c.unit_cost) < 1e-9);
   }
-  // Component means are on the headline (dry) basis: under $25 meat-equivalent is under $25 / 0.275 dry.
-  assert.ok(p.components.under.unit_cost < 25 / 0.275 && p.components.all.unit_cost === model.mean(base.unit_cost));
+  // Component means are on the headline (dry) basis: a $25 hybrid is under ($25 − 2.25) / (0.275 × 0.25) dry.
+  assert.ok(p.components.under.unit_cost < (25 - 2.25) / (0.275 * 0.25) &&p.components.all.unit_cost === model.mean(base.unit_cost));
   // Warning below the minimum count; null subset statistics when nothing qualifies.
   assert.equal(p.warning === null, under >= 300);
   assert.match(sm.thresholdProfile(base, 25, {minDraws: under + 1}).warning, /imprecise/);
@@ -152,7 +152,8 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
     include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
     gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
     p_fedbatch: 0.2, p_perfusion: 0.5, p_continuous: 0.3, override_mode_constraints: false,
-    bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull
+    bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull,
+    blending_share: 0.25, filler_cost: 3
   };
   const cases = [
     [{}, {}],
@@ -169,7 +170,8 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
      {simpleMode: false, include_harvest_dewater: true,
       structure_settings: {...structure, solids_fraction: 0.15, target_solids_fraction: 0.3, protein_fraction_of_solids: 0.6,
         media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30}}],
-    [{cost_basis: 'wet'}, {structure_settings: {...structure, cost_basis: 'wet'}}]
+    [{cost_basis: 'wet'}, {structure_settings: {...structure, cost_basis: 'wet'}}],
+    [{blending_share: '0.5', filler_cost: '4'}, {blending_share: 0.5, filler_cost: 4}]
   ];
   for (const [state, overrides] of cases) {
     const expected = pageParams('simParams', {...defaults, ...overrides});

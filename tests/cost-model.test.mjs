@@ -51,13 +51,15 @@ test('dry basis is the default and the wet switch is an exact rescaling', () => 
     assert.ok(close(dry.L_per_kg_samples[i] * 0.2, wet.L_per_kg_samples[i]));
     assert.ok(close(dry.unit_cost_meat_equiv[i], v * 0.275));
     assert.ok(close(dry.unit_cost_protein[i], v / 0.65));
-    assert.ok(close(dry.threshold_cost[i], dry.unit_cost_meat_equiv[i]));
+    // Thresholds use a hybrid product: 25% cells at meat moisture, 75% filler at $3/kg.
+    assert.ok(close(dry.unit_cost_hybrid[i], v * 0.275 * 0.25 + 3 * 0.75));
+    assert.ok(close(dry.threshold_cost[i], dry.unit_cost_hybrid[i]));
     assert.ok(close(wet.threshold_cost[i], wet.unit_cost[i]));
   });
   // Densities are reported in g dry/L whatever the cost basis; the defaults span 1–40.
   assert.deepEqual(dry.density_samples, wet.density_samples);
   assert.ok(model.quantile(dry.density_samples, 0.01) > 0.5 && model.quantile(dry.density_samples, 0.99) < 60);
-  for (const bad of [{solids_fraction: 0}, {target_solids_fraction: 1.2}, {protein_fraction_of_solids: NaN}, {cost_basis: 'cells'}])
+  for (const bad of [{solids_fraction: 0}, {target_solids_fraction: 1.2}, {protein_fraction_of_solids: NaN}, {cell_inclusion_rate: 0}, {filler_cost: -1}, {cost_basis: 'cells'}])
     assert.throws(() => simulate(10, 1, bad), RangeError);
   // Least-cost selection picks the same modes on either basis and carries the converted arrays.
   const lcDry = simulate(n, 42, {mode_selection: 'least_cost'});
@@ -229,13 +231,16 @@ test('Simple and Advanced adapters yield identical draws at matching settings', 
         include_capex: true, include_fixed_opex: true, include_downstream: false, include_harvest_dewater: false,
         gf_progress: 50, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
         p_fedbatch: 0.2, p_perfusion: 0.5, p_continuous: 0.3, override_mode_constraints: false,
-        bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull
+        bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500, expert_priors_adv: epNull,
+        blending_share: 0.25, filler_cost: 3
       });
       const b = pageParams('simple.qmd', 'simParams_simple', {
         target_year_s: year, p_hydro_s: 75, p_recfactors_s: 50,
-        p_fedbatch_s: 20, p_perfusion_s: 50, p_continuous_s: 30, expert_priors: epNull
+        p_fedbatch_s: 20, p_perfusion_s: 50, p_continuous_s: 30, expert_priors: epNull, blending_share_s: 25
       });
-      assert.deepEqual(simulate(n, 42, a).unit_cost, simulate(n, 42, b).unit_cost);
+      const [ra, rb] = [simulate(n, 42, a), simulate(n, 42, b)];
+      assert.deepEqual(ra.unit_cost, rb.unit_cost);
+      assert.deepEqual(ra.threshold_cost, rb.threshold_cost);
     }
   }
 });
@@ -312,22 +317,29 @@ test('actual CSV exporter includes reproducible configuration with valid quote e
   assert.ok(lines[1].includes(`"${model.MODEL_VERSION}","42","2"`));
 });
 
-test('meat-equivalent axis labels dry-cost positions with the fixed conversion', async () => {
+test('hybrid-product axis labels dry-cost positions with the fixed conversion', async () => {
   const controls = await import('../dashboard/model-controls.mjs');
   const fakePlot = {axisX: (a, b) => b === undefined ? {options: a} : {data: a, options: b}};
-  const [bottom, top] = controls.meatEquivalentAxes(fakePlot, 400, 0.275);
+  const basis = {target_solids_fraction: 0.275, cell_inclusion_rate: 0.25, filler_cost: 3};
+  const [bottom, top] = controls.hybridAxes(fakePlot, 400, basis);
   assert.equal(bottom.options.anchor, 'bottom');
   assert.equal(top.options.anchor, 'top');
-  // Ticks are round meat-equivalent values placed at dry-cost positions inside the domain
+  assert.match(top.options.label, /hybrid product \(25% cells\)/);
+  // Ticks are round hybrid-product values placed at dry-cost positions inside the domain
   top.data.forEach(x => {
-    assert.ok(x >= 0 && x <= 400 + 1e-9);
+    assert.ok(x >= -1e-9 && x <= 400 + 1e-9);
     assert.match(top.options.tickFormat(x), /^\$\d+$/);
   });
-  assert.equal(top.options.tickFormat(20 / 0.275), '$20');
+  // $10 hybrid = 0.25 × dry × 0.275 + 2.25, so dry = 7.75 / 0.06875
+  assert.ok(Math.abs(controls.hybridToDry(10, basis) - 7.75 / 0.06875) < 1e-9);
+  assert.equal(top.options.tickFormat(controls.hybridToDry(20, basis)), '$20');
   assert.ok(top.data.length >= 4);
   assert.equal(controls.formatMeatEquivalent(58.6), '59');
   assert.equal(controls.formatMeatEquivalent(3.34), '3.3');
-  assert.match(controls.meatEquivalentNote(0.275), /27\.5% solids/);
+  assert.match(controls.hybridNote(basis), /25% cultivated cells/);
   const r = simulate(n, 42);
-  r.unit_cost.forEach((v, i) => assert.ok(Math.abs(v * r.basis.target_solids_fraction - r.unit_cost_meat_equiv[i]) < 1e-9));
+  r.unit_cost.forEach((v, i) => {
+    assert.ok(Math.abs(v * r.basis.target_solids_fraction - r.unit_cost_meat_equiv[i]) < 1e-9);
+    assert.ok(Math.abs(controls.hybridCost(v, r.basis) - r.unit_cost_hybrid[i]) < 1e-9);
+  });
 });

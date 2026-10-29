@@ -27,7 +27,7 @@ format:
 ::: {.callout-note collapse="true"}
 ## Model version and September 17 update
 
-This page runs the **current model** (engine `2026-10-26.4`; headline cost per kg dry cell mass since October 26). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-10-29.1`; headline cost per kg dry cell mass since October 26, shown beside the cost of a hybrid product since October 29). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 :::
@@ -44,7 +44,7 @@ This model is *largely AI-generated* and has not been fully validated. It is pro
 
 **Why.** Washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing, maps to nutrition, and is the natural basis for nutrient stoichiometry.
 
-**Thresholds and blending** use a **chicken-meat equivalent**: dry cost × a solids content close to chicken meat (27.5%, a fixed convention), shown beside every dry-basis cost. The old wet-basis view is available on the [Advanced Model](index.qmd) under *Structural stress tests → Cost basis*. [Why the basis matters →](docs.qmd#output-basis)
+**Beside every dry-basis cost**, and for the probability thresholds, the page shows the cost per kg of a **hybrid product**: 25% cultivated cells (counted at chicken-meat moisture, 27.5% solids) and 75% plant-based ingredients at \$3/kg. Products will not be made entirely of cells; there is no consensus inclusion rate, so 25% is a convention you can change below. The old wet-basis view is available on the [Advanced Model](index.qmd) under *Structural stress tests → Cost basis*. [Why the basis matters →](docs.qmd#output-basis)
 
 *AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
@@ -56,7 +56,7 @@ This Simplest Model focuses on a few key levers on cultured chicken production c
 
 Once you've explored here, click **→ Advanced Model** at the bottom of the sidebar to carry your settings over to a fuller parameter set.
 
-**Parameters exposed here:** Projection Year, P(Growth Factor Breakthrough), P(Hydrolysates adopted), Process Mode Mix, Blended Product
+**Parameters exposed here:** Projection Year, P(Growth Factor Breakthrough), P(Hydrolysates adopted), Process Mode Mix, Hybrid product inclusion rate
 
 **Everything else** (WACC, plant size, cell density, media-use multiplier, asset life, downstream costs) is held at reasonable defaults — see the "Background parameters" section in the sidebar.
 :::
@@ -95,7 +95,6 @@ urlBool_s = function(key, def) {
 //| echo: false
 // Reactive CSS for blending-only visibility
 html`<style>
-  .blending-only-s { display: ${include_blending_s ? 'block' : 'none'}; }
 </style>`
 ```
 
@@ -160,32 +159,14 @@ viewof p_hydro_s = Inputs.range([0, 100], {
 
 ---
 
-**Blended Product** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Show blended product costs: cultured meat mixed with plant-based filler to lower the per-kg cost. The toggle adds a second set of probability/cost cards based on a CM-plus-filler product, which is the form most consumer-facing cultured meat is expected to take.">(?)</abbr>
+**Hybrid product** <abbr style="cursor:help;text-decoration:underline dotted;font-size:0.85em;color:#888;" title="Cultivated meat products will not be made entirely of cells. The second cost on each card, and the probability thresholds, are for a kg of product with this share of cultivated cells (counted at chicken-meat moisture) and the rest plant-based ingredients at $3/kg. GOOD Meat 3 had 3% cells; hybrids are often described as 20–50% non-meat. 25% is a convention.">(?)</abbr>
 
 ```{ojs}
 //| echo: false
-viewof include_blending_s = Inputs.toggle({
-  label: "Show blended product analysis",
-  value: urlBool_s("include_blending", false)
-})
-```
-
-```{=html}
-<div class="blending-only-s">
-```
-
-```{ojs}
-//| echo: false
-viewof blending_share_s = Inputs.range([5, 95], {
+viewof blending_share_s = Inputs.range([5, 100], {
   value: Math.round(urlNum_s("blending_share", 0.25) * 100), step: 5,
-  label: "CM inclusion rate (%)"
+  label: "Cell inclusion rate (%)"
 })
-```
-
-*Most commercial products blend cultured cells with plant-based filler. E.g., 25% CM cells + 75% plant protein at ~$3/kg filler. Even if pure cells are expensive, a blended product can be price-competitive.*
-
-```{=html}
-</div>
 ```
 
 ---
@@ -298,7 +279,6 @@ viewof expert_priors = modelControls.expertPriorControl(new URLSearchParams(urlP
     p_fedbatch: (p_fedbatch_s / tot).toFixed(2),
     p_perfusion: (p_perfusion_s / tot).toFixed(2),
     p_continuous: (p_continuous_s / tot).toFixed(2),
-    include_blending: include_blending_s ? 1 : 0,
     blending_share: (blending_share_s / 100).toFixed(2)
   });
   for (const [key, value] of Object.entries(expert_priors)) if (value != null) p.set(`ep_${key}`, value);
@@ -324,6 +304,7 @@ simParams_simple = {
   const tot = Math.max(p_fedbatch_s + p_perfusion_s + p_continuous_s, 1);
   return {
     ...costModel.DEFAULT_PARAMS,
+    cell_inclusion_rate: blending_share_s / 100,
     maturity_mean: costModel.maturityForYear(0.5, target_year_s),
     target_year: target_year_s,
     p_hydro_mean: p_hydro_s / 100,
@@ -365,26 +346,19 @@ scenarioNotes = html`<div role="status">${results_s.warnings.map(w => html`<p><s
 
 ```{ojs}
 //| echo: false
-// Headline cost is per kg dry cell mass; thresholds and blending use the
-// chicken-meat equivalent (dry cost × target solids), as on the Advanced page.
+// Headline cost is per kg dry cell mass; thresholds use the hybrid product
+// (cells at meat moisture plus plant filler), as on the Advanced page.
 stats_s = {
   const uc = results_s.unit_cost;
   const tc = results_s.threshold_cost;
-  const bs = blending_share_s / 100;
-  const fc = 3.0;
-  const blended = tc.map(c => c * bs + fc * (1 - bs));
   const pct = (arr, t) => arr.filter(x => x < t).length / arr.length * 100;
   return {
     p5: quantile(uc, 0.05), p20: quantile(uc, 0.20),
     p50: quantile(uc, 0.50), p80: quantile(uc, 0.80), p95: quantile(uc, 0.95),
     t_p5: quantile(tc, 0.05), t_p50: quantile(tc, 0.50), t_p95: quantile(tc, 0.95),
-    toAxis: t => t / results_s.basis.target_solids_fraction,
-    prob_10: pct(tc, 10), prob_25: pct(tc, 25), prob_50: pct(tc, 50), prob_100: pct(tc, 100),
-    bprob_5: pct(blended, 5), bprob_8: pct(blended, 8), bprob_12: pct(blended, 12),
-    bprob_10: pct(blended, 10), bprob_25: pct(blended, 25),
-    blended_p50: quantile(blended, 0.50),
-    blended_p5: quantile(blended, 0.05), blended_p95: quantile(blended, 0.95),
-    bs, n: uc.length
+    toAxis: t => modelControls.hybridToDry(t, results_s.basis),
+    probs: [5, 10, 25, 50].map(x => ({threshold: x, prob: pct(tc, x)})),
+    n: uc.length
   };
 }
 ```
@@ -402,17 +376,16 @@ Plot_s = import("https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm")
 ```{ojs}
 //| echo: false
 html`<div style="background:#f8f9fa; padding:0.8rem 1rem; border-left:4px solid #3498db; margin-bottom:1.5rem; font-size:0.9em; line-height:1.6;">
-Each headline value is given twice: <strong>per kg of dry cell mass</strong>, the model's basis, and as <strong>chicken-meat equivalent</strong>, the same cost at the water content of chicken meat (dry cost × ${(results_s.basis.target_solids_fraction * 100).toFixed(1)}% solids, a fixed convention). The meat equivalent is for comparison with chicken; it is not a protein or finished-product equivalent. The probability thresholds and blended-product figures use it. Both are factory-gate ingredient costs, not consumer-product prices. Recovery losses in washing and dewatering are not modeled. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
-${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}% CM + ${(1-stats_s.bs)*100 | 0}% plant-based filler at $3/kg.` : ''}
+Each headline value is given twice: <strong>per kg of dry cell mass</strong>, the model's basis, and per kg of <strong>${modelControls.hybridLabel(results_s.basis)}</strong>: ${(results_s.basis.cell_inclusion_rate * 100).toFixed(0)}% cultivated cells, counted at the water content of chicken meat (${(results_s.basis.target_solids_fraction * 100).toFixed(1)}% solids), and the rest plant-based ingredients at $${results_s.basis.filler_cost}/kg. The probability thresholds use the hybrid product. All-cell meat at chicken-meat moisture would be $${modelControls.formatMeatEquivalent(quantile(results_s.unit_cost_meat_equiv, 0.5))}/kg (median). Both are factory-gate ingredient costs, not consumer-product prices. Recovery losses in washing and dewatering are not modeled. Source dollars are not yet normalized to one real-dollar year. The intended target is unconditional and hypothetical (the cost of a large plant built with the best technology available in the target year, whether or not such plants exist); parameter ranges have not yet been re-checked against it. Based on ${stats_s.n.toLocaleString()} Monte Carlo simulations.
 </div>`
 ```
 
 ```{ojs}
 //| echo: false
 {
-  // Dry cost and its chicken-meat equivalent at equal size, as on the Advanced page.
+  // Dry cost and the hybrid-product cost at equal size, as on the Advanced page.
   // Built per card: a DOM node can only appear in one place.
-  const meatTag = () => html`<span title="${modelControls.meatEquivalentNote(results_s.basis.target_solids_fraction)}" style="cursor: help; text-decoration: underline dotted;">chicken-meat equivalent &#9432;</span>`;
+  const meatTag = () => html`<span title="${modelControls.hybridNote(results_s.basis)}" style="cursor: help; text-decoration: underline dotted;">${modelControls.hybridLabel(results_s.basis)} &#9432;</span>`;
   const small = text => html`<span style="font-size: 0.55em; font-weight: 400;">${text}</span>`;
   const costs = (dryCost, meatCost) => html`<h2 style="margin:0.5rem 0 0;">$${Math.round(dryCost)}${small("/kg dry cell mass")}</h2>
   <h2 style="margin:0 0 0.5rem;">$${modelControls.formatMeatEquivalent(meatCost)}${small(html`/kg ${meatTag()}`)}</h2>`;
@@ -422,21 +395,18 @@ ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Median Cost (p50)</h4>
   ${costs(stats_s.p50, stats_s.t_p50)}
   <small>Half of simulations above, half below</small>
-  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended: $${stats_s.blended_p50.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Optimistic (p5)</h4>
   ${costs(stats_s.p5, stats_s.t_p5)}
   <small>Only 5% of simulations cheaper</small>
-  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p5: $${stats_s.blended_p5.toFixed(1)}/kg</div>` : ''}
 </div>
 
 <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1.5rem; border-radius: 8px;">
   <h4 style="margin:0; opacity:0.9; font-size:0.9rem;">Pessimistic (p95)</h4>
   ${costs(stats_s.p95, stats_s.t_p95)}
   <small>95% of simulations cheaper</small>
-  ${include_blending_s ? html`<div style="margin-top:0.5rem; font-size:0.85em; opacity:0.9;">Blended p95: $${stats_s.blended_p95.toFixed(1)}/kg</div>` : ''}
 </div>
 
 </div>`;
@@ -448,48 +418,19 @@ ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}
 ```{ojs}
 //| echo: false
 {
-  // Pure-cell-mass cards: a single set of thresholds. When blending is enabled,
-  // the blended-product probabilities are shown ONLY in the dedicated blend
-  // row below — never embedded inside the pure-cell cards — to avoid showing
-  // overlapping but slightly different threshold sets in the same place.
-  function card(thresh, prob, label, color) {
+  function card(thresh, prob, color) {
     const bc = prob > 30 ? color : '#ddd';
     return `<div style="border:2px solid ${bc}; padding:0.9rem; border-radius:8px; text-align:center;">
-      <h5 style="margin:0 0 0.2rem;">P(Pure cells &lt; $${thresh}/kg meat-eq. = $${Math.round(stats_s.toAxis(thresh))}/kg dry)</h5>
+      <h5 style="margin:0 0 0.2rem;">P(Hybrid product &lt; $${thresh}/kg = $${Math.round(stats_s.toAxis(thresh))}/kg dry)</h5>
       <h2 style="color:${color}; margin:0.2rem 0;">${prob.toFixed(1)}%</h2>
-      <small style="color:#666;">${label}</small>
+      <small style="color:#666;">illustrative ingredient-cost threshold</small>
     </div>`;
   }
+  const colors = ['#27ae60', '#3498db', '#f39c12', '#e74c3c'];
   const grid = `<div class="grid" style="grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-bottom:1.5rem;">
-    ${card(10,  stats_s.prob_10,  'illustrative manufacturing-cost threshold', '#27ae60')}
-    ${card(25,  stats_s.prob_25,  'illustrative manufacturing-cost threshold',    '#3498db')}
-    ${card(50,  stats_s.prob_50,  'illustrative manufacturing-cost threshold',                       '#f39c12')}
-    ${card(100, stats_s.prob_100, 'illustrative manufacturing-cost threshold',             '#e74c3c')}
+    ${stats_s.probs.map((d, i) => card(d.threshold, d.prob, colors[i])).join("")}
   </div>`;
-
-  const blendRow = include_blending_s ? `
-    <p style="font-size:0.88em; color:#1a5276; font-weight:500; margin:0.5rem 0 0.3rem;">
-      Blended product (${stats_s.bs*100|0}% CM + ${((1-stats_s.bs)*100)|0}% filler at $3/kg) — ingredient costs only:
-    </p>
-    <div class="grid" style="grid-template-columns:repeat(3,1fr); gap:0.6rem; margin-bottom:1.5rem;">
-      <div style="border:2px solid ${stats_s.bprob_5>20?'#27ae60':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
-        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $5/kg)</h5>
-        <h2 style="color:#27ae60; margin:0.2rem 0;">${stats_s.bprob_5.toFixed(1)}%</h2>
-        <small>ingredients only; excludes retail costs</small>
-      </div>
-      <div style="border:2px solid ${stats_s.bprob_8>30?'#3498db':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
-        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $8/kg)</h5>
-        <h2 style="color:#3498db; margin:0.2rem 0;">${stats_s.bprob_8.toFixed(1)}%</h2>
-        <small>ingredients only; excludes retail costs</small>
-      </div>
-      <div style="border:2px solid ${stats_s.bprob_12>50?'#f39c12':'#ddd'}; padding:0.8rem; border-radius:8px; text-align:center;">
-        <h5 style="font-size:0.85em; margin:0 0 0.2rem;">P(Blend &lt; $12/kg)</h5>
-        <h2 style="color:#f39c12; margin:0.2rem 0;">${stats_s.bprob_12.toFixed(1)}%</h2>
-        <small>ingredients only; excludes retail costs</small>
-      </div>
-    </div>` : '';
-
-  return html([grid + blendRow]);
+  return html([grid]);
 }
 ```
 
@@ -514,14 +455,14 @@ ${include_blending_s ? html` Blended product estimates use ${stats_s.bs*100 | 0}
       x: { label: "Cell Biomass Manufacturing Cost ($/kg dry cell mass)", domain: [0, clipVal * 1.05] },
       y: { label: "Frequency", grid: true },
       marks: [
-        ...modelControls.meatEquivalentAxes(Plot_s, clipVal * 1.05, results_s.basis.target_solids_fraction),
+        ...modelControls.hybridAxes(Plot_s, clipVal * 1.05, results_s.basis),
         Plot_s.rectY(clipped, Plot_s.binX({y: "count"}, {x: d => d, fill: "steelblue", fillOpacity: 0.7})),
         Plot_s.ruleX([stats_s.p5],  {stroke: "green", strokeWidth: 2, strokeDasharray: "5,5"}),
         Plot_s.ruleX([stats_s.p50], {stroke: "blue",  strokeWidth: 3}),
         Plot_s.ruleX([stats_s.p95], {stroke: "red",   strokeWidth: 2, strokeDasharray: "5,5"}),
         Plot_s.ruleX([p20], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
         Plot_s.ruleX([p80], {stroke: "#888", strokeWidth: 1.5, strokeDasharray: "4,4", strokeOpacity: 0.85}),
-        // $10 and $25 meat-equivalent, placed on the dry-cost axis
+        // $10 and $25 hybrid product, placed on the dry-cost axis
         Plot_s.ruleX([stats_s.toAxis(10)], {stroke: "darkgreen", strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
         Plot_s.ruleX([stats_s.toAxis(25)], {stroke: "orange",    strokeWidth: 2, strokeDasharray: "2,2", strokeOpacity: 0.6}),
         Plot_s.text([
@@ -583,7 +524,7 @@ The model draws **30,000 random samples** for each uncertain parameter (cell den
 html`<div style="margin-top:1.5rem; padding:0.8rem; background:#f0f8ff; border:1px solid #3498db; border-radius:6px; font-size:0.88em;">
 <strong>Want more control?</strong> The <a href="index.html">Advanced Model</a> exposes many more parameters: financing (<abbr title="Weighted Average Cost of Capital: the expected return investors require, blending equity and debt financing costs. Higher WACC = more expensive capital = higher CAPEX per kg.">WACC</abbr>, asset life), plant capacity, cell density, media-use multiplier, CDMO mode, bundled media pricing, and more.
 <div style="margin-top:0.5rem;">
-<a href="${(() => { const tot=Math.max(p_fedbatch_s+p_perfusion_s+p_continuous_s,1); const p=new URLSearchParams({target_year:target_year_s,p_hydro:(p_hydro_s/100).toFixed(2),p_recfactors:(p_recfactors_s/100).toFixed(2),p_fedbatch:(p_fedbatch_s/tot).toFixed(2),p_perfusion:(p_perfusion_s/tot).toFixed(2),p_continuous:(p_continuous_s/tot).toFixed(2),include_blending:include_blending_s?1:0,blending_share:(blending_share_s/100).toFixed(2)}); for (const [key,value] of Object.entries(expert_priors)) if (value != null) p.set(`ep_${key}`,value); return 'index.html?'+p.toString(); })()}" style="font-weight:600;">→ Advanced Model (adapt these settings)</a>
+<a href="${(() => { const tot=Math.max(p_fedbatch_s+p_perfusion_s+p_continuous_s,1); const p=new URLSearchParams({target_year:target_year_s,p_hydro:(p_hydro_s/100).toFixed(2),p_recfactors:(p_recfactors_s/100).toFixed(2),p_fedbatch:(p_fedbatch_s/tot).toFixed(2),p_perfusion:(p_perfusion_s/tot).toFixed(2),p_continuous:(p_continuous_s/tot).toFixed(2),blending_share:(blending_share_s/100).toFixed(2)}); for (const [key,value] of Object.entries(expert_priors)) if (value != null) p.set(`ep_${key}`,value); return 'index.html?'+p.toString(); })()}" style="font-weight:600;">→ Advanced Model (adapt these settings)</a>
 </div>
 </div>`
 ```
