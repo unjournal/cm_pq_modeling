@@ -35,13 +35,24 @@ format:
 ```{=html}
 <div style="margin:6px 0 10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
   <a href="#model-parameters" style="display:inline-block; padding:6px 14px; background:#2d4a2d; color:white; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">↓ Go to parameters</a>
-  <a href="simple.html" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;">Simplest Model →</a>
+  <a href="simple.html" style="display:inline-block; padding:6px 14px; background:#f0f8ff; color:#1a5276; border:1px solid #3498db; border-radius:6px; text-decoration:none; font-size:13px;" title="New to this model? Start with the Simplest Model: a shorter version focusing on key levers, with line-of-sight explanations. You can carry your settings over to this Advanced Model.">Simplest Model →</a>
+</div>
+<!-- The page notes used to be seven stacked folding boxes (David, 29 Oct 2026: too much vertical space).
+     Now one row of toggles; each opens its panel below, one at a time. -->
+<div class="info-strip">
+  <span class="info-strip-label">About this page:</span>
+  <button type="button" data-panel="info-updates" aria-controls="info-updates" aria-expanded="false">What's new (Sept–Oct)</button>
+  <button type="button" data-panel="info-basis" aria-controls="info-basis" aria-expanded="false" class="info-key">Basis: dry cell mass</button>
+  <button type="button" data-panel="info-status" aria-controls="info-status" aria-expanded="false" class="info-warn">Status &amp; limitations</button>
+  <button type="button" data-panel="info-workshop" aria-controls="info-workshop" aria-expanded="false">Workshop evidence</button>
+  <button type="button" data-panel="info-audio" aria-controls="info-audio" aria-expanded="false">Audio overviews</button>
+  <button type="button" data-panel="info-feedback" aria-controls="info-feedback" aria-expanded="false">Feedback</button>
+  <button type="button" data-panel="info-basics" aria-controls="info-basics" aria-expanded="false">New to cultured meat?</button>
+  <button type="button" data-panel="info-uncertainty" aria-controls="info-uncertainty" aria-expanded="false">Uncertainty &amp; distributions</button>
 </div>
 ```
 
-::: {.callout-note collapse="true"}
-## Model version and September–October updates
-
+::: {#info-updates .info-panel}
 **October 26 (target and basis, documentation only):** the team set the model's target: unconditional and hypothetical cost of a large plant built with the best technology available in 2036, whether or not such plants exist, in 2026 US dollars ([estimand](limits.qmd#estimand)). It also set a planned standard output basis, washed cell biomass at a fixed solids content plus cost per kg of protein ([output basis](docs.qmd#output-basis)). The "downstream processing" switch is relabelled "forming and texturization" (outside the estimate). No model outputs changed.
 
 **October 26 (engine `2026-10-26.2`):** results are also shown per kg at a target solids content and per kg of protein, using placeholder conversions you can change under *Structural stress tests*. A placeholder harvest, washing and dewatering cost is available under *Model Structure*, off by default. Default results are unchanged.
@@ -50,7 +61,7 @@ format:
 
 **October 29 (engine `2026-10-29.1`): hybrid product for comparisons.** Products will not be made entirely of cultivated cells, so the number shown beside each dry-cell-mass cost, and the probability thresholds, are now for a kg of **hybrid product**: 25% cultivated cells (at chicken-meat moisture) plus 75% plant-based ingredients at \$3/kg. The default median is about \$17/kg of hybrid product (\$213/kg dry). Change the inclusion rate under *Hybrid product* in the sidebar.
 
-**October 26 (engine `2026-10-26.4`): default results change.** The headline cost is now per kg of dry cell mass (about five times the old wet figures), thresholds then used a chicken-meat equivalent (all cells; replaced by the hybrid product on October 29), density inputs are g dry/L and \$/kg inputs are per kg dry. Cost basis "wet" under *Structural stress tests* reproduces the earlier results exactly. See the basis note above.
+**October 26 (engine `2026-10-26.4`): default results change.** The headline cost is now per kg of dry cell mass (about five times the old wet figures), thresholds then used a chicken-meat equivalent (all cells; replaced by the hybrid product on October 29), density inputs are g dry/L and \$/kg inputs are per kg dry. Cost basis "wet" under *Structural stress tests* reproduces the earlier results exactly. See *Basis: dry cell mass*.
 
 This page runs the **current model** (engine `2026-10-29.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
@@ -61,30 +72,22 @@ Two supplied research critiques prompted optional median-preserving priors, expl
 **October 26:** an opt-in *Process-mode selection* setting in **Structural stress tests** replaces the mode weights with feasibility probabilities and uses the cheapest feasible mode in each simulated world, optionally with decision noise. The default (draw mode by weights) and its results are unchanged. See [least-cost mode selection](docs.qmd#least-cost-mode-selection) for the method and caveats.
 :::
 
-
-::: {.callout-note collapse="true"}
-## New to this model?
-Start with the [Simplest Model &rarr;](simple.qmd) — a shorter version focusing on some key levers with line-of-sight explanations. You can carry your settings over to this Advanced Model when you're ready.
-:::
-
 ```{=html}
-<details style="margin:10px 0 16px;border:1px solid #d4dfd4;border-radius:7px;background:#f8f9f5;padding:0;"><summary style="padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;color:#2d4a2d;list-style:none;display:flex;align-items:center;gap:8px;"><span style="font-size:10px;">&#9658;</span>Audio overviews<span style="font-weight:400;color:#888;font-size:12px;">(AI-generated · <span title="The two earlier overviews use OpenAI TTS-1-HD from May 2026. The critique and revision briefing uses the local Kokoro neural voice af_heart from September 2026. Each transcript gives its scope and caveats." style="cursor:help;border-bottom:1px dotted #aaa;">provenance</span>)</span></summary><div style="padding:0 12px 12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;"><div style="padding:10px 12px;background:white;border:1px solid #dde8dd;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">How Cultured Meat is Made <span style="font-weight:400;color:#888;font-size:11px;">~11 min</span></div><audio controls style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="https://unjournal.github.io/cm_pq_modeling/process_overview.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;"><a href="https://unjournal.github.io/cm_pq_modeling/process_overview.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="https://unjournal.github.io/cm_pq_modeling/process-overview-script.html" target="_blank" rel="noopener" style="color:#5a7a5a;">View/annotate script</a></div></div><div style="padding:10px 12px;background:white;border:1px solid #dde8dd;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">The Cost Model Explained <span style="font-weight:400;color:#888;font-size:11px;">~10 min</span></div><audio controls style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="https://unjournal.github.io/cm_pq_modeling/model_review_report.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;"><a href="https://unjournal.github.io/cm_pq_modeling/model_review_report.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="https://unjournal.github.io/cm_pq_modeling/model-overview-script.html" target="_blank" rel="noopener" style="color:#5a7a5a;">View/annotate script</a></div></div><div style="padding:10px 12px;background:white;border:1px solid #c6d8c6;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">Critique, revisions, and open questions <span style="font-weight:400;color:#888;font-size:11px;">~32 min</span></div><audio controls preload="metadata" style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;flex-wrap:wrap;"><a href="cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="model-critique-revision-briefing-2026-09-17.html" target="_blank" rel="noopener" style="color:#5a7a5a;">Transcript and provenance</a></div></div></div></details>
+<div id="info-audio" class="info-panel"><div style="font-size:12px;color:#888;margin-bottom:8px;">AI-generated · <span title="The two earlier overviews use OpenAI TTS-1-HD from May 2026. The critique and revision briefing uses the local Kokoro neural voice af_heart from September 2026. Each transcript gives its scope and caveats." style="cursor:help;border-bottom:1px dotted #aaa;">provenance</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;"><div style="padding:10px 12px;background:white;border:1px solid #dde8dd;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">How Cultured Meat is Made <span style="font-weight:400;color:#888;font-size:11px;">~11 min</span></div><audio controls style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="https://unjournal.github.io/cm_pq_modeling/process_overview.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;"><a href="https://unjournal.github.io/cm_pq_modeling/process_overview.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="https://unjournal.github.io/cm_pq_modeling/process-overview-script.html" target="_blank" rel="noopener" style="color:#5a7a5a;">View/annotate script</a></div></div><div style="padding:10px 12px;background:white;border:1px solid #dde8dd;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">The Cost Model Explained <span style="font-weight:400;color:#888;font-size:11px;">~10 min</span></div><audio controls style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="https://unjournal.github.io/cm_pq_modeling/model_review_report.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;"><a href="https://unjournal.github.io/cm_pq_modeling/model_review_report.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="https://unjournal.github.io/cm_pq_modeling/model-overview-script.html" target="_blank" rel="noopener" style="color:#5a7a5a;">View/annotate script</a></div></div><div style="padding:10px 12px;background:white;border:1px solid #c6d8c6;border-radius:6px;"><div style="font-weight:600;font-size:13px;color:#2d4a2d;margin-bottom:4px;">Critique, revisions, and open questions <span style="font-weight:400;color:#888;font-size:11px;">~32 min</span></div><audio controls preload="metadata" style="width:100%;height:30px;display:block;margin-bottom:4px;"><source src="cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3" type="audio/mpeg"></audio><div style="font-size:11px;color:#777;display:flex;gap:10px;flex-wrap:wrap;"><a href="cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3" download style="color:#5a7a5a;">Download MP3</a><a href="model-critique-revision-briefing-2026-09-17.html" target="_blank" rel="noopener" style="color:#5a7a5a;">Transcript and provenance</a></div></div></div></div>
 ```
 
 
-::: {.callout-warning collapse="true"}
-## Model Status & Limitations
+::: {#info-status .info-panel}
 This model is *largely AI-generated* and, as of September 2026, has not been independently validated. It is provided to fix ideas, make assumptions inspectable, and support discussion and comparison. *Do not treat the outputs as authoritative cost estimates.*
 
-**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; source data on different weight bases are converted with a single assumed solids content (see the basis note below); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
+**Several limitations are decision-relevant, not cosmetic:** the single latent-maturity factor is ad hoc; source dollars are not yet normalized to one real-dollar year; source data on different weight bases are converted with a single assumed solids content (see *Basis: dry cell mass*); and the parameter ranges have not yet been checked against the target quantity decided in October 2026, the cost of a large plant built with the best technology available in 2036, whether or not such plants exist ([estimand](limits.qmd#estimand)). The sensitivity chart is a dollar-swing ranking, not a variance decomposition. We are addressing these incrementally.
 
 **[Read the full critique and our responses → Limits/Critique](limits.html)**
 
 We especially welcome expert review of: growth factor quantities and prices, bioreactor CAPEX ranges, and the maturity correlation structure — see below and the [Sources section](#sources-how-they-inform-the-model).
 :::
 
-::: {.callout-important collapse="true"}
-## Basis change: costs are now per kg of DRY cell mass
+::: {#info-basis .info-panel}
 **Since October 26, 2026 (engine `2026-10-26.4`), the headline cost is per kg of dry cell mass**, not per kg of wet biomass. Dry-mass figures are about five times the old wet figures (the default median is about \$213/kg dry, against \$43 per wet kg before), because a kg of harvested cells is only about 20% solids. Nothing about the underlying scenario changed.
 
 **Why.** Harvested cells are mostly water, and washing and dewatering change what a "wet kg" contains: a paste at 15% solids carries half the protein of one at 30%. Dry mass does not change with washing or dewatering, maps to nutrition, and is the natural basis for nutrient stoichiometry (how much medium it takes to build a gram of cells).
@@ -94,9 +97,8 @@ We especially welcome expert review of: growth factor quantities and prices, bio
 *AI-drafted (Claude, 26 October 2026) from David Reinstein's design decision; not yet reviewed by a person.*
 :::
 
-::: {.callout-note collapse="true"}
-## From workshop evidence to model revision
-The May 8, 2026 workshop is complete. Its outputs now form a linked evidence-to-model workflow: the summary records the technical arguments, the beliefs analysis shows the forecast spread, the demand bridge connects factory-gate cost to an adoption model, and the proposed modeling hack turns the remaining disagreements into testable model changes.
+::: {#info-workshop .info-panel}
+**From workshop evidence to model revision.** The May 8, 2026 workshop is complete. Its outputs now form a linked evidence-to-model workflow: the summary records the technical arguments, the beliefs analysis shows the forecast spread, the demand bridge connects factory-gate cost to an adoption model, and the proposed modeling hack turns the remaining disagreements into testable model changes.
 
 The follow-up now separates disagreements about definitions, factual estimates, evidence, source credibility, interpretation, model structure, and the importance of a claim to the final result. This matters because agreement that one input can become cheaper does not establish that the total system becomes cheap. The [workshop synthesis](https://uj-cm-workshop.netlify.app/synthesis.html#sources-of-disagreement) explains the distinction, and the [crux response form](https://uj-cm-workshop.netlify.app/crux-map.html#respond) asks skeptics and optimists to diagnose it directly.
 
@@ -105,15 +107,32 @@ The follow-up now separates disagreements about definitions, factual estimates, 
 The named beliefs-analysis dashboard remains an internal review artifact and is intentionally not linked from this public site; a redacted public synthesis should be produced separately.
 :::
 
-::: {.callout-note collapse="true"}
-## We Want Your Feedback
-
+::: {#info-feedback .info-panel}
 <!-- GitHub Discussions call-to-action hidden for now (David, 28 Oct 2026: too much friction for most people). Restore from git history when wanted. -->
 
 **Comment on specific text or a parameter** with [Hypothesis](https://hypothes.is/) (click the `<` tab on the right edge). For longer comments, email [contact@unjournal.org](mailto:contact@unjournal.org) or [open a GitHub issue](https://github.com/unjournal/cm_pq_modeling/issues/new).
 
 **[Listen: Technical Review (22 min MP3)](model_review_report.mp3)** — Audio walkthrough of model architecture and areas for review
 :::
+
+```{=html}
+<script>
+// Page-note toggles: one panel open at a time; clicking the open one closes it.
+document.querySelectorAll('.info-strip button[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const wasOpen = btn.getAttribute('aria-expanded') === 'true';
+    document.querySelectorAll('.info-strip button[data-panel]').forEach(b => {
+      b.setAttribute('aria-expanded', 'false');
+      document.getElementById(b.dataset.panel)?.classList.remove('open');
+    });
+    if (!wasOpen) {
+      btn.setAttribute('aria-expanded', 'true');
+      document.getElementById(btn.dataset.panel)?.classList.add('open');
+    }
+  });
+});
+</script>
+```
 
 ```{=html}
 <script>
@@ -443,9 +462,7 @@ function hideHypothesis() {
 </style>
 ```
 
-::: {.callout-note collapse="true"}
-## New to Cultured Meat?
-
+::: {#info-basics .info-panel}
 **[Read our deep dive: How Cultured Chicken is Made](learn.qmd)** — a detailed guide covering cell banking, bioreactors, media composition, growth factors, and why each step affects costs.
 
 Quick summary: Cultured chicken is produced by growing avian muscle cells in bioreactors. The main cost drivers are **media** (amino acids, nutrients), **growth factors** (signaling proteins), **bioreactors** (capital equipment), and **operating costs**. For a side-by-side comparison of how published TEAs differ in their assumptions and estimates, see our **[TEA Comparison page](compare.qmd)**. This model stops at a factory-gate **cost**; for what a given cost implies for consumer **adoption and market share**, see our **[Cost → Demand bridge](demand.qmd)**, which connects to Pablo AMC's demand-side model.
@@ -456,9 +473,7 @@ Quick summary: Cultured chicken is produced by growing avian muscle cells in bio
 ```
 :::
 
-::: {.callout-note collapse="true"}
-## Learn: Understanding Uncertainty & Distributions
-
+::: {#info-uncertainty .info-panel}
 This model uses **Monte Carlo simulation**: we sample thousands of possible futures and see what distribution of costs emerges.
 
 **Distribution Types Used:**
@@ -896,7 +911,7 @@ viewof p_continuous = Inputs.range([0, 1], {
     : ` — weights sum to ${rawPct}%, normalized to 100% in simulation`;
   const pct = v => (v * 100).toFixed(0);
   if (results.mode_selection_stats) return html`<div style="font-size:0.84em; color:#555; margin: -0.2rem 0 0.4rem 0;">
-    <strong>Weights not used:</strong> cheapest-feasible selection is on.<br>
+    <strong>Weights above not used:</strong> <em>Cheapest feasible mode</em> is selected in the box just above; choose <em>Draw mode by weights</em> there to use them.<br>
     Selected: Fed-batch <strong>${pct(results.pct_fedbatch)}%</strong> · Perfusion <strong>${pct(results.pct_perfusion)}%</strong> · Continuous <strong>${pct(results.pct_continuous)}%</strong><br>
     Feasibility decides the mode in ${pct(results.mode_selection_stats.feasibility_binding_share)}% of worlds.
   </div>`;

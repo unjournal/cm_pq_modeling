@@ -1,5 +1,42 @@
 /* Custom styles for Cultured Meat Cost Model Dashboard */
 
+/* Page notes at the top of the Advanced page: one row of toggles, panels hidden until opened */
+.info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin: 0 0 10px;
+    font-size: 13px;
+}
+.info-strip-label {
+    color: #666;
+    margin-right: 2px;
+}
+.info-strip button {
+    padding: 3px 11px;
+    border: 1px solid #c9d6c9;
+    border-radius: 14px;
+    background: #f8f9f5;
+    color: #2d4a2d;
+    cursor: pointer;
+    font-size: 13px;
+}
+.info-strip button.info-key { border-color: #e0a95c; background: #fff7ea; color: #7a4a0c; }
+.info-strip button.info-warn { border-color: #e6c35c; background: #fffbea; color: #6b5300; }
+.info-strip button[aria-expanded="true"] { background: #2d4a2d; border-color: #2d4a2d; color: white; }
+.info-panel {
+    display: none;
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    border: 1px solid #d4dfd4;
+    border-radius: 7px;
+    background: #fbfcfa;
+    font-size: 0.93rem;
+}
+.info-panel.open { display: block; }
+.info-panel > :last-child { margin-bottom: 0; }
+
 /* Increase spacing between sections */
 .accordion-panel {
     margin-bottom: 1rem;

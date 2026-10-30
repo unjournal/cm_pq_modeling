@@ -227,7 +227,8 @@ export function hybridAxes(Plot, domainMax, basis) {
   for (let t = Math.ceil(min / step - 1e-9) * step; t <= max + 1e-9; t += step) ticks.push(t);
   return [
     Plot.axisX({anchor: 'bottom'}),
+    // Coloured and bold so the hybrid scale reads as the comparison axis, not a footnote.
     Plot.axisX(ticks.map(t => hybridToDry(t, basis)), {anchor: 'top', label: `$/kg ${hybridLabel(basis)}`,
-      tickFormat: d => '$' + hybridCost(d, basis).toFixed(decimals)})
+      tickFormat: d => '$' + hybridCost(d, basis).toFixed(decimals), color: '#a0522d', fontWeight: 'bold'})
   ];
 }
