@@ -114,6 +114,28 @@ $$\text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fr
 
 At the defaults (seed 42, 30,000 draws) the median is about \$213 per kg dry cell mass, \$16.90 per kg of hybrid product and \$328 per kg protein; all-cell mass at chicken-meat moisture would be \$58.60 per kg, and the wet basis gives \$42.62. On the hybrid-product thresholds, 1.0% of draws are under \$5/kg, 23.6% under \$10, 67.2% under \$25 and 87.5% under \$50. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) The conversions assume washing and dewatering lose no cells; the harvest placeholder below adds a cost but not losses.
 
+### Comparison with conventional chicken {#chicken-comparison}
+
+**Decision (David Reinstein, 5 November 2026).** The model's output is a factory-gate cost, so conventional chicken is compared at the same point in the supply chain: its US **wholesale** price, not the retail shelf price. That avoids modelling two different sets of markups. Until then the reference was about \$9–10/kg, roughly the US retail price of boneless chicken breast, which flattered cultivated meat: retail prices include processing, distribution and retail margins that the model does not cost. (For the broiler composite, the wholesale-to-retail spread was \$1.50 of a \$2.41/lb retail value in September 2026, 62%; [USDA ERS meat price spreads](https://www.ers.usda.gov/data-products/meat-price-spreads).)
+
+**Reference value.** The hybrid product would stand in for boneless chicken meat, so the reference is the US wholesale price of **boneless chicken breast** (USDA AMS national broiler parts prices, as compiled in [USDA ERS Livestock and Meat Domestic Data](https://www.ers.usda.gov/data-products/livestock-and-meat-domestic-data), wholesale prices table; cents per lb converted at 2.20462 lb/kg):
+
+| | ¢/lb | \$/kg |
+|---|---|---|
+| **12-month average, Oct 2025–Sep 2026 (central reference)** | **133.2** | **2.94** |
+| Monthly range in that window (Nov 2025 low, Apr 2026 high) | 114.4–169.2 | 2.52–3.73 |
+| September 2026 | 121.2 | 2.67 |
+| 2025 calendar-year average (upper end of the range) | 185.1 | 4.08 |
+| *For context:* whole broiler, national composite wholesale, 12 months to Sep 2026 | 117.5 | 2.59 |
+| *For context:* leg quarters (bone-in), 12 months to Sep 2026 | 52.6 | 1.16 |
+| *Not used:* retail boneless breast, Sep 2026 (BLS series APU0000FF1101) | 420.3 | 9.27 |
+
+So the model uses **\$2.94/kg, with a range of about \$2.5–4.1/kg** (`CHICKEN_WHOLESALE` in `model-controls.mjs`). Prices are nominal and almost all from 2026, so they are already close to 2026 dollars; the 2025 average would be a few percent higher in 2026 dollars, within the range's rounding. Breast-meat prices are volatile: they were unusually high in 2025 and fell back in 2026. Mince- or nugget-grade inputs (breast trim, dark meat, mechanically separated chicken) usually trade below boneless breast; we found no public monthly series for them, so the low end of the range may be too high for a nugget-type product. There is no farm-gate (live-bird) price for broilers, because almost all are grown under contract ([ERS documentation](https://www.ers.usda.gov/data-products/meat-price-spreads/documentation)), and we have not used a production-cost estimate.
+
+**What it means at the defaults.** A kg of hybrid product contains \$2.25 of plant-based filler, so it matches \$2.94/kg chicken only if the cells cost less than about \$10 per kg dry cell mass (\$3.6 at the \$2.5 low end, \$27 at the \$4.1 high end). At the defaults (seed 42, 30,000 draws) no draw is below \$2.94/kg hybrid and 0.1% are below \$4.10; the lowest 5% of hybrid costs are under \$6.40. The \$5–\$50 probability thresholds are kept as illustrative cost levels; none is a parity line. Both pages show the share of draws under the wholesale reference beneath the threshold cards, and the main cost charts mark it with a purple dashed line. On the wet basis the line and share compare wet cells directly with chicken meat.
+
+**What is still not like for like.** The hybrid product's cost leaves out forming and texturization, and its inclusion rate (25%) and filler cost (\$3/kg) are conventions. Wholesale breast is a finished, packed commodity cut; the cultivated side would still need those steps. The comparison is closer than a retail one, not exact. The [demand page](demand.qmd)'s teaching calculator still uses retail prices for every species, because its price ratio stands in for what shoppers see; see the note there.
+
 ### Target quantity (estimand) {#estimand}
 
 The model's intended target, decided on 26 October 2026:
@@ -121,7 +143,7 @@ The model's intended target, decided on 26 October 2026:
 - **Unconditional and hypothetical.** The cost of a large ("nth-of-a-kind") plant built with the technology available in 2036, whether or not such plants exist. The model does not need a separate stage for the probability that commercial plants are built.
 - **Best available plant**, not the industry average.
 - **2026 US dollars.**
-- **No retail-price modeling.** The output is a production cost at the factory gate.
+- **No retail-price modeling.** The output is a production cost at the factory gate, and it is compared with the US wholesale price of conventional chicken, not the retail price (see [comparison with conventional chicken](#chicken-comparison)).
 
 Two caveats are recorded in [Limits](limits.qmd#estimand): the technology available in 2036 depends on investment and learning before then, and first-of-a-kind plants typically cost more than the nth-of-a-kind plant described here.
 

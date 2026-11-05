@@ -343,3 +343,24 @@ test('hybrid-product axis labels dry-cost positions with the fixed conversion', 
     assert.ok(Math.abs(controls.hybridCost(v, r.basis) - r.unit_cost_hybrid[i]) < 1e-9);
   });
 });
+
+test('conventional-chicken reference is wholesale, ordered, and maps onto the dry axis', async () => {
+  const controls = await import('../dashboard/model-controls.mjs');
+  const c = controls.CHICKEN_WHOLESALE;
+  // Wholesale reference sits inside its range and well below the retail price it replaced
+  assert.ok(c.low <= c.latest && c.latest <= c.central && c.central <= c.monthlyMax && c.monthlyMax <= c.high);
+  assert.ok(c.high < c.retail / 2);
+  // 133.2 cents/lb boneless breast = $2.94/kg
+  assert.ok(Math.abs(1.332 * 2.20462 - c.central) < 0.01);
+  const basis = {cost_basis: 'dry', target_solids_fraction: 0.275, cell_inclusion_rate: 0.25, filler_cost: 3};
+  // $2.94 hybrid = 2.25 filler + 0.06875 × dry, so dry ≈ $10
+  const dry = controls.hybridToDry(c.central, basis);
+  assert.ok(Math.abs(dry - (c.central - 2.25) / 0.06875) < 1e-9);
+  assert.ok(Math.abs(controls.hybridCost(dry, basis) - c.central) < 1e-9);
+  assert.match(controls.chickenWholesaleNote(basis), /wholesale/);
+  assert.match(controls.chickenWholesaleNote(basis), /\$10\.0\/kg dry/);
+  // On the wet basis there is no dry conversion in the note
+  assert.doesNotMatch(controls.chickenWholesaleNote({...basis, cost_basis: 'wet'}), /kg dry/);
+  // Filler dearer than chicken puts the reference off the cost axis (pages then omit the line)
+  assert.ok(controls.hybridToDry(c.central, {...basis, filler_cost: 5}) < 0);
+});

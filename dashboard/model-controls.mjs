@@ -200,6 +200,33 @@ export function hybridToDry(hybrid, basis) {
   return (hybrid - basis.filler_cost * (1 - r)) / (basis.target_solids_fraction * r);
 }
 
+// Conventional-chicken comparison point (David Reinstein, 5 November 2026): compare the
+// factory-gate cost with US chicken at the same point in the supply chain, not a retail
+// price, so no retail markups need modelling. Source: USDA ERS, Livestock and Meat
+// Domestic Data, wholesale-prices.xlsx (USDA AMS national broiler parts prices), boneless
+// breast, cents/lb, converted at 2.20462 lb/kg; nominal dollars, almost all from 2026.
+// The hybrid product (cells plus plant filler) would stand in for boneless chicken meat.
+export const CHICKEN_WHOLESALE = {
+  central: 2.94,  // 12-month average, Oct 2025–Sep 2026: 133.2 ¢/lb
+  low: 2.5,       // lowest month in that window: 114.4 ¢/lb (Nov 2025)
+  monthlyMax: 3.73, // highest month in that window: 169.2 ¢/lb (Apr 2026)
+  high: 4.1,      // 2025 calendar-year average: 185.1 ¢/lb (2025 dollars)
+  latest: 2.67,   // September 2026: 121.2 ¢/lb
+  retail: 9.27,   // BLS APU0000FF1101, boneless breast, Sep 2026: $4.20/lb (shelf price, for contrast only)
+  label: 'US wholesale boneless chicken',
+  source: 'USDA ERS Livestock and Meat Domestic Data (wholesale prices; USDA AMS national broiler parts, boneless breast)',
+  url: 'https://www.ers.usda.gov/data-products/livestock-and-meat-domestic-data'
+};
+
+// One-sentence description of the comparison point, for tooltips and cautions.
+export function chickenWholesaleNote(basis) {
+  const c = CHICKEN_WHOLESALE;
+  const dry = basis && basis.cost_basis === 'dry'
+    ? ` At the current hybrid settings that equals $${hybridToDry(c.central, basis).toFixed(1)}/kg dry cell mass; the hybrid product cannot reach it when the filler alone costs more.`
+    : '';
+  return `Conventional chicken is compared at the wholesale level, the same point in the supply chain as this factory-gate cost: US wholesale boneless chicken breast averaged $${c.central.toFixed(2)}/kg over the 12 months to September 2026 (monthly range $${c.low.toFixed(1)}–${c.monthlyMax.toFixed(1)}; 2025 average $${c.high.toFixed(1)}), from ${c.source}. The retail shelf price, about $${c.retail.toFixed(2)}/kg, includes processing, distribution and retail margins that this model does not cost.${dry}`;
+}
+
 const pctText = x => (x * 100).toFixed(1).replace(/\.0$/, '');
 
 export function hybridLabel(basis) {
