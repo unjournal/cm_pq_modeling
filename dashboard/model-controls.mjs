@@ -204,13 +204,19 @@ export function hybridToDry(hybrid, basis) {
 // factory-gate cost with US chicken at the same point in the supply chain, not a retail
 // price, so no retail markups need modelling. Source: USDA ERS, Livestock and Meat
 // Domestic Data, wholesale-prices.xlsx (USDA AMS national broiler parts prices), boneless
-// breast, cents/lb, converted at 2.20462 lb/kg; nominal dollars, almost all from 2026.
-// The hybrid product (cells plus plant filler) would stand in for boneless chicken meat.
+// breast, cents/lb, converted at 2.20462 lb/kg. Inflation-adjusted to 2026 dollars with
+// the BLS CPI-U (all items, CUUR0000SA0; base = Jan–Sep 2026 average; Oct 2025, not
+// published, interpolated). The hybrid product (cells plus plant filler) would stand in for
+// boneless chicken meat.
+// Revised 6 November 2026 (David): the 12-month average used on 5 November ($2.94) was a
+// cyclical low, so the reference is the real average over all national data instead.
+// The national series starts in September 2022; the earlier Northeast series runs higher
+// and does not overlap it, so a 5-year window would need an unreliable splice.
 export const CHICKEN_WHOLESALE = {
-  central: 2.94,  // 12-month average, Oct 2025–Sep 2026: 133.2 ¢/lb
-  low: 2.5,       // lowest month in that window: 114.4 ¢/lb (Nov 2025)
-  monthlyMax: 3.73, // highest month in that window: 169.2 ¢/lb (Apr 2026)
-  high: 4.1,      // 2025 calendar-year average: 185.1 ¢/lb (2025 dollars)
+  central: 3.50,  // mean, Sep 2022–Sep 2026 (49 months), 2026 dollars ($3.51; median $3.39)
+  low: 2.6,       // 10th percentile of those months
+  high: 4.6,      // 90th percentile of those months
+  recent: 2.95,   // last 12 months, Oct 2025–Sep 2026, 2026 dollars (a cyclical low)
   latest: 2.67,   // September 2026: 121.2 ¢/lb
   retail: 9.27,   // BLS APU0000FF1101, boneless breast, Sep 2026: $4.20/lb (shelf price, for contrast only)
   label: 'US wholesale boneless chicken',
@@ -224,7 +230,7 @@ export function chickenWholesaleNote(basis) {
   const dry = basis && basis.cost_basis === 'dry'
     ? ` At the current hybrid settings that equals $${hybridToDry(c.central, basis).toFixed(1)}/kg dry cell mass; the hybrid product cannot reach it when the filler alone costs more.`
     : '';
-  return `Conventional chicken is compared at the wholesale level, the same point in the supply chain as this factory-gate cost: US wholesale boneless chicken breast averaged $${c.central.toFixed(2)}/kg over the 12 months to September 2026 (monthly range $${c.low.toFixed(1)}–${c.monthlyMax.toFixed(1)}; 2025 average $${c.high.toFixed(1)}), from ${c.source}. The retail shelf price, about $${c.retail.toFixed(2)}/kg, includes processing, distribution and retail margins that this model does not cost.${dry}`;
+  return `Conventional chicken is compared at the wholesale level, the same point in the supply chain as this factory-gate cost: US wholesale boneless chicken breast averaged $${c.central.toFixed(2)}/kg in 2026 dollars from September 2022 to September 2026 (middle 80% of months $${c.low.toFixed(1)}–${c.high.toFixed(1)}; the last 12 months, $${c.recent.toFixed(2)}, were a cyclical low), from ${c.source}, adjusted with the US consumer price index. The retail shelf price, about $${c.retail.toFixed(2)}/kg, includes processing, distribution and retail margins that this model does not cost.${dry}`;
 }
 
 const pctText = x => (x * 100).toFixed(1).replace(/\.0$/, '');

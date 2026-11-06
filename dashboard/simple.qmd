@@ -437,7 +437,7 @@ Each headline value is given twice: <strong>per kg of dry cell mass</strong>, th
   const [pLow, pMid, pHigh] = stats_s.chickenProbs;
   const fmt = p => p < 0.05 && p > 0 ? "under 0.1%" : `${p.toFixed(1)}%`;
   const note = modelControls.chickenWholesaleNote(results_s.basis).replace(/"/g, '&quot;');
-  const chickenLine = `<p style="font-size:0.9em; margin:-0.75rem 0 1.5rem;" title="${note}"><strong>Compared with conventional chicken at wholesale:</strong> P(hybrid product &lt; $${c.central.toFixed(2)}/kg, US wholesale boneless chicken) = <strong>${fmt(pMid)}</strong> (${fmt(pLow)} to ${fmt(pHigh)} across $${c.low.toFixed(1)}–$${c.high.toFixed(1)}/kg). <span style="color:#666;">The cards above are illustrative cost levels, not parity lines. Retail chicken (about $${c.retail.toFixed(2)}/kg) is not a like-for-like comparison. <a href="docs.html#chicken-comparison">Why wholesale →</a></span></p>`;
+  const chickenLine = `<p style="font-size:0.9em; margin:-0.75rem 0 1.5rem;" title="${note}"><strong>Compared with conventional chicken at wholesale:</strong> P(hybrid product &lt; $${c.central.toFixed(2)}/kg, US wholesale boneless chicken) = <strong>${fmt(pMid)}</strong> (${fmt(pLow)} to ${fmt(pHigh)} across the middle 80% of monthly prices, $${c.low.toFixed(1)}–$${c.high.toFixed(1)}/kg). <span style="color:#666;">The cards above are illustrative cost levels, not parity lines. Retail chicken (about $${c.retail.toFixed(2)}/kg) is not a like-for-like comparison. <a href="docs.html#chicken-comparison">Why wholesale →</a></span></p>`;
   return html([grid + chickenLine]);
 }
 ```

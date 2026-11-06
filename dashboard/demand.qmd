@@ -293,11 +293,12 @@ only for illustrating the mechanism.
 
 **This calculator is the one place on the site that still uses retail prices.** Since
 5 November 2026 the cost pages compare the model's factory-gate cost with conventional
-chicken at its US *wholesale* price: about \$2.94/kg for boneless breast, against about
-\$9.27/kg at retail ([comparison with conventional chicken](docs.qmd#chicken-comparison)).
+chicken at its US *wholesale* price: about \$3.50/kg for boneless breast (2022–2026
+average in 2026 dollars), against about \$9.27/kg at retail
+([comparison with conventional chicken](docs.qmd#chicken-comparison)).
 Here the price ratio stands in for what shoppers see, so it keeps retail prices for every
-species. The generic add-on below (default \$5/kg) is much smaller than chicken's own
-wholesale-to-retail gap (about \$6.30/kg for boneless breast), so this calculator makes
+species. The generic add-on below (default \$5/kg) is smaller than chicken's own
+wholesale-to-retail gap (about \$6–6.50/kg for boneless breast in 2026), so this calculator makes
 cultivated chicken look closer to parity than a like-for-like comparison would. A
 wholesale-to-wholesale ratio, which needs wholesale prices for each species, is not yet
 implemented.
