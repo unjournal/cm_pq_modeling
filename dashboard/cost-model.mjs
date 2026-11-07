@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-11-07.1";
+export const MODEL_VERSION = "2026-11-07.2";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -11,7 +11,10 @@ export const DEFAULT_PARAMS = Object.freeze({
   p_fedbatch: 0.20, p_perfusion: 0.50, p_continuous: 0.30,
   gf_progress: 50, include_capex: true, include_fixed_opex: true,
   // User-facing $/kg inputs (toll, expert cost priors) are per kg dry cell mass.
-  include_downstream: false, cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
+  // Forming (blending, extrusion, shaping) per kg of final hybrid product; outside the
+  // cell-mass estimate. Since 2026-11-07.2 (was a flat $2–15 per wet kg of cells).
+  include_downstream: false, forming_p5: 0.5, forming_p95: 2.5,
+  cdmo_mode: false, cdmo_toll_p5: 20, cdmo_toll_p95: 200,
   bundled_media: false, bundled_media_p5: 50, bundled_media_p95: 500,
   override_mode_constraints: false,
   ep_media_p10: null, ep_media_p90: null, ep_gf_p10: null, ep_gf_p90: null,
@@ -63,6 +66,7 @@ export const REVIEW_PROVENANCE = Object.freeze({
   hybrid: "October 29, 2026 design decision (David Reinstein). Products will not be made entirely of cultivated cells, so the reader-facing comparison is a hybrid product: 25% cultivated cells at chicken-meat moisture plus 75% plant-based ingredients at $3/kg (ingredient cost only; forming, packaging and margins excluded). There is no consensus inclusion rate: GOOD Meat 3 (Singapore, 2024) is 3% cells, and hybrids are usually described as 20–50% non-meat. 25% and $3/kg were the dashboard's existing blend defaults; both are conventions, adjustable on the Advanced page.",
   harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $2.50–15/kg dry p5–p95 range ($0.50–3.00 per wet kg at 20% solids) is a placeholder until values from the planned process model are available (see docs); off by default.",
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific failure rates and seed-train capital are modeled since November 7, 2026; cell-retention equipment, consumables and extra medium throughput are not, so selection still favors the least-specified modes.",
+  forming: "November 7, 2026 (engine 2026-11-07.2): forming is a cost per kg of final hybrid product, lognormal p5–p95 $0.5–2.5 (2026 dollars), added to the hybrid cost only, not to cell-mass cost. Source: GFI 2021, Plant-based meat: anticipating 2030 production requirements, Tables 3–5 (order-of-magnitude, bottom-up): high-moisture extrusion plants at 70,000 t/yr (capex $91.2M, non-ingredient opex $22.1M/yr) and 7,000 t/yr ($18.2M; $9.5M/yr) imply conversion costs of about $0.49 and $1.70 per kg in 2021 dollars (capex at a 13% capital recovery factor), about $0.6–2.1 in 2026 dollars; miscellaneous opex includes packaging, so these slightly overstate forming alone. Scaffolded whole cuts would cost more and are not represented. The earlier $2–15/kg range had no recorded source and was added per wet kg of cells.",
   reactor: "November 7, 2026: custom (food-grade, aseptic but not cGMP) reactor cost ratio changed from 0.35–0.85 to 0.15–0.55 of pharma-grade (mean 0.35). Humbird 2020 preprint Table 3.1 (Petrides): installed cost of an aseptic non-cGMP 20 m³ vessel is about 0.34 of a cGMP mammalian one (about 0.5 for the vessel alone); sanitary brewing vessels about 0.05, but Humbird argues animal-cell culture must stay aseptic. The low end allows for low-cost custom designs (company claims: Meatly, Vow). Provisional."
 });
 
@@ -352,6 +356,7 @@ function simulateDrawnMode(n, seed, params) {
     throw new RangeError("cell_inclusion_rate must be above 0 and at most 1.");
   if (!Number.isFinite(params.filler_cost) || params.filler_cost < 0)
     throw new RangeError("filler_cost must be zero or more.");
+  if (params.include_downstream) validateRange(params.forming_p5, params.forming_p95);
   if (params.include_harvest_dewater) validateRange(params.harvest_dewater_p5, params.harvest_dewater_p95);
   if (params.media_use_model === "yield" || params.nutrient_floor) validateRange(params.nutrient_yield_p5, params.nutrient_yield_p95);
   if (params.include_losses) {
@@ -673,12 +678,14 @@ function simulateDrawnMode(n, seed, params) {
   }
 
   rng = namedStream(seed, "downstream");
-  // Downstream processing (scaffolding, texturization) for structured products
-  let downstream_perkg = new Array(n).fill(0);
-  if (params.include_downstream) {
-    // Downstream adds $2-15/kg for structured products
-    downstream_perkg = sampleLognormalP5P95(rng, 2.0, 15.0, n);
-  }
+  // Forming per kg of final hybrid product (see REVIEW_PROVENANCE.forming). It is not
+  // part of the cell-mass cost, so it is added to the hybrid cost below, not here.
+  const forming_per_kg_product = params.include_downstream
+    ? sampleLognormalP5P95(rng, params.forming_p5, params.forming_p95, n)
+    : new Array(n).fill(0);
+  const downstream_perkg = new Array(n).fill(0);
+  if (params.include_downstream && params.cost_basis === "wet")
+    warnings.push("Forming is a cost per kg of final product; on the wet cell-mass basis it is not added.");
 
   rng = namedStream(seed, "harvest-dewater");
   // Harvest, washing and dewatering to the standard basis: inside the estimate,
@@ -723,8 +730,8 @@ function simulateDrawnMode(n, seed, params) {
   // A kg of chicken-meat equivalent holds target_solids_fraction kg dry mass.
   const unit_cost_meat_equiv = scale(unit_cost_dry, params.target_solids_fraction);
   // A kg of hybrid product: cell_inclusion_rate kg of cells at meat moisture plus filler.
-  const unit_cost_hybrid = unit_cost_meat_equiv.map(c =>
-    c * params.cell_inclusion_rate + params.filler_cost * (1 - params.cell_inclusion_rate));
+  const unit_cost_hybrid = unit_cost_meat_equiv.map((c, i) =>
+    c * params.cell_inclusion_rate + params.filler_cost * (1 - params.cell_inclusion_rate) + forming_per_kg_product[i]);
 
   return {
     unit_cost: scale(unit_cost_wet, out),
@@ -740,7 +747,9 @@ function simulateDrawnMode(n, seed, params) {
     cost_capex: scale(capex_perkg, out),
     cost_fixed: scale(fixed_perkg, out),
     cost_cdmo_toll: scale(cdmo_toll_perkg, out),
+    // Zero since 2026-11-07.2: forming is per kg of product (forming_per_kg_product).
     cost_downstream: scale(downstream_perkg, out),
+    forming_per_kg_product,
     cost_harvest: scale(harvest_perkg, out),
     unit_cost_dry, unit_cost_wet, unit_cost_meat_equiv, unit_cost_hybrid,
     unit_cost_protein: scale(unit_cost_dry, 1 / params.protein_fraction_of_solids),

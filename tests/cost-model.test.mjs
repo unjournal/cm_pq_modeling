@@ -392,3 +392,14 @@ test('physical-consistency pieces: nutrient floor, losses, seed train, oxygen ca
   assert.ok(on.oxygen_limited_share > 0);
   o2.density_samples.forEach((d, i) => assert.ok(d <= on.density_samples[i] + 1e-9));
 });
+
+test('forming is a per-kg-of-product cost added to the hybrid only', () => {
+  const off = simulate(n, 42, {}), on = simulate(n, 42, {include_downstream: true});
+  assert.deepEqual(on.unit_cost, off.unit_cost);
+  assert.deepEqual(on.unit_cost_meat_equiv, off.unit_cost_meat_equiv);
+  on.unit_cost_hybrid.forEach((h, i) => assert.ok(close(h, off.unit_cost_hybrid[i] + on.forming_per_kg_product[i])));
+  const med = model.quantile(on.forming_per_kg_product, 0.5);
+  assert.ok(Math.abs(med - Math.sqrt(0.5 * 2.5)) < 0.1);
+  assert.ok(off.forming_per_kg_product.every(v => v === 0));
+  assert.ok(simulate(50, 1, {include_downstream: true, cost_basis: 'wet'}).warnings.some(w => /Forming/.test(w)));
+});

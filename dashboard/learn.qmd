@@ -1042,7 +1042,7 @@ For **structured products** (chicken breast, steak):
 - **Cost: ~$5-20/kg additional** ([GFI 2021](https://gfi.org/science/the-science-of-cultivated-meat/))
 
 ::: {.callout-note}
-Our model includes an optional "downstream processing" toggle that adds $2-15/kg for structured products.
+Our model includes an optional forming toggle that adds \$0.5–2.5 per kg of hybrid product (blending and shaping, from GFI's 2021 extrusion-plant costs). Scaffolded structured products would cost more and are not modeled.
 :::
 
 ::: {.callout-warning collapse="true"}
@@ -1054,7 +1054,7 @@ Industry sources suggest most companies have moved away from scaffolding for fir
 - Most companies targeting unstructured products (mince, nuggets) first
 - Academic papers continue publishing scaffolding research, but this may not reflect current industry direction
 
-The model's downstream processing toggle ($2-15/kg for structured products) should be treated as speculative for near-term projections. First commercial products are more likely to be unstructured or blended with plant-based ingredients.
+The model's forming toggle covers blended, mince-type products only; scaffolded whole cuts are not modeled and remain speculative for near-term projections. First commercial products are more likely to be unstructured or blended with plant-based ingredients.
 :::
 
 ---

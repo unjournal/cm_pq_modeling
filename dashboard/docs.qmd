@@ -186,7 +186,7 @@ Two caveats are recorded in [Limits](limits.qmd#estimand): the technology availa
 | Step | In the estimate? | Currently modeled? |
 |---|---|---|
 | **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$2.50–15 per kg dry (\$0.50–3.00 per wet kg at 20% solids; `harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Under engine `2026-10-29.1`, turning it on moved the default median from about \$213 to \$220 per kg dry, P(hybrid-product cost < \$5/kg) from 1.0% to 0.5% and P(< \$10/kg) from 23.6% to 21.1%. Since November 7 the default also includes recovery losses, a separate effect. |
-| **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. The \$2–15 range has no recorded source, and it is added per wet kg of cells rather than per kg of final product. Published figures for blending and extruding mince-type or hybrid products are about \$0.5–2 per kg of product (GFI 2021 high-moisture extrusion plants); \$2–15 fits scaffolded whole cuts at best. Reworking this switch is a planned change. |
+| **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming in the hybrid product", off by default (URL parameter `include_downstream`). Since engine `2026-11-07.2` it adds \$0.5–2.5 per kg of final hybrid product (lognormal 5th–95th percentile, 2026 dollars) to the hybrid cost only. Source: [GFI 2021, *Plant-based meat: anticipating 2030 production requirements*](https://gfi.org/wp-content/uploads/2021/11/Plant-based-meat_-anticipating-2030-production-requirements.pdf), Tables 4–5, which GFI calls order-of-magnitude estimates: a 70,000 t/yr high-moisture extrusion plant (capex \$91.2M; non-ingredient operating cost \$22.1M a year) works out at about \$0.49 per kg in 2021 dollars, and a 7,000 t/yr plant (\$18.2M; \$9.5M a year) at about \$1.70, with capital annualized at 13%. That is about \$0.6–2.1 in 2026 dollars; GFI's miscellaneous costs include packaging, so forming alone is slightly lower. Before, the switch added an unsourced \$2–15 per wet kg of cells. Scaffolded whole cuts would cost more and are not modeled. With the switch on, the hybrid-dollar axes and the dry-cost equivalents on the threshold cards still use the formula without forming, so they are off by the forming cost (median about \$1.10 per kg). |
 
 ### Elicit primitive drivers, not derived quantities {#elicit-fundamentals}
 
@@ -265,7 +265,7 @@ See our [TEA comparison page](compare.qmd) for how this compares to published TE
 | **VOC** | Variable operating costs — inputs that scale with production | $5–100/kg |
 | **CAPEX/kg** | Annualized capital costs (bioreactors, facilities) | $1–20/kg |
 | **Fixed OPEX/kg** | Labor, maintenance, overhead | $1–10/kg |
-| **Downstream/kg** | Forming, scaffolding, texturization (structured products; outside the estimate) | $2–15/kg if enabled |
+| **Forming per kg of product** | Blending and shaping the hybrid product (outside the cell-mass estimate; added to the hybrid cost only) | \$0.5–2.5 per kg of product if enabled (GFI 2021; before November 7, 2026 an unsourced \$2–15 per kg of cells) |
 
 </details>
 
@@ -1149,7 +1149,7 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
-2. **Forming and texturization are outside the estimate** — Scaffolding, texturization, and forming costs can be added via toggle (+$2-15/kg for structured products). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly; see [downstream processing](#downstream-scope).
+2. **Forming and texturization are outside the estimate** — Forming can be added to the hybrid product via toggle (\$0.5–2.5 per kg of product, GFI 2021; scaffolded whole cuts are not modeled). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly; see [downstream processing](#downstream-scope).
 
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 

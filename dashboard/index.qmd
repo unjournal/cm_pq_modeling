@@ -53,6 +53,8 @@ format:
 ```
 
 ::: {#info-updates .info-panel}
+**November 7 (engine `2026-11-07.2`): forming cost.** The optional forming switch now adds \$0.5–2.5 per kg of hybrid product, sourced from GFI's 2021 extrusion-plant costs, instead of an unsourced \$2–15 per kg of cells. Default results are unchanged (the switch is off).
+
 **November 7 (engine `2026-11-07.1`): physical consistency, provisional. Default results change.** Medium use per kg can no longer fall below what the medium's nutrients can build (a nutrient floor); recovery losses, failed or contaminated runs (more likely in long perfusion and continuous runs) and seed-train capital are now included; and the food-grade reactor cost ratio is 0.15–0.55 of pharma-grade, down from 0.35–0.85. An oxygen-transfer cap on density is available, off by default. The default median rises from \$213 to about \$276/kg dry (\$16.90 to \$21.25 per kg of hybrid product), and the share of draws under \$10/kg hybrid falls from 23.6% to 11.6%. **These changes have not yet been reviewed by engineers or cell-culture experts**; the ranges are placeholders with stated sources. Each can be switched off under *Structural stress tests*. See [physical consistency](docs.qmd#physical-consistency).
 
 **October 26 (target and basis, documentation only):** the team set the model's target: unconditional and hypothetical cost of a large plant built with the best technology available in 2036, whether or not such plants exist, in 2026 US dollars ([estimand](limits.qmd#estimand)). It also set a planned standard output basis, washed cell biomass at a fixed solids content plus cost per kg of protein ([output basis](docs.qmd#output-basis)). The "downstream processing" switch is relabelled "forming and texturization" (outside the estimate). No model outputs changed.
@@ -65,7 +67,7 @@ format:
 
 **October 26 (engine `2026-10-26.4`): default results change.** The headline cost is now per kg of dry cell mass (about five times the old wet figures), thresholds then used a chicken-meat equivalent (all cells; replaced by the hybrid product on October 29), density inputs are g dry/L and \$/kg inputs are per kg dry. Cost basis "wet" under *Structural stress tests* reproduces the earlier results exactly. See *Basis: dry cell mass*.
 
-This page runs the **current model** (engine `2026-11-07.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-11-07.2`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 
@@ -672,14 +674,14 @@ viewof filler_cost = Inputs.range([0, 10], {
 //| echo: false
 viewof include_capex = Inputs.toggle({label: "Include capital costs (CAPEX)", value: urlBool("include_capex", true)})
 viewof include_fixed_opex = Inputs.toggle({label: "Include plant overhead OPEX", value: urlBool("include_fixed_opex", true)})
-viewof include_downstream = Inputs.toggle({label: "Include forming and texturization (outside the estimate)", value: urlBool("include_downstream", false)})
+viewof include_downstream = Inputs.toggle({label: "Include forming in the hybrid product ($0.5–2.5 per kg of product)", value: urlBool("include_downstream", false)})
 viewof include_harvest_dewater = Inputs.toggle({label: "Include harvest, washing and dewatering (placeholder)", value: urlBool("include_harvest_dewater", false)})
 ```
 <details><summary>What are these options? Why would you toggle them?</summary>
 
 - *CAPEX*: Bioreactor and facility capital costs, annualized. On by default because capital costs are a substantial portion of total production cost. You might toggle this off to isolate variable operating costs or to compare with analyses that report only VOC.
 - *Plant overhead OPEX*: Labor, maintenance, plant overhead. *(Conventionally called "Fixed OPEX" in TEA literature, but it's only fixed per plant — the total scales sub-linearly with plant size, so per-kg overhead falls as plants get larger.)* On by default for the same reason as CAPEX. Toggle off to focus on marginal costs only.
-- *Forming and texturization*: Scaffolding, texturization, forming, blending and packaging for structured products. Off by default because these steps are **outside** the estimate, which is unstructured cell biomass. Toggle on if you are interested in structured products (steaks, chicken breast), which add $2–15/kg. (This switch was previously labelled "downstream processing"; its URL parameter is still `include_downstream`.) Harvest, washing and dewatering to the standard solids basis are a different step: they belong **inside** the estimate but are not yet modeled explicitly. See [downstream processing](docs.qmd#downstream-scope).
+- *Forming and texturization*: Scaffolding, texturization, forming, blending and packaging for structured products. Off by default because these steps are **outside** the estimate, which is unstructured cell biomass. Toggle on to add the cost of blending and shaping the hybrid product: \$0.5–2.5 per kg of product (5th–95th percentile), from GFI's 2021 bottom-up costs for plant-protein extrusion plants. It is added to the hybrid-product cost only, not to the cell-mass cost. Scaffolded whole cuts (steaks, breast) would cost more and are not modeled. (Before November 7, 2026 this switch added an unsourced \$2–15 per kg of cells; its URL parameter is still `include_downstream`.) Harvest, washing and dewatering to the standard solids basis are a different step: they belong **inside** the estimate but are not yet modeled explicitly. See [downstream processing](docs.qmd#downstream-scope).
 - *Harvest, washing and dewatering (placeholder)*: adds a placeholder $0.50–3.00/kg (5th–95th percentile) for bringing harvested cells to the standard solids basis. Off by default so published results do not change; the range is not sourced and will be replaced with values from a process model.
 
 Most published TEAs report costs with CAPEX and plant overhead OPEX included. Toggling them off produces numbers that are not comparable to standard literature estimates.
@@ -1696,7 +1698,7 @@ ${basisLabels.dry ? html`<strong>Two numbers, one cost.</strong> Dry cell mass i
         capex_annualized: +mean(results.cost_capex).toFixed(2),
         fixed_opex: +mean(results.cost_fixed).toFixed(2),
         cdmo_toll: +mean(results.cost_cdmo_toll).toFixed(2),
-        downstream: +mean(results.cost_downstream).toFixed(2),
+        forming_per_kg_product: +mean(results.forming_per_kg_product).toFixed(2),
         harvest_wash_dewater: +mean(results.cost_harvest).toFixed(2)
       },
       median_per_kg_by_basis: {
@@ -2029,7 +2031,6 @@ These percentages answer: "What's the chance that production costs fall below ke
     {name: "CAPEX (annualized)",     value: mean(results.cost_capex),         color: "#e74c3c"},
     {name: "Plant overhead OPEX",    value: mean(results.cost_fixed),         color: "#f39c12"},
     {name: "CDMO Toll",              value: mean(results.cost_cdmo_toll),     color: "#e67e22"},
-    {name: "Forming & texturization", value: mean(results.cost_downstream),   color: "#1abc9c"},
     {name: "Harvest, wash & dewater", value: mean(results.cost_harvest),      color: "#16a085"}
   ];
   // Filter out zero-value components (e.g., downstream when not included)
@@ -2147,7 +2148,6 @@ function formatCost(val) {
     {name: "CAPEX (annualized)", data: results.cost_capex, color: "#e74c3c"},
     {name: "Plant overhead OPEX", data: results.cost_fixed, color: "#f39c12"},
     {name: "CDMO Toll", data: results.cost_cdmo_toll, color: "#e67e22"},
-    {name: "Forming & texturization", data: results.cost_downstream, color: "#1abc9c"},
     {name: "Harvest, wash & dewater", data: results.cost_harvest, color: "#16a085"}
   ];
 
@@ -2611,7 +2611,7 @@ The [versioned September audit](review-2026-09.qmd#what-the-revised-defaults-imp
 
 1. **Static snapshot model** — Projects costs for a single projection year (adjustable 2026-2050). Does not model year-over-year learning curves; instead, the "maturity" parameter serves as a proxy for cumulative industry development.
 
-2. **Forming and texturization are outside the estimate** — Scaffolding, texturization, and forming costs can be added via toggle (+$2-15/kg for structured products). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly.
+2. **Forming and texturization are outside the estimate** — Forming can be added to the hybrid product via toggle (\$0.5–2.5 per kg of product, GFI 2021; scaffolded whole cuts are not modeled). Harvest, washing and dewatering belong inside the estimate but are not yet modeled explicitly.
 
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
