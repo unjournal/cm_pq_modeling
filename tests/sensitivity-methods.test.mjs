@@ -13,7 +13,7 @@ test('tail contrast with a 10% tail and the mean reproduces the engine swing', (
     assert.ok(Math.abs(sm.tailContrast(input.data, base.unit_cost) - conditionalSwing(input.data, base.unit_cost, 0.10)) < 1e-9);
   }
   assert.equal(sm.tailContrast([1, 1, 1], [5, 6, 7]), 0);
-  const below = sm.tailContrast(base.density_samples, base.unit_cost, {stat: {type: 'below', threshold: 25}});
+  const below = sm.tailContrast(base.density_samples, base.unit_cost, {stat: {type: 'below', threshold: 100}});
   assert.ok(below > 0 && below <= 1);
   const {lo, hi} = sm.tailMeans(base.density_samples);
   assert.ok(lo < model.quantile(base.density_samples, 0.1) && hi > model.quantile(base.density_samples, 0.9));
@@ -141,7 +141,7 @@ function pageParams(cell, globals) {
 }
 test('URL state adapter reproduces the Advanced page parameters', () => {
   const epNull = {media_p10: null, media_p50: null, media_p90: null, gf_p10: null, gf_p50: null, gf_p90: null, density_p10: null, density_p50: null, density_p90: null};
-  const structure = {cost_basis: 'dry', dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 40, fresh_media_p95: 300, nutrient_yield_p5: 3, nutrient_yield_p95: 25, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
+  const structure = {cost_basis: 'dry', dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 40, fresh_media_p95: 300, nutrient_yield_p5: 3, nutrient_yield_p95: 30, nutrient_floor: true, include_losses: true, include_seed_train: true, oxygen_cap: false, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
     mode_selection: 'mixture', p_feasible_perfusion: 0.7, p_feasible_continuous: 0.3, mode_choice_noise: 0,
     solids_fraction: 0.2, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65};
   const defaults = {
@@ -166,10 +166,10 @@ test('URL state adapter reproduces the Advanced page parameters', () => {
     [{mode_selection: 'least_cost', p_feasible_perfusion: '0.9', p_feasible_continuous: '0.5', mode_choice_noise: '0.25'},
      {structure_settings: {...structure, mode_selection: 'least_cost', p_feasible_perfusion: 0.9, p_feasible_continuous: 0.5, mode_choice_noise: 0.25}}],
     [{simpleMode: '0', include_harvest_dewater: '1', solids_fraction: '0.15', target_solids_fraction: '0.3', protein_fraction_of_solids: '0.6',
-      media_use_model: 'yield', nutrient_yield_p5: '4', nutrient_yield_p95: '30'},
+      media_use_model: 'yield', nutrient_yield_p5: '4', nutrient_yield_p95: '30', include_losses: '0', oxygen_cap: '1'},
      {simpleMode: false, include_harvest_dewater: true,
       structure_settings: {...structure, solids_fraction: 0.15, target_solids_fraction: 0.3, protein_fraction_of_solids: 0.6,
-        media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30}}],
+        media_use_model: 'yield', nutrient_yield_p5: 4, nutrient_yield_p95: 30, include_losses: false, oxygen_cap: true}}],
     [{cost_basis: 'wet'}, {structure_settings: {...structure, cost_basis: 'wet'}}],
     [{blending_share: '0.5', filler_cost: '4'}, {blending_share: 0.5, filler_cost: 4}]
   ];

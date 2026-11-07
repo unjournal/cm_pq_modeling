@@ -102,6 +102,10 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['media_use_model', 'Fresh-media calculation', [['density', 'Density-derived (baseline)'], ['direct', 'Direct fresh L/kg'], ['yield', 'From nutrient yield (density-invariant)']], REVIEW_PROVENANCE.media + ' ' + REVIEW_PROVENANCE.media_yield],
     ['fresh_media_p5', 'Fresh media p5 (L per kg dry cell mass)', null, REVIEW_PROVENANCE.media],
     ['fresh_media_p95', 'Fresh media p95 (L per kg dry cell mass)', null, REVIEW_PROVENANCE.media],
+    ['nutrient_floor', 'Nutrient floor on medium use (density model)', [['1', 'On (default since Nov 7, 2026)'], ['0', 'Off (before Nov 7, 2026)']], 'Medium per kg cannot fall below what its nutrients can build: L per kg dry ≥ 1000 ÷ nutrient yield (the yield range below). ' + REVIEW_PROVENANCE.physical],
+    ['include_losses', 'Recovery losses and failed runs', [['1', 'Included (default since Nov 7, 2026)'], ['0', 'Excluded']], REVIEW_PROVENANCE.physical],
+    ['include_seed_train', 'Seed-train capital', [['1', 'Included (default since Nov 7, 2026)'], ['0', 'Excluded']], REVIEW_PROVENANCE.physical],
+    ['oxygen_cap', 'Oxygen-transfer cap on density', [['0', 'Off (default; share of worlds above it is reported)'], ['1', 'On: cap density at the oxygen limit']], REVIEW_PROVENANCE.physical],
     ['nutrient_yield_p5', 'Nutrient yield p5 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
     ['nutrient_yield_p95', 'Nutrient yield p95 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
     ['gf_dose_model', 'Growth-factor dosage', [['per_kg', 'Separate g/kg prior (baseline)'], ['media_linked', 'Concentration × fresh L/kg']], REVIEW_PROVENANCE.gf],
@@ -139,7 +143,8 @@ export function structuralControl(initial = new URLSearchParams()) {
         option.value = value; option.textContent = title; el.append(option);
       }
     } else Object.assign(el, {type: 'number', min: '0', step: 'any'});
-    el.value = initial.get(key) ?? DEFAULT_PARAMS[key];
+    const def = DEFAULT_PARAMS[key];
+    el.value = initial.get(key) ?? (typeof def === 'boolean' ? (def ? '1' : '0') : def);
     fields[key] = el;
     label.append(el);
     if (modeKeys.includes(key)) { modeLabels[key] = label; modeSection.append(label); }
@@ -147,7 +152,7 @@ export function structuralControl(initial = new URLSearchParams()) {
   }
   const modeNote = document.createElement('p');
   modeNote.style.cssText = 'font-size:0.8rem;color:#555;margin:4px 0;';
-  modeNote.append('Cheapest feasible mode ignores the weights above: it prices every simulated world under each mode and uses the cheapest one that works (fed-batch always works). The feasibility defaults are illustrative, and mode-specific equipment, extra medium throughput and contamination costs are not yet modeled. ');
+  modeNote.append('Cheapest feasible mode ignores the weights above: it prices every simulated world under each mode and uses the cheapest one that works (fed-batch always works). The feasibility defaults are illustrative. Mode-specific failure rates and seed-train capital are included (provisional, since November 7, 2026); cell-retention equipment and extra medium throughput are not yet modeled. ');
   const modeLink = document.createElement('a');
   modeLink.href = 'docs.html#least-cost-mode-selection'; modeLink.textContent = 'Method and caveats';
   modeNote.append(modeLink);
@@ -156,7 +161,7 @@ export function structuralControl(initial = new URLSearchParams()) {
   modeSection.addEventListener('input', () => container.dispatchEvent(new Event('input', {bubbles: true})));
   container.modeSection = modeSection;
   const note = document.createElement('p');
-  note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–25 g dry cells/L, the GF dose fraction and the solids and protein shares are illustrative assumptions. Process-mode selection is set beside the process-mode weights. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
+  note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–30 g dry cells/L, the loss, seed-train and oxygen ranges (added November 7, 2026, not yet reviewed by engineers), the GF dose fraction and the solids and protein shares are illustrative assumptions. Process-mode selection is set beside the process-mode weights. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
   link.href = 'review-response-2026-09.html#structures'; link.textContent = 'Sources, justification and open questions';
   const links = document.createElement('p');
@@ -165,8 +170,9 @@ export function structuralControl(initial = new URLSearchParams()) {
   details.append(note, links, status); container.append(details);
   let committed = Object.fromEntries(specs.map(([key]) => [key, DEFAULT_PARAMS[key]]));
   function update() {
-    const values = Object.fromEntries(specs.map(([key, , choices]) => [key, choices ? fields[key].value : fields[key].value === '' ? NaN : Number(fields[key].value)]));
-    const valid = specs.every(([key, , choices]) => choices ? choices.some(([v]) => v === values[key]) : Number.isFinite(values[key]))
+    const isBool = key => typeof DEFAULT_PARAMS[key] === 'boolean';
+    const values = Object.fromEntries(specs.map(([key, , choices]) => [key, isBool(key) ? fields[key].value === '1' : choices ? fields[key].value : fields[key].value === '' ? NaN : Number(fields[key].value)]));
+    const valid = specs.every(([key, , choices]) => isBool(key) || (choices ? choices.some(([v]) => v === values[key]) : Number.isFinite(values[key])))
       && values.fresh_media_p5 > 0 && values.fresh_media_p95 >= values.fresh_media_p5
       && values.nutrient_yield_p5 > 0 && values.nutrient_yield_p95 >= values.nutrient_yield_p5
       && values.gf_concentration_mg_L >= 0 && values.gf_cheap_dose_fraction >= 0 && values.gf_cheap_dose_fraction <= 1
@@ -175,7 +181,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     if (valid) { committed = values; status.textContent = ''; }
     else status.textContent = 'Enter positive ordered media and yield endpoints, nonnegative concentration and noise, a dose fraction and feasibility probabilities from 0 to 1, and solids and protein shares above 0 and at most 1. Results retain the last valid settings.';
     fields.fresh_media_p5.disabled = fields.fresh_media_p95.disabled = values.media_use_model !== 'direct';
-    fields.nutrient_yield_p5.disabled = fields.nutrient_yield_p95.disabled = values.media_use_model !== 'yield';
+    fields.nutrient_yield_p5.disabled = fields.nutrient_yield_p95.disabled = !(values.media_use_model === 'yield' || (values.media_use_model === 'density' && values.nutrient_floor));
     fields.gf_concentration_mg_L.disabled = fields.gf_cheap_dose_fraction.disabled = values.gf_dose_model !== 'media_linked';
     for (const key of modeKeys.slice(1)) modeLabels[key].style.display = values.mode_selection === 'least_cost' ? 'flex' : 'none';
     modeNote.style.display = values.mode_selection === 'least_cost' ? '' : 'none';

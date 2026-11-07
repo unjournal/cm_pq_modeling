@@ -112,7 +112,37 @@ $$\text{cost per kg hybrid} = \text{cost per kg dry} \times \texttt{target\_soli
 
 $$\text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
 
-At the defaults (seed 42, 30,000 draws) the median is about \$213 per kg dry cell mass, \$16.90 per kg of hybrid product and \$328 per kg protein; all-cell mass at chicken-meat moisture would be \$58.60 per kg, and the wet basis gives \$42.62. On the hybrid-product thresholds, 1.0% of draws are under \$5/kg, 23.6% under \$10, 67.2% under \$25 and 87.5% under \$50. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) The conversions assume washing and dewatering lose no cells; the harvest placeholder below adds a cost but not losses.
+At the defaults (engine `2026-11-07.1`, seed 42, 30,000 draws) the median is about \$276 per kg dry cell mass, \$21.25 per kg of hybrid product and \$425 per kg protein; all-cell mass at chicken-meat moisture would be \$76.00 per kg, and the wet basis gives \$55.27. On the hybrid-product thresholds, 0.1% of draws are under \$5/kg, 11.6% under \$10, 58.2% under \$25 and 84.0% under \$50. Before the [physical-consistency additions](#physical-consistency) of November 7, 2026 (engine `2026-10-29.1`) these were \$213, \$16.90, \$328, \$58.60 and \$42.62, with 1.0%, 23.6%, 67.2% and 87.5% under the thresholds. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) Since November 7, 2026 the default includes recovery losses in harvest and washing (see [physical consistency](#physical-consistency)); the harvest placeholder below adds a processing cost on top.
+
+### Physical consistency (November 7, 2026) {#physical-consistency}
+
+::: {.callout-warning}
+**Provisional, not yet reviewed by engineers.** These additions were made on David Reinstein's decision after discussion with the team, with ranges researched by an AI assistant from the sources below. They still need checking by people with engineering and cell-culture expertise (Katharina Brenner and Denis O'Sullivan have been asked). Treat the ranges as placeholders with stated sources, not as settled estimates.
+:::
+
+Before engine `2026-11-07.1` the model drew density, medium use and cycle time independently, with "no oxygen-transfer, nutrient-balance, or washout test" rejecting impossible combinations, and left out losses and seed reactors. The cheapest simulated worlds, the ones closest to parity, were the most affected: in the cheapest 5% each litre of medium had to build more than 30 g of dry cells, several times what the nutrients in current media formulations can support. Engine `2026-11-07.1` adds four pieces. Each can be switched off under *Structural stress tests* on the Advanced page.
+
+| Piece | Default | What it does | Range (p5–p95) and sources |
+|---|---|---|---|
+| **Nutrient floor** (`nutrient_floor`) | On | With the density rule, medium per kg dry = the larger of 1000/density × multiplier and 1000/nutrient yield | Yield 3–30 g dry cells per L (median about 9.5). Low end: the Pasitka et al. 2024 pilot (about 3–5 g dry/L) and the amino-acid content of real media (DMEM/F12 1.1 g/L; FSF4 and Believer's medium 3.6; modified CHO 7.2; [GFI amino-acid report, Dec 2025](https://gfi.org/wp-content/uploads/2025/12/Amino-acid-cost-and-supply-chain-analysis-for-cultivated-meat.pdf)) set against [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/)'s requirement of roughly 0.9 g amino acids and 1.2 g glucose per g dry cells. High end: concentrated feeds, as in CE Delft 2021's 8–13 L/kg scenarios (about 15–38 g dry/L), which imply amino-acid concentrations 3–9 times those of current media. |
+| **Recovery losses and failed runs** (`include_losses`) | On | Every in-house cost per delivered kg is divided by (1 − recovery loss) × (1 − failure share). A CDMO toll and direct $/kg expert priors are taken as per delivered kg and not scaled | Recovery loss 1–15% (Negulescu et al. 2023 assume 2%; Brenner et al. 2026 assume 5%; neither is measured). Failures by mode: fed-batch 0.5–8% (BioPlan survey: 7.6% batch failure at ≥1,000 L, 2.3% from contamination; Humbird cites about 2% as the state of the art); perfusion 2–15% (Pollock, Ho and Farid 2013: about 6% contamination plus 2% filter failure over a 60-day run); continuous 3–20% (longer runs) |
+| **Seed-train capital** (`include_seed_train`) | On | Capital × (1 + seed share) | Fed-batch 5–25% (Humbird's design: seed reactors cost about two thirds as much as the production reactors, about 14% of total capital); perfusion and continuous 1–6% (one inoculation serves a long run) |
+| **Oxygen cap** (`oxygen_cap`) | Off | Caps dry density at the oxygen-transfer limit | Limit 12–60 g dry/L, from maximum oxygen transfer of about 13–25 mmol/L/h in large, shear-limited reactors (Humbird 2021; Negulescu et al. 2023) and uptake of about 0.3–0.9 mmol O₂ per g dry cells per hour (Humbird; CHO data; no measurements for meat cells). Off until checked; the share of worlds above the limit is reported (17% at the defaults) |
+
+**Effect on the defaults** (seed 42, 30,000 draws; the custom reactor ratio was also changed on the same date, see [pharma vs food-grade](#pharma-grade-vs.-food-grade-equipment)):
+
+| Engine setting | Median \$/kg dry | Median \$/kg hybrid | Share of draws under \$5 / \$10 / \$25 hybrid |
+|---|---|---|---|
+| `2026-10-29.1` (before) | 213 | 16.90 | 1.0% / 23.6% / 67.2% |
+| New reactor ratio only | 208 | 16.57 | 1.2% / 24.7% / 67.9% |
+| + nutrient floor | 242 | 18.88 | 0.3% / 16.1% / 63.8% |
+| + recovery losses and failed runs | 275 | 21.15 | 0.1% / 11.7% / 58.5% |
+| + seed train (new default) | 276 | 21.25 | 0.1% / 11.6% / 58.2% |
+| New default + oxygen cap | 282 | 21.60 | 0.1% / 10.7% / 57.5% |
+
+The floor binds in about 38% of worlds, mostly the high-density ones. Losses raise costs by a median of 11% (95th percentile 32%). Against US wholesale chicken (\$3.50/kg), no default world gets there either before or after the change; the change matters most for the \$5–\$25 range.
+
+**Not yet included:** cell-retention equipment and consumables for perfusion, extra medium throughput in perfusion and continuous runs, utilities derived from physical quantities (they remain in "other variable costs"), vessel scheduling, and any link between failure rates and maturity. Nutrient yield is drawn independently of medium price per litre, although richer media cost more per litre. Katharina Brenner's process model is the planned source for a consistent set of these quantities.
 
 ### Comparison with conventional chicken {#chicken-comparison}
 
@@ -155,8 +185,8 @@ Two caveats are recorded in [Limits](limits.qmd#estimand): the technology availa
 
 | Step | In the estimate? | Currently modeled? |
 |---|---|---|
-| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$2.50–15 per kg dry (\$0.50–3.00 per wet kg at 20% solids; `harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Turning it on moves the default median from about \$213 to \$220 per kg dry, P(hybrid-product cost < \$5/kg) from 1.0% to 0.5% and P(< \$10/kg) from 23.6% to 21.1%. |
-| **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. |
+| **(a) Harvest, washing and dewatering** to the standard solids basis | Yes: needed to produce the standard unit | Placeholder only: switch "Include harvest, washing and dewatering" (`include_harvest_dewater`), off by default, adds a lognormal cost with 5th–95th percentiles \$2.50–15 per kg dry (\$0.50–3.00 per wet kg at 20% solids; `harvest_dewater_p5`, `harvest_dewater_p95`). The range is not sourced; Katharina Brenner's process model is the planned source for values. Under engine `2026-10-29.1`, turning it on moved the default median from about \$213 to \$220 per kg dry, P(hybrid-product cost < \$5/kg) from 1.0% to 0.5% and P(< \$10/kg) from 23.6% to 21.1%. Since November 7 the default also includes recovery losses, a separate effect. |
+| **(b) Forming, texturization, blending and packaging** | No: outside the estimate | Optional switch "Include forming and texturization", $2–15/kg, off by default. Its URL parameter is still `include_downstream`. The \$2–15 range has no recorded source, and it is added per wet kg of cells rather than per kg of final product. Published figures for blending and extruding mince-type or hybrid products are about \$0.5–2 per kg of product (GFI 2021 high-moisture extrusion plants); \$2–15 fits scaffolded whole cuts at best. Reworking this switch is a planned change. |
 
 ### Elicit primitive drivers, not derived quantities {#elicit-fundamentals}
 
@@ -172,11 +202,11 @@ Respondents find it hard to give coherent beliefs about derived quantities such 
 
 Each respondent would also give one or two derived numbers, such as their overall cost per kg, as a consistency check against the cost computed from their primitive answers. Large gaps flag either a missing cost component or an assumption the respondent holds but did not state.
 
-**Medium per kg and density.** The default media equation derives litres of medium per kg as 1000 / density × a media-use multiplier, so higher density mechanically means less medium per kg. Two independent reviewers argue instead that medium consumed per kg depends on **nutrient yield** (how many kilograms of cells the nutrients in a litre can support) and is roughly invariant to density: concentrating cells in less liquid does not reduce the nutrients they consume. Engine `2026-10-26.3` adds this as an option, `media_use_model: "yield"` (off by default):
+**Medium per kg and density.** The default media equation derives litres of medium per kg as 1000 / density × a media-use multiplier, so higher density mechanically means less medium per kg. Two independent reviewers argue instead that medium consumed per kg depends on **nutrient yield** (how many kilograms of cells the nutrients in a litre can support) and is roughly invariant to density: concentrating cells in less liquid does not reduce the nutrients they consume. Engine `2026-10-26.3` adds this as an option, `media_use_model: "yield"` (off by default). Since engine `2026-11-07.1` the same yield also acts as a **floor** under the default density rule (`nutrient_floor`, on by default; see [physical consistency](#physical-consistency)):
 
 $$\text{L of medium per kg dry cell mass} = \frac{1000}{\text{nutrient yield (g dry cells per L of medium consumed)}}$$
 
-Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–25 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`). That range is illustrative, not elicited or fitted: it implies about 40–330 litres per kg dry (8–67 per wet kg at 20% solids), close to the direct stress range. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. In the default scenario this rule gives 0.5% of draws under \$5/kg of hybrid product (against 1.0% under the density rule), 25.1% under \$10, and a median of \$178 per kg dry (against \$213); 252 of the 306 default draws under \$5 rise above \$5 under it. The [structure check](sensitivity.qmd#structure-check) shows why this matters: most of the very cheapest simulated draws rely on the density-derived medium assumption.
+Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–30 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`; 3–25 before November 7, 2026), median about 9.5. It implies about 33–330 litres per kg dry. The range is provisional: see [physical consistency](#physical-consistency) for the sources behind it. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. Under engine `2026-10-29.1` (before the floor and the losses) this rule gave 0.5% of draws under \$5/kg of hybrid product (against 1.0% under the density rule), 25.1% under \$10, and a median of \$178 per kg dry (against \$213); 252 of the 306 default draws under \$5 rose above \$5 under it. The [structure check](sensitivity.qmd#structure-check) shows why this matters: most of the very cheapest simulated draws rely on the density-derived medium assumption.
 
 ---
 
@@ -831,7 +861,7 @@ The model defines CAPEX at a **reference scale of 20 kTA**, then adjusts for act
 
 **How the reference scale is used:** We define "CAPEX at 20 kTA" as our baseline, then scale up or down using the [economies of scale formula below](#economies-of-scale-the-k-sim-qs-relationship). This is standard practice in chemical engineering cost estimation ("factored estimation" or "Lang factor" method).
 
-**Why pharma-grade appears here:** The baseline CAPEX parameter ($5-25/kg capacity) is anchored to published estimates that assume pharmaceutical-grade equipment (316L stainless steel, full cleaning validation). Most TEAs use pharma-grade as the starting point because that is what current facilities use. The model then applies a **custom reactor ratio** (0.35-0.85) to simulate the cost reduction if food-grade equipment is adopted instead — so pharma-grade is the pessimistic baseline, not an assumption about the future.
+**Why pharma-grade appears here:** The baseline CAPEX parameter ($5-25/kg capacity) is anchored to published estimates that assume pharmaceutical-grade equipment (316L stainless steel, full cleaning validation). Most TEAs use pharma-grade as the starting point because that is what current facilities use. The model then applies a **custom reactor ratio** (0.15–0.55 since November 7, 2026; 0.35–0.85 before) to simulate the cost reduction if food-grade equipment is adopted instead — so pharma-grade is the pessimistic baseline, not an assumption about the future.
 
 #### Economies of Scale: The $K \sim Q^s$ Relationship
 
@@ -859,7 +889,7 @@ The range 0.6–0.9 reflects uncertainty about whether cultured meat will achiev
 
 **Why this matters for CAPEX:** The cultured meat industry emerged from pharmaceutical cell culture, which uses expensive equipment designed for injectable drugs. A key cost question is whether the industry can transition to simpler, cheaper food-grade equipment.
 
-This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation — pharma-grade equipment costs 2–10× more than food-grade, and the **custom reactor ratio** parameter captures this uncertainty.
+This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation, and the **custom reactor ratio** parameter captures it. The relevant comparison is aseptic food-grade equipment (sterile, but without full cGMP validation) against cGMP pharma equipment. Brewing equipment is not a like-for-like comparison: a brewery is sanitary, not aseptic, and Humbird argues animal-cell culture cannot relax asepsis ([Humbird 2020 preprint, section 2.4](https://engrxiv.org/preprint/download/1438/2973/2173): "A brewery, however, is a sanitary facility, not an aseptic one").
 
 **Pharma-grade** bioreactors are built to pharmaceutical manufacturing standards:
 
@@ -872,10 +902,10 @@ This distinction directly affects CAPEX$_{\text{ref}}$ in the scaling equation �
 
 - Standard stainless steel (304 or food-grade 316) — [304 can replace pharma-required 316 for food operations](https://gfi.org/solutions/novel-bioreactor-technologies/)
 - Less stringent validation (GRAS vs. pharmaceutical purity)
-- Similar to brewing or dairy equipment
-- Target cost: **$10–50 per liter** — Meatly's [320L pilot bioreactor costs ~£12,500](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/) (~$39/L), comparable to [beer brewing ($5–15/L)](https://www.brewersassociation.org/)
+- Closer to aseptic food or industrial fermentation than to brewing or dairy equipment, which is sanitary rather than aseptic
+- Target cost: **$10–50 per liter** (company claims: Meatly's [320L pilot bioreactor costs ~£12,500](https://vegconomist.com/cultivated-cell-cultured-biotechnology/cultivated-meat/meatlys-low-cost-bioreactor-slash-cultivated-meat-production-expenses-95/), ~$39/L; Vow reports a 20,000 L reactor for under $1M, ~$50/L). Humbird's commoditized aseptic design costs about $34–120/L installed from 200 down to 10 m³.
 
-The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much.
+The **custom reactor ratio** represents the installed cost of food-grade equipment relative to pharma-grade. At 0.5, custom equipment costs half as much. **Changed November 7, 2026 from 0.35–0.85 to 0.15–0.55 (uniform, mean 0.35).** The earlier range sat at the conservative end of the evidence and conflicted with this section's own food-grade targets. In Humbird's Table 3.1 (from Petrides; 20 m³ vessels), an aseptic non-cGMP vessel costs about 0.5 of a cGMP mammalian one, and about 0.34 once installation (Lang) factors are included; sanitary brewing vessels are about 0.05. The low end allows for the cheaper custom designs companies report. On its own the change lowers the default median by about 2%. Provisional; an engineering check is planned.
 
 | Parameter | Range | Definition | Equation |
 |-----------|-------|------------|----------|
@@ -883,7 +913,7 @@ The **custom reactor ratio** (0.35–0.85) represents the cost of food-grade equ
 | Asset life | 8–20 years | Equipment depreciation period for bioreactors, buildings, and support facilities | $n$ in CRF = $\frac{r(1+r)^n}{(1+r)^n-1}$ — see [Section 3](#annualized-capital-costs) |
 | Scale exponent | 0.6–0.9 | Economies of scale power (how much CAPEX grows as plant capacity increases) | $s$ in $\text{CAPEX} = \text{CAPEX}_{\text{ref}} \times (Q/Q_{\text{ref}})^s$ — see [economies of scale section](#economies-of-scale-the-k-sim-qs-relationship). Note: $s$ (scale exponent) is distinct from $r$ (WACC) used in the CRF formula. |
 | Pharma-grade CAPEX | \$5–25 / kg capacity | Base capital cost at 20 kTA | $\text{CAPEX}_{\text{ref}}$ in scaling equation |
-| Custom reactor ratio | 0.35–0.85 | Food-grade ÷ pharma-grade cost | Multiplier on $\text{CAPEX}_{\text{ref}}$ when using food-grade |
+| Custom reactor ratio | 0.15–0.55 (0.35–0.85 before Nov 7, 2026) | Food-grade ÷ pharma-grade installed cost | Multiplier on $\text{CAPEX}_{\text{ref}}$ when using food-grade |
 
 #### WACC Justification
 
@@ -985,7 +1015,7 @@ and reports $C_{ik^*}$ and all components and inputs of the chosen mode.
 
 The mode weights are unused in this setting. The page shows the selected shares and the share of worlds where feasibility, not cost, decides the mode (the cheapest mode overall is infeasible). The JSON export records both. The override toggle for process-mode constraints disables selection, with a warning.
 
-**Default feasibility.** With default priors fed-batch is almost never the cheapest mode in a world (it is cheaper than continuous in about 0.4% of worlds), and continuous is cheaper than perfusion in about 84% of worlds. Selection then acts roughly like a fallback chain, so $P(\text{continuous}) \approx q_C$, $P(\text{perfusion}) \approx (1-q_C)q_P$ and $P(\text{fed-batch}) \approx (1-q_C)(1-q_P)$. The defaults 0.70/0.30 reproduce the 20/50/30 weights this way and give nearly the same costs (seed 42, 30,000 draws: median \$210 vs \$213 per kg dry cell mass; \$42.1 vs \$42.6 on the wet basis). They are a bridge from the old setting, not elicited values. With every mode always feasible, continuous is chosen in 84% of worlds and the median falls to about \$115 per kg dry (\$23 wet), so the result hinges on $q_C$. Because the dry and wet bases differ by a fixed factor, the choice of mode is the same on either basis.
+**Default feasibility.** With default priors fed-batch is almost never the cheapest mode in a world (it is cheaper than continuous in about 0.4% of worlds), and continuous is cheaper than perfusion in about 84% of worlds. Selection then acts roughly like a fallback chain, so $P(\text{continuous}) \approx q_C$, $P(\text{perfusion}) \approx (1-q_C)q_P$ and $P(\text{fed-batch}) \approx (1-q_C)(1-q_P)$. The defaults 0.70/0.30 reproduce the 20/50/30 weights this way and give nearly the same costs (engine `2026-10-29.1`, seed 42, 30,000 draws: median \$210 vs \$213 per kg dry cell mass; \$42.1 vs \$42.6 on the wet basis). They are a bridge from the old setting, not elicited values. With every mode always feasible, continuous is chosen in 84% of worlds and the median falls to about \$115 per kg dry (\$23 wet), so the result hinges on $q_C$. Because the dry and wet bases differ by a fixed factor, the choice of mode is the same on either basis.
 
 **Caveats.**
 

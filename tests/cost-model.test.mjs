@@ -88,7 +88,7 @@ test('yield media rule derives L/kg from nutrient yield and is invariant to dens
   const r = simulate(n, 42, {media_use_model: 'yield'});
   // Per kg dry cell mass, litres = 1000 / (g dry cells per litre of medium).
   r.L_per_kg_samples.forEach((l, i) => assert.ok(close(l, 1000 / r.nutrient_yield_samples[i])));
-  assert.ok(Math.abs(model.quantile(r.nutrient_yield_samples, 0.5) - Math.sqrt(3 * 25)) < 1);
+  assert.ok(Math.abs(model.quantile(r.nutrient_yield_samples, 0.5) - Math.sqrt(3 * 30)) < 1);
   // Changing density moves capital but not medium, unlike the density rule.
   const dense = simulate(n, 42, {media_use_model: 'yield', ep_density_p10: 30, ep_density_p90: 40});
   assert.deepEqual(dense.cost_media, r.cost_media);
@@ -96,7 +96,7 @@ test('yield media rule derives L/kg from nutrient yield and is invariant to dens
   // Only the medium volume changes relative to the default rule; other components are paired.
   const base = simulate(n, 42, {});
   for (const k of ['supp_protein', 'other_var', 'capex', 'fixed']) assert.deepEqual(base['cost_' + k], r['cost_' + k]);
-  assert.equal(base.nutrient_yield_samples, null);
+  assert.equal(simulate(n, 42, {nutrient_floor: false}).nutrient_yield_samples, null);
   // Medium per dry kg ignores the water content; per wet kg it scales with solids.
   const wetter = simulate(n, 42, {media_use_model: 'yield', solids_fraction: 0.1});
   wetter.L_per_kg_samples.forEach((l, i) => assert.ok(close(l, r.L_per_kg_samples[i])));
@@ -362,4 +362,33 @@ test('conventional-chicken reference is wholesale, ordered, and maps onto the dr
   assert.doesNotMatch(controls.chickenWholesaleNote({...basis, cost_basis: 'wet'}), /kg dry/);
   // Filler dearer than chicken puts the reference off the cost axis (pages then omit the line)
   assert.ok(controls.hybridToDry(c.central, {...basis, filler_cost: 5}) < 0);
+});
+
+test('physical-consistency pieces: nutrient floor, losses, seed train, oxygen cap', () => {
+  const on = simulate(n, 42, {});
+  const noFloor = simulate(n, 42, {nutrient_floor: false});
+  // The floor never lowers medium use, and binds where density-derived medium is below it.
+  on.L_per_kg_samples.forEach((l, i) => assert.ok(l >= noFloor.L_per_kg_samples[i] - 1e-9));
+  on.L_per_kg_samples.forEach((l, i) => assert.ok(l >= 1000 / on.nutrient_yield_samples[i] - 1e-9));
+  assert.ok(on.nutrient_floor_binding_share > 0 && on.nutrient_floor_binding_share < 1);
+  // Losses scale in-house costs by the loss factor, and leave a CDMO toll alone.
+  const noLoss = simulate(n, 42, {include_losses: false});
+  on.loss_factor_samples.forEach(f => assert.ok(f >= 1));
+  on.cost_fixed.forEach((v, i) => assert.ok(close(v, noLoss.cost_fixed[i] * on.loss_factor_samples[i])));
+  const tollOn = simulate(n, 42, {cdmo_mode: true}), tollOff = simulate(n, 42, {cdmo_mode: true, include_losses: false});
+  assert.deepEqual(tollOn.cost_cdmo_toll, tollOff.cost_cdmo_toll);
+  assert.throws(() => simulate(10, 1, {recovery_loss_p95: 1}), RangeError);
+  // Seed train raises capital only; fed-batch worlds get the larger share.
+  const noSeed = simulate(n, 42, {include_seed_train: false});
+  on.cost_capex.forEach((v, i) => assert.ok(v >= noSeed.cost_capex[i] - 1e-9));
+  assert.deepEqual(on.cost_fixed, noSeed.cost_fixed);
+  const fb = simulate(n, 42, {p_fedbatch: 1, p_perfusion: 0, p_continuous: 0});
+  const ct = simulate(n, 42, {p_fedbatch: 0, p_perfusion: 0, p_continuous: 1});
+  assert.ok(model.quantile(fb.seed_share_samples, 0.5) > model.quantile(ct.seed_share_samples, 0.5));
+  assert.ok(model.quantile(ct.failure_samples, 0.5) > model.quantile(fb.failure_samples, 0.5));
+  // Oxygen cap is opt-in: off, densities are untouched; on, none exceeds the cap's upper tail.
+  const o2 = simulate(n, 42, {oxygen_cap: true});
+  assert.deepEqual(noFloor.density_samples, on.density_samples);
+  assert.ok(on.oxygen_limited_share > 0);
+  o2.density_samples.forEach((d, i) => assert.ok(d <= on.density_samples[i] + 1e-9));
 });

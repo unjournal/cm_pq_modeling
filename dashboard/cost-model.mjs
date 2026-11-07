@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-10-29.1";
+export const MODEL_VERSION = "2026-11-07.1";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -34,7 +34,21 @@ export const DEFAULT_PARAMS = Object.freeze({
   cell_inclusion_rate: 0.25, filler_cost: 3,
   include_harvest_dewater: false, harvest_dewater_p5: 2.5, harvest_dewater_p95: 15,
   // media_use_model "yield": grams of cell solids per litre of medium consumed.
-  nutrient_yield_p5: 3, nutrient_yield_p95: 25
+  nutrient_yield_p5: 3, nutrient_yield_p95: 30,
+  // Physical-consistency pieces (November 7, 2026; provisional, pending expert review).
+  // nutrient_floor: with the density model, medium per kg is at least 1000 ÷ nutrient yield.
+  nutrient_floor: true,
+  // Recovery losses (fraction of harvested biomass lost in harvest/wash/dewater) and
+  // failed or contaminated runs (expected fraction of output lost), mode-specific.
+  include_losses: true, recovery_loss_p5: 0.01, recovery_loss_p95: 0.15,
+  failure_fedbatch_p5: 0.005, failure_fedbatch_p95: 0.08,
+  failure_perfusion_p5: 0.02, failure_perfusion_p95: 0.15,
+  failure_continuous_p5: 0.03, failure_continuous_p95: 0.20,
+  // Seed-train capital as a share of production-train capital, mode-specific.
+  include_seed_train: true, seed_fedbatch_p5: 0.05, seed_fedbatch_p95: 0.25,
+  seed_long_run_p5: 0.01, seed_long_run_p95: 0.06,
+  // Oxygen-transfer cap on sustainable dry cell density (g dry/L); opt-in.
+  oxygen_cap: false, max_density_o2_p5: 12, max_density_o2_p95: 60
 });
 
 // Review-driven structural alternatives. These are scenario choices, not new evidence.
@@ -42,12 +56,14 @@ export const REVIEW_PROVENANCE = Object.freeze({
   quantiles: "Report 5, Belief elicitation: preserve p10/p50/p90. Two-piece lognormal; tails remain assumed.",
   dependence: "Reports 5 and 6, dependence sensitivity. Independent maturity draws per channel retain each channel's marginal distribution; other process/accounting dependencies remain.",
   media: "Report 5, media identity critique. Direct fresh L/kg separates media throughput from harvest density. 40–300 L per kg dry cell mass p5–p95 (8–60 L per wet kg at 20% solids) is an illustrative stress range, not an elicited or fitted prior.",
-  media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per kg dry cell mass = 1000 ÷ yield (g dry cells per L of medium consumed). 3–25 g/L p5–p95 is illustrative, chosen so that it implies about 40–330 L per dry kg (8–67 per wet kg at 20% solids), close to the direct stress range; not elicited or fitted.",
+  media_yield: "October 26, 2026 design decision; two independent reviewers argue medium used per kg depends on nutrient yield and is roughly invariant to density. L per kg dry cell mass = 1000 ÷ yield (g dry cells per L of medium consumed). November 7, 2026: p5–p95 widened from 3–25 to 3–30 g/L (median about 9.5). Low end: Pasitka et al. 2024 pilot (1.7 kg wet cells from 110 L, about 3–5 g dry/L) and amino-acid content of real media (DMEM/F12 1.1 g/L, FSF4 and Believer 3.6 g/L, modified CHO 7.2 g/L; GFI amino-acid report, Dec 2025) against Humbird 2021's requirement of about 0.9 g amino acids and 1.2 g glucose per g dry cells. Upper tail: concentrated feeds, as in CE Delft 2021's 8–13 L/kg scenarios (about 15–38 g dry/L), which imply amino-acid concentrations 3–9× those of current media. Not elicited; provisional.",
+  physical: "November 7, 2026 (David Reinstein's decision; AI-researched ranges, provisional, pending engineering review). Nutrient floor: with the density model, fresh medium per kg cannot fall below what the nutrients in it can build (1000 ÷ nutrient yield L per kg dry). Recovery losses 1–15% p5–p95 (Negulescu et al. 2023 assume 2%, Brenner et al. 2026 5%; both assumptions, not data). Failed runs per mode: fed-batch 0.5–8% (BioPlan survey: 7.6% total batch failure at ≥1,000 L, 2.3% from contamination; Humbird 2021 cites about 2%), perfusion 2–15% (Pollock, Ho & Farid 2013: about 6% contamination plus 2% filter failure over a 60-day run; Lim et al. 2006: 10% plus fouling), continuous 3–20% (longer runs). Seed train capital as a share of production-train capital: fed-batch 5–25% (Humbird 2021 design: seed reactors 67% of production-reactor cost, about 14% of total capital), perfusion/continuous 1–6% (one inoculation serves a long run). Oxygen cap (opt-in): sustainable dry density 12–60 g/L p5–p95, from maximum oxygen transfer of about 13–25 mmol/L/h in large shear-limited reactors (Humbird 2021; Negulescu et al. 2023) and uptake of about 0.3–0.9 mmol O2 per g dry cells per hour (Humbird; CHO data; no measurements for meat cells).",
   gf: "Report 5, dosage coherence. GF g/kg = fresh L/kg × mg/L / 1000 × regime dose fraction. 0.102 mg/L reuses the earlier engine's formulation assumption; 0.4 is a rounded approximation to its cheap/expensive median-dose ratio, not a measured retention estimate.",
-  basis: "October 26, 2026 design decision (David Reinstein). Cost per wet kg is not a stable unit, so the primary basis is kg dry cell mass, with cost per kg protein (÷ protein share) and a chicken-meat equivalent (× target solids) alongside; the earlier wet-basis output is available with cost_basis \"wet\". 0.20 solids, used to convert wet-basis sources, built-in priors and plant capacity, matches the 80%-water reference in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of dry cell mass is an unverified placeholder. Recovery losses are not modeled.",
+  basis: "October 26, 2026 design decision (David Reinstein). Cost per wet kg is not a stable unit, so the primary basis is kg dry cell mass, with cost per kg protein (÷ protein share) and a chicken-meat equivalent (× target solids) alongside; the earlier wet-basis output is available with cost_basis \"wet\". 0.20 solids, used to convert wet-basis sources, built-in priors and plant capacity, matches the 80%-water reference in the CM_01 question; 0.275 is the midpoint of the 25–30% placeholder; 0.65 protein share of dry cell mass is an unverified placeholder. Recovery losses are modeled separately since November 7, 2026 (include_losses).",
   hybrid: "October 29, 2026 design decision (David Reinstein). Products will not be made entirely of cultivated cells, so the reader-facing comparison is a hybrid product: 25% cultivated cells at chicken-meat moisture plus 75% plant-based ingredients at $3/kg (ingredient cost only; forming, packaging and margins excluded). There is no consensus inclusion rate: GOOD Meat 3 (Singapore, 2024) is 3% cells, and hybrids are usually described as 20–50% non-meat. 25% and $3/kg were the dashboard's existing blend defaults; both are conventions, adjustable on the Advanced page.",
   harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $2.50–15/kg dry p5–p95 range ($0.50–3.00 per wet kg at 20% solids) is a placeholder until values from the planned process model are available (see docs); off by default.",
-  mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific equipment, consumable and contamination costs are not modeled, so selection favors the least-specified modes."
+  mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific failure rates and seed-train capital are modeled since November 7, 2026; cell-retention equipment, consumables and extra medium throughput are not, so selection still favors the least-specified modes.",
+  reactor: "November 7, 2026: custom (food-grade, aseptic but not cGMP) reactor cost ratio changed from 0.35–0.85 to 0.15–0.55 of pharma-grade (mean 0.35). Humbird 2020 preprint Table 3.1 (Petrides): installed cost of an aseptic non-cGMP 20 m³ vessel is about 0.34 of a cGMP mammalian one (about 0.5 for the vessel alone); sanitary brewing vessels about 0.05, but Humbird argues animal-cell culture must stay aseptic. The low end allows for low-cost custom designs (company claims: Meatly, Vow). Provisional."
 });
 
 export function gfPriceRanges(progress) {
@@ -302,6 +318,8 @@ function selectLeastCostMode(n, seed, params) {
     effective_params: params,
     warnings: [...new Set(runs.flatMap(r => r.warnings))],
     mode_is_override: false,
+    // Per-run diagnostics would describe one mode's run, not the chosen mix.
+    nutrient_floor_binding_share: null, oxygen_limited_share: null,
     pct_fedbatch: share(0), pct_perfusion: share(1), pct_continuous: share(2),
     mode_selection_stats: {
       feasible_share: Object.fromEntries(PROCESS_MODES.map((m, k) => [m, feasible[k].filter(Boolean).length / n])),
@@ -335,7 +353,15 @@ function simulateDrawnMode(n, seed, params) {
   if (!Number.isFinite(params.filler_cost) || params.filler_cost < 0)
     throw new RangeError("filler_cost must be zero or more.");
   if (params.include_harvest_dewater) validateRange(params.harvest_dewater_p5, params.harvest_dewater_p95);
-  if (params.media_use_model === "yield") validateRange(params.nutrient_yield_p5, params.nutrient_yield_p95);
+  if (params.media_use_model === "yield" || params.nutrient_floor) validateRange(params.nutrient_yield_p5, params.nutrient_yield_p95);
+  if (params.include_losses) {
+    for (const key of ["recovery_loss", "failure_fedbatch", "failure_perfusion", "failure_continuous"]) {
+      validateRange(params[`${key}_p5`], params[`${key}_p95`]);
+      if (params[`${key}_p95`] >= 1) throw new RangeError(`${key} must be below 1.`);
+    }
+  }
+  if (params.include_seed_train) for (const key of ["seed_fedbatch", "seed_long_run"]) validateRange(params[`${key}_p5`], params[`${key}_p95`]);
+  validateRange(params.max_density_o2_p5, params.max_density_o2_p95);
   if (!Number.isFinite(params.gf_concentration_mg_L) || params.gf_concentration_mg_L < 0
       || !Number.isFinite(params.gf_cheap_dose_fraction) || params.gf_cheap_dose_fraction < 0 || params.gf_cheap_dose_fraction > 1)
     throw new RangeError("GF concentration must be nonnegative and dose fraction between 0 and 1.");
@@ -430,17 +456,30 @@ function simulateDrawnMode(n, seed, params) {
     density_gL = dryToWetDensity(sampleExpertPrior(rng, params, "density", n));
   }
 
+  // Oxygen-transfer cap (opt-in): sustainable dry density is limited by how much oxygen
+  // a large reactor can supply. Always drawn, so the share of worlds above it is reported.
+  const max_density_o2 = dryToWetDensity(sampleLognormalP5P95(namedStream(seed, "oxygen-cap"),
+    params.max_density_o2_p5, params.max_density_o2_p95, n));
+  const oxygen_limited = density_gL.map((d, i) => d > max_density_o2[i]);
+  if (params.oxygen_cap) density_gL = density_gL.map((d, i) => Math.min(d, max_density_o2[i]));
+
   // "yield": medium consumed per kg follows from how much dry cell mass the nutrients
   // in a litre support, independent of how concentrated the cells are at harvest.
-  const nutrient_yield = params.media_use_model === "yield"
+  // With the density model, nutrient_floor uses the same draw as a lower bound.
+  const useYield = params.media_use_model === "yield" || (params.media_use_model === "density" && params.nutrient_floor);
+  const nutrient_yield = useYield
     ? sampleLognormalP5P95(namedStream(seed, "nutrient-yield"), params.nutrient_yield_p5, params.nutrient_yield_p95, n)
     : null;
+  const L_nutrient = useYield ? nutrient_yield.map(y => 1000 * s / y) : null;
   // L_per_kg here is per kg wet biomass; the dry figure is returned.
+  const L_density = mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
   const L_per_kg = params.media_use_model === "direct"
     ? dryToWetPerKg(sampleLognormalP5P95(namedStream(seed, "fresh-media"), params.fresh_media_p5, params.fresh_media_p95, n))
     : params.media_use_model === "yield"
-    ? nutrient_yield.map(y => 1000 * s / y)
-    : mul(div(density_gL.map(_ => 1000), density_gL), media_turnover);
+    ? L_nutrient
+    : params.nutrient_floor ? L_density.map((l, i) => Math.max(l, L_nutrient[i])) : L_density;
+  const nutrient_floor_binding = params.media_use_model === "density" && params.nutrient_floor
+    ? L_density.filter((l, i) => l < L_nutrient[i]).length / n : null;
 
   rng = namedStream(seed, "media");
   // Media cost ($/L of basal media, including vitamins/minerals/trace salts,
@@ -571,6 +610,7 @@ function simulateDrawnMode(n, seed, params) {
   rng = namedStream(seed, "finance");
   // CAPEX calculation (skipped in CDMO mode — CDMO bears the capital)
   let capex_perkg = new Array(n).fill(0);
+  let seed_share_out = new Array(n).fill(0);
   // Pre-allocate WACC and asset-life sample arrays so they exist for the
   // tornado chart even when CAPEX is excluded (in those cases they're
   // sampled here purely for the sensitivity export, with no cost effect).
@@ -582,7 +622,8 @@ function simulateDrawnMode(n, seed, params) {
     const prod_kg_L_day = div(scale(density_gL, 1/1000), cycle_days);
     const total_working_volume_L = div(nameplate_kgpy, scale(prod_kg_L_day, 365));
     const reactor_cost_L_pharma = sampleLognormalP5P95(rng, 50, 500, n);
-    const custom_ratio = sampleUniform(rng, 0.35, 0.85, n);
+    // Food-grade (aseptic, not cGMP) ÷ pharma-grade installed cost; see REVIEW_PROVENANCE.reactor.
+    const custom_ratio = sampleUniform(rng, 0.15, 0.55, n);
     let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
     custom_share = clip(add(custom_share, scale(equipmentMaturity.map(m => m - 0.5), 0.30)), 0, 1);
 
@@ -594,8 +635,17 @@ function simulateDrawnMode(n, seed, params) {
     const plant_factor = sampleLognormalP5P95(rng, 1.5, 3.5, n);
     const V_ref = 1e6;
 
+    // Seed train: extra capital as a share of the production train; long runs share
+    // one seed train across many reactor-days, so the share is smaller.
+    const seedRng = namedStream(seed, "seed-train");
+    const seed_fb = sampleLognormalP5P95(seedRng, params.seed_fedbatch_p5, params.seed_fedbatch_p95, n);
+    const seed_long = sampleLognormalP5P95(seedRng, params.seed_long_run_p5, params.seed_long_run_p95, n);
+    const seed_share = mode_labels.map((m, i) => !params.include_seed_train ? 0 : m === "fedbatch" ? seed_fb[i] : seed_long[i]);
+    seed_share_out = seed_share;
+
     const capex_total = reactor_cost_L_avg.map((r, i) =>
       r * total_working_volume_L[i] * Math.pow(total_working_volume_L[i] / V_ref, capex_s[i] - 1) * plant_factor[i]
+        * (1 + seed_share[i])
     );
 
     // Re-use the pre-sampled wacc/asset_life so the tornado chart has access
@@ -638,8 +688,34 @@ function simulateDrawnMode(n, seed, params) {
     harvest_perkg = dryToWetPerKg(sampleLognormalP5P95(rng, params.harvest_dewater_p5, params.harvest_dewater_p95, n));
   }
 
+  // Recovery losses and failed runs: inputs, capacity and overhead are spent on biomass
+  // that is never delivered, so each in-house cost per delivered kg rises by
+  // 1 / ((1 − recovery loss) × (1 − failure share)). A CDMO toll is per delivered kg and
+  // forming is downstream, so neither is scaled.
+  const lossRng = namedStream(seed, "losses");
+  const recovery_loss = sampleLognormalP5P95(lossRng, params.recovery_loss_p5, params.recovery_loss_p95, n);
+  const fail_fb = sampleLognormalP5P95(lossRng, params.failure_fedbatch_p5, params.failure_fedbatch_p95, n);
+  const fail_pf = sampleLognormalP5P95(lossRng, params.failure_perfusion_p5, params.failure_perfusion_p95, n);
+  const fail_ct = sampleLognormalP5P95(lossRng, params.failure_continuous_p5, params.failure_continuous_p95, n);
+  // An expert override of density or mode constraints uses the perfusion range.
+  const failure = mode_labels.map((m, i) => m === "fedbatch" ? fail_fb[i] : m === "continuous" ? fail_ct[i] : fail_pf[i]);
+  const loss_factor = params.include_losses
+    ? recovery_loss.map((r, i) => 1 / ((1 - Math.min(r, 0.9)) * (1 - Math.min(failure[i], 0.9))))
+    : new Array(n).fill(1);
+  if (params.include_losses) {
+    // Direct $/kg expert priors are taken as all-in costs per delivered kg.
+    if (params.ep_media_p10 == null) cost_media_eff = mul(cost_media_eff, loss_factor);
+    if (params.ep_gf_p10 == null) cost_recf_eff = mul(cost_recf_eff, loss_factor);
+    cost_supp_protein = mul(cost_supp_protein, loss_factor);
+    capex_perkg = mul(capex_perkg, loss_factor);
+    fixed_perkg = mul(fixed_perkg, loss_factor);
+    harvest_perkg = mul(harvest_perkg, loss_factor);
+  }
+  const other_var_eff = mul(other_var, loss_factor);
+  const voc_eff = add(add(add(cost_media_eff, cost_recf_eff), cost_supp_protein), other_var_eff);
+
   // Total unit cost per kg wet biomass at solids fraction s
-  const unit_cost_wet = add(add(add(add(add(voc, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg), harvest_perkg);
+  const unit_cost_wet = add(add(add(add(add(voc_eff, capex_perkg), fixed_perkg), cdmo_toll_perkg), downstream_perkg), harvest_perkg);
   // Reported per-kg quantities: per kg dry cell mass (default) or per wet kg. A fixed
   // rescaling, so least-cost mode selection on unit_cost is unaffected by the basis.
   const out = params.cost_basis === "dry" ? 1 / s : 1;
@@ -660,7 +736,7 @@ function simulateDrawnMode(n, seed, params) {
     cost_media: scale(cost_media_eff, out),
     cost_recf: scale(cost_recf_eff, out),
     cost_supp_protein: scale(cost_supp_protein, out),
-    cost_other_var: scale(other_var, out),
+    cost_other_var: scale(other_var_eff, out),
     cost_capex: scale(capex_perkg, out),
     cost_fixed: scale(fixed_perkg, out),
     cost_cdmo_toll: scale(cdmo_toll_perkg, out),
@@ -688,6 +764,15 @@ function simulateDrawnMode(n, seed, params) {
     media_turnover_samples: media_turnover,
     L_per_kg_samples: scale(L_per_kg, out),
     nutrient_yield_samples: nutrient_yield,
+    // Physical-consistency diagnostics and draws (November 7, 2026)
+    loss_factor_samples: loss_factor,
+    recovery_loss_samples: recovery_loss,
+    failure_samples: failure,
+    seed_share_samples: seed_share_out,
+    // Share of worlds where the nutrient floor sets medium use (density model only),
+    // and share whose drawn density exceeds the oxygen limit (capped only if oxygen_cap).
+    nutrient_floor_binding_share: nutrient_floor_binding,
+    oxygen_limited_share: oxygen_limited.filter(Boolean).length / n,
     media_cost_L_samples: media_cost_L_eff,
     is_hydro_samples: is_hydro.map(x => x ? 1 : 0),
     is_recf_cheap_samples: is_recf_cheap.map(x => x ? 1 : 0),
