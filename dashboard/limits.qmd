@@ -99,7 +99,7 @@ Because the target no longer conditions on commercialization happening, the mode
 
 The [CM_01 Metaculus question](https://www.metaculus.com/c/unjournal/38815/) keeps its older wording: the average production cost "across all large-scale plants in the world", wet weight at harvest, 2025 dollars, resolved by asking an AI model about current costs. That is an actual-outcome average, so it is neither the unconditional hypothetical framing nor the best-plant target. We have not changed it.
 
-**Parity reference. Resolved on the dashboard (5 November 2026).** The team hub's parity reference for conventional chicken (about \$9–10/kg) was a retail price: roughly the US retail price of boneless chicken breast (\$4.20/lb, \$9.27/kg in September 2026). David Reinstein decided to compare the factory-gate cost with conventional chicken at the same point in the supply chain. The dashboard now uses the US **wholesale** price of boneless chicken breast: \$3.50/kg, the average from September 2022 to September 2026 in 2026 dollars, range \$2.6–4.6/kg (10th–90th percentile of months), from USDA ERS/AMS ([details and sources](docs.qmd#chicken-comparison)). The first version (5 November) used the 12-month average, \$2.94, which was revised on 6 November because it falls in a cyclical low. Both model pages show the share of draws below the reference and mark it on the main cost charts; the \$5–\$50 thresholds stay as illustrative cost levels. At the defaults 0.007% of draws are below it. Still open: the team hub and workshop pages quote the retail figure, and the [demand page](demand.qmd) calculator still uses retail prices (see below).
+**Parity reference. Resolved on the dashboard (5 November 2026).** The team hub's parity reference for conventional chicken (about \$9–10/kg) was a retail price: roughly the US retail price of boneless chicken breast (\$4.20/lb, \$9.27/kg in September 2026). David Reinstein decided to compare the factory-gate cost with conventional chicken at the same point in the supply chain. The dashboard now uses the US **wholesale** price of boneless chicken breast: \$3.50/kg, the average from September 2022 to September 2026 in 2026 dollars, range \$2.6–4.6/kg (10th–90th percentile of months), from USDA ERS/AMS ([details and sources](docs.qmd#chicken-comparison)). The first version (5 November) used the 12-month average, \$2.94, which was revised on 6 November because it falls in a cyclical low. Both model pages show the share of draws below the reference and mark it on the main cost charts; the \$5–\$50 thresholds stay as illustrative cost levels. At the defaults no draw is below it (engine `2026-11-07.2`; 0.007% before November 7). Still open: the team hub and workshop pages quote the retail figure, and the [demand page](demand.qmd) calculator still uses retail prices (see below).
 
 This distinction also matters when comparing the model with the workshop beliefs and Pablo AMC's more frontier-oriented interpretation of the TEAs.
 
@@ -219,6 +219,24 @@ If there is enough interest from participants — and if we secure resources —
 - **Trained facilitator** — in structured expert elicitation (e.g., SHELF protocol)
 
 If you're interested in participating in or helping lead this, please say so in the [beliefs form](https://uj-cm-workshop.netlify.app/beliefs.html) ("About You" section) or email [contact@unjournal.org](mailto:contact@unjournal.org).
+
+::: {.callout-note collapse="true"}
+## Lessons from building this model with AI tools {#lessons}
+
+AI coding assistants (Claude, Codex) wrote most of this model under David Reinstein's direction, and most of the critiques above were AI-generated too. Looking back over the version history in November 2026, the costliest mistakes were judgment calls, not coding slips:
+
+1. **The target was pinned down late.** Wet versus dry mass, conditional versus unconditional, best plant versus average, factory gate versus retail: all settled only in October–November 2026. Until then the comparison with retail chicken (about 2.6 times the wholesale price) flattered cultivated meat. Fix the quantity, unit and comparison point before building controls.
+2. **Favourable assumptions could combine freely.** Medium use fell automatically with density, growth-factor dose ignored medium use, and losses, failed runs and seed trains were missing. Adding provisional versions of these in November raised the default median by about 30% and halved the share of draws under \$10/kg hybrid. Check physical consistency before eliciting more priors.
+3. **One made-up factor drove the dependence.** A single "maturity" variable with chosen loadings linked biology, supply chains, equipment and financing.
+4. **Accounting errors survived the workshop.** Idle plants shed their capital, vitamins and minerals were counted twice, and the Simple and Advanced pages ran different calculations while claiming to match. A shared, tested engine caught these in September 2026; it should have come first.
+5. **Claims ran ahead of the evidence.** The sensitivity text once claimed variance shares the method can't measure, some citations named the wrong authors, and developer-chosen ranges read as if they were sourced. Many still are placeholders; the [parameter grounding](#parameter-grounding) section says which.
+6. **Patching instead of redesigning.** Hundreds of comment-driven fixes added caveats and sliders while the structural problems stayed. AI critiques of an AI-built model don't replace review by engineers and cell-culture experts.
+7. **Numbers in prose go stale.** Figures quoted in the text lagged engine changes by weeks; `scripts/sensitivity-prose-figures.mjs` now regenerates the sensitivity page's figures.
+
+The [workshop-era model](archive/workshop-2026-05-08/) preserves the May 2026 version, errors included.
+
+*AI-drafted (Claude, 9 November 2026) from the repository history; not yet reviewed by a person.*
+:::
 
 ---
 
