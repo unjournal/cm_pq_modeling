@@ -11,8 +11,8 @@ const variants = {
 // Pinned to the wet basis so the figures quoted on the September review pages stay
 // comparable; the engine default has been per kg dry cell mass since 2026-10-26.4.
 function summarize(n, seed, overrides) {
-  // Also pinned to the pre-November-7 structure (no nutrient floor, losses or seed train); the custom reactor ratio changed on 2026-11-07 and cannot be pinned, so rerunning shifts these figures by about 2%.
-  const r = simulate(n, seed, {cost_basis: 'wet', nutrient_floor: false, include_losses: false, include_seed_train: false, ...overrides});
+  // Also pinned to the pre-November-7 structure (no nutrient floor, losses or seed train, and the separate GF dose prior that was the default until 2026-11-09.1); the custom reactor ratio changed on 2026-11-07 and cannot be pinned, so rerunning shifts these figures by about 2%.
+  const r = simulate(n, seed, {cost_basis: 'wet', nutrient_floor: false, include_losses: false, include_seed_train: false, gf_dose_model: 'per_kg', ...overrides});
   return {n, seed, p50: quantile(r.unit_cost, .5), p90: quantile(r.unit_cost, .9),
     p95: quantile(r.unit_cost, .95), mean: mean(r.unit_cost),
     p_under10: mean(r.unit_cost.map(c => +(c < 10))),

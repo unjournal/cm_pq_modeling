@@ -342,7 +342,9 @@ export function displayedInputs(results, params) {
     media_turnover: p.media_use_model === "density" && mediaVolumeActive,
     media_cost_L: !mediaOverride,
     price_recf: !p.bundled_media && !gfOverride,
-    g_recf: !p.bundled_media && !gfOverride,
+    // With the medium-linked dose (default since 2026-11-09.1) GF quantity is L/kg × a fixed
+    // concentration × the GF regime, so it is derived, not drawn: medium-use and GF-price bars cover it.
+    g_recf: !p.bundled_media && !gfOverride && p.gf_dose_model === "per_kg",
     maturity: p.dependence_mode === "shared",
     wacc: capitalActive, asset_life: capitalActive, cycle_days: capitalActive,
     plant_kta: capitalActive || (!p.cdmo_mode && p.include_fixed_opex),

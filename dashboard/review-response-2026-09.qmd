@@ -9,7 +9,7 @@ format:
         <script src="https://hypothes.is/embed.js" async></script>
 ---
 
-This page records the response to two supplied research reports and the resulting model changes. Discussion responses were provided before implementation. The changes were implemented with AI assistance and have not received independent scientific review. [Open the model](index.qmd) or [its structural comparisons](index.qmd#structural-comparison).
+This page records the response to two supplied research reports and the resulting model changes. Discussion responses were provided before implementation. The changes were implemented with AI assistance and have not received independent scientific review. [Open the model](index.qmd) or [its structural comparisons](index.qmd#structural-comparison). Later corrections are logged [at the end of this page](#corrections-2026-11-09).
 
 ::: {.callout-note collapse="true"}
 ## Report provenance and source key
@@ -71,7 +71,7 @@ $$
 g_{GF}/kg=(L_{fresh}/kg)\times c_{GF}\;(mg/L)/1000\times f_{regime}.
 $$
 
-The expensive regime uses $f=1$; the cheap regime initially uses 0.4. Both concentration and cheap-regime dose fraction are editable. Multiplying by the existing price draw gives GF $/kg.
+The expensive regime uses $f=1$; the cheap regime initially uses 0.4. Both concentration and cheap-regime dose fraction are editable. Multiplying by the existing price draw gives GF $/kg. *Since November 9, 2026 this is the default, not a stress test; see [the correction below](#corrections-2026-11-09).*
 
 **Provenance and justification:** concentration 0.102 mg/L reuses the earlier engine's aggregate formulation assumption; it has not been revalidated for all processes. The 0.4 dose fraction rounds the earlier cheap/expensive median-dose ratio (approximately 0.408). It is a scenario assumption, not an estimated recycling or retention efficiency. This alternative makes dosage respond to realized medium consumption. It does not establish biological feasibility or a protein-specific price basket. A direct GF $/kg prior or complete-medium accounting takes precedence, with a visible note.
 
@@ -128,3 +128,20 @@ Automated checks cover accounting identities, utilization, complete-medium prece
 At baseline settings with 30,000 draws and seed 42, median cost is **$42.62/kg**, identical draw-for-draw to the previous engine. Independent maturity channels give **$42.57/kg**. The illustrative direct-media range gives **$34.49/kg**, while media-linked GF dosage alone gives **$41.05/kg** and increases p90 from **$159.79 to $191.30/kg**. The media alternatives change their input assumptions as well as the equation. These values are scenario comparisons, not updated forecasts.
 
 Across seeds 42, 7, and 99 at 30,000 draws, the baseline p50 ranges from **$42.20 to $42.62/kg** and p95 from **$228.43 to $232.77/kg**. The small maturity-comparison difference should be read in light of simulation variability. [Download the numerical audit](review-2026-09-17-audit.json) for all variants, sample-size checks, input settings, and engine SHA-256.
+
+## Corrections, 9 November 2026 {#corrections-2026-11-09}
+
+*AI-implemented (Claude) at David Reinstein's request after an audit of statistics errors in AI-assisted work. Not yet independently reviewed.*
+
+**1. Growth-factor dose was drawn independently of medium use (engine `2026-11-09.1`).** Growth factors are dissolved in the medium, so grams per kg should follow litres of medium per kg. The default instead drew grams per kg from a separate prior, so a simulated plant could use a lot of medium yet a small growth-factor dose, or the reverse. The medium-linked dose above, previously opt-in, is now the default: g per kg = fresh L per kg × 0.102 mg/L / 1000 × regime fraction (1, or 0.4 with cheap growth factors). Growth-factor cost per litre of medium is then concentration × price. The old rule remains available as *Growth-factor dosage → Separate g/kg prior*. A test (`tests/cost-model.test.mjs`, "default GF dose is linked to medium use") checks the identity draw by draw, the rank correlation of dose with medium use (above 0.999 within a price regime, against about zero under the old rule), and that doubling medium use doubles growth-factor cost. Defaults, seed 42, 30,000 draws, per kg dry cell mass and per kg of hybrid product (25% cells):
+
+| | 10th / 50th / 90th percentile, \$/kg dry | Mean, \$/kg dry | Median \$/kg hybrid | Under \$5 / \$10 / \$25 / \$50 hybrid |
+|---|---|---|---|---|
+| Before (`2026-11-07.2`, separate dose prior) | 107 / 276 / 920 | 444 | 21.25 | 0.14% / 11.6% / 58.2% / 84.0% |
+| After (`2026-11-09.1`, medium-linked dose) | 105 / 289 / 1,167 | 570 | 22.11 | 0.14% / 12.0% / 55.6% / 80.0% |
+
+Seed 7 gives the same figures to within \$2 at the median. The error did not uniformly flatter the result: it mainly understated the expensive tail (mean growth-factor cost roughly doubles, \$109 to \$235 per kg dry, because the model's medium use is higher than the 8–60 L per wet kg the separate prior assumed), while in the cheapest worlds it slightly overstated growth-factor cost, so the share under \$10/kg hybrid rises a little. Concentration is still a fixed value; its uncertainty is not represented. The tornado chart no longer shows growth-factor quantity as its own input, since it is now derived from medium use. Prose figures on the [docs](docs.qmd#gf-dose-linked), [sensitivity](sensitivity.qmd) and model pages, the offline Shapley table and the audit snapshot (`docs/model-audit-2026-11-09.json`) were regenerated for this engine. The September figures on this page are unchanged: `scripts/review-robustness.mjs` pins the separate dose prior so they stay comparable.
+
+**2. Stale text said process losses were not modeled.** Since engine `2026-11-07.1` the default includes recovery losses in harvest and washing (1–15%, 5th–95th percentile) and failed or contaminated runs by process mode, which divide in-house costs per delivered kg (median increase about 11%). Notes on the [Advanced](index.qmd#output-cautions) and [Simple](simple.qmd) result pages and two items in the [docs limitations list](docs.qmd) still said washing losses and contamination were not modeled. They now say what the engine does, with the switch (*Recovery losses and failed runs*, under *Structural stress tests*); the page notes compute the loss ranges and median increase from the engine instead of quoting them.
+
+**3. Retail prices beside production costs.** The cost pages have compared with US wholesale chicken since 5 November. The [demand calculator](demand.qmd) still compares with retail prices, because its price ratio stands in for what shoppers see. Its table now labels the conventional price as retail and the cultivated figure as a retail-equivalent (factory-gate production cost + scaffold + a stated add-on), states the add-on in use, and offers a button that sets it to chicken's own wholesale-to-retail gap (retail \$9.27 − wholesale \$3.50 per kg, computed from the values in `model-controls.mjs`). Its reference-cost buttons now read the current engine's default medians instead of quoting July and October figures. The team hub in Notion already quotes the wholesale reference (changed 5 November); its stale note that failed runs are not modeled per mode, and a decisions-log entry for these corrections, were updated there.

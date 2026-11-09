@@ -69,6 +69,10 @@ Corrections very welcome via [Hypothesis](https://hypothes.is/) — the annotati
 
 **Return to:** [Interactive Cost Model](index.qmd) | [TEA Comparison](compare.qmd) | [Learn](learn.qmd) | [Limits/Critique](limits.qmd)
 
+::: {.callout-important appearance="simple"}
+**Correction, 9 November 2026.** The calculator below compares cultivated meat with conventional **retail** prices. A cost from our model is a **factory-gate production cost**, so it is not comparable with a retail price until a factory-gate-to-retail add-on is included. The table now labels each column as retail or production cost, states the add-on it applies, and offers a button that sets the add-on to chicken's own wholesale-to-retail gap. The reference cost buttons now read the current model's defaults instead of quoting July and October figures. [Correction log](review-response-2026-09.qmd#corrections-2026-11-09).
+:::
+
 ## The two efforts focus on different aspects
 
 In July 2026 Pablo AMC published *["Cultivating hope: calibrating the expectations for
@@ -284,9 +288,10 @@ future factory-gate biomass cost; the comparison prices are approximate 2025 US 
 prices. It must be per kg of *product weight*: since October 26, 2026 the cost model's
 headline is per kg of dry cell mass (about five times a wet figure), so use its
 hybrid-product cost (25% cells at chicken-meat moisture plus 75% plant-based ingredients at
-\$3/kg; about \$17 at defaults) or, for an all-cell cut, the all-cell meat equivalent (dry cost
-× 27.5%; about \$59), not the dry-mass figure. The toy adds only scaffold (for cuts) plus a
-generic markup. It omits recovery yield, non-cell ingredients, formulation,
+\$3/kg) or, for an all-cell cut, the all-cell meat equivalent (dry cost × 27.5%), not the
+dry-mass figure; the buttons below load the current model's default medians for both. The
+toy adds only scaffold (for cuts) plus a generic markup *m*, which stands in for everything
+between the factory gate and the shelf. It omits recovery yield, non-cell ingredients, formulation,
 texturization, packaging, distribution, tax, retail margin, future conventional prices,
 and inflation. Until those are harmonized, the resulting price ratio and share are useful
 only for illustrating the mechanism.
@@ -299,7 +304,10 @@ average in 2026 dollars), against about \$9.27/kg at retail
 Here the price ratio stands in for what shoppers see, so it keeps retail prices for every
 species. The generic add-on below (default \$5/kg) is smaller than chicken's own
 wholesale-to-retail gap (about \$6–6.50/kg for boneless breast in 2026), so this calculator makes
-cultivated chicken look closer to parity than a like-for-like comparison would. A
+cultivated chicken look closer to parity than a like-for-like comparison would. For
+chicken, the button "Add-on = chicken's wholesale-to-retail gap" sets *m* to that gap, so
+both sides of the ratio carry the same markup. Note that the gap is a dollar amount for
+chicken breast; it is not a percentage margin and is not checked for other species. A
 wholesale-to-wholesale ratio, which needs wholesale prices for each species, is not yet
 implemented.
 :::
@@ -311,7 +319,7 @@ viewof cbio = Inputs.range([5, 120], {value: 42, step: 1, label: "Cultivated pro
 
 ```{ojs}
 //| echo: false
-viewof markup = Inputs.range([0, 10], {value: 5, step: 0.5, label: "Illustrative value-chain add-on m ($/kg)"})
+viewof markup = Inputs.range([0, 10], {value: 5, step: 0.25, label: "Factory-gate-to-retail add-on m ($/kg; Pablo's default $5)"})
 ```
 
 ```{ojs}
@@ -321,25 +329,43 @@ viewof scaffold_cut = Inputs.range([0, 12], {value: 6, step: 0.5, label: "Scaffo
 
 ```{ojs}
 //| echo: false
+currentModel = {
+  const cm = await import(new URL("./cost-model.mjs", window.location.href).href);
+  const mc = await import(new URL("./model-controls.mjs", window.location.href).href);
+  const r = cm.simulate(30000, 42);
+  const w = mc.CHICKEN_WHOLESALE;
+  return {version: cm.MODEL_VERSION, hybrid: cm.quantile(r.unit_cost_hybrid, 0.5), meat: cm.quantile(r.unit_cost_meat_equiv, 0.5),
+    retail: w.retail, wholesale: w.central, chickenGap: w.retail - w.central};
+}
+```
+
+```{ojs}
+//| echo: false
 {
-  const setC = (v) => {
-    viewof cbio.value = v;
-    viewof cbio.dispatchEvent(new Event("input", {bubbles: true}));
+  const setView = (view, v) => {
+    view.value = v;
+    view.dispatchEvent(new Event("input", {bubbles: true}));
   };
-  const btn = (label, v) => {
+  const btn = (label, view, v) => {
     const b = html`<button style="padding:5px 11px; font-size:12.5px; cursor:pointer; border:1px solid #2d4a2d; border-radius:6px; background:#2d4a2d; color:white;">${label}</button>`;
-    b.onclick = () => setC(v);
+    b.onclick = () => setView(view, v);
     return b;
   };
+  const c = currentModel;
   return html`<div style="margin:2px 0 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-    <span style="font-size:12.5px; color:#555;">Reference cost points — click to load:</span>
-    ${btn("Our model default p50 on 10 Jul, per wet kg ($42)", 42)}
-    ${btn("Our model default p5 on 10 Jul, per wet kg ($12)", 12)}
-    ${btn("Our model p50 on 29 Oct, hybrid product, 25% cells ($17)", 17)}
-    ${btn("Same, all cells at chicken-meat moisture ($59)", 59)}
-    ${btn("Pablo optimistic (~$25)", 25)}
-    ${btn("Pasitka best future (~$22)", 22)}
-  </div>`;
+    <span style="font-size:12.5px; color:#555;">Factory-gate production costs, click to load:</span>
+    ${btn(`Current model p50, hybrid product, 25% cells ($${c.hybrid.toFixed(1)})`, viewof cbio, Math.round(c.hybrid))}
+    ${btn(`Same, all cells at chicken-meat moisture ($${c.meat.toFixed(0)})`, viewof cbio, Math.round(c.meat))}
+    ${btn("Our model default p50 on 10 Jul, per wet kg ($42)", viewof cbio, 42)}
+    ${btn("Pablo optimistic (~$25)", viewof cbio, 25)}
+    ${btn("Pasitka best future (~$22)", viewof cbio, 22)}
+  </div>
+  <div style="margin:2px 0 12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+    <span style="font-size:12.5px; color:#555;">Factory-gate-to-retail add-on:</span>
+    ${btn(`Add-on = chicken's wholesale-to-retail gap ($${c.chickenGap.toFixed(2)})`, viewof markup, Math.round(c.chickenGap * 4) / 4)}
+    ${btn("Pablo's $5", viewof markup, 5)}
+  </div>
+  <p style="font-size:12px; color:#666; margin:0 0 10px;">Current model: engine ${c.version}, default settings, seed 42, 30,000 draws; medians per kg of product weight, factory gate, mixed source-year dollars. Chicken gap: US retail boneless breast $${c.retail.toFixed(2)}/kg (BLS, Sep 2026) minus wholesale $${c.wholesale.toFixed(2)}/kg (USDA, 2022–26 average in 2026 dollars).</p>`;
 }
 ```
 
@@ -389,9 +415,9 @@ html`<div style="overflow-x:auto; max-width:100%;">
 <table style="width:100%; min-width:620px; border-collapse:collapse; font-size:13.5px; margin:8px 0;">
 <thead><tr>
   <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="The conventional product cultivated meat would compete with, and its product form (mince = ground/paste, no scaffold needed; cut = whole muscle, needs a scaffold; luxury = premium/prestige)."><span class="th-hint">Product (form)</span></th>
-  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Approximate 2025 US retail price of the conventional product, in dollars per kg."><span class="th-hint">Conventional<br>retail $/kg</span></th>
-  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Illustrative unit-cost proxy = biomass cost + scaffold (for cuts) + one generic value-chain add-on. This is not a modeled retail price."><span class="th-hint">Illustrative<br>unit cost $/kg</span></th>
-  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Price ratio R = cultivated cost ÷ conventional price. Below 1 = cheaper than conventional; above 1 = more expensive."><span class="th-hint">Price<br>ratio R</span></th>
+  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Approximate 2025 US RETAIL (shelf) price of the conventional product, in dollars per kg. Not a production cost."><span class="th-hint">Conventional<br>RETAIL $/kg</span></th>
+  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Cultivated retail-equivalent = factory-gate production cost + scaffold (for cuts) + the factory-gate-to-retail add-on m set above. A rough stand-in for a shelf price, not a modeled retail price."><span class="th-hint">Cultivated<br>retail-equivalent $/kg</span></th>
+  <th style="padding:8px; text-align:right; white-space:nowrap; background:#2c3e50; color:#fff;" title="Price ratio R = cultivated retail-equivalent ÷ conventional retail price. Both sides are at retail only to the extent that the add-on m captures the factory-to-shelf markup. Below 1 = cheaper than conventional; above 1 = more expensive."><span class="th-hint">Price<br>ratio R</span></th>
   <th style="padding:8px; text-align:left; background:#2c3e50; color:#fff;" title="Illustrative binary-choice output, not a forecast of sales or market share; ignores available capacity and market clearing. Not a share of all meat. The bar width uses a compressed (square-root) scale so small shares stay visible; the % is exact."><span class="th-hint">Toy choice share<br>(unconstrained by supply)</span></th>
 </tr></thead>
 <tbody>
@@ -413,7 +439,7 @@ ${rows.map(r => html`<tr style="border-bottom:1px solid #dee2e6;">
 </table>
 </div>
 <p style="font-size:12px; color:#666; margin-top:6px;">
-Hover any column header for what it means. Bar width uses a compressed (square-root) scale
+Both price columns are retail-level: conventional at its shelf price, cultivated as factory-gate production cost + scaffold + add-on m ($${markup.toFixed(2)}/kg here). Hover any column header for what it means. Bar width uses a compressed (square-root) scale
 so small shares stay visible next to foie gras. The percentage is calculated exactly by
 this toy equation, but it is <em>not an empirical estimate or forecast</em>; the bar is only
 a rough visual. Colour: green &gt; 30%, amber 8–30%, red &lt; 8%.<br>

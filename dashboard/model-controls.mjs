@@ -108,7 +108,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['oxygen_cap', 'Oxygen-transfer cap on density', [['0', 'Off (default; share of worlds above it is reported)'], ['1', 'On: cap density at the oxygen limit']], REVIEW_PROVENANCE.physical],
     ['nutrient_yield_p5', 'Nutrient yield p5 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
     ['nutrient_yield_p95', 'Nutrient yield p95 (g dry cells per L of medium)', null, REVIEW_PROVENANCE.media_yield],
-    ['gf_dose_model', 'Growth-factor dosage', [['per_kg', 'Separate g/kg prior (baseline)'], ['media_linked', 'Concentration × fresh L/kg']], REVIEW_PROVENANCE.gf],
+    ['gf_dose_model', 'Growth-factor dosage', [['media_linked', 'Concentration × fresh L/kg (baseline)'], ['per_kg', 'Separate g/kg prior (before Nov 9, 2026)']], REVIEW_PROVENANCE.gf],
     ['gf_concentration_mg_L', 'GF concentration (mg/L)', null, REVIEW_PROVENANCE.gf],
     ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf],
     ['mode_selection', 'Process-mode selection', [['mixture', 'Draw mode by weights (baseline)'], ['least_cost', 'Cheapest feasible mode']], REVIEW_PROVENANCE.mode_selection],

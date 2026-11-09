@@ -10,7 +10,8 @@ import * as sm from '../dashboard/sensitivity-methods.mjs';
 
 const hash = path => createHash('sha256').update(readFileSync(new URL(path, import.meta.url))).digest('hex');
 const SEED = 42, DRAWS = 30000;
-// The six inputs that carry nearly all of the variance in the default scenario.
+// The inputs that carry nearly all of the variance in the default scenario (g_recf only
+// counts under the separate GF dose prior; since 2026-11-09.1 the dose follows medium use).
 // Financing, scale, timing and utilization inputs each explain well under 1%.
 const REDUCED = ['density', 'media_turnover', 'media_cost_L', 'price_recf', 'g_recf', 'maturity'];
 const runs = [
@@ -68,7 +69,7 @@ for (const run of runs) {
   const t0 = performance.now();
   const r = sm.shapleyEffects(columns, y, {k: run.k, names: inputs.map(i => i.name)});
   const entry = {
-    label: `${run.inputs === 'reduced' ? 'six main inputs' : 'all eleven inputs'}, ${run.target === 'log_cost' ? 'log cost' : 'cost'}, n=${run.subsample}, k=${run.k}, subsample ${run.subsampleSeed}`,
+    label: `${run.inputs === 'reduced' ? inputs.length + ' main inputs' : 'all ' + inputs.length + ' inputs'}, ${run.target === 'log_cost' ? 'log cost' : 'cost'}, n=${run.subsample}, k=${run.k}, subsample ${run.subsampleSeed}`,
     inputs_set: run.inputs, target: run.target, subsample: run.subsample, subsample_seed: run.subsampleSeed, k: run.k,
     seconds: Math.round((performance.now() - t0) / 100) / 10,
     explained_share: r.explained,

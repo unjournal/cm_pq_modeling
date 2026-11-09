@@ -291,6 +291,34 @@ test('media-linked GF dose scales with fresh volume and respects override preced
   assert.ok(override.warnings.some(w => w.includes('no cost effect')));
 });
 
+test('default GF dose is linked to medium use, so GF $/L of medium follows from the concentration (Nov 9, 2026 correction)', () => {
+  assert.equal(model.DEFAULT_PARAMS.gf_dose_model, 'media_linked');
+  const c = model.DEFAULT_PARAMS.gf_concentration_mg_L, f = model.DEFAULT_PARAMS.gf_cheap_dose_fraction;
+  const r = simulate(n, 42, {include_losses: false});
+  // Per world: g GF per kg = L per kg × concentration (mg/L) / 1000 × regime dose fraction (same basis on both sides).
+  r.g_recf_samples.forEach((g, i) => {
+    const dose = r.L_per_kg_samples[i] * c / 1000 * (r.is_recf_cheap_samples[i] ? f : 1);
+    assert.ok(Math.abs(g - dose) < 1e-12 * Math.max(1, dose));
+    // GF cost per litre of medium = concentration × price × dose fraction; no free dose draw.
+    const perLitre = r.cost_recf[i] / r.L_per_kg_samples[i];
+    const expected = c / 1000 * (r.is_recf_cheap_samples[i] ? f : 1) * r.price_recf_samples[i];
+    assert.ok(Math.abs(perLitre - expected) < 1e-9 * Math.max(1, expected));
+  });
+  // Within a price regime, GF dose and medium use move together (rank correlation 1),
+  // unlike the earlier separate prior, whose dose was drawn independently of medium use.
+  const exp = i => r.is_recf_cheap_samples[i] === 0;
+  const idx = r.g_recf_samples.map((_, i) => i).filter(exp);
+  assert.ok(model.spearmanCorr(idx.map(i => r.L_per_kg_samples[i]), idx.map(i => r.g_recf_samples[i])) > 0.999);
+  const old = simulate(3000, 42, {gf_dose_model: 'per_kg', include_losses: false});
+  const oidx = old.g_recf_samples.map((_, i) => i).filter(i => old.is_recf_cheap_samples[i] === 0);
+  assert.ok(Math.abs(model.spearmanCorr(oidx.map(i => old.L_per_kg_samples[i]), oidx.map(i => old.g_recf_samples[i]))) < 0.1);
+  // Doubling medium use doubles GF cost draw for draw; other cost components are untouched.
+  const p = {media_use_model: 'direct', fresh_media_p5: 50, fresh_media_p95: 50};
+  const a = simulate(n, 42, p), b = simulate(n, 42, {...p, fresh_media_p5: 100, fresh_media_p95: 100});
+  a.cost_recf.forEach((v, i) => assert.ok(Math.abs(b.cost_recf[i] - 2 * v) < 1e-9 * Math.max(1, v)));
+  assert.deepEqual(a.cost_capex, b.cost_capex);
+});
+
 test('independent maturity channels preserve marginal finance distribution and remove common-factor association', () => {
   const shared = simulate(30000, 42);
   const independent = simulate(30000, 42, {dependence_mode: 'independent_maturity'});

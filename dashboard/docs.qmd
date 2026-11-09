@@ -112,7 +112,7 @@ $$\text{cost per kg hybrid} = \text{cost per kg dry} \times \texttt{target\_soli
 
 $$\text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
 
-At the defaults (engine `2026-11-07.1`, seed 42, 30,000 draws) the median is about \$276 per kg dry cell mass, \$21.25 per kg of hybrid product and \$425 per kg protein; all-cell mass at chicken-meat moisture would be \$76.00 per kg, and the wet basis gives \$55.27. On the hybrid-product thresholds, 0.1% of draws are under \$5/kg, 11.6% under \$10, 58.2% under \$25 and 84.0% under \$50. Before the [physical-consistency additions](#physical-consistency) of November 7, 2026 (engine `2026-10-29.1`) these were \$213, \$16.90, \$328, \$58.60 and \$42.62, with 1.0%, 23.6%, 67.2% and 87.5% under the thresholds. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) Since November 7, 2026 the default includes recovery losses in harvest and washing (see [physical consistency](#physical-consistency)); the harvest placeholder below adds a processing cost on top.
+At the defaults (engine `2026-11-09.1`, seed 42, 30,000 draws) the median is about \$289 per kg dry cell mass, \$22.11 per kg of hybrid product and \$444 per kg protein; all-cell mass at chicken-meat moisture would be \$79.44 per kg, and the wet basis gives \$57.78. On the hybrid-product thresholds, 0.1% of draws are under \$5/kg, 12.0% under \$10, 55.6% under \$25 and 80.0% under \$50. Under engine `2026-11-07.2`, before the [growth-factor dose was linked to medium use](#gf-dose-linked) on November 9, these were \$276, \$21.25, \$425, \$76.00 and \$55.27, with 0.1%, 11.6%, 58.2% and 84.0% under the thresholds. Before the [physical-consistency additions](#physical-consistency) of November 7, 2026 (engine `2026-10-29.1`) they were \$213, \$16.90, \$328, \$58.60 and \$42.62, with 1.0%, 23.6%, 67.2% and 87.5% under the thresholds. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) Since November 7, 2026 the default includes recovery losses in harvest and washing (see [physical consistency](#physical-consistency)); the harvest placeholder below adds a processing cost on top.
 
 ### Physical consistency (November 7, 2026) {#physical-consistency}
 
@@ -137,12 +137,31 @@ Before engine `2026-11-07.1` the model drew density, medium use and cycle time i
 | New reactor ratio only | 208 | 16.57 | 1.2% / 24.7% / 67.9% |
 | + nutrient floor | 242 | 18.88 | 0.3% / 16.1% / 63.8% |
 | + recovery losses and failed runs | 275 | 21.15 | 0.1% / 11.7% / 58.5% |
-| + seed train (new default) | 276 | 21.25 | 0.1% / 11.6% / 58.2% |
-| New default + oxygen cap | 282 | 21.60 | 0.1% / 10.7% / 57.5% |
+| + seed train (default `2026-11-07.2`) | 276 | 21.25 | 0.1% / 11.6% / 58.2% |
+| `2026-11-07.2` + oxygen cap | 282 | 21.60 | 0.1% / 10.7% / 57.5% |
+| + medium-linked GF dose (default since `2026-11-09.1`, [see below](#gf-dose-linked)) | 289 | 22.11 | 0.1% / 12.0% / 55.6% |
+| `2026-11-09.1` + oxygen cap | 297 | 22.66 | 0.1% / 11.0% / 54.7% |
 
 The floor binds in about 38% of worlds, mostly the high-density ones. Losses raise costs by a median of 11% (95th percentile 32%). Against US wholesale chicken (\$3.50/kg), no default world gets there either before or after the change; the change matters most for the \$5–\$25 range.
 
 **Not yet included:** cell-retention equipment and consumables for perfusion, extra medium throughput in perfusion and continuous runs, utilities derived from physical quantities (they remain in "other variable costs"), vessel scheduling, and any link between failure rates and maturity. Nutrient yield is drawn independently of medium price per litre, although richer media cost more per litre. Katharina Brenner's process model is the planned source for a consistent set of these quantities.
+
+### Growth-factor dose linked to medium use (November 9, 2026) {#gf-dose-linked}
+
+::: {.callout-important}
+**Correction, 9 November 2026 (engine `2026-11-09.1`).** Until this date the default drew growth-factor quantity (g per kg) from its own prior, independently of how much medium a world used. Growth factors are dissolved in the medium at a set concentration, so the dose per kg should rise and fall with litres of medium per kg. Drawing them separately let a world combine heavy medium use with a small growth-factor dose (and the reverse), physically impossible combinations. The default is now the medium-linked dose that had been an opt-in alternative since September: g per kg = fresh L per kg × concentration (0.102 mg/L) / 1000, times 0.4 in the cheap-growth-factor regime. Growth-factor cost per litre of medium is therefore concentration × price, with no separate dose draw. The earlier rule stays available as *Growth-factor dosage → Separate g/kg prior* under *Structural stress tests*.
+:::
+
+**Effect on the defaults** (seed 42, 30,000 draws; same seed checked at 7):
+
+| Default | \$/kg dry, 10th / 50th / 90th percentile | Mean \$/kg dry | \$/kg hybrid, 10th / 50th / 90th | Under \$5 / \$10 / \$25 / \$50 hybrid |
+|---|---|---|---|---|
+| Separate dose prior (`2026-11-07.2`) | 107 / 276 / 920 | 444 | 9.59 / 21.25 / 65.47 | 0.14% / 11.6% / 58.2% / 84.0% |
+| Medium-linked dose (`2026-11-09.1`) | 105 / 289 / 1,167 | 570 | 9.48 / 22.11 / 82.50 | 0.14% / 12.0% / 55.6% / 80.0% |
+
+Linking the dose mostly moves the expensive tail: the 90th percentile rises by about a quarter and mean growth-factor cost roughly doubles (\$109 to \$235 per kg dry), because the model's medium use per kg (median 206 L per kg dry, 90th percentile 647) is higher than the 8–60 L per wet kg (40–300 per kg dry) the separate prior assumed. The cheap tail barely moves, and the share under \$10/kg hybrid rises slightly (11.6% to 12.0%): low-medium worlds now also get a low growth-factor dose, where the separate prior gave them a typical one. The direction of the old error was therefore not uniformly flattering; it understated the expensive tail and slightly overstated growth-factor cost in the cheapest worlds.
+
+In the default, the expensive-regime dose is now about 0.007–0.09 g per kg dry cell mass (5th–95th percentile; 0.0013–0.018 per wet kg) and the cheap-regime dose about 0.003–0.037 per kg dry, against 0.005–0.030 and 0.0025–0.010 under the separate prior. The concentration is a fixed value, not drawn, so formulation uncertainty (other growth factors, other concentrations, recycling) is represented only through the cheap-regime fraction; a direct growth-factor \$/kg prior or complete-medium pricing still overrides the dose. Because the dose is now derived from medium use, the tornado chart no longer shows "GF Quantity" as a separate input (it would count medium use twice); medium use and growth-factor price carry its effect.
 
 ### Comparison with conventional chicken {#chicken-comparison}
 
@@ -162,7 +181,7 @@ Boneless-breast annual means in 2026 dollars: 2023 \$3.07, 2024 \$3.73, 2025 \$4
 
 So the model uses **\$3.50/kg, with a range of \$2.6–4.6/kg** (`CHICKEN_WHOLESALE` in `model-controls.mjs`). *Revised 6 November 2026:* the first version (5 November) used the 12-month average, \$2.94, but that falls in a cyclical low: 2026 breast prices are depressed by large supply and weak demand, and whole-bird prices are also 7–14% below their 5- and 10-year averages. A multi-year real average is a better stand-in for a typical price. We use all of the national boneless-breast series, which starts in September 2022, rather than five years: the earlier Northeast series runs about 18% higher relative to the whole-bird price and does not overlap the national one, and a 5-year window would include the record spike of 2022 (about \$8.80/kg in 2026 dollars). Breast prices are right-skewed, so the median (\$3.39) sits a little below the mean. Mince- or nugget-grade inputs (breast trim, dark meat, mechanically separated chicken) usually trade below boneless breast; we found no public monthly series for them, so the low end of the range may be too high for a nugget-type product. There is no farm-gate (live-bird) price for broilers, because almost all are grown under contract ([ERS documentation](https://www.ers.usda.gov/data-products/meat-price-spreads/documentation)), and we have not used a production-cost estimate.
 
-**What it means at the defaults.** A kg of hybrid product contains \$2.25 of plant-based filler, so it matches \$3.50/kg chicken only if the cells cost less than about \$18 per kg dry cell mass (\$5 at the \$2.6 low end, \$34 at the \$4.6 high end). At the defaults (engine `2026-11-07.2`, seed 42, 30,000 draws) no draw is below \$3.50/kg hybrid or \$2.60, and 11 (0.04%) are below \$4.60; the cheapest is about \$3.84 and the lowest 5% of hybrid costs are under \$8.20. (Before the physical-consistency additions of November 7: 2 draws, 0.007%, below \$3.50, 0.5% below \$4.60, lowest 5% under \$6.40.) The \$5–\$50 probability thresholds are kept as illustrative cost levels; none is a parity line. Both pages show the share of draws under the wholesale reference beneath the threshold cards, and the main cost charts mark it with a purple dashed line. On the wet basis the line and share compare wet cells directly with chicken meat.
+**What it means at the defaults.** A kg of hybrid product contains \$2.25 of plant-based filler, so it matches \$3.50/kg chicken only if the cells cost less than about \$18 per kg dry cell mass (\$5 at the \$2.6 low end, \$34 at the \$4.6 high end). At the defaults (engine `2026-11-09.1`, seed 42, 30,000 draws) no draw is below \$3.50/kg hybrid or \$2.60, and 13 (0.04%) are below \$4.60; the cheapest is about \$3.84 and the lowest 5% of hybrid costs are under \$8.05 (engine `2026-11-07.2`: 11 below \$4.60, lowest 5% under \$8.20). (Before the physical-consistency additions of November 7: 2 draws, 0.007%, below \$3.50, 0.5% below \$4.60, lowest 5% under \$6.40.) The \$5–\$50 probability thresholds are kept as illustrative cost levels; none is a parity line. Both pages show the share of draws under the wholesale reference beneath the threshold cards, and the main cost charts mark it with a purple dashed line. On the wet basis the line and share compare wet cells directly with chicken meat.
 
 **What is still not like for like.** The hybrid product's cost leaves out forming and texturization, and its inclusion rate (25%) and filler cost (\$3/kg) are conventions. Wholesale breast is a finished, packed commodity cut; the cultivated side would still need those steps. The comparison is closer than a retail one, not exact. The [demand page](demand.qmd)'s teaching calculator still uses retail prices for every species, because its price ratio stands in for what shoppers see; see the note there.
 
@@ -206,7 +225,7 @@ Each respondent would also give one or two derived numbers, such as their overal
 
 $$\text{L of medium per kg dry cell mass} = \frac{1000}{\text{nutrient yield (g dry cells per L of medium consumed)}}$$
 
-Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–30 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`; 3–25 before November 7, 2026), median about 9.5. It implies about 33–330 litres per kg dry. The range is provisional: see [physical consistency](#physical-consistency) for the sources behind it. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. Under engine `2026-10-29.1` (before the floor and the losses) this rule gave 0.5% of draws under \$5/kg of hybrid product (against 1.0% under the density rule), 25.1% under \$10, and a median of \$178 per kg dry (against \$213); 252 of the 306 default draws under \$5 rose above \$5 under it. At that point most of the very cheapest simulated draws relied on the density-derived medium assumption. Since the nutrient floor (engine `2026-11-07.2`) the yield rule is never more expensive than the default and gives 0.4% of draws under \$5/kg hybrid, 22.4% under \$10 and a median of about \$191 per kg dry (default: 0.14%, 11.6%, \$276); the [structure check](sensitivity.qmd#structure-check) has the details.
+Nutrient yield is drawn from a lognormal distribution with 5th–95th percentiles of 3–30 g dry cells per litre (`nutrient_yield_p5`, `nutrient_yield_p95`; 3–25 before November 7, 2026), median about 9.5. It implies about 33–330 litres per kg dry. The range is provisional: see [physical consistency](#physical-consistency) for the sources behind it. Density still sets reactor volume and capital cost. Yield is on a dry basis, so it does not depend on how much water the harvested paste carries. A yield per gram of glucose or amino acids, combined with the medium's concentrations, is the next refinement; it is not yet in the engine, nor is conditioning on process mode. Under engine `2026-10-29.1` (before the floor and the losses) this rule gave 0.5% of draws under \$5/kg of hybrid product (against 1.0% under the density rule), 25.1% under \$10, and a median of \$178 per kg dry (against \$213); 252 of the 306 default draws under \$5 rose above \$5 under it. At that point most of the very cheapest simulated draws relied on the density-derived medium assumption. Since the nutrient floor the yield rule is never more expensive than the default; under engine `2026-11-09.1` it gives 0.5% of draws under \$5/kg hybrid, 25.0% under \$10 and a median of about \$182 per kg dry (default: 0.14%, 12.0%, \$289; under `2026-11-07.2`, 0.4%, 22.4% and \$191 against 0.14%, 11.6% and \$276); the [structure check](sensitivity.qmd#structure-check) has the details.
 
 ---
 
@@ -486,7 +505,7 @@ Installed volume $V$ is sized to nameplate output, not reduced when utilization 
 
 $$F = F_{ref}\left(\frac{Q_N}{20\times10^6}\right)^s, \qquad F_{ref} = c_{ref}(20\times10^6)(0.9),$$
 
-where $c_{ref}$ is uniform $1–6/kg and $s$ is uniform 0.6–1.0. Thus the reference plant's overhead is calibrated at 90% utilization, and idle capacity raises overhead per kg. Labor flexibility, startup losses, and failed-batch media consumption are still omitted.
+where $c_{ref}$ is uniform $1–6/kg and $s$ is uniform 0.6–1.0. Thus the reference plant's overhead is calibrated at 90% utilization, and idle capacity raises overhead per kg. Labor flexibility and startup ramp are still omitted. Since November 7, 2026, medium and other inputs spent on failed runs are covered on average by the default loss factor ([physical consistency](#physical-consistency)).
 
 The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For continuous culture it represents an effective biomass replacement time, not the duration of an entire campaign. This proxy needs replacement with measured harvest productivity and process-specific cleaning, bleed, and retention data.
 
@@ -637,7 +656,7 @@ The [response to Reports 5 and 6](review-response-2026-09.qmd#structures) docume
 
 - **Independent maturity channels:** separate Beta draws for hydrolysates, GF adoption, supplemental proteins, WACC, and equipment, with the baseline marginal parameters and coefficients.
 - **Direct fresh-media intensity:** sample L/kg from a user-specified p5–p95 lognormal, replacing $(1000/D)T$. Initial 8–60 L/kg endpoints are an illustrative stress range, not fitted evidence. Density still determines reactor volume.
-- **Media-linked GF dose:** fresh L/kg × concentration in mg/L / 1000 × regime dose fraction. Initial concentration 0.102 mg/L reuses the earlier formulation assumption; cheap-regime fraction 0.4 approximates the earlier median-dose ratio. Both are editable, provisional assumptions.
+- **Media-linked GF dose:** fresh L/kg × concentration in mg/L / 1000 × regime dose fraction. Initial concentration 0.102 mg/L reuses the earlier formulation assumption; cheap-regime fraction 0.4 approximates the earlier median-dose ratio. Both are editable, provisional assumptions. *Since November 9, 2026 this is the default* ([correction](#gf-dose-linked)); the separate g/kg prior is the alternative.
 
 Direct media or GF $/kg priors override their respective equations. Complete-medium accounting includes proteins once and overrides separate GF costs. The controls and comparison report these precedence rules. The Simple view fixes all three structures at their baseline choices; its custom priors use the same fitter as Advanced.
 
@@ -794,6 +813,8 @@ Values in the 5–10× region remain conceivable for heavily media-intensive pro
 Price intervals below use 50% progress. At 0% they are ten times higher; at 100% they are ten times lower. These are p5–p95 marginal intervals, not hard bounds.
 
 These parameters feed into the [GF Cost equation](#how-gf-cost-feeds-into-total-cost): GF Cost = $g_{\text{GF}}$ (quantity) × $P_{\text{GF}}$ (price).
+
+**Since November 9, 2026 the quantity is not drawn from the ranges below by default.** It follows from medium use: $g_{\text{GF}}$ = fresh L/kg × 0.102 mg/L / 1000, × 0.4 in the cheap regime ([correction](#gf-dose-linked)). The quantity ranges in the tables below (per wet kg) apply only when *Growth-factor dosage* is set to the separate g/kg prior; the price ranges apply in both cases.
 
 The model uses two discrete price scenarios, selected by a Bernoulli draw (see [why binary](#the-binary-cheap-vs-expensive-toggle) above):
 
@@ -1081,7 +1102,7 @@ With 30,000 Monte Carlo samples, each tail group contains ~3,000 simulations. Th
 | Type | Examples | Interpretation |
 |------|---------|----------------|
 | *Primitive* | Cell Density, Media-use multiplier, Plant Capacity, Utilization Rate | May share a process label or other dependencies; swing is an association, not an isolated marginal effect |
-| *Mixture* | Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity | Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both |
+| *Mixture* | Media \$/L (incl. hydrolysate regime), GF Price, GF Quantity (only with the separate g/kg dose prior; since November 9, 2026 the default dose is derived from medium use and not shown) | Bundles a discrete regime switch (hydrolysate adoption, GF breakthrough) with within-regime lognormal noise; swing captures both |
 | *Latent* | Industry Maturity | Not independent — perturbs P(hydrolysate), P(cheap GFs), WACC, and reactor costs simultaneously |
 
 ### The latent-variable caveat (Industry Maturity)
@@ -1153,15 +1174,15 @@ View the [page source](https://github.com/unjournal/cm_pq_modeling/blob/main/das
 
 3. **No geography** — Assumes generic global costs, not region-specific labor, energy, or regulatory factors.
 
-4. **Limited contamination modeling** — No batch failure or contamination event distributions.
+4. **Contamination and failure modeled only as an average loss** — Since November 7, 2026 (provisional) the default draws an expected share of output lost to failed or contaminated runs for each process mode (fed-batch 0.5–8%, perfusion 2–15%, continuous 3–20%, 5th–95th percentiles) and a recovery loss in harvest and washing (1–15%), and divides in-house costs per delivered kg accordingly. Individual failure events, their timing and any link to maturity are not modeled. Switch: *Recovery losses and failed runs* under *Structural stress tests* (see [physical consistency](#physical-consistency)).
 
-5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
+5. **Some correlations may be underspecified** — While the maturity factor induces correlation between technology adoption, reactor costs, and WACC, other potential correlations (e.g., between cell density and media $/L, or between cell density and cycle time) are treated as independent. Growth-factor dose has followed medium use by default since November 9, 2026 ([correction](#gf-dose-linked)); before that it was also drawn independently. See [Model Limits](limits.qmd#parameter-grounding) for the specific case of basal media cost and cell density.
 
 6. **Estimand not yet reflected in the parameter ranges** — The target is now unconditional and hypothetical (the best available large plant with 2036 technology, whether or not such plants exist; see [target quantity](#estimand)), so a separate commercialization stage is no longer required. But the ranges were not built for that target, and the model does not yet distinguish a frontier plant from an average or capacity-weighted commercial plant. The opt-in [least-cost mode selection](#least-cost-mode-selection) covers the process choice only.
 
 7. **No common currency year** — Monetary inputs from different sources are not yet converted to one constant-dollar base year.
 
-8. **Basis conversions rest on placeholders** — The headline result is per kg dry cell mass. Converting wet-basis sources and built-in priors uses a single assumed solids content (20%); the hybrid-product and protein figures use placeholder solids (27.5%), inclusion (25%), filler cost (\$3/kg) and protein (65%) values; cell-count sources have no mass-per-cell parameter yet; and recovery losses during washing and dewatering are not modeled. See [why the basis matters](#output-basis).
+8. **Basis conversions rest on placeholders** — The headline result is per kg dry cell mass. Converting wet-basis sources and built-in priors uses a single assumed solids content (20%); the hybrid-product and protein figures use placeholder solids (27.5%), inclusion (25%), filler cost (\$3/kg) and protein (65%) values; and cell-count sources have no mass-per-cell parameter yet. Recovery losses in harvest, washing and dewatering *are* modeled since November 7, 2026, as a single provisional loss share (1–15%, 5th–95th percentiles; on by default, switch *Recovery losses and failed runs* under *Structural stress tests*), but the processing cost of those steps is still only an optional placeholder (`include_harvest_dewater`, off). *Corrected 9 November 2026: this item previously said recovery losses were not modeled.* See [why the basis matters](#output-basis) and [physical consistency](#physical-consistency).
 
 ### Recommendations for Use
 

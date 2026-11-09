@@ -72,7 +72,9 @@ test('Shapley effects sum to the explained variance and find an additive split',
 
 test('displayed inputs follow the same activity rules as the association chart', () => {
   const keys = p => sm.displayedInputs(simulate(500, 42, p), p).map(i => i.key);
-  assert.deepEqual(keys({}), ['density', 'media_turnover', 'media_cost_L', 'price_recf', 'g_recf', 'maturity', 'wacc', 'asset_life', 'plant_kta', 'cycle_days', 'uptime']);
+  assert.deepEqual(keys({}), ['density', 'media_turnover', 'media_cost_L', 'price_recf', 'maturity', 'wacc', 'asset_life', 'plant_kta', 'cycle_days', 'uptime']);
+  // GF quantity is a drawn input only under the separate per-kg dose prior.
+  assert.ok(keys({gf_dose_model: 'per_kg'}).includes('g_recf'));
   assert.ok(!keys({dependence_mode: 'independent_maturity'}).includes('maturity'));
   assert.ok(!keys({cdmo_mode: true}).some(k => ['wacc', 'asset_life', 'cycle_days', 'plant_kta', 'uptime'].includes(k)));
   const direct = keys({media_use_model: 'direct'});
@@ -141,7 +143,7 @@ function pageParams(cell, globals) {
 }
 test('URL state adapter reproduces the Advanced page parameters', () => {
   const epNull = {media_p10: null, media_p50: null, media_p90: null, gf_p10: null, gf_p50: null, gf_p90: null, density_p10: null, density_p50: null, density_p90: null};
-  const structure = {cost_basis: 'dry', dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 40, fresh_media_p95: 300, nutrient_yield_p5: 3, nutrient_yield_p95: 30, nutrient_floor: true, include_losses: true, include_seed_train: true, oxygen_cap: false, gf_dose_model: 'per_kg', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
+  const structure = {cost_basis: 'dry', dependence_mode: 'shared', media_use_model: 'density', fresh_media_p5: 40, fresh_media_p95: 300, nutrient_yield_p5: 3, nutrient_yield_p95: 30, nutrient_floor: true, include_losses: true, include_seed_train: true, oxygen_cap: false, gf_dose_model: 'media_linked', gf_concentration_mg_L: 0.102, gf_cheap_dose_fraction: 0.4,
     mode_selection: 'mixture', p_feasible_perfusion: 0.7, p_feasible_continuous: 0.3, mode_choice_noise: 0,
     solids_fraction: 0.2, target_solids_fraction: 0.275, protein_fraction_of_solids: 0.65};
   const defaults = {
