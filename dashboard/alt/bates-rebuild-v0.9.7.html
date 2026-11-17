@@ -263,7 +263,7 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
     <span class="uj-sep">Alex's rebuild:</span><a href="bates-rebuild-v0.9.7-as-shared.html">as shared</a><strong aria-current="page">first-pass edits</strong>
     <a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">Literature review</a></nav>
     <p><strong>Alex Bates's rebuild, with first-pass edits.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026), with host notes and minor changes made in response to comments: typeface, labels and wording, explanations, and display of the "What has to go right" rows. Alex's model, inputs and code logic are unchanged. The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated).</p>
-    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom. Comment with Hypothes.is: the &lsaquo; tab on the right edge.</p>
+    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom. Open points from the first round of comments: <a href="#questions-for-alex">Questions for Alex</a>. Comment with Hypothes.is: the &lsaquo; tab on the right edge.</p>
   </div>
 </div>
 
@@ -395,6 +395,25 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
       </ul>
     </article>
   </section>
+<section class="card notes" id="questions-for-alex" aria-labelledby="qa-h">
+  <details class="more" id="qa-details"><summary><h2 id="qa-h" style="display:inline">Questions for Alex, from the first round of comments</h2></summary>
+  <div class="more-body">
+    <p class="small muted">Collected by the Unjournal host from Hypothes.is comments on this page (17 November 2026). The main model would need most of the same changes. Reply here with Hypothes.is, on Slack, or by editing your version; we won't change the model itself without your agreement.</p>
+    <ol class="routes" style="font-family:var(--font-body);font-size:0.95rem;gap:10px">
+      <li><strong>Plant operating cost.</strong> Split the merged input three ways by what drives each part: labour per plant; maintenance and insurance as a share of capital (Humbird 2021: 4% and 5% a year); utilities and consumables per kg, by process. This follows point 3 of your review, and it is the input in 98% of minimal sets. The $23.50/kg dry centre comes from our model's unsourced ranges. <a href="https://hyp.is/NylaxOLIEfGDNu_mZUPu2A/unjournal.github.io/cm_pq_modeling/alt/bates-rebuild-v0.9.7.html">Sidebar note</a>.</li>
+      <li><strong>Perfusion membranes.</strong> Charge cell-retention membranes for perfusion and continuous culture only (Humbird's perfusion design: about $4.53/kg wet; Pasitka: single-use filters $8.78/kg wet more than reusable). Almost all competitive worlds use these processes, so this matters for the tail.</li>
+      <li><strong>Economies of scale.</strong> The 6,500 m³ cap raises the competitive share (0.049% to 0.080% in paired runs) because competitive worlds need only about 530 m³: the cap gives them the price of a plant about 12 times larger. Could the limit be anchored on maximum vessel size plus a plausible 2036 plant size, with a source? <a href="../bates-rebuild.html#errors-and-economies-of-scale-that-never-run-out">Details</a>.</li>
+      <li><strong>Per-process columns.</strong> The "same for all three processes" tick box invites users to invent differences. Lock inputs that shouldn't differ (prices, cost of capital, operating cost per kg); give process-specific inputs sourced defaults; express systematic differences as relations (e.g. perfusion density as a multiple of fed-batch).</li>
+      <li><strong>Other forks.</strong> Process mode is one axis; cell line (genetically engineered, immortalised, suspension- and serum-free-adapted), medium route and scaffold may matter as much. Model them as named routes with probabilities?</li>
+      <li><strong>Growth factors.</strong> "Cheap growth factors exist" is a vestige of our model. Better: a growth-factor cost per kg of cells as a distribution, with distinct routes (cheaper recombinant production, lower dose, cell lines that need fewer or none).</li>
+      <li><strong>Maturity and linked uncertainties.</strong> The maturity link is ad hoc and nearly inert (turning it off moves the share under $36 from 0.049% to 0.048%). Replace it with named common causes (cell-line quality, food-grade supply at scale, investment climate) that keep each input's distribution as entered. And should a big R&D push be an explicit scenario rather than a random draw? <a href="../bates-rebuild.html#linked-uncertainties">Proposal</a>.</li>
+      <li><strong>Sources.</strong> Every input should show its source, even as a tooltip. The cell-bank inputs, the operating cost and the 6,500 m³ cap currently have none.</li>
+      <li><strong>Thresholds.</strong> Is $36/kg dry (about 3 &times; parity, organic-chicken level) the right edge for "price-competitive"? In product terms it is $9.90/kg as all-cell meat or $4.73/kg as a 25%-cell hybrid, against about $3.50/kg for wholesale chicken.</li>
+    </ol>
+    <p class="small muted">Wording, label and display changes already made in this version are listed in the hosting script (<code>scripts/host-bates-rebuild.mjs</code>, EDITS); happy to port any of them to your own version.</p>
+  </div></details>
+</section>
+<script>(function () { if (location.hash === '#questions-for-alex') { var d = document.getElementById('qa-details'); if (d) d.open = true; } })();</script>
 </main>
 
 <script type="text/plain" id="engine-src">// Cultured meat cost model: step-structured rebuild.
