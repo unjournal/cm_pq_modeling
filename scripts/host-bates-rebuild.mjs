@@ -40,7 +40,8 @@ html = html.replace('</head>', headAdd + '</head>');
 html = html.replace('<body>', '<body>\n' + bar);
 // Host explanations (David, 17 Nov 2026): what the dry-cell thresholds mean per kg of product.
 // Arithmetic: meat at 27.5% solids = dry x 0.275; hybrid = meat x 0.25 + $3 x 0.75 (the main model's conventions).
-const meat = d => (d * 0.275).toFixed(2), hybrid = d => (d * 0.275 * 0.25 + 3 * 0.75).toFixed(2);
+const r2 = x => (Math.round(x * 100 + 1e-6) / 100).toFixed(2);   // half-up, avoiding 4.725 -> 4.72
+const meat = d => r2(d * 0.275), hybrid = d => r2(d * 0.275 * 0.25 + 3 * 0.75);
 const CHICKEN = 'US wholesale boneless chicken averaged about $3.50/kg (2026 dollars, September 2022 to September 2026; middle 80% of months $2.60-4.60; USDA)';
 const note = `What $12-36 per kg of dry cells means for a product: at chicken-meat moisture (27.5% solids) it is $${meat(12)}-${meat(36)} per kg of all-cell meat; as a hybrid product (25% cells, 75% plant-based filler at $3/kg) it is $${hybrid(12)}-${hybrid(36)} per kg. For comparison, ${CHICKEN}. These are ingredient costs for cell mass: forming, texturizing and packaging are not included, whereas wholesale chicken is already cut and packed. (Note added by the Unjournal host, not part of Alex's model.)`;
 const tip = `Under $36/kg dry = under $${meat(36)}/kg as all-cell meat at chicken moisture, or $${hybrid(36)}/kg as a 25%-cell hybrid. Wholesale slaughtered chicken: ${CHICKEN}. No wholesale price for cultivated chicken is published; Arthur D. Little puts the current cost of finished cultivated products in the low EUR 40s per kg (2026, as cited in Alex's literature review).`;
@@ -58,6 +59,27 @@ const hostScript = `<script>
   var note = ${JSON.stringify(note)}, tip = ${JSON.stringify(tip)}, howTo = ${JSON.stringify(howTo)};
   var leadEl = document.getElementById('recipe-lead');
   if (leadEl) leadEl.insertAdjacentHTML('afterend', howTo);
+  // Group the rows: in most routes (half of minimal sets or more) vs in some routes; fade the second group.
+  var rowsEl = document.getElementById('recipe-rows');
+  function tier() {
+    if (!rowsEl) return;
+    obs.disconnect();
+    rowsEl.querySelectorAll('.uj-tier').forEach(function (h) { h.remove(); });
+    var first = {hi: null, lo: null};
+    rowsEl.querySelectorAll('.rrow').forEach(function (r) {
+      var v = parseFloat((r.querySelector('.rval') || {}).textContent) / 100;
+      var hi = v >= 0.5;
+      r.style.opacity = hi ? '' : '0.72';
+      if (hi && !first.hi) first.hi = r;
+      if (!hi && !first.lo) first.lo = r;
+    });
+    function head(r, t) { if (!r) return; var h = document.createElement('p'); h.className = 'tiny uj-tier'; h.style.cssText = 'margin:6px 0 0;text-transform:uppercase;letter-spacing:.05em;font-weight:600'; h.textContent = t; r.insertAdjacentElement('beforebegin', h); }
+    head(first.hi, 'Needed in most routes (half of minimal sets or more)');
+    head(first.lo, 'Needed in some routes (under half): less often decisive');
+    obs.observe(rowsEl, {childList: true});
+  }
+  var obs = new MutationObserver(tier);
+  if (rowsEl) { obs.observe(rowsEl, {childList: true}); tier(); }
   var wrap = document.getElementById('hist-wrap');
   if (wrap) { var p = document.createElement('p'); p.className = 'small muted uj-host-note'; p.textContent = note; wrap.insertAdjacentElement('afterend', p); }
   var lead = document.getElementById('recipe-lead');
