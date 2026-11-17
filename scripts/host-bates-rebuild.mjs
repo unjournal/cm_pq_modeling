@@ -30,6 +30,7 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
 const bar = `<div class="uj-host" role="note">
   <div class="uj-host-in">
     <p><strong>Alternative model, hosted for discussion.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026). The <a href="../index.html">main Unjournal model</a> remains the better-validated reference; this page proposes structural changes and a "what has to go right" analysis.</p>
+    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom.</p>
     <p class="links"><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="${DOC}">Literature review (Google Doc)</a><a href="../simple.html">Simplest model</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
   </div>
 </div>
@@ -37,7 +38,23 @@ const bar = `<div class="uj-host" role="note">
 if (!html.includes('</head>') || !html.includes('<body>')) throw new Error('unexpected page structure');
 html = html.replace('</head>', headAdd + '</head>');
 html = html.replace('<body>', '<body>\n' + bar);
-html = html.replace('</body>', '<script src="https://hypothes.is/embed.js" async></script>\n</body>');
+// Host explanations (David, 17 Nov 2026): what the dry-cell thresholds mean per kg of product.
+// Arithmetic: meat at 27.5% solids = dry x 0.275; hybrid = meat x 0.25 + $3 x 0.75 (the main model's conventions).
+const meat = d => (d * 0.275).toFixed(2), hybrid = d => (d * 0.275 * 0.25 + 3 * 0.75).toFixed(2);
+const CHICKEN = 'US wholesale boneless chicken averaged about $3.50/kg (2026 dollars, September 2022 to September 2026; middle 80% of months $2.60-4.60; USDA)';
+const note = `What $12-36 per kg of dry cells means for a product: at chicken-meat moisture (27.5% solids) it is $${meat(12)}-${meat(36)} per kg of all-cell meat; as a hybrid product (25% cells, 75% plant-based filler at $3/kg) it is $${hybrid(12)}-${hybrid(36)} per kg. For comparison, ${CHICKEN}. These are ingredient costs for cell mass: forming, texturizing and packaging are not included, whereas wholesale chicken is already cut and packed. (Note added by the Unjournal host, not part of Alex's model.)`;
+const tip = `Under $36/kg dry = under $${meat(36)}/kg as all-cell meat at chicken moisture, or $${hybrid(36)}/kg as a 25%-cell hybrid. Wholesale slaughtered chicken: ${CHICKEN}. No wholesale price for cultivated chicken is published; Arthur D. Little puts the current cost of finished cultivated products in the low EUR 40s per kg (2026, as cited in Alex's literature review).`;
+const hostScript = `<script>
+(function () {
+  var note = ${JSON.stringify(note)}, tip = ${JSON.stringify(tip)};
+  var wrap = document.getElementById('hist-wrap');
+  if (wrap) { var p = document.createElement('p'); p.className = 'small muted uj-host-note'; p.textContent = note; wrap.insertAdjacentElement('afterend', p); }
+  var lead = document.getElementById('recipe-lead');
+  if (lead) { lead.title = tip; lead.style.textDecoration = 'underline dotted'; lead.style.textUnderlineOffset = '3px'; lead.style.cursor = 'help'; }
+})();
+</script>
+`;
+html = html.replace('</body>', hostScript + '<script src="https://hypothes.is/embed.js" async></script>\n</body>');
 mkdirSync(outDir, {recursive: true});
 writeFileSync(out, html);
 console.log(`wrote ${out}`);
