@@ -30,7 +30,7 @@ website:
         href: index.qmd
       - text: "Alt. model (Bates)"
         menu:
-          - text: "Rebuild v0.9.7, with host notes"
+          - text: "Rebuild v0.9.7, first-pass edits"
             href: alt/bates-rebuild-v0.9.7.html
           - text: "Rebuild v0.9.7, as Alex shared it"
             href: alt/bates-rebuild-v0.9.7-as-shared.html

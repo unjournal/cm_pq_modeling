@@ -244,21 +244,25 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
 .uj-host strong { color: var(--ink); }
 .uj-host a { color: var(--accent); }
 .uj-host .links { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.uj-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; font-weight: 500; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+.uj-nav .uj-sep { color: var(--ink-3); }
 </style>
 </head>
 <body>
 <div class="uj-host" role="note">
   <div class="uj-host-in">
-    <p><strong>Alternative model, hosted for discussion.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026). The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated); this page proposes structural changes and a "what has to go right" analysis.</p>
-    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom.</p>
-    <p>This version adds Unjournal host notes and explanations (marked as such); Alex's model and text are unchanged. <a href="bates-rebuild-v0.9.7-as-shared.html">Version as Alex shared it</a>.</p>
-    <p class="links"><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">Literature review (Google Doc)</a><a href="../simple.html">Simplest model</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
+    <nav class="uj-nav" aria-label="Cost model pages">
+    <a href="../index.html">&larr; Main model</a><a href="../simple.html">Simplest model</a><a href="../bates-rebuild.html">Notes and comparison</a>
+    <span class="uj-sep">Alex's rebuild:</span><a href="bates-rebuild-v0.9.7-as-shared.html">as shared</a><strong aria-current="page">first-pass edits</strong>
+    <a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">Literature review</a></nav>
+    <p><strong>Alex Bates's rebuild, with first-pass edits.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026), with host notes and minor changes made in response to comments: typeface, labels and wording, explanations, and display of the "What has to go right" rows. Alex's model, inputs and code logic are unchanged. The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated).</p>
+    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom. Comment with Hypothes.is: the &lsaquo; tab on the right edge.</p>
   </div>
 </div>
 
 <main>
   <header class="top">
-    <p class="tiny">Unjournal pivotal questions · cultured meat · rebuild v0.9.4</p>
+    <p class="tiny">Unjournal pivotal questions · cultured meat · rebuild v0.9.7 &middot; first-pass edits</p>
     <h1>Predicted dry-cell cultured meat cost in 2036</h1>
     <div class="chips" id="badges"></div>
   </header>
@@ -476,10 +480,10 @@ const PARAMS = [
 
   // 1. Cell bank (new) --------------------------------------------------------
   P({id: "cell_bank_outlay", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [100000, 2000000], src: "new",
-     label: "Outlay per cell bank", unit: "$",
+     label: "Outlay per cell bank", unit: "$ per bank, one-off",
      help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank."}),
   P({id: "cell_bank_kg", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [1e6, 5e7], src: "new",
-     label: "Output per outlay", unit: "kg dry cell mass",
+     label: "Output per cell bank", unit: "kg dry cell mass per bank",
      help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank."}),
 
   // 2. Seed train -------------------------------------------------------------
@@ -495,7 +499,7 @@ const PARAMS = [
      help: "A blocker is a technical problem that rules a process out at industrial scale in 2036 whatever it costs."}),
   P({id: "p_hydro", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.75, 0.10], legacy: {mean: "p_hydro_mean"}, src: "original",
      label: "Hydrolysate medium available by 2036", unit: "probability",
-     help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids."}),
+     help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids. The default probability (0.75) is carried over from the main Unjournal model; no published or elicited source was found."}),
   P({id: "p_recf", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.50, 0.15], legacy: {mean: "p_recfactors_mean"}, src: "original",
      label: "Cheap growth factors available by 2036", unit: "probability",
      help: "Growth factors are the signalling proteins that tell cells to divide. Today they are made like pharmaceuticals and cost thousands of dollars a gram. If this breakthrough arrives, they are made more like industrial chemicals and cost much less."}),
@@ -606,8 +610,8 @@ const PARAMS = [
 const BY_ID = Object.fromEntries(PARAMS.map(p => [p.id, p]));
 
 const STEPS = [
-  {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled abstractly."},
-  {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled abstractly."},
+  {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
+  {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
   {id: "production", n: 3, label: "Production", note: "Production reactors, the most major source of cost in the model. Divided into multiple subsections.",
    substeps: [
      {n: "3.1", group: "Technology in 2036", label: "Technology in 2036", lines: [], note: "Which technologies exist in each world."},
@@ -616,7 +620,7 @@ const STEPS = [
      {n: "3.4", group: "Capital", label: "Capital", lines: ["reactor_capex"], note: "The fixed cost of running a large plant across asset life."},
      {n: "3.5", group: "Running the plant", label: "Running the plant", lines: ["other_var", "cdmo_toll"], note: "The variable cost of producing one kg of biomass from the capital outlay."}
    ]},
-  {id: "harvest", n: 4, label: "Harvest", note: "Separating, washing and dewatering cells. Very minor cost, modelled abstractly."}
+  {id: "harvest", n: 4, label: "Harvest", note: "Separating, washing and dewatering cells. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."}
 ];
 
 const LINES = {
@@ -1594,10 +1598,10 @@ const PARAMS = [
 
   // 1. Cell bank (new) --------------------------------------------------------
   P({id: "cell_bank_outlay", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [100000, 2000000], src: "new",
-     label: "Outlay per cell bank", unit: "$",
+     label: "Outlay per cell bank", unit: "$ per bank, one-off",
      help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank."}),
   P({id: "cell_bank_kg", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [1e6, 5e7], src: "new",
-     label: "Output per outlay", unit: "kg dry cell mass",
+     label: "Output per cell bank", unit: "kg dry cell mass per bank",
      help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank."}),
 
   // 2. Seed train -------------------------------------------------------------
@@ -1613,7 +1617,7 @@ const PARAMS = [
      help: "A blocker is a technical problem that rules a process out at industrial scale in 2036 whatever it costs."}),
   P({id: "p_hydro", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.75, 0.10], legacy: {mean: "p_hydro_mean"}, src: "original",
      label: "Hydrolysate medium available by 2036", unit: "probability",
-     help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids."}),
+     help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids. The default probability (0.75) is carried over from the main Unjournal model; no published or elicited source was found."}),
   P({id: "p_recf", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.50, 0.15], legacy: {mean: "p_recfactors_mean"}, src: "original",
      label: "Cheap growth factors available by 2036", unit: "probability",
      help: "Growth factors are the signalling proteins that tell cells to divide. Today they are made like pharmaceuticals and cost thousands of dollars a gram. If this breakthrough arrives, they are made more like industrial chemicals and cost much less."}),
@@ -1724,8 +1728,8 @@ const PARAMS = [
 const BY_ID = Object.fromEntries(PARAMS.map(p => [p.id, p]));
 
 const STEPS = [
-  {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled abstractly."},
-  {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled abstractly."},
+  {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
+  {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
   {id: "production", n: 3, label: "Production", note: "Production reactors, the most major source of cost in the model. Divided into multiple subsections.",
    substeps: [
      {n: "3.1", group: "Technology in 2036", label: "Technology in 2036", lines: [], note: "Which technologies exist in each world."},
@@ -1734,7 +1738,7 @@ const STEPS = [
      {n: "3.4", group: "Capital", label: "Capital", lines: ["reactor_capex"], note: "The fixed cost of running a large plant across asset life."},
      {n: "3.5", group: "Running the plant", label: "Running the plant", lines: ["other_var", "cdmo_toll"], note: "The variable cost of producing one kg of biomass from the capital outlay."}
    ]},
-  {id: "harvest", n: 4, label: "Harvest", note: "Separating, washing and dewatering cells. Very minor cost, modelled abstractly."}
+  {id: "harvest", n: 4, label: "Harvest", note: "Separating, washing and dewatering cells. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."}
 ];
 
 const LINES = {
@@ -2807,8 +2811,8 @@ function drawHist(S) {
   if (S.parity?.dry > 0) {
     const px = x(S.parity.dry);
     svg.append(mk("line", {x1: px, x2: px, y1: m.t + 2, y2: H - m.b, stroke: "var(--zone)", "stroke-width": 2, "stroke-dasharray": "5 3"}));
-    const lt = mk("text", {x: px + 5, y: H - m.b - 36, "text-anchor": "start", style: "fill:var(--zone);font-weight:600"}); lt.textContent = "Approximate parity to";
-    const lt2 = mk("text", {x: px + 5, y: H - m.b - 22, "text-anchor": "start", style: "fill:var(--zone);font-weight:600"}); lt2.textContent = `commercial chicken ${tickLabel(S.parity.dry)}–${tickLabel(S.parity.premium)}`;
+    const lt = mk("text", {x: px + 5, y: H - m.b - 36, "text-anchor": "start", style: "fill:var(--zone);font-weight:600"}); lt.textContent = `Parity with chicken ${tickLabel(S.parity.dry)};`;
+    const lt2 = mk("text", {x: px + 5, y: H - m.b - 22, "text-anchor": "start", style: "fill:var(--zone);font-weight:600"}); lt2.textContent = `price-competitive zone to ${tickLabel(S.parity.premium)}`;
     const lt3 = mk("text", {x: px + 5, y: H - m.b - 8, "text-anchor": "start", style: "fill:var(--zone)"}); lt3.textContent = `${S.parity.belowPremium > 0 && S.parity.belowPremium < 0.001 ? "<0.1%" : pct(S.parity.belowPremium)} of worlds`;
     svg.append(lt3);
     svg.append(lt, lt2);
@@ -2849,7 +2853,7 @@ function renderRecipe() {
   const R = recipe.result;
   const shown = R.rows.filter(r => r.share >= SHOW_MIN), flat = R.rows.filter(r => r.share < SHOW_MIN);
   $("recipe-lead").textContent = R.competitive
-    ? `Of ${R.worlds.toLocaleString("en-GB")} simulated worlds, ${R.competitive.toLocaleString("en-GB")} (about 1 in ${sig2(R.worlds / R.competitive).toLocaleString("en-GB")}) reach the competitive zone (under $${Math.round(R.premium)}/kg dry). For each, the model finds the smallest sets of improvements on the central world that make it competitive, where every improvement is needed. A typical set has ${Math.round(R.size.median)} (${R.size.min}–${R.size.max}). Each row shows the share of cost-competitive worlds that include optimistic values for that parameter.`
+    ? `Of ${R.worlds.toLocaleString("en-GB")} simulated worlds, ${R.competitive.toLocaleString("en-GB")} (about 1 in ${sig2(R.worlds / R.competitive).toLocaleString("en-GB")}) reach the price-competitive zone (under $${Math.round(R.premium)}/kg dry). For each, the model finds the smallest sets of improvements on the central world that make it price-competitive, where every improvement is needed. A typical set has ${Math.round(R.size.median)} (${R.size.min}–${R.size.max}). Each row shows the share of cost-competitive worlds that include optimistic values for that parameter.`
     : `None of ${R.worlds.toLocaleString("en-GB")} simulated worlds reached the competitive zone (under $${Math.round(R.premium)}/kg dry), so there is nothing to analyse.`;
   if (R.competitive && R.worldsAnalysed < 200) $("recipe-lead").textContent += ` Only ${R.worldsAnalysed} competitive worlds, so treat the shares as rough.`;
   $("recipe-rows").replaceChildren(...shown.map(r => {
@@ -2862,7 +2866,7 @@ function renderRecipe() {
       el("div", {class: "rtrack"}, el("div", {class: "rfill", style: `width:${Math.max(1, 100 * r.share)}%`})));
   }));
   $("recipe-joint").textContent = R.worldsAnalysed
-    ? `Perfusion or continuous culture working is in ${pct(R.eitherProcess)} of sets: competitive worlds need one or the other, not both. The model found ${R.distinctRoutes.toLocaleString("en-GB")} different minimal sets; the most common accounts for only ${pct(R.routes[0]?.share ?? 0)}, so there are many routes, built from the same few core changes.`
+    ? `Perfusion or continuous culture working is in ${pct(R.eitherProcess)} of sets: price-competitive worlds need one or the other, not both. The model found ${R.distinctRoutes.toLocaleString("en-GB")} different minimal sets; the most common accounts for only ${pct(R.routes[0]?.share ?? 0)}, so there are many routes, built from the same few core changes.`
     : "";
   $("recipe-routes").replaceChildren(...(R.routes.length ? [el("p", {class: "small", text: "Most common minimal sets:"}),
     el("ol", {class: "routes"}, R.routes.slice(0, 5).map(t => el("li", {}, el("span", {class: "num", text: `${pct(t.share)} `}), t.labels.map(short).join(" + "))))] : []));

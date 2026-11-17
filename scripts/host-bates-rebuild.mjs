@@ -1,8 +1,9 @@
 // Make the two hosted copies of Alex Bates's page (David, 17 Nov 2026):
 //   alt/bates-rebuild-v0.9.7-as-shared.html  his page as shared; only the typeface matched to this site,
 //                                            plus a one-line host bar and Hypothes.is
-//   alt/bates-rebuild-v0.9.7.html            the same plus Unjournal host notes and explanations
-// In both, Alex's model, text and code are untouched (major changes need his consent).
+//   alt/bates-rebuild-v0.9.7.html            'first-pass edits': host notes, explanations and minor
+//                                            wording/label/display changes (EDITS below)
+// In both, Alex's model logic and inputs are untouched (substantive changes need his consent).
 import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 const src = '/Users/yosemite/githubs/cm_pq_modeling/models/bates-rebuild-2026-11/cultured-meat-model-v0.9.7.html';
 const outDir = '/Users/yosemite/githubs/cm_pq_modeling/dashboard/alt';
@@ -30,28 +31,56 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
 .uj-host strong { color: var(--ink); }
 .uj-host a { color: var(--accent); }
 .uj-host .links { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.uj-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; font-weight: 500; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+.uj-nav .uj-sep { color: var(--ink-3); }
 </style>
 `;
+// Page navigation shared by both versions: main model, notes, the two versions, the review.
+const nav = current => {
+  const item = (key, href, label) => key === current ? `<strong aria-current="page">${label}</strong>` : `<a href="${href}">${label}</a>`;
+  return `<nav class="uj-nav" aria-label="Cost model pages">
+    <a href="../index.html">&larr; Main model</a><a href="../simple.html">Simplest model</a><a href="../bates-rebuild.html">Notes and comparison</a>
+    <span class="uj-sep">Alex's rebuild:</span>${item('shared', 'bates-rebuild-v0.9.7-as-shared.html', 'as shared')}${item('edited', 'bates-rebuild-v0.9.7.html', 'first-pass edits')}
+    <a href="${DOC}">Literature review</a></nav>`;
+};
 const bar = `<div class="uj-host" role="note">
   <div class="uj-host-in">
-    <p><strong>Alternative model, hosted for discussion.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026). The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated); this page proposes structural changes and a "what has to go right" analysis.</p>
-    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom.</p>
-    <p>This version adds Unjournal host notes and explanations (marked as such); Alex's model and text are unchanged. <a href="bates-rebuild-v0.9.7-as-shared.html">Version as Alex shared it</a>.</p>
-    <p class="links"><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="${DOC}">Literature review (Google Doc)</a><a href="../simple.html">Simplest model</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
+    ${nav('edited')}
+    <p><strong>Alex Bates's rebuild, with first-pass edits.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026), with host notes and minor changes made in response to comments: typeface, labels and wording, explanations, and display of the "What has to go right" rows. Alex's model, inputs and code logic are unchanged. The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated).</p>
+    <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom. Comment with Hypothes.is: the &lsaquo; tab on the right edge.</p>
   </div>
 </div>
 `;
 const barShared = `<div class="uj-host" role="note">
   <div class="uj-host-in">
-    <p><strong>Alex Bates's rebuild, as he shared it</strong> (file v0.9.7, 16 November 2026), hosted by The Unjournal for discussion. Only the typeface has been changed to match this site. The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated).</p>
-    <p class="links"><a href="bates-rebuild-v0.9.7.html">Version with host notes and explanations</a><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="${DOC}">Literature review (Google Doc)</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
+    ${nav('shared')}
+    <p><strong>Alex Bates's rebuild, as he shared it</strong> (file v0.9.7, 16 November 2026), hosted by The Unjournal for discussion. Only the typeface has been changed to match this site. The <a href="../index.html">main Unjournal model</a> remains the master copy (Alex suggested this; neither model is fully validated). Comment with Hypothes.is: the &lsaquo; tab on the right edge.</p>
   </div>
 </div>
 `;
+// First-pass edits (edited version only): wording and labels prompted by Hypothes.is comments, 17 Nov 2026.
+// Each target must exist in Alex's file; replaceAll covers the two copies of the engine source in the page.
+const EDITS = [
+  ['rebuild v0.9.4', 'rebuild v0.9.7 &middot; first-pass edits'],
+  ['label: "Outlay per cell bank", unit: "$"', 'label: "Outlay per cell bank", unit: "$ per bank, one-off"'],
+  ['label: "Output per outlay", unit: "kg dry cell mass"', 'label: "Output per cell bank", unit: "kg dry cell mass per bank"'],
+  ['Very minor cost, modelled abstractly', 'Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials'],
+  ['If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids.',
+   'If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids. The default probability (0.75) is carried over from the main Unjournal model; no published or elicited source was found.'],
+  ['lt.textContent = "Approximate parity to";', 'lt.textContent = `Parity with chicken ${tickLabel(S.parity.dry)};`;'],
+  ['lt2.textContent = `commercial chicken ${tickLabel(S.parity.dry)}–${tickLabel(S.parity.premium)}`;', 'lt2.textContent = `price-competitive zone to ${tickLabel(S.parity.premium)}`;'],
+  ['reach the competitive zone', 'reach the price-competitive zone'],
+  ['smallest sets of improvements on the central world that make it competitive', 'smallest sets of improvements on the central world that make it price-competitive'],
+  ['competitive worlds need one or the other', 'price-competitive worlds need one or the other']
+];
 if (!html.includes('</head>') || !html.includes('<body>')) throw new Error('unexpected page structure');
 html = html.replace('</head>', headAdd + '</head>');
 let shared = html.replace('<body>', '<body>\n' + barShared)
   .replace('</body>', '<script src="https://hypothes.is/embed.js" async></script>\n</body>');
+for (const [from, to] of EDITS) {
+  if (!html.includes(from)) throw new Error(`first-pass edit target not found: ${from.slice(0, 60)}`);
+  html = html.split(from).join(to);
+}
 html = html.replace('<body>', '<body>\n' + bar);
 // Host explanations (David, 17 Nov 2026): what the dry-cell thresholds mean per kg of product.
 // Arithmetic: meat at 27.5% solids = dry x 0.275; hybrid = meat x 0.25 + $3 x 0.75 (the main model's conventions).

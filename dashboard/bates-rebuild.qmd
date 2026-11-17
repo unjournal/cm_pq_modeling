@@ -11,7 +11,9 @@ format:
 
 *Drafted by Claude (AI) for David Reinstein on 17 November 2026, from Alex Bates's model page (file v0.9.7) and literature review (16 November 2026). Not yet reviewed by Alex. Numbers on this page are read from [`bates-rebuild-comparison-2026-11-17.json`](bates-rebuild-comparison-2026-11-17.json), produced by `scripts/compare-bates-rebuild.mjs` (1,000,000 simulated worlds, seed 42).*
 
-**Open the rebuild:** [with our host notes and explanations](alt/bates-rebuild-v0.9.7.html) · [as Alex shared it](alt/bates-rebuild-v0.9.7-as-shared.html) (typeface only) · [literature review (Google Doc, open for comments)](https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit) · **Main model:** [Simplest](simple.qmd) · [Advanced](index.qmd)
+::: {.callout-tip appearance="simple"}
+**Pages in this set.** Main model: [Simplest](simple.qmd) · [Advanced](index.qmd) &nbsp;|&nbsp; Alex's rebuild: [as shared](alt/bates-rebuild-v0.9.7-as-shared.html) (typeface only) · [first-pass edits](alt/bates-rebuild-v0.9.7.html) (our host notes, explanations and minor wording, label and display changes; his model unchanged) &nbsp;|&nbsp; [Literature review](https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit) (Google Doc, open for comments) &nbsp;|&nbsp; This page: notes and comparison
+:::
 
 ```{ojs}
 //| echo: false
@@ -209,7 +211,7 @@ Effect of two of its suggestions on the rebuild's own share under \$36/kg dry: o
 
 ## Provenance and files
 
-- Two hosted versions, both built by `scripts/host-bates-rebuild.mjs` with Alex's model, text and code unchanged: [`alt/bates-rebuild-v0.9.7-as-shared.html`](alt/bates-rebuild-v0.9.7-as-shared.html) (typeface matched to this site, a one-line host bar and Hypothes.is) and [`alt/bates-rebuild-v0.9.7.html`](alt/bates-rebuild-v0.9.7.html) (the same plus host notes and explanations added in response to comments, each marked as ours). The unmodified original and the review's .docx are in the repository under `models/bates-rebuild-2026-11/`.
+- Two hosted versions, both built by `scripts/host-bates-rebuild.mjs` with Alex's model logic and inputs unchanged: [`alt/bates-rebuild-v0.9.7-as-shared.html`](alt/bates-rebuild-v0.9.7-as-shared.html) (typeface matched to this site, a host bar and Hypothes.is) and [`alt/bates-rebuild-v0.9.7.html`](alt/bates-rebuild-v0.9.7.html), "first-pass edits": the same plus host notes and explanations, and minor wording, label and display changes made in response to comments (listed in the script). The unmodified original and the review's .docx are in the repository under `models/bates-rebuild-2026-11/`.
 - The page header reads "rebuild v0.9.4" and its engine reports 0.9.0; the file is named v0.9.7.
 - Comparison: `node scripts/compare-bates-rebuild.mjs 1000000 42 > dashboard/bates-rebuild-comparison-2026-11-17.json` (about 4 minutes).
 - Discussion: comment on either page with Hypothes.is, on the Google Doc, or in the [discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3).
