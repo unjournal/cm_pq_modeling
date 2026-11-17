@@ -52,12 +52,28 @@ Each row changes one thing (from our model's settings, or from Alex's page defau
 
 ```{ojs}
 //| echo: false
-Inputs.table(cmp.rows.map(r => ({...r, count: r.count_under36})), {
-  columns: ["name", "p50", "mean", "cheapest", "under12", "under36", "under40", "count"],
-  header: {name: "Scenario", p50: "Median $/kg dry", mean: "Mean", cheapest: "Cheapest world", under12: "Under $12 (parity)", under36: "Under $36 (zone edge)", under40: "Under $40 (= $5 hybrid)", count: "Worlds under $36"},
-  format: {p50: usd, mean: usd, cheapest: v => `$${v.toFixed(1)}`, under12: pct, under36: pct, under40: pct},
-  width: {name: 340}, rows: 20, layout: "auto"
-})
+{
+  // Short labels so the table fits; full scenario names are in the JSON.
+  const label = n => n
+    .replace("Unjournal engine defaults", "Main model, defaults")
+    .replace("Rebuild engine, original settings (should equal row 1)", "Rebuild engine, original settings (check: equals row 1)")
+    .replace(/^Original \+ /, "Main model + ")
+    .replace(" (no discount past the price quote)", "")
+    .replace("Rebuild page defaults (all changes)", "Rebuild, defaults (all changes)")
+    .replace(/^Rebuild page, /, "Rebuild, ").replace(/^Rebuild page \+ /, "Rebuild + ")
+    .replace(" (review evidence range)", " (review's range)").replace(/m3/g, "m³");
+  const th = "text-align:right;padding:4px 6px;vertical-align:bottom;font-weight:600";
+  const td = "text-align:right;padding:3px 6px;white-space:nowrap";
+  return html`<div style="overflow-x:auto"><table style="font-size:0.85em;border-collapse:collapse;width:100%">
+  <caption style="caption-side:top;text-align:left;font-size:0.9em">Cost in $/kg dry cell mass; shares and counts are of ${cmp.n.toLocaleString("en-US")} simulated worlds per row.</caption>
+  <thead><tr style="border-bottom:1px solid #ccc">
+    <th style="text-align:left;padding:4px 6px;vertical-align:bottom">Scenario</th><th style="${th}">Median</th><th style="${th}">Cheapest world</th>
+    <th style="${th}">Under $12 (parity)</th><th style="${th}">Under $36 (zone edge)</th><th style="${th}">Under $40 (= $5 hybrid)</th><th style="${th}">Worlds under $36</th></tr></thead>
+  <tbody>${cmp.rows.map(r => html`<tr style="border-bottom:1px solid #eee">
+    <td style="padding:3px 6px;min-width:12em">${label(r.name)}</td><td style="${td}">${usd(r.p50)}</td><td style="${td}">$${r.cheapest.toFixed(1)}</td>
+    <td style="${td}">${pct(r.under12)}</td><td style="${td}">${pct(r.under36)}</td><td style="${td}">${pct(r.under40)}</td><td style="${td}">${r.count_under36.toLocaleString("en-US")}</td></tr>`)}</tbody>
+  </table></div>`;
+}
 ```
 
 <details><summary><strong>How the thresholds line up with the main model's</strong></summary>
