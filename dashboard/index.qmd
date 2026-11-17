@@ -1567,14 +1567,17 @@ stats = {
 
 ### Results Summary
 
-::: {.callout-important appearance="simple"}
-**Corrections, 9 November 2026 (engine `2026-11-09.1`).** (1) Growth-factor dose was drawn independently of medium use, allowing physically impossible combinations; it now follows medium use by default (concentration × litres per kg). At the defaults (seed 42) the median moves from \$276 to \$289/kg dry, the 90th percentile from \$920 to \$1,167, the share under \$25/kg hybrid from 58.2% to 55.6% and under \$10 from 11.6% to 12.0%. (2) The note below the result cards said washing losses were not modeled; recovery losses and failed runs have been in the default since November 7. (3) Retail prices on the [demand page](demand.qmd) are now labelled as retail, with the wholesale-to-retail markup stated. [Details and before/after figures](review-response-2026-09.qmd#corrections-2026-11-09).
+::: {.callout-important collapse="true"}
+## Corrections, 9 November 2026 (engine `2026-11-09.1`)
+(1) Growth-factor dose was drawn independently of medium use, allowing physically impossible combinations; it now follows medium use by default (concentration × litres per kg). At the defaults (seed 42) the median moves from \$276 to \$289/kg dry, the 90th percentile from \$920 to \$1,167, the share under \$25/kg hybrid from 58.2% to 55.6% and under \$10 from 11.6% to 12.0%. (2) The note below the result cards said washing losses were not modeled; recovery losses and failed runs have been in the default since November 7. (3) Retail prices on the [demand page](demand.qmd) are now labelled as retail, with the wholesale-to-retail markup stated. [Details and before/after figures](review-response-2026-09.qmd#corrections-2026-11-09).
 :::
 
-**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass, shown alongside the ingredient cost of a kg of **hybrid product** (25% cells at chicken-meat moisture, 75% plant-based ingredients at \$3/kg; adjustable). Wet biomass is one switch away under *Structural stress tests*. Each figure is for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
-
-
 []{#output-cautions}
+
+::: {.callout-note collapse="true"}
+## What these numbers represent, and three cautions
+
+**Quantity being modeled:** manufacturing cost per kg of cultured-chicken dry cell mass, shown alongside the ingredient cost of a kg of hybrid product (25% cells at chicken-meat moisture, 75% plant-based ingredients at \$3/kg; adjustable). Wet biomass is one switch away under *Structural stress tests*. Each figure is for a hypothetical plant/process scenario. Each draw samples one process; process weights are probabilities across scenarios, not production shares within a simulated industry. The output is not an industry-average forecast or a frontier estimate. (With cheapest-feasible mode selection on, each draw uses the lowest-cost feasible mode, a step toward a frontier estimate for the process choice only.) Commercialization probability is unmodeled; dollars retain mixed source years.
 
 ```{ojs}
 //| echo: false
@@ -1586,6 +1589,8 @@ html`<div style="background: #f8f9fa; padding: 1rem 1.25rem; border-left: 4px so
 <strong>Three cautions before using the output:</strong> (1) source costs are not yet normalized to one real-dollar base year; (2) the CM_01 beliefs question is now unconditional and hypothetical: its central part (A1) asks for "the production-weighted average cost per kg of cultivated-chicken cell biomass in 2036, at a scale of at least 2,000 tonnes per plant per year", including hypothetical production if no such plants operate (<a href="https://uj-cm-workshop.netlify.app/question-changes.html">question changes</a>). This model now targets the same unconditional, hypothetical framing, but A1 asks for a production-weighted average in 2025 dollars while the model's decided target is the best available plant in 2026 dollars (<a href="limits.html#estimand">estimand note</a>); and (3) compare the output with conventional chicken at wholesale (about $${basisLabels.chicken.central.toFixed(2)}/kg boneless), not with the retail price (about $${basisLabels.chicken.retail.toFixed(2)}/kg): US retail prices include processing, distribution and retail margins this model does not cost. Even at wholesale, the hybrid product still leaves out forming and texturization, and its inclusion rate and filler cost are conventions, so it is an ingredient-cost scenario, not a parity result (<a href="docs.html#chicken-comparison">comparison point</a>).
 </div>`
 ```
+
+:::
 
 ```{ojs}
 //| echo: false

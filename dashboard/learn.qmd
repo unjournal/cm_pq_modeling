@@ -369,7 +369,7 @@ Cost implication: If a cell line can produce 10× more batches before replacemen
 
 ## Step 2: Seed Train (Scale-Up)
 
-<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Seed train costs are primarily labor and media for the small-volume expansion steps. Per Humbird 2021: seed train bioreactors are a small fraction of total CAPEX (~$2M of $34M production bioreactor cost), and media volumes are orders of magnitude smaller than production. Typically estimated at 5-10% of total cost, mostly from labor time.">~5-10% of total production cost</abbr>** (mostly labor)</span>
+<span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.95em;">**Estimated cost share: <abbr title="Per Humbird 2021: seed train bioreactors are a small fraction of total CAPEX (~$2M of $34M production bioreactor cost), and media volumes are orders of magnitude smaller than production. In this model the seed train is equipment only, about 0.5% of average cost at the default settings; its labor sits in plant operating costs.">small, well under 5% of total production cost</abbr>**</span>
 
 ### What Happens
 
@@ -471,7 +471,7 @@ Cells are progressively expanded from small flasks to larger and larger bioreact
 
 ### Cost Impact
 
-The <abbr title="The sequence of progressively larger vessels used to expand cells from a small vial to production scale">seed train</abbr> phase typically represents **5-15% of total production cost** at scale. Per [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/): at 100 kTA scale, labor costs are "$1/kg wet cell mass" and consumables another "$1/kg":
+The <abbr title="The sequence of progressively larger vessels used to expand cells from a small vial to production scale">seed train</abbr> is a small share of cost at scale. In [Humbird 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/), seed-train reactors are about \$2M of \$34M in production-reactor cost, and seed-train medium volumes are far smaller than production volumes. Humbird's labor figure, "\$1/kg wet cell mass" (about \$5/kg dry at 20% solids), covers the whole plant's staff, not the seed train alone. In this model the seed train is equipment only, charged as a share of the main plant's installed capital: about 0.5% of average cost at the default settings. Per kg of output it is still expensive, because it:
 
 - Uses **expensive, small-scale equipment** (research-grade, often <abbr title="Disposable plastic bioreactor bags/vessels — avoid cleaning validation but add consumable costs">single-use</abbr>)
 - Requires **manual handling** and skilled labor ($50-150/hour <abbr title="'Fully loaded' = total employer cost including salary plus benefits, payroll taxes, insurance, training, and overhead. Per Humbird 2021: '$50,000/y for regular FTEs' with '100% labor burden' = $100k total. Fed-batch needs '95 total FTE'; perfusion needs '132 FTE'.">fully loaded</abbr>)
@@ -632,7 +632,7 @@ Companies like UPSIDE Foods and Believer Meats have built large-scale facilities
 ::: {.callout-important collapse="true"}
 ## Why Bioreactor Costs Are Pivotal (click to expand)
 
-Bioreactor CAPEX accounts for **<abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of total production cost at scale</abbr>**, making it a pivotal cost driver. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
+In published TEAs, bioreactors and the rest of the plant account for **<abbr title="Per Humbird 2021: Bioreactor CAPEX $4/kg + Buildings $3/kg + Rest of plant $5/kg = $12/kg of ~$37/kg total production cost. This share can be higher (up to 35%) with pharma-grade equipment or lower (15%) with food-grade alternatives. CE Delft (2021) estimates similar ranges at 10 kTA scale.">roughly 15-35% of production cost at scale</abbr>**. Those studies model plants close to price parity, where medium is already cheap. In this model's default scenarios capital is a smaller share, about 7% of average cost, because medium and growth factors dominate most draws; in the cheapest 10% of draws it is about 13%, close to the published range. <abbr title="Equipment built to pharmaceutical industry standards — 316L stainless steel, validated cleaning, full documentation. Per PMC 2024: 10,000L stirred systems cost ~$150M; 2,000L perfusion bioreactors cost ~$260M.">Pharma-grade</abbr> stainless steel bioreactors cost $50-500/L installed ([Humbird 2021](https://www.sciencedirect.com/science/article/pii/S2589014X21000026), [PMC 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC12241508/)).
 
 The opportunity — already being realized: Several companies are now using simplified <abbr title="Equipment designed for food/beverage production — less stringent than pharma but still safe for human consumption">food-grade</abbr> designs (similar to beer brewing at [$5-15/L](https://www.brewersassociation.org/)). Vow (Australia) has built custom food-grade bioreactors at ~80% below pharma costs, and other companies are following suit. If this approach scales successfully, equipment costs could drop by **10x** industry-wide.
 
@@ -817,6 +817,8 @@ At production scale, media (including growth factors) typically represents **40-
 | Downstream processing | 2-15% | — |
 
 This is why media cost reduction (hydrolysates, cheap growth factors, high cell density) is so critical.
+
+These shares come from published TEAs of plants near price parity. In this model's default scenarios, capital is about 7% and fixed operating costs about 4% of average cost (about 13% and 22% in the cheapest 10% of draws), because medium and growth factors dominate most draws.
 :::
 
 This model assumes serum-free production. That is a scenario boundary, not a claim about every commercial formulation.
@@ -1078,12 +1080,12 @@ The model's forming toggle covers blended, mince-type products only; scaffolded 
     <text x="240" y="127" text-anchor="middle" font-size="14" fill="white">(media, GFs, etc.): 40-70%</text>
   </g>
   <g>
-    <title>Capital costs: bioreactors, buildings and the rest of the plant, annualised. Typically 15-35% of total production cost.</title>
+    <title>Capital costs: bioreactors, buildings and the rest of the plant, annualised. Typically 15-35% of total production cost in published TEAs of plants near parity; about 7% of average cost in this model's default scenarios.</title>
     <rect x="40" y="150" width="400" height="56" fill="#c0392b"/>
     <text x="240" y="184" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Capital costs (bioreactors): 15-35%</text>
   </g>
   <g>
-    <title>Fixed operating costs: labor, maintenance, overhead. Typically 10-25% of total production cost.</title>
+    <title>Fixed operating costs: labor, maintenance, overhead. Typically 10-25% of total production cost in published TEAs of plants near parity; about 4% of average cost in this model's default scenarios.</title>
     <rect x="40" y="206" width="400" height="48" fill="#d68910"/>
     <text x="240" y="236" text-anchor="middle" font-size="14" fill="white" font-weight="bold">Fixed OPEX (labor, overhead): 10-25%</text>
   </g>
