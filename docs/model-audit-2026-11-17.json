@@ -1,6 +1,6 @@
 {
-  "model_version": "2026-11-17.1",
-  "engine_sha256": "c500017ac8ffc0626115d89ba3fd741c65b1604119b916d81bb3f6c5dff4548f",
+  "model_version": "2026-11-17.2",
+  "engine_sha256": "dcb3e460242a1b92e33aace04e96b7fbf4a12dce033a2764764fa807aae32149",
   "n": 30000,
   "seed": 42,
   "default_parameters": {
@@ -12,6 +12,7 @@
     "p_recfactors_mean": 0.5,
     "maturity_centre": 0.4,
     "medium_choice": "cheapest",
+    "tech_link": "maturity",
     "p_supp_protein_mean": 0.7,
     "wacc_p5": 0.08,
     "wacc_p95": 0.2,

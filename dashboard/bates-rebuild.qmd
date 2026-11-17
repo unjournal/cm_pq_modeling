@@ -170,6 +170,8 @@ Replace the single nudge with a few named drivers, each affecting the inputs it 
 
 Technically, a Gaussian copula: each input keeps exactly the distribution entered, and its draw is correlated with one or two drivers through a loading between 0 (independent) and 1. A yes/no technology becomes a threshold on a correlated normal draw, so its probability stays as entered. Because the averages don't move, there is no double counting; only the co-occurrence changes.
 
+A first step in this direction is now available in the main model as an option (engine `2026-11-17.2`, off by default): a single correlation that links the three yes-or-no technologies, set under *Technology Adoption* on the [Advanced page](index.qmd). It does not yet link the process or the continuous inputs, and its effect on the share of cheap worlds is modest; the figures are in the [guide](guide.qmd).
+
 Direction of the effect: favourable inputs that tend to arrive together fatten the joint tail, so price-competitive worlds would probably become more common than under independence, by an amount that depends on the loadings. Those loadings should be elicited, or shown as scenarios (say 0, 0.3 and 0.6). Gene editing may also carry its own regulatory and consumer-acceptance risk, which could be a separate yes/no input. Alex's literature review reaches a similar view: the cell line is the main common cause, and the correlations should be elicited as conditional probabilities.
 
 </details>

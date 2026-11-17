@@ -1,6 +1,6 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-11-17.1";
+export const MODEL_VERSION = "2026-11-17.2";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
@@ -11,6 +11,11 @@ export const DEFAULT_PARAMS = Object.freeze({
   // Where hydrolysate medium exists: "cheapest" buys the cheaper of the two media (since 2026-11-17.1);
   // "hydrolysate" always buys hydrolysate medium (the earlier rule).
   medium_choice: "cheapest",
+  // How strongly the yes/no technologies (hydrolysate medium, cheap growth factors, food-grade supplemental
+  // proteins) succeed or fail together. "maturity": the original maturity nudge, which gives a correlation of
+  // about 0.01 (default). A number from 0 to 0.95: a Gaussian copula with that correlation, which keeps each
+  // entered probability exact. Optional since 2026-11-17.2; see REVIEW_PROVENANCE.tech_link.
+  tech_link: "maturity",
   p_supp_protein_mean: 0.70, wacc_p5: 0.08, wacc_p95: 0.20,
   // Density inputs are g dry cells per litre (override range and expert prior).
   asset_life_lo: 8, asset_life_hi: 20, density_gL_p5: 6, density_gL_p95: 40,
@@ -77,6 +82,7 @@ export const REVIEW_PROVENANCE = Object.freeze({
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific failure rates and seed-train capital are modeled since November 7, 2026; cell-retention equipment, consumables and extra medium throughput are not, so selection still favors the least-specified modes.",
   forming: "November 7, 2026 (engine 2026-11-07.2): forming is a cost per kg of final hybrid product, lognormal p5–p95 $0.5–2.5 (2026 dollars), added to the hybrid cost only, not to cell-mass cost. Source: GFI 2021, Plant-based meat: anticipating 2030 production requirements, Tables 3–5 (order-of-magnitude, bottom-up): high-moisture extrusion plants at 70,000 t/yr (capex $91.2M, non-ingredient opex $22.1M/yr) and 7,000 t/yr ($18.2M; $9.5M/yr) imply conversion costs of about $0.49 and $1.70 per kg in 2021 dollars (capex at a 13% capital recovery factor), about $0.6–2.1 in 2026 dollars; miscellaneous opex includes packaging, so these slightly overstate forming alone. Scaffolded whole cuts would cost more and are not represented. The earlier $2–15/kg range had no recorded source and was added per wet kg of cells.",
   maturity: "November 17, 2026 (engine 2026-11-17.1; David Reinstein's decision, flagged by Alex Bates's rebuild). Each world draws one maturity value (Beta, mean = slider × year factor, sd 0.2) and adds k × (maturity − centre) to four technology probabilities (k = 0.25 hydrolysates and cheap growth factors, 0.20 supplemental proteins, 0.30 custom reactors) and subtracts 0.03 × (maturity − centre) from the cost of capital. The centre was 0.5, but at the defaults maturity averages 0.40 (slider 0.5 × 0.8 for 2036), so every probability came out below the value entered (hydrolysates 72.5% instead of 75%). The centre is now 0.40, the maturity at the default settings, so the entered probabilities hold at the defaults (they are for 2036); moving the maturity slider or the target year still shifts them. The year factor and the k values date from February 2026 and have no empirical source; they are not calibrated to observed rates of progress.",
+  tech_link: "November 17, 2026 (engine 2026-11-17.2; optional, off by default, pending comments from Alex Bates and others). The maturity nudge links the technologies with a correlation of only about 0.01, which is effectively no link. With a number r here, each world draws one shared standard-normal factor; a technology works when sqrt(r) × shared factor + sqrt(1 − r) × its own factor falls below the point that gives exactly the entered probability (a Gaussian copula). r = 0.3 is a convention borrowed from cost-risk analysis (0.2–0.3) and a drug-development portfolio model (0.20); no measurement exists for cultured meat. At r = 0.3, cheap growth factors work in about 55% of the worlds where hydrolysates work, against 50% overall. The food-grade reactor share and the cost of capital keep their small maturity shifts, driven by the same shared factor. Process feasibility (perfusion, continuous) is not linked. Research note: docs/maturity-link-calibration-research-2026-11.md (AI-written, unreviewed).",
   reactor: "November 7, 2026: custom (food-grade, aseptic but not cGMP) reactor cost ratio changed from 0.35–0.85 to 0.15–0.55 of pharma-grade (mean 0.35). Humbird 2020 preprint Table 3.1 (Petrides): installed cost of an aseptic non-cGMP 20 m³ vessel is about 0.34 of a cGMP mammalian one (about 0.5 for the vessel alone); sanitary brewing vessels about 0.05, but Humbird argues animal-cell culture must stay aseptic. The low end allows for low-cost custom designs (company claims: Meatly, Vow). Provisional."
 });
 
@@ -118,6 +124,26 @@ function adjustedAdoption(base, samples, maturity, strength, centre) {
   // The UI's 0% and 100% choices are hard scenario settings.
   if (base === 0 || base === 1) return samples.map(() => base);
   return clip(samples.map((p, i) => p + strength * (maturity[i] - centre)), 0, 1);
+}
+
+// Standard normal distribution function and its inverse, for the optional technology link.
+function normCdf(z) {
+  // Abramowitz & Stegun 7.1.26 on erf; absolute error below 1.5e-7.
+  const x = Math.abs(z) / Math.SQRT2, t = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+}
+function invNorm(p) {
+  // Acklam's rational approximation; relative error below 1.2e-9.
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+  p = Math.min(Math.max(p, 1e-12), 1 - 1e-12);
+  if (p < 0.02425) { const q = Math.sqrt(-2 * Math.log(p)); return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  if (p > 1 - 0.02425) { const q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  const q = p - 0.5, r = q * q;
+  return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
 }
 
 // Separate streams keep unrelated draws identical when a component is toggled.
@@ -357,6 +383,11 @@ function simulateDrawnMode(n, seed, params) {
   for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"], cost_basis: ["dry", "wet"], medium_choice: ["cheapest", "hydrolysate"]})) {
     if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
   }
+  if (params.tech_link !== "maturity") {
+    const r = Number(params.tech_link);
+    if (params.tech_link === "" || params.tech_link == null || !Number.isFinite(r) || r < 0 || r > 0.95)
+      throw new RangeError("tech_link must be \"maturity\" or a correlation from 0 to 0.95.");
+  }
   validateRange(params.fresh_media_p5, params.fresh_media_p95);
   for (const key of ["solids_fraction", "target_solids_fraction", "protein_fraction_of_solids"]) {
     if (!Number.isFinite(params[key]) || params[key] <= 0 || params[key] > 1)
@@ -403,10 +434,26 @@ function simulateDrawnMode(n, seed, params) {
   let rng = namedStream(seed, "maturity");
 
   // Latent maturity factor
-  const maturity = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
+  const maturityDraw = sampleBetaMeanStdev(rng, params.maturity_mean, 0.20, n);
+  // Optional technology link (tech_link is a correlation): one shared standard-normal factor per world.
+  // It replaces the maturity draw for every channel, with the same mean and standard deviation (0.20).
+  const techLink = params.tech_link === "maturity" ? null : Number(params.tech_link);
+  const linkFactor = techLink == null ? null
+    : (() => { const lrng = namedStream(seed, "tech-link"); return Array.from({length: n}, () => boxMuller(lrng)); })();
+  const maturity = techLink == null ? maturityDraw
+    : linkFactor.map(z => Math.min(1, Math.max(0, params.maturity_mean + 0.20 * z)));
+  // Yes/no technology draw. Without the link: u < the maturity-adjusted probability (unchanged).
+  // With it: a Gaussian copula on the same uniform u, compared with the entered probability (plus the
+  // maturity slider's deterministic shift), so each technology works in exactly that share of worlds.
+  const techWorks = (u, adjusted, entered, strength, i) => {
+    if (techLink == null) return u < adjusted;
+    if (entered === 0 || entered === 1) return u < entered;
+    const target = Math.min(1, Math.max(0, entered + strength * (params.maturity_mean - params.maturity_centre)));
+    return normCdf(Math.sqrt(techLink) * linkFactor[i] + Math.sqrt(1 - techLink) * invNorm(u)) < target;
+  };
   // Independent channel factors keep the same Beta marginal, including the mean
   // shift and clipping. Setting coefficients to zero would also change marginals.
-  const maturityChannel = name => params.dependence_mode === "shared" ? maturity
+  const maturityChannel = name => techLink != null || params.dependence_mode === "shared" ? maturity
     : sampleBetaMeanStdev(namedStream(seed, `maturity-${name}`), params.maturity_mean, 0.20, n);
   const hydroMaturity = maturityChannel("hydro"), gfMaturity = maturityChannel("gf");
   const suppMaturity = maturityChannel("supp"), financeMaturity = maturityChannel("finance");
@@ -428,8 +475,8 @@ function simulateDrawnMode(n, seed, params) {
   p_recf = adjustedAdoption(params.p_recfactors_mean, p_recf, gfMaturity, 0.25, params.maturity_centre);
 
   // Bernoulli draws for adoption
-  const is_hydro = p_hydro.map(p => rng() < p);
-  const is_recf_cheap = p_recf.map(p => rng() < p);
+  const is_hydro = p_hydro.map((p, i) => techWorks(rng(), p, params.p_hydro_mean, 0.25, i));
+  const is_recf_cheap = p_recf.map((p, i) => techWorks(rng(), p, params.p_recfactors_mean, 0.25, i));
 
   rng = namedStream(seed, "process");
   // Mode-specific scenario distributions are soft priors, not feasibility bounds.
@@ -570,7 +617,7 @@ function simulateDrawnMode(n, seed, params) {
   // Exp. regime:  pharma-grade → p5=$0.50/kg, p95=$4.00/kg cell mass
   let p_supp = sampleBetaMeanStdev(rng, params.p_supp_protein_mean, 0.12, n);
   p_supp = adjustedAdoption(params.p_supp_protein_mean, p_supp, suppMaturity, 0.20, params.maturity_centre);
-  const is_supp_cheap = p_supp.map(p => rng() < p);
+  const is_supp_cheap = p_supp.map((p, i) => techWorks(rng(), p, params.p_supp_protein_mean, 0.20, i));
   const supp_cheap_cost = sampleLognormalP5P95(rng, 0.03, 0.60, n);
   const supp_exp_cost   = sampleLognormalP5P95(rng, 0.50, 4.00, n);
   let cost_supp_protein = is_supp_cheap.map((c, i) => c ? supp_cheap_cost[i] : supp_exp_cost[i]);

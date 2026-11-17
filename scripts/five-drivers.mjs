@@ -79,7 +79,10 @@ const P = DEFAULT_PARAMS, perMeat = P.target_solids_fraction, cellShare = P.cell
 const hybridFromDry = d => d * perMeat * cellShare + filler * (1 - cellShare);
 const dryFromHybrid = h => (h - filler * (1 - cellShare)) / (perMeat * cellShare);
 const shareBelow = d => { let c = 0; for (const v of total) if (v < d) c++; return c / n; };
-const line = (label, dry) => ({label, dry, all_cell_meat: dry * perMeat, hybrid: hybridFromDry(dry), share_of_worlds_below: shareBelow(dry)});
+// The same cells in a product with only 10% cells (some products on sale are nearer that share).
+const LOW_SHARE = 0.10;
+const line = (label, dry) => ({label, dry, all_cell_meat: dry * perMeat, hybrid: hybridFromDry(dry),
+  hybrid_low_share: dry * perMeat * LOW_SHARE + filler * (1 - LOW_SHARE), share_of_worlds_below: shareBelow(dry)});
 const price_lines = [
   line("Parity with chicken on Alex Bates's page ($12 per kg of dry cells)", 12),
   line('Hybrid product at the wholesale price of chicken ($3.50 per kg)', dryFromHybrid(3.5)),
@@ -90,13 +93,70 @@ const price_lines = [
   line("The model's median world", qs(ts, 0.5))
 ];
 
+// --- Running costs and capital as a floor: what a kg would cost if medium and growth factors were free.
+const floorCost = total.map((_, i) => running[i] + capital[i]);
+const fs = sorted(floorCost);
+const floor = {note: 'plant running costs + capital charge per kg dry: the cost if medium and growth factors were free',
+  p10: qs(fs, 0.1), p50: qs(fs, 0.5), p90: qs(fs, 0.9),
+  share_of_worlds_below: Object.fromEntries([12, 18, 36].map(t => [t, fs.filter(v => v < t).length / n])),
+  under36: {floor_median: med(pick(floorCost, groups.under36)), total_median: med(pick(total, groups.under36))}};
+
+// --- What lies behind each of the three medium numbers.
+// Share of the spread (variance of the logarithm) of a number that is accounted for by one underlying
+// input: group the worlds by that input (50 equal-sized groups, or yes/no) and compare group averages.
+const logOf = a => a.map(v => Math.log(v));
+const variance = a => { let m = 0; for (const v of a) m += v; m /= a.length; let q = 0; for (const v of a) q += (v - m) ** 2; return q / a.length; };
+function shareExplained(y, x, bins = 50) {
+  const idx = [...y.keys()].sort((a, b) => x[a] - x[b]);
+  const distinct = new Set(x.slice(0, 2000)).size <= 2;
+  const groupsOf = distinct ? [idx.filter(i => x[i] === x[idx[0]]), idx.filter(i => x[i] !== x[idx[0]])]
+    : Array.from({length: bins}, (_, b) => idx.slice(Math.floor(b * idx.length / bins), Math.floor((b + 1) * idx.length / bins)));
+  let grand = 0; for (const v of y) grand += v; grand /= y.length;
+  let between = 0;
+  for (const g of groupsOf) { if (!g.length) continue; let m = 0; for (const i of g) m += y[i]; m /= g.length; between += g.length * (m - grand) ** 2; }
+  return between / y.length / variance(y);
+}
+const logL = logOf(L), logPm = logOf(pm), logPg = logOf(pg), logTotal = logOf(total);
+// Process used: the engine draws the process independently of everything else, so the spread within each
+// process comes from a run restricted to that process; what is left is the share due to the process itself.
+const nProc = Math.min(n, 300000);
+const procRuns = {fedbatch: simulate(nProc, seed, {p_fedbatch: 1, p_perfusion: 0, p_continuous: 0}),
+  perfusion: simulate(nProc, seed, {p_fedbatch: 0, p_perfusion: 1, p_continuous: 0}),
+  continuous: simulate(nProc, seed, {p_fedbatch: 0, p_perfusion: 0, p_continuous: 1})};
+const weights = {fedbatch: r.pct_fedbatch, perfusion: r.pct_perfusion, continuous: r.pct_continuous};
+const within = out => Object.entries(procRuns).reduce((sum, [k, pr]) => sum + weights[k] * variance(logOf(out(pr))), 0);
+const by_process = Object.fromEntries(Object.entries(procRuns).map(([k, pr]) => [k, {share_of_worlds: weights[k],
+  litres_median: med(pr.L_per_kg_samples), density_median: med(pr.density_samples), total_median: med(pr.unit_cost),
+  share_under36: pr.unit_cost.filter(v => v < 36).length / nProc}]));
+const behind = {
+  note: 'share of the spread (variance of the logarithm) in each number accounted for by one underlying input, taken alone; shares need not add to 100%',
+  litres: {process_used: 1 - within(pr => pr.L_per_kg_samples) / variance(logL), cell_density: shareExplained(logL, r.density_samples),
+    nutrient_yield: shareExplained(logL, r.nutrient_yield_samples), medium_use_multiplier: shareExplained(logL, r.media_turnover_samples),
+    nutrient_floor_sets_medium_use_in_share_of_worlds: r.nutrient_floor_binding_share},
+  medium_price: {hydrolysates_usable: shareExplained(logPm, r.is_hydro_samples), hydrolysate_share_of_worlds: r.pct_hydro,
+    median_if_usable: med(pm.filter((_, i) => r.is_hydro_samples[i] === 1)), median_if_not: med(pm.filter((_, i) => r.is_hydro_samples[i] === 0))},
+  gf_per_litre: {cheap_growth_factors_exist: shareExplained(logPg, r.is_recf_cheap_samples), cheap_share_of_worlds: r.pct_recf_cheap,
+    median_if_cheap: med(pg.filter((_, i) => r.is_recf_cheap_samples[i] === 1)), median_if_not: med(pg.filter((_, i) => r.is_recf_cheap_samples[i] === 0))},
+  total_cost: {hydrolysates_usable: shareExplained(logTotal, r.is_hydro_samples), cheap_growth_factors_exist: shareExplained(logTotal, r.is_recf_cheap_samples),
+    process_used: 1 - within(pr => pr.unit_cost) / variance(logTotal)}
+};
+
+// --- Optional link between the yes/no technologies (engine parameter tech_link).
+const link_scenarios = ['maturity', '0', '0.3', '0.6'].map(t => {
+  const lr = t === 'maturity' ? r : simulate(n, seed, {tech_link: t});
+  let h = 0, both = 0, all3 = 0;
+  for (let i = 0; i < n; i++) { const a = lr.is_hydro_samples[i], b = lr.is_recf_cheap_samples[i]; h += a; if (a && b) both++; }
+  return {tech_link: t, median: med(lr.unit_cost), share_under36: lr.unit_cost.filter(v => v < 36).length / n,
+    share_under100: lr.unit_cost.filter(v => v < 100).length / n, p_cheap_gf_given_hydrolysates: both / h, p_hydrolysates: h / n};
+});
+
 console.log(JSON.stringify({
   generated: new Date().toISOString().slice(0, 10), engine: MODEL_VERSION, n, seed,
   identity: 'cost = litres × (medium price + growth-factor cost per litre) + running costs + capital charge; all per kg dry cell mass, including the allowance for losses and failed runs',
   identity_max_relative_error: maxErr,
   running_includes: 'supplemental proteins, utilities and consumables, fixed costs (labour, maintenance, overhead)',
   total: {p10: qs(ts, 0.1), p50: qs(ts, 0.5), p90: qs(ts, 0.9)},
-  price_lines,
+  price_lines, low_cell_share: LOW_SHARE, floor, behind, by_process, link_scenarios,
   drivers: Object.fromEntries(Object.entries(drivers).map(([k, d]) => [k, {label: d.label, unit: d.unit}])),
   lines: Object.fromEntries(Object.entries(lines).map(([k, d]) => [k, d.label])),
   summary, spread_removed_when_held_at_median: spread_removed,

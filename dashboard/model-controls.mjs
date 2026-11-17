@@ -111,6 +111,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     ['gf_dose_model', 'Growth-factor dosage', [['media_linked', 'Concentration × fresh L/kg (baseline)'], ['per_kg', 'Separate g/kg prior (before Nov 9, 2026)']], REVIEW_PROVENANCE.gf],
     ['gf_concentration_mg_L', 'GF concentration (mg/L)', null, REVIEW_PROVENANCE.gf],
     ['gf_cheap_dose_fraction', 'Cheap-regime dose fraction (0–1)', null, REVIEW_PROVENANCE.gf],
+    ['tech_link', 'How strongly do the breakthroughs arrive together?', [['maturity', 'Almost no link (current default)'], ['0.3', 'Moderate link (correlation 0.3)'], ['0.6', 'Strong link (correlation 0.6)'], ['0', 'No link at all']], REVIEW_PROVENANCE.tech_link],
     ['mode_selection', 'Process-mode selection', [['mixture', 'Draw mode by weights (baseline)'], ['least_cost', 'Cheapest feasible mode']], REVIEW_PROVENANCE.mode_selection],
     ['p_feasible_perfusion', 'P(perfusion feasible at scale) (0–1)', null, 'Probability that perfusion works at commercial scale and is permitted by the projection year. Fed-batch is always feasible as the fallback. ' + REVIEW_PROVENANCE.mode_selection],
     ['p_feasible_continuous', 'P(continuous feasible at scale) (0–1)', null, 'Probability that continuous culture works at commercial scale and is permitted by the projection year, drawn independently of perfusion. ' + REVIEW_PROVENANCE.mode_selection],
@@ -130,6 +131,11 @@ export function structuralControl(initial = new URLSearchParams()) {
   modeHeading.style.fontSize = '0.9rem';
   modeSection.append(modeHeading);
   const modeLabels = {};
+  // The technology-link field also gets its own box (container.linkSection), which the Advanced page
+  // places under the technology probabilities so that it is easy to find and switch on.
+  const linkKeys = ['tech_link'];
+  const linkSection = document.createElement('div');
+  linkSection.style.cssText = 'border:1px solid #9bbbe0;background:#f3f8fd;border-radius:6px;padding:6px 10px;margin:6px 0 10px 0;';
   for (const [key, text, choices, provenance] of specs) {
     const label = document.createElement('label');
     label.textContent = text;
@@ -148,6 +154,7 @@ export function structuralControl(initial = new URLSearchParams()) {
     fields[key] = el;
     label.append(el);
     if (modeKeys.includes(key)) { modeLabels[key] = label; modeSection.append(label); }
+    else if (linkKeys.includes(key)) { label.style.fontWeight = '600'; linkSection.append(label); }
     else details.append(label);
   }
   const modeNote = document.createElement('p');
@@ -160,6 +167,15 @@ export function structuralControl(initial = new URLSearchParams()) {
   // Events here don't bubble to `container`, so re-dispatch for OJS's viewof.
   modeSection.addEventListener('input', () => container.dispatchEvent(new Event('input', {bubbles: true})));
   container.modeSection = modeSection;
+  const linkNote = document.createElement('p');
+  linkNote.style.cssText = 'font-size:0.8rem;color:#555;margin:4px 0;';
+  linkNote.append('Do hydrolysate medium, cheap growth factors and food-grade proteins tend to succeed or fail together? The current default links them so weakly that they are effectively independent. A moderate link means that if one works, the others are somewhat more likely to work too (with 0.3, cheap growth factors work in about 55% of the worlds where hydrolysates work, instead of 50%). Each probability you enter above stays exactly as entered. The 0.3 value is a convention from other fields, not a measurement; this option is offered for comment and may become the default. ');
+  const linkLink = document.createElement('a');
+  linkLink.href = 'docs.html#maturity-factor'; linkLink.textContent = 'How it works';
+  linkNote.append(linkLink);
+  linkSection.append(linkNote);
+  linkSection.addEventListener('input', () => container.dispatchEvent(new Event('input', {bubbles: true})));
+  container.linkSection = linkSection;
   const note = document.createElement('p');
   note.textContent = 'Direct-media range 40–300 L per kg dry, the nutrient-yield range 3–30 g dry cells/L, the loss, seed-train and oxygen ranges (added November 7, 2026, not yet reviewed by engineers), the GF dose fraction and the solids and protein shares are illustrative assumptions. Process-mode selection is set beside the process-mode weights. Hover over labels for provenance, or read the linked notes. The Simple view uses baseline structures.';
   const link = document.createElement('a');
@@ -189,7 +205,7 @@ export function structuralControl(initial = new URLSearchParams()) {
   container.addEventListener('input', update);
   Object.defineProperty(container, 'value', {get: () => ({...committed})});
   update();
-  if (specs.some(([key]) => !modeKeys.includes(key) && initial.has(key))) details.open = true;
+  if (specs.some(([key]) => !modeKeys.includes(key) && !linkKeys.includes(key) && initial.has(key))) details.open = true;
   return container;
 }
 

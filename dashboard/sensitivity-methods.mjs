@@ -517,6 +517,7 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     gf_dose_model: choice("gf_dose_model", DEFAULT_PARAMS.gf_dose_model, ["per_kg", "media_linked"]),
     gf_concentration_mg_L: num("gf_concentration_mg_L", DEFAULT_PARAMS.gf_concentration_mg_L),
     gf_cheap_dose_fraction: num("gf_cheap_dose_fraction", DEFAULT_PARAMS.gf_cheap_dose_fraction),
+    tech_link: choice("tech_link", DEFAULT_PARAMS.tech_link, ["maturity", "0", "0.3", "0.6"]),
     mode_selection: choice("mode_selection", DEFAULT_PARAMS.mode_selection, ["mixture", "least_cost"]),
     p_feasible_perfusion: num("p_feasible_perfusion", DEFAULT_PARAMS.p_feasible_perfusion),
     p_feasible_continuous: num("p_feasible_continuous", DEFAULT_PARAMS.p_feasible_continuous),

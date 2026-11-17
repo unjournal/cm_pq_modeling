@@ -33,6 +33,7 @@ html`<ul>
 <li>The model works out what it would cost to produce one kilogram of cultured chicken cells (weighed dry) in a large, well-run plant using the technology of 2036. It does this ${fd.n.toLocaleString("en-US")} times, each time with a different combination of plausible inputs. Each run is one "simulated world".</li>
 <li>Although the model has about thirty inputs, the cost comes down to <strong>five numbers</strong>, and three of them (all about the liquid the cells grow in) account for nearly all of the uncertainty.</li>
 <li>In a typical simulated world the cells cost about ${money(fd.total.p50)} per kg dry. Chicken sells wholesale for about $3.50 per kg. Cultured cells would have to cost about $12 to $18 per kg dry to match that, and no simulated world gets there. Only ${oneIn(fd.price_lines[2].share_of_worlds_below)} gets under $36 per kg dry, roughly the price level of organic chicken.</li>
+<li><strong>Running the plant and paying for it set a floor.</strong> Even if medium and growth factors were free, a kg of dry cells would cost about ${money(fd.floor.p50)} in a typical world, and only ${share(fd.floor.share_of_worlds_below["36"])} of worlds would come in under $36.</li>
 <li>The arithmetic has been checked carefully. Most of the input ranges have not: many are placeholders without a source. So the model is best read as "what would have to be true for cultured meat to be cheap", not as a forecast.</li>
 </ul>`
 ```
@@ -97,21 +98,76 @@ One way to ask this: if we knew one of the five numbers for certain, how much of
 }
 ```
 
-So nearly all of the model's uncertainty is about medium: how much of it a kg of cells needs, what a litre costs, and what the growth factors in it cost. Running costs and capital hardly affect the spread across all worlds. They matter in a different way: they set a floor that the cheapest worlds cannot get below.
+So nearly all of the model's uncertainty is about medium: how much of it a kg of cells needs, what a litre costs, and what the growth factors in it cost. Running costs and capital hardly affect the spread across all worlds. They matter in a different way.
 
-## 2. What the other inputs are for
+::: {.callout-important}
+## Running costs and capital are a floor
 
-Most of the model's inputs exist only to produce one of the five numbers.
+```{ojs}
+//| echo: false
+html`<p>Suppose medium and growth factors cost nothing at all. A kg of dry cells would still cost what it takes to run the plant and to pay for it: about ${money(fd.floor.p50)} in a typical world.</p>
+<ul>
+<li>Only ${share(fd.floor.share_of_worlds_below["36"])} of worlds would be under $36 per kg, ${share(fd.floor.share_of_worlds_below["18"])} under $18, and ${share(fd.floor.share_of_worlds_below["12"])} under $12.</li>
+<li>In the worlds that do get under $36, running costs and capital together are about ${money(fd.floor.under36.floor_median)} of the ${money(fd.floor.under36.total_median)} total${fd.floor.under36.floor_median > fd.floor.under36.total_median / 2 ? ": more than half" : ""}.</li>
+</ul>
+<p>So cheap medium is necessary but not enough. Matching chicken would also need a plant that is much cheaper to build and run than the model's typical one. These two numbers have the weakest sourcing in the model (see section 4), which makes them a priority for expert input.</p>`
+```
+:::
 
-| The number | Inputs that produce it |
-|---|---|
-| Litres of medium per kg | Nutrient yield (how many grams of cells a litre of medium can feed), cell density, and the medium-use multiplier |
-| Price of medium per litre | Whether cheap plant-based "hydrolysate" medium can be used, and a price range for each kind of medium |
-| Growth-factor cost per litre | Whether cheap growth factors exist by 2036, their price range, and how much goes into each litre |
-| Plant running costs | Fixed costs (labour, maintenance, overhead), utilities and consumables, and supplemental proteins such as albumin |
-| Capital charge | Reactor price, how much reactor volume the plant needs (set by cell density and how fast the cells grow), plant size, the cost of borrowing, and plant lifetime |
+## 2. What lies behind the five numbers
 
-The five numbers are themselves driven by a few deeper things: how good the cell line is, how cheap food-grade inputs become at scale, and how the plant is engineered. The model does not yet represent those deeper causes directly, which is why some inputs that should move together are drawn independently. A proposal for doing that is on the [notes page](bates-rebuild.qmd#linked-uncertainties).
+The five numbers are where the cost is added up. They are not the root causes. Each one depends on which technical developments succeed, and those developments are what research and investment could actually change.
+
+```{ojs}
+//| echo: false
+{
+  const B = fd.behind, pc = v => `${Math.round(100 * v)}%`;
+  const rows = [
+    ["Litres of medium per kg", html`Mostly <strong>which production process works at scale</strong>, because the process sets how densely cells can be grown. The process used accounts for about ${pc(B.litres.process_used)} of the spread in this number. Typical medium use is ${Math.round(fd.by_process.fedbatch.litres_median)} litres with fed-batch, ${Math.round(fd.by_process.perfusion.litres_median)} with perfusion and ${Math.round(fd.by_process.continuous.litres_median)} with continuous culture. Nutrient yield (how many cells a litre of medium can feed) sets a lower limit, which applies in ${pc(B.litres.nutrient_floor_sets_medium_use_in_share_of_worlds)} of worlds.`],
+    ["Price of medium per litre", html`Partly <strong>whether cheap plant-based "hydrolysate" medium can be used</strong> (about ${pc(B.medium_price.hydrolysates_usable)} of the spread): about ${money(B.medium_price.median_if_usable)} a litre if it can, ${money(B.medium_price.median_if_not)} if it cannot. The rest is the price range assumed within each case.`],
+    ["Growth-factor cost per litre", html`Mostly <strong>whether cheap growth factors exist by 2036</strong> (about ${pc(B.gf_per_litre.cheap_growth_factors_exist)} of the spread): about ${money(B.gf_per_litre.median_if_cheap)} a litre if they do, ${money(B.gf_per_litre.median_if_not)} if they do not.`],
+    ["Plant running costs", html`Entered directly as ranges for fixed costs, utilities and consumables, and added proteins. The model has <strong>no development behind them</strong>, and the ranges have no published source.`],
+    ["Capital charge", html`Reactor price, how much reactor volume the plant needs (set by cell density and how fast the cells grow, so again by the process), plant size, the cost of borrowing and plant lifetime.`]
+  ];
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">The number</th><th style="${headStyle};text-align:left">What mainly decides it in the model</th></tr></thead>
+  <tbody>${rows.map(([a, b]) => html`<tr><td style="${cellStyle};text-align:left;white-space:normal;vertical-align:top;min-width:9em">${a}</td><td style="${cellStyle};text-align:left;white-space:normal">${b}</td></tr>`)}</tbody></table></div>
+  <p style="font-size:0.9em;color:#555">"Share of the spread" means how much of the variation in that number, across simulated worlds, goes with that one factor taken alone.</p>`;
+}
+```
+
+So the developments that matter are few: **a dense production process (perfusion or continuous culture) that works at commercial scale, cheap medium, cheap growth factors, and a plant that is cheap to build and run.** The model represents the first three thinly, as yes-or-no switches with a probability each plus a price range, and the fourth not at all.
+
+<details><summary><strong>How much the process matters on its own</strong></summary>
+
+```{ojs}
+//| echo: false
+{
+  const P = fd.by_process, names = {fedbatch: "Fed-batch", perfusion: "Perfusion", continuous: "Continuous culture"};
+  return html`<table style="border-collapse:collapse;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">If every plant used</th><th style="${headStyle}">Litres of medium per kg</th><th style="${headStyle}">Typical cost per kg of dry cells</th><th style="${headStyle}">Share of worlds under $36</th></tr></thead>
+  <tbody>${Object.keys(names).map(k => html`<tr><td style="${cellStyle};text-align:left">${names[k]}</td><td style="${cellStyle}">${Math.round(P[k].litres_median)}</td><td style="${cellStyle}">${money(P[k].total_median)}</td><td style="${cellStyle}">${P[k].share_under36 < 0.0001 ? "almost none" : share(P[k].share_under36)}</td></tr>`)}</tbody></table>
+  <p style="font-size:0.9em;color:#555">Each row runs the model with that process only. In the default model a world uses fed-batch, perfusion or continuous culture with probabilities of ${Math.round(100 * P.fedbatch.share_of_worlds)}%, ${Math.round(100 * P.perfusion.share_of_worlds)}% and ${Math.round(100 * P.continuous.share_of_worlds)}%. The model does not yet charge perfusion and continuous culture for the extra equipment they need, so their advantage here is overstated.</p>`;
+}
+```
+
+</details>
+
+<details><summary><strong>Do the breakthroughs arrive together?</strong></summary>
+
+```{ojs}
+//| echo: false
+{
+  const L = Object.fromEntries(fd.link_scenarios.map(x => [x.tech_link, x]));
+  return html`<p>If hydrolysate medium works, are cheap growth factors more likely to work too? The model's current default says almost not at all. An optional setting on the <a href="index.html">Advanced model</a> (under <em>Technology Adoption</em>) links them. It is offered for comment and may become the default.</p>
+  <table style="border-collapse:collapse;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">Setting</th><th style="${headStyle}">Chance of cheap growth factors, in worlds where hydrolysates work</th><th style="${headStyle}">Share of worlds under $36</th></tr></thead>
+  <tbody>${[["maturity", "Current default (almost no link)"], ["0.3", "Moderate link (0.3)"], ["0.6", "Strong link (0.6)"]].map(([k, name]) => html`<tr><td style="${cellStyle};text-align:left">${name}</td><td style="${cellStyle}">${Math.round(100 * L[k].p_cheap_gf_given_hydrolysates)}%</td><td style="${cellStyle}">${(100 * L[k].share_under36).toFixed(3)}%</td></tr>`)}</tbody></table>
+  <p style="font-size:0.9em;color:#555">The effect on cost is modest, because getting under $36 depends mainly on medium use, medium price and plant costs all being low at once, and those are not yet linked to each other or to the breakthroughs. A fuller proposal is on the <a href="bates-rebuild.html#linked-uncertainties">notes page</a>.</p>`;
+}
+```
+
+</details>
 
 ## 3. Reading the price lines
 
@@ -119,7 +175,12 @@ The pages quote costs in three ways, which is a common source of confusion:
 
 - **Per kg of dry cells.** This is what the model calculates. Cells are mostly water, so a kg of dry cells is several kg of meat.
 - **Per kg of meat made only of cells,** at the water content of chicken meat. This is the dry-cell cost multiplied by 0.275.
-- **Per kg of a "hybrid" product:** one quarter cells and three quarters plant-based ingredients costing \$3 a kg. This is how products are likely to be sold, and it is what the threshold cards on the main model page use.
+- **Per kg of a "hybrid" product:** cells mixed with plant-based ingredients costing \$3 a kg. This is how products are likely to be sold, and it is what the threshold cards on the main model page use.
+
+::: {.callout-warning}
+## The hybrid figures assume 25% cells. That is a convention, not a finding.
+There is no agreed share of cells in a hybrid product. These pages use 25% as the baseline. Products on sale may contain less: in November 2026 UPSIDE Foods described the cell share of its new blended chicken only as "double-digit", meaning at least 10% ([Green Queen](https://www.greenqueen.com.hk/upside-foods-lab-grown-cultivated-chicken-launch-us-clearance/)). The fewer cells a product contains, the less the cost of the cells matters. The table below therefore shows a 10% version alongside the 25% baseline. You can change the share on the [Advanced model](index.qmd) under *Hybrid product*.
+:::
 
 ```{ojs}
 //| echo: false
@@ -128,12 +189,13 @@ html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:1
   <th style="${headStyle};text-align:left">Price line</th>
   <th style="${headStyle}">Per kg of dry cells</th>
   <th style="${headStyle}">Per kg of meat made only of cells</th>
-  <th style="${headStyle}">Per kg of hybrid product</th>
+  <th style="${headStyle}">Per kg of hybrid product<br><span style="font-weight:400">(25% cells, the baseline)</span></th>
+  <th style="${headStyle}">Per kg of hybrid product<br><span style="font-weight:400">(10% cells)</span></th>
   <th style="${headStyle}">Share of simulated worlds below it</th>
 </tr></thead>
 <tbody>${fd.price_lines.map(l => html`<tr>
   <td style="${cellStyle};text-align:left;white-space:normal">${l.label}</td>
-  <td style="${cellStyle}">${money(l.dry)}</td><td style="${cellStyle}">${money(l.all_cell_meat)}</td><td style="${cellStyle}">${money(l.hybrid)}</td>
+  <td style="${cellStyle}">${money(l.dry)}</td><td style="${cellStyle}">${money(l.all_cell_meat)}</td><td style="${cellStyle}">${money(l.hybrid)}</td><td style="${cellStyle}">${money(l.hybrid_low_share)}</td>
   <td style="${cellStyle}">${share(l.share_of_worlds_below)}</td></tr>`)}</tbody></table></div>`
 ```
 
@@ -143,7 +205,7 @@ Two things follow from this table.
 //| echo: false
 html`<ol>
 <li><strong>The threshold cards on the main page are not parity lines.</strong> Wholesale chicken costs about $3.50 per kg. A hybrid product at $10 per kg is nearly three times that. So "about ${share(fd.price_lines[4].share_of_worlds_below)} of worlds are under $10 per kg of hybrid product" and "almost no worlds are price-competitive with chicken" are both true. They refer to different lines.</li>
-<li><strong>A hybrid product hides most of the cell cost.</strong> Because three quarters of it is cheap filler, cells at $36 per kg dry give a hybrid at ${money(fd.price_lines[2].hybrid)} per kg. That is why hybrid figures look so much closer to chicken than cell figures do.</li>
+<li><strong>A hybrid product hides most of the cell cost.</strong> With 25% cells, three quarters of it is cheap filler, so cells at $36 per kg dry give a hybrid at ${money(fd.price_lines[2].hybrid)} per kg. With 10% cells the same cells give ${money(fd.price_lines[2].hybrid_low_share)}, and even the model's typical world gives ${money(fd.price_lines[6].hybrid_low_share)}. That is why hybrid figures look so much closer to chicken than cell figures do, and why a product with few cells can be sold at a price near premium chicken while its cells remain expensive.</li>
 </ol>`
 ```
 
@@ -159,6 +221,21 @@ html`<ol>
 - how strongly good outcomes are assumed to arrive together (the "maturity" factor, explained in the [technical reference](docs.qmd#maturity-factor)).
 
 **What that means.** The share of worlds that come out cheap depends mostly on how far those favourable ends reach and on whether they happen together. Neither has been asked of experts yet. Treat the model as a way to see what would have to go right, and how much, rather than as a prediction. The next step is to ask experts about the five numbers directly, and about the handful of breakthroughs behind them.
+
+## 5. What this can and cannot tell a funder
+
+**What it can tell you.**
+
+- **How far away cheap cultured meat is, and what has to go right together.** For example, cheap medium alone is not enough (section 1), and plants using fed-batch almost never get near chicken prices (section 2). Work that cannot lead to a dense process, cheap medium and a cheap plant together does not lead to price parity.
+- **Which unknowns are worth resolving first.** The numbers that carry most of the uncertainty, and those with the weakest sources, are where better evidence or expert judgement would change the answer most.
+- **Whether a claim is consistent.** A company's stated price, cell share and scale can be checked against each other.
+
+**What it cannot tell you.**
+
+- **How much a research dollar changes the odds.** The model takes the probability that, say, hydrolysate medium works as an input. It contains nothing about how that probability responds to funding. So on its own it cannot say whether to fund cultured-meat research, or which line of research.
+- **Cause and effect.** "Worlds where cells cost under \$36" are combinations of inputs that happen to come out cheap. They show what cheap cultured meat would look like, not how to bring it about.
+
+**What would be needed to get from here to a funding decision.** First, judgements from experts about how much specific research or investment would shift the probabilities and ranges ("with this programme, and without it"). The model can then turn those shifts into a change in cost. Second, a view of how a lower cost changes how much cultured meat is sold and how much conventional meat it displaces; the [cost and demand page](demand.qmd) is a start on that.
 
 ## A possible shorter list of questions for experts {#shorter-questions}
 

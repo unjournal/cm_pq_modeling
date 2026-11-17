@@ -1,7 +1,7 @@
 {
-  "model_version": "2026-11-17.1",
-  "engine_sha256": "c500017ac8ffc0626115d89ba3fd741c65b1604119b916d81bb3f6c5dff4548f",
-  "methods_sha256": "5f2e7856210617d25845a6c645738d1232f56a5507ccf75a1bc5b3842ff0f759",
+  "model_version": "2026-11-17.2",
+  "engine_sha256": "dcb3e460242a1b92e33aace04e96b7fbf4a12dce033a2764764fa807aae32149",
+  "methods_sha256": "83e0058572a374daee326578448305c63227fad3a226e84f93dce586a04efe5f",
   "generated": "2026-11-17",
   "basis": "Advanced-page default scenario (maturity 0.5 mapped to 2036), seed 42, 30,000 draws; USD/kg wet biomass in mixed source-year dollars.",
   "interpretation": "Exploratory uncertainty attribution among displayed inputs. Variance shares are not research value. The nearest-neighbour Shapley estimator is biased toward zero or below for inputs that add little information, and breaks down with many inputs at these subsample sizes; compare runs before reading small differences.",
@@ -14,6 +14,7 @@
     "p_recfactors_mean": 0.5,
     "maturity_centre": 0.4,
     "medium_choice": "cheapest",
+    "tech_link": "maturity",
     "p_supp_protein_mean": 0.7,
     "wacc_p5": 0.08,
     "wacc_p95": 0.2,
@@ -720,7 +721,7 @@
       "subsample": 1500,
       "subsample_seed": 1,
       "k": 10,
-      "seconds": 10,
+      "seconds": 9.3,
       "explained_share": 0.48651197849840677,
       "rank_r2_same_inputs": 0.6431304471612718,
       "inputs": [

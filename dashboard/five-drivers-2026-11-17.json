@@ -1,6 +1,6 @@
 {
  "generated": "2026-11-17",
- "engine": "2026-11-17.1",
+ "engine": "2026-11-17.2",
  "n": 1000000,
  "seed": 42,
  "identity": "cost = litres × (medium price + growth-factor cost per litre) + running costs + capital charge; all per kg dry cell mass, including the allowance for losses and failed runs",
@@ -17,6 +17,7 @@
    "dry": 12,
    "all_cell_meat": 3.3000000000000003,
    "hybrid": 3.075,
+   "hybrid_low_share": 3.0300000000000002,
    "share_of_worlds_below": 0
   },
   {
@@ -24,6 +25,7 @@
    "dry": 18.18181818181818,
    "all_cell_meat": 5,
    "hybrid": 3.5,
+   "hybrid_low_share": 3.2,
    "share_of_worlds_below": 0
   },
   {
@@ -31,6 +33,7 @@
    "dry": 36,
    "all_cell_meat": 9.9,
    "hybrid": 4.725,
+   "hybrid_low_share": 3.6900000000000004,
    "share_of_worlds_below": 0.000575
   },
   {
@@ -38,6 +41,7 @@
    "dry": 40,
    "all_cell_meat": 11,
    "hybrid": 5,
+   "hybrid_low_share": 3.8000000000000003,
    "share_of_worlds_below": 0.001241
   },
   {
@@ -45,6 +49,7 @@
    "dry": 112.72727272727272,
    "all_cell_meat": 31,
    "hybrid": 10,
+   "hybrid_low_share": 5.800000000000001,
    "share_of_worlds_below": 0.133876
   },
   {
@@ -52,6 +57,7 @@
    "dry": 330.9090909090909,
    "all_cell_meat": 91,
    "hybrid": 25,
+   "hybrid_low_share": 11.8,
    "share_of_worlds_below": 0.579638
   },
   {
@@ -59,7 +65,108 @@
    "dry": 272.1775209689471,
    "all_cell_meat": 74.84881826646046,
    "hybrid": 20.962204566615114,
+   "hybrid_low_share": 10.184881826646045,
    "share_of_worlds_below": 0.5
+  }
+ ],
+ "low_cell_share": 0.1,
+ "floor": {
+  "note": "plant running costs + capital charge per kg dry: the cost if medium and growth factors were free",
+  "p10": 27.752140741455214,
+  "p50": 50.23723261804105,
+  "p90": 116.84771954713196,
+  "share_of_worlds_below": {
+   "12": 0.000748,
+   "18": 0.014359,
+   "36": 0.232694
+  },
+  "under36": {
+   "floor_median": 18.48410957876085,
+   "total_median": 32.93514249466485
+  }
+ },
+ "behind": {
+  "note": "share of the spread (variance of the logarithm) in each number accounted for by one underlying input, taken alone; shares need not add to 100%",
+  "litres": {
+   "process_used": 0.45400718432751486,
+   "cell_density": 0.6125951039658004,
+   "nutrient_yield": 0.1267087272554893,
+   "medium_use_multiplier": 0.1353636128409378,
+   "nutrient_floor_sets_medium_use_in_share_of_worlds": 0.379555
+  },
+  "medium_price": {
+   "hydrolysates_usable": 0.361146432786343,
+   "hydrolysate_share_of_worlds": 0.749619,
+   "median_if_usable": 0.5403317558418769,
+   "median_if_not": 1.2715245122146452
+  },
+  "gf_per_litre": {
+   "cheap_growth_factors_exist": 0.7475262809071436,
+   "cheap_share_of_worlds": 0.499317,
+   "median_if_cheap": 0.00463640315875071,
+   "median_if_not": 0.582173610636597
+  },
+  "total_cost": {
+   "hydrolysates_usable": 0.056941802838228354,
+   "cheap_growth_factors_exist": 0.12414430824762882,
+   "process_used": 0.2276318351069161
+  }
+ },
+ "by_process": {
+  "fedbatch": {
+   "share_of_worlds": 0.200529,
+   "litres_median": 580.0931760810445,
+   "density_median": 2.4512568949706637,
+   "total_median": 672.8077681501861,
+   "share_under36": 0.0000033333333333333333
+  },
+  "perfusion": {
+   "share_of_worlds": 0.499384,
+   "litres_median": 201.05332432904294,
+   "density_median": 13.418479706825835,
+   "total_median": 255.84531663782204,
+   "share_under36": 0.00030333333333333335
+  },
+  "continuous": {
+   "share_of_worlds": 0.300087,
+   "litres_median": 123.73521079462847,
+   "density_median": 20.016197270065092,
+   "total_median": 178.5668100879355,
+   "share_under36": 0.0014666666666666667
+  }
+ },
+ "link_scenarios": [
+  {
+   "tech_link": "maturity",
+   "median": 272.1775209689471,
+   "share_under36": 0.000575,
+   "share_under100": 0.097642,
+   "p_cheap_gf_given_hydrolysates": 0.5028140962275502,
+   "p_hydrolysates": 0.749619
+  },
+  {
+   "tech_link": "0",
+   "median": 272.42867137319115,
+   "share_under36": 0.000559,
+   "share_under100": 0.097066,
+   "p_cheap_gf_given_hydrolysates": 0.49923857529570215,
+   "p_hydrolysates": 0.74991
+  },
+  {
+   "tech_link": "0.3",
+   "median": 269.02752403483356,
+   "share_under36": 0.000623,
+   "share_under100": 0.101873,
+   "p_cheap_gf_given_hydrolysates": 0.5508472656276029,
+   "p_hydrolysates": 0.750355
+  },
+  {
+   "tech_link": "0.6",
+   "median": 265.5354322425444,
+   "share_under36": 0.000726,
+   "share_under100": 0.107532,
+   "p_cheap_gf_given_hydrolysates": 0.6044326231683981,
+   "p_hydrolysates": 0.750436
   }
  ],
  "drivers": {

@@ -431,3 +431,35 @@ test('forming is a per-kg-of-product cost added to the hybrid only', () => {
   assert.ok(off.forming_per_kg_product.every(v => v === 0));
   assert.ok(simulate(50, 1, {include_downstream: true, cost_basis: 'wet'}).warnings.some(w => /Forming/.test(w)));
 });
+
+test('medium choice and maturity centre: defaults since 2026-11-17.1, old rules still available', () => {
+  const now = simulate(n, 42, {}), old = simulate(n, 42, {medium_choice: 'hydrolysate', maturity_centre: 0.5});
+  // Buying the cheaper medium can only lower medium cost, world for world, when nothing else changes.
+  const cheaper = simulate(n, 42, {maturity_centre: 0.5});
+  cheaper.cost_media.forEach((v, i) => assert.ok(v <= old.cost_media[i] + 1e-9));
+  // Centred on the default-settings maturity, the entered probabilities hold; centred on 0.5 they sat lower.
+  assert.ok(Math.abs(now.pct_hydro - 0.75) < 0.01 && Math.abs(now.pct_recf_cheap - 0.50) < 0.01);
+  assert.ok(old.pct_hydro < 0.735 && old.pct_recf_cheap < 0.485);
+  assert.throws(() => simulate(10, 1, {medium_choice: 'other'}), /medium_choice/);
+});
+
+test('optional technology link keeps entered probabilities and makes breakthroughs arrive together', () => {
+  const m = 120000;
+  const joint = r => { let both = 0, h = 0; for (let i = 0; i < m; i++) { h += r.is_hydro_samples[i]; both += r.is_hydro_samples[i] && r.is_recf_cheap_samples[i] ? 1 : 0; } return both / h; };
+  const base = simulate(m, 42, {}), none = simulate(m, 42, {tech_link: '0'}), mid = simulate(m, 42, {tech_link: 0.3}), strong = simulate(m, 42, {tech_link: '0.6'});
+  // Default: unchanged by the option existing.
+  assert.deepEqual(base.unit_cost, simulate(m, 42, {tech_link: 'maturity'}).unit_cost);
+  for (const r of [none, mid, strong]) {
+    assert.ok(Math.abs(r.pct_hydro - 0.75) < 0.006, `P(hydrolysates) ${r.pct_hydro}`);
+    assert.ok(Math.abs(r.pct_recf_cheap - 0.50) < 0.006, `P(cheap growth factors) ${r.pct_recf_cheap}`);
+  }
+  // P(cheap growth factors | hydrolysates): 0.50 with no link, about 0.55 at 0.3 and 0.61 at 0.6.
+  assert.ok(Math.abs(joint(none) - 0.50) < 0.008);
+  assert.ok(Math.abs(joint(mid) - 0.551) < 0.012);
+  assert.ok(joint(strong) > joint(mid) + 0.03);
+  // Hard 0% and 100% settings stay hard.
+  const hard = simulate(2000, 1, {tech_link: 0.6, p_hydro_mean: 1, p_recfactors_mean: 0});
+  assert.equal(hard.pct_hydro, 1); assert.equal(hard.pct_recf_cheap, 0);
+  assert.throws(() => simulate(10, 1, {tech_link: 1.2}), /tech_link/);
+  assert.throws(() => simulate(10, 1, {tech_link: 'strong'}), /tech_link/);
+});
