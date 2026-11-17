@@ -53,6 +53,8 @@ format:
 ```
 
 ::: {#info-updates .info-panel}
+**November 17 (engine `2026-11-17.1`): two corrections, default results change.** (1) Where hydrolysate medium exists, the plant now buys whichever medium is cheaper. Before, it always bought hydrolysate medium, even in simulated worlds where its drawn price was above that of medium made with purified amino acids. (2) The maturity adjustment now leaves the technology probabilities you enter unchanged at the default settings. Before, it pulled each of them down by 2–3 percentage points (hydrolysates were available in 72.5% of draws, not the 75% entered). Both were pointed out by Alex Bates. The default median falls from about \$289 to \$270/kg dry (\$22.11 to \$20.78 per kg of hybrid product), and the share of draws under \$10/kg hybrid rises from 12.0% to 13.4%. See [the maturity factor](docs.qmd#maturity-factor) and the [plain-language guide](guide.qmd).
+
 **November 9 (engine `2026-11-09.1`): correction, default results change.** Growth-factor dose now follows medium use by default (fresh L/kg × 0.102 mg/L, × 0.4 with cheap growth factors) instead of a separate g/kg draw independent of medium use. The median rises from about \$276 to \$289/kg dry (\$21.25 to \$22.11 per kg of hybrid product); the expensive tail rises most. The earlier rule remains under *Structural stress tests → Growth-factor dosage*. See [the correction](docs.qmd#gf-dose-linked).
 
 **November 7 (engine `2026-11-07.2`): forming cost.** The optional forming switch now adds \$0.5–2.5 per kg of hybrid product, sourced from GFI's 2021 extrusion-plant costs, instead of an unsourced \$2–15 per kg of cells. Default results are unchanged (the switch is off).
@@ -69,7 +71,7 @@ format:
 
 **October 26 (engine `2026-10-26.4`): default results change.** The headline cost is now per kg of dry cell mass (about five times the old wet figures), thresholds then used a chicken-meat equivalent (all cells; replaced by the hybrid product on October 29), density inputs are g dry/L and \$/kg inputs are per kg dry. Cost basis "wet" under *Structural stress tests* reproduces the earlier results exactly. See *Basis: dry cell mass*.
 
-This page runs the **current model** (engine `2026-11-09.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
+This page runs the **current model** (engine `2026-11-17.1`). See the [September 2026 review and correction log](review-2026-09.qmd). For comparisons with beliefs recorded at the May 8 workshop, use the [hosted workshop-era model](archive/workshop-2026-05-08/) or its [tagged source](https://github.com/unjournal/cm_pq_modeling/tree/workshop-2026-05-08). The archived model is preserved as it was deployed and includes errors corrected here.
 
 Two supplied research critiques prompted optional median-preserving priors, explicit growth-factor price ranges, and structural comparisons for media use, GF dosage, and maturity dependence. Baseline numerical assumptions are retained. New controls include provenance tooltips and links to the [discussion responses, justification, and remaining questions](review-response-2026-09.qmd). These additions are AI-implemented scenario tests, pending expert review.
 

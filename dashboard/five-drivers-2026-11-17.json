@@ -1,0 +1,180 @@
+{
+ "generated": "2026-11-17",
+ "engine": "2026-11-17.1",
+ "n": 1000000,
+ "seed": 42,
+ "identity": "cost = litres × (medium price + growth-factor cost per litre) + running costs + capital charge; all per kg dry cell mass, including the allowance for losses and failed runs",
+ "identity_max_relative_error": 7.100511361527725e-16,
+ "running_includes": "supplemental proteins, utilities and consumables, fixed costs (labour, maintenance, overhead)",
+ "total": {
+  "p10": 100.86293065501643,
+  "p50": 272.1775209689471,
+  "p90": 1109.149833733759
+ },
+ "price_lines": [
+  {
+   "label": "Parity with chicken on Alex Bates's page ($12 per kg of dry cells)",
+   "dry": 12,
+   "all_cell_meat": 3.3000000000000003,
+   "hybrid": 3.075,
+   "share_of_worlds_below": 0
+  },
+  {
+   "label": "Hybrid product at the wholesale price of chicken ($3.50 per kg)",
+   "dry": 18.18181818181818,
+   "all_cell_meat": 5,
+   "hybrid": 3.5,
+   "share_of_worlds_below": 0
+  },
+  {
+   "label": "Upper edge of Alex's price-competitive zone ($36 per kg of dry cells)",
+   "dry": 36,
+   "all_cell_meat": 9.9,
+   "hybrid": 4.725,
+   "share_of_worlds_below": 0.000575
+  },
+  {
+   "label": "Main page threshold card: hybrid product at $5 per kg",
+   "dry": 40,
+   "all_cell_meat": 11,
+   "hybrid": 5,
+   "share_of_worlds_below": 0.001241
+  },
+  {
+   "label": "Main page threshold card: hybrid product at $10 per kg",
+   "dry": 112.72727272727272,
+   "all_cell_meat": 31,
+   "hybrid": 10,
+   "share_of_worlds_below": 0.133876
+  },
+  {
+   "label": "Main page threshold card: hybrid product at $25 per kg",
+   "dry": 330.9090909090909,
+   "all_cell_meat": 91,
+   "hybrid": 25,
+   "share_of_worlds_below": 0.579638
+  },
+  {
+   "label": "The model's median world",
+   "dry": 272.1775209689471,
+   "all_cell_meat": 74.84881826646046,
+   "hybrid": 20.962204566615114,
+   "share_of_worlds_below": 0.5
+  }
+ ],
+ "drivers": {
+  "litres": {
+   "label": "Litres of medium per kg of dry cells",
+   "unit": "L per kg dry"
+  },
+  "medium_price": {
+   "label": "Price of medium",
+   "unit": "$ per litre"
+  },
+  "gf_per_litre": {
+   "label": "Growth-factor cost",
+   "unit": "$ per litre of medium"
+  },
+  "running": {
+   "label": "Plant running costs",
+   "unit": "$ per kg dry"
+  },
+  "capital": {
+   "label": "Capital charge",
+   "unit": "$ per kg dry"
+  }
+ },
+ "lines": {
+  "medium": "Medium",
+  "growth_factors": "Growth factors",
+  "running": "Plant running costs",
+  "capital": "Capital charge"
+ },
+ "summary": {
+  "all": {
+   "worlds": 1000000,
+   "share_of_worlds": 1,
+   "total_median": 272.1775209689471,
+   "drivers": {
+    "litres": 204.43824323326982,
+    "medium_price": 0.644649357808222,
+    "gf_per_litre": 0.05243432348808875,
+    "running": 29.822766713404867,
+    "capital": 16.767703565343325
+   },
+   "lines_median": {
+    "medium": 138.87932087500235,
+    "growth_factors": 11.558238796764492,
+    "running": 29.822766713404867,
+    "capital": 16.767703565343325
+   },
+   "lines_share_of_mean": {
+    "medium": 0.4453182089613688,
+    "growth_factors": 0.42949772551636856,
+    "running": 0.05616285962836479,
+    "capital": 0.06902120589390116
+   }
+  },
+  "under100": {
+   "worlds": 97642,
+   "share_of_worlds": 0.097642,
+   "total_median": 80.68049400377052,
+   "drivers": {
+    "litres": 88.7066083441992,
+    "medium_price": 0.38724296238914124,
+    "gf_per_litre": 0.007023510199786121,
+    "running": 26.04085883797472,
+    "capital": 7.748852006089036
+   },
+   "lines_median": {
+    "medium": 36.41609954677587,
+    "growth_factors": 0.6738881765046361,
+    "running": 26.04085883797472,
+    "capital": 7.748852006089036
+   },
+   "lines_share_of_mean": {
+    "medium": 0.4781116851466921,
+    "growth_factors": 0.049639002261591667,
+    "running": 0.34310687202776663,
+    "capital": 0.12914244056395013
+   }
+  },
+  "under36": {
+   "worlds": 575,
+   "share_of_worlds": 0.000575,
+   "total_median": 32.93514249466485,
+   "drivers": {
+    "litres": 49.29648490864946,
+    "medium_price": 0.23775173414368195,
+    "gf_per_litre": 0.004801404367144049,
+    "running": 14.319538857887292,
+    "capital": 3.565708795808985
+   },
+   "lines_median": {
+    "medium": 12.211607297507133,
+    "growth_factors": 0.25349154380501004,
+    "running": 14.319538857887292,
+    "capital": 3.565708795808985
+   },
+   "lines_share_of_mean": {
+    "medium": 0.3857730810517491,
+    "growth_factors": 0.02457760245084342,
+    "running": 0.4620928317088861,
+    "capital": 0.1275564847885212
+   }
+  }
+ },
+ "spread_removed_when_held_at_median": {
+  "litres": 0.46225813415956873,
+  "medium_price": 0.13984736362483963,
+  "gf_per_litre": 0.31952869525822025,
+  "running": 0.004212933975610622,
+  "capital": 0.046549238852465646
+ },
+ "note": "spread = variance of log cost across all simulated worlds; the shares need not add to 100% because the numbers multiply and add.",
+ "hybrid_convention": {
+  "cell_inclusion_rate": 0.25,
+  "filler_cost": 3,
+  "target_solids_fraction": 0.275
+ }
+}

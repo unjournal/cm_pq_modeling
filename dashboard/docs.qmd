@@ -112,7 +112,7 @@ $$\text{cost per kg hybrid} = \text{cost per kg dry} \times \texttt{target\_soli
 
 $$\text{cost per kg protein} = \frac{\text{cost per kg dry}}{\texttt{protein\_fraction\_of\_solids}}$$
 
-At the defaults (engine `2026-11-09.1`, seed 42, 30,000 draws) the median is about \$289 per kg dry cell mass, \$22.11 per kg of hybrid product and \$444 per kg protein; all-cell mass at chicken-meat moisture would be \$79.44 per kg, and the wet basis gives \$57.78. On the hybrid-product thresholds, 0.1% of draws are under \$5/kg, 12.0% under \$10, 55.6% under \$25 and 80.0% under \$50. Under engine `2026-11-07.2`, before the [growth-factor dose was linked to medium use](#gf-dose-linked) on November 9, these were \$276, \$21.25, \$425, \$76.00 and \$55.27, with 0.1%, 11.6%, 58.2% and 84.0% under the thresholds. Before the [physical-consistency additions](#physical-consistency) of November 7, 2026 (engine `2026-10-29.1`) they were \$213, \$16.90, \$328, \$58.60 and \$42.62, with 1.0%, 23.6%, 67.2% and 87.5% under the thresholds. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) Since November 7, 2026 the default includes recovery losses in harvest and washing (see [physical consistency](#physical-consistency)); the harvest placeholder below adds a processing cost on top.
+At the defaults (engine `2026-11-17.1`, seed 42, 30,000 draws) the median is about \$270 per kg dry cell mass, \$20.78 per kg of hybrid product and \$415 per kg protein; all-cell mass at chicken-meat moisture would be \$74.12 per kg, and the wet basis gives \$53.91. On the hybrid-product thresholds, 0.15% of draws are under \$5/kg, 13.4% under \$10, 58.3% under \$25 and 81.5% under \$50. Under engine `2026-11-09.1`, before the [two corrections of November 17](#maturity-factor), these were \$289, \$22.11, \$444, \$79.44 and \$57.78, with 0.1%, 12.0%, 55.6% and 80.0% under the thresholds. Under engine `2026-11-07.2`, before the [growth-factor dose was linked to medium use](#gf-dose-linked) on November 9, these were \$276, \$21.25, \$425, \$76.00 and \$55.27, with 0.1%, 11.6%, 58.2% and 84.0% under the thresholds. Before the [physical-consistency additions](#physical-consistency) of November 7, 2026 (engine `2026-10-29.1`) they were \$213, \$16.90, \$328, \$58.60 and \$42.62, with 1.0%, 23.6%, 67.2% and 87.5% under the thresholds. The \$2.25 of filler in every kg puts a floor under the hybrid cost, and \$5/kg hybrid corresponds to about \$40 per kg dry, \$10 to about \$113 and \$25 to about \$331. (On the all-cell meat-equivalent thresholds used from 26 to 29 October: 0.7% under \$10 and 15.8% under \$25; on the old wet thresholds: 2.7% and 27.7%.) Since November 7, 2026 the default includes recovery losses in harvest and washing (see [physical consistency](#physical-consistency)); the harvest placeholder below adds a processing cost on top.
 
 ### Physical consistency (November 7, 2026) {#physical-consistency}
 
@@ -141,6 +141,8 @@ Before engine `2026-11-07.1` the model drew density, medium use and cycle time i
 | `2026-11-07.2` + oxygen cap | 282 | 21.60 | 0.1% / 10.7% / 57.5% |
 | + medium-linked GF dose (default since `2026-11-09.1`, [see below](#gf-dose-linked)) | 289 | 22.11 | 0.1% / 12.0% / 55.6% |
 | `2026-11-09.1` + oxygen cap | 297 | 22.66 | 0.1% / 11.0% / 54.7% |
+| + cheaper-medium rule and maturity centring (default since `2026-11-17.1`, [see below](#maturity-factor)) | 270 | 20.78 | 0.15% / 13.4% / 58.3% |
+| `2026-11-17.1` + oxygen cap | 277 | 21.26 | 0.12% / 12.3% / 57.4% |
 
 The floor binds in about 38% of worlds, mostly the high-density ones. Losses raise costs by a median of 11% (95th percentile 32%). Against US wholesale chicken (\$3.50/kg), no default world gets there either before or after the change; the change matters most for the \$5–\$25 range.
 
@@ -181,7 +183,7 @@ Boneless-breast annual means in 2026 dollars: 2023 \$3.07, 2024 \$3.73, 2025 \$4
 
 So the model uses **\$3.50/kg, with a range of \$2.6–4.6/kg** (`CHICKEN_WHOLESALE` in `model-controls.mjs`). *Revised 6 November 2026:* the first version (5 November) used the 12-month average, \$2.94, but that falls in a cyclical low: 2026 breast prices are depressed by large supply and weak demand, and whole-bird prices are also 7–14% below their 5- and 10-year averages. A multi-year real average is a better stand-in for a typical price. We use all of the national boneless-breast series, which starts in September 2022, rather than five years: the earlier Northeast series runs about 18% higher relative to the whole-bird price and does not overlap the national one, and a 5-year window would include the record spike of 2022 (about \$8.80/kg in 2026 dollars). Breast prices are right-skewed, so the median (\$3.39) sits a little below the mean. Mince- or nugget-grade inputs (breast trim, dark meat, mechanically separated chicken) usually trade below boneless breast; we found no public monthly series for them, so the low end of the range may be too high for a nugget-type product. There is no farm-gate (live-bird) price for broilers, because almost all are grown under contract ([ERS documentation](https://www.ers.usda.gov/data-products/meat-price-spreads/documentation)), and we have not used a production-cost estimate.
 
-**What it means at the defaults.** A kg of hybrid product contains \$2.25 of plant-based filler, so it matches \$3.50/kg chicken only if the cells cost less than about \$18 per kg dry cell mass (\$5 at the \$2.6 low end, \$34 at the \$4.6 high end). At the defaults (engine `2026-11-09.1`, seed 42, 30,000 draws) no draw is below \$3.50/kg hybrid or \$2.60, and 13 (0.04%) are below \$4.60; the cheapest is about \$3.84 and the lowest 5% of hybrid costs are under \$8.05 (engine `2026-11-07.2`: 11 below \$4.60, lowest 5% under \$8.20). (Before the physical-consistency additions of November 7: 2 draws, 0.007%, below \$3.50, 0.5% below \$4.60, lowest 5% under \$6.40.) The \$5–\$50 probability thresholds are kept as illustrative cost levels; none is a parity line. Both pages show the share of draws under the wholesale reference beneath the threshold cards, and the main cost charts mark it with a purple dashed line. On the wet basis the line and share compare wet cells directly with chicken meat.
+**What it means at the defaults.** A kg of hybrid product contains \$2.25 of plant-based filler, so it matches \$3.50/kg chicken only if the cells cost less than about \$18 per kg dry cell mass (\$5 at the \$2.6 low end, \$34 at the \$4.6 high end). At the defaults (engine `2026-11-17.1`, seed 42, 30,000 draws) no draw is below \$3.50/kg hybrid or \$2.60, and 15 (0.05%) are below \$4.60; the cheapest is about \$3.83 and the lowest 5% of hybrid costs are under \$7.83 (engine `2026-11-09.1`: 13 below \$4.60, lowest 5% under \$8.05; engine `2026-11-07.2`: 11 below \$4.60, lowest 5% under \$8.20). (Before the physical-consistency additions of November 7: 2 draws, 0.007%, below \$3.50, 0.5% below \$4.60, lowest 5% under \$6.40.) The \$5–\$50 probability thresholds are kept as illustrative cost levels; none is a parity line. Both pages show the share of draws under the wholesale reference beneath the threshold cards, and the main cost charts mark it with a purple dashed line. On the wet basis the line and share compare wet cells directly with chicken meat.
 
 **What is still not like for like.** The hybrid product's cost leaves out forming and texturization, and its inclusion rate (25%) and filler cost (\$3/kg) are conventions. Wholesale breast is a finished, packed commodity cut; the cultivated side would still need those steps. The comparison is closer than a retail one, not exact. The [demand page](demand.qmd)'s teaching calculator still uses retail prices for every species, because its price ratio stands in for what shoppers see; see the note there.
 
@@ -511,9 +513,15 @@ The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For 
 
 ### 4. Technology Adoption & Maturity {#maturity-factor}
 
-::: {.callout-warning}
-## Open question (November 17, 2026)
-The maturity link is ad hoc and, at the defaults, nearly inert: switching to independent channels barely moves the results. It also links only the four technologies and the cost of capital, while things that plausibly share causes (cell-line improvements such as gene editing affect growth-factor needs, density, nutrient yield and long-run stability together) stay independent. A proposed replacement with named common causes, and a note on double counting: [linked uncertainties](bates-rebuild.qmd#linked-uncertainties).
+::: {.callout-note}
+## In plain terms (updated November 17, 2026)
+**What it does.** Each simulated world draws one "maturity" number between 0 and 1. A high draw makes four technologies a little more likely to work (hydrolysate medium, cheap growth factors, food-grade supplemental proteins, food-grade reactors) and makes capital a little cheaper; a low draw does the opposite. Its only purpose is to make good news tend to arrive together.
+
+**How big the effect is.** Small. A world one standard deviation above average has each technology about 5 percentage points more likely. Switching the link off entirely moves the share of worlds with cells under \$36 per kg dry only from 0.049% to 0.048% ([comparison](bates-rebuild.qmd#linked-uncertainties)).
+
+**Correction on November 17 (engine `2026-11-17.1`).** The adjustment used to be measured from a maturity of 0.5, but at the default settings maturity averages 0.40. So every technology probability came out lower than the value entered: hydrolysates were available in 72.5% of worlds, not 75%. The adjustment is now measured from 0.40, so at the default settings the probabilities used are the ones entered.
+
+**What is still unsatisfactory.** (1) The strengths of the link (0.20–0.30 per technology) were chosen in February 2026 without a source and are not calibrated to any observed rate of progress. (2) The model multiplies the maturity slider by a factor for the target year (0.8 for 2036, 0.55 for 2026). The technology probabilities are already entered as "by the target year", so for target years other than 2036 this counts the passage of time twice. The effect is small (moving the year from 2036 to 2026 lowers each probability by about 3 percentage points), but the logic is wrong; until it is redesigned, read the probabilities as probabilities for 2036 and leave the target year at 2036. (3) Things that plausibly share a cause, such as better cell lines improving density, nutrient yield and growth-factor needs together, are not linked at all. A proposed replacement is described under [linked uncertainties](bates-rebuild.qmd#linked-uncertainties).
 :::
 
 The baseline uses a **shared maturity factor** to couple several developments. This is an uncalibrated structural assumption. Cheap growth factors and expensive financing can coexist; Advanced now offers independent maturity channels to test how results depend on the shared factor. Each channel keeps its original marginal distribution. Other process and accounting dependencies remain.
@@ -528,29 +536,31 @@ The maturity factor is a single number between 0 and 1 representing overall indu
 - **$m = 0.5$**: Moderate development — pilots running, some commercial activity
 - **$m = 1$**: Mature industry — established supply chains, proven technology
 
-Each simulation draws $m$ from a Beta distribution (default: mean 0.5, stdev 0.2).
+Each simulation draws $m$ from a Beta distribution with standard deviation 0.2. Its mean is the maturity slider (default 0.5) multiplied by a target-year factor, $0.5 + 0.5 \times (\text{year} - 2024)/20$, which is 0.8 for 2036. So at the default settings the mean is 0.40, not 0.5.
 
 #### How Maturity Adjusts Adoption Probabilities
 
 Each technology's adoption probability is adjusted based on the maturity draw. The key variables are **$k$** (sensitivity coefficient -- how strongly maturity affects this technology) and **$m$** (the maturity factor -- overall industry development level):
 
-$$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.5),\; 0,\; 1\Big)$$
+$$P_{\text{adopted}} = \text{bound}\Big(P_{\text{base}} + k \cdot (m - 0.40),\; 0,\; 1\Big)$$
+
+The 0.40 is the average maturity at the default settings (engine parameter `maturity_centre`; it was 0.5 before November 17, 2026).
 
 **Variable definitions (all terms in the equation above):**
 
 | Variable | Meaning | Typical values |
 |----------|---------|----------------|
 | $P_{\text{base}}$ | Base adoption probability set by the user via slider | 0.50–0.75 |
-| $k$ | **Sensitivity coefficient** — how strongly maturity affects this technology's adoption | 0.20–0.30 |
-| $m$ | **Maturity factor** — overall industry development level, drawn from Beta distribution | 0–1 (mean ~0.5) |
+| $k$ | **Sensitivity coefficient** — how strongly maturity affects this technology's adoption. 0.25 for hydrolysates and cheap growth factors, 0.20 for supplemental proteins, 0.30 for the food-grade reactor share; the cost of capital falls by 0.03 per unit of maturity. Chosen without a source; not calibrated. | 0.20–0.30 |
+| $m$ | **Maturity factor** — overall industry development level, drawn from Beta distribution | 0–1 (mean 0.40 at the defaults) |
 | $\text{bound}(\cdot, 0, 1)$ | Clips the result to valid probability range [0, 1] | — |
 
 **Intuition for $k$:** When $k = 0.25$, a one-standard-deviation shift in maturity ($\Delta m = 0.2$) changes the adoption probability by $0.25 \times 0.2 = 0.05$ (5 percentage points).
 
 **Example:** If hydrolysates have $P_{\text{base}} = 0.75$ and $k = 0.25$:
 
-- In a "bad world" ($m = 0.2$): $P = 0.75 + 0.25 \times (0.2 - 0.5) = 0.675$
-- In a "good world" ($m = 0.8$): $P = 0.75 + 0.25 \times (0.8 - 0.5) = 0.825$
+- In a "bad world" ($m = 0.2$): $P = 0.75 + 0.25 \times (0.2 - 0.40) = 0.70$
+- In a "good world" ($m = 0.8$): $P = 0.75 + 0.25 \times (0.8 - 0.40) = 0.85$
 
 <details>
 <summary>What does "bound" mean?</summary>
@@ -571,7 +581,7 @@ The maturity factor simultaneously adjusts multiple components. Here is how each
 
 | Component | Effect when $m$ is high | Equation affected | Justification |
 |-----------|------------------------|-------------------|---------------|
-| Technology adoption rates | Higher $P_{\text{adopted}}$ for hydrolysates, cheap GFs, food-grade | $P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k(m-0.5), 0, 1)$ — [Section 4](#maturity-factor) | More R&D investment, proven pilots |
+| Technology adoption rates | Higher $P_{\text{adopted}}$ for hydrolysates, cheap GFs, food-grade | $P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k(m-0.40), 0, 1)$ — [Section 4](#maturity-factor) | More R&D investment, proven pilots |
 | Custom reactor share | More facilities use food-grade equipment | Affects CAPEX$_{\text{ref}}$ via the custom reactor ratio — [CAPEX section](#capex-parameters) | Supply chain development |
 | WACC (financing cost) | Lower $r$ in the CRF formula | $\text{CRF} = \frac{r(1+r)^n}{(1+r)^n - 1}$ — [Section 3](#annualized-capital-costs) | Reduced investor risk perception |
 
@@ -772,7 +782,7 @@ These choices follow standard practice in techno-economic assessments ([Humbird 
 Each technology has a base adoption probability, adjusted by the [maturity factor](#maturity-factor):
 
 $$
-P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.5), 0, 1)
+P_{\text{adopted}} = \text{bound}(P_{\text{base}} + k \times (m - 0.40), 0, 1)
 $$
 
 | Technology | Base Prob | $k$ | Effect on cost | Notes |

@@ -12,6 +12,8 @@ format:
 *Drafted by Claude (AI) for David Reinstein on 17 November 2026, from Alex Bates's model page (file v0.9.7) and literature review (16 November 2026). Not yet reviewed by Alex. Numbers on this page are read from [`bates-rebuild-comparison-2026-11-17.json`](bates-rebuild-comparison-2026-11-17.json), produced by `scripts/compare-bates-rebuild.mjs` (1,000,000 simulated worlds, seed 42).*
 
 ::: {.callout-tip appearance="simple"}
+**New to this, or finding it a lot to take in?** Start with the short [plain-language guide](guide.qmd): the cost in five numbers, how to read the price lines, and how far to trust the model.
+
 **Pages in this set.** Main model: [Simplest](simple.qmd) · [Advanced](index.qmd) &nbsp;|&nbsp; Alex's rebuild: [as shared](alt/bates-rebuild-v0.9.7-as-shared.html) (typeface only) · [first-pass edits](alt/bates-rebuild-v0.9.7.html) (our host notes, explanations and minor wording, label and display changes; his model unchanged) &nbsp;|&nbsp; [Literature review](https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit) (Google Doc, open for comments) &nbsp;|&nbsp; This page: notes and comparison
 :::
 
@@ -22,7 +24,8 @@ row = name => { const r = cmp.rows.find(x => x.name.startsWith(name)); if (!r) t
 pct = v => v === 0 ? "0%" : v < 0.01 ? `${(100 * v).toFixed(3)}%` : `${(100 * v).toFixed(1)}%`
 usd = v => `$${Math.round(v).toLocaleString("en-US")}`
 oneIn = v => v > 0 ? `about 1 in ${(Math.round(1 / v / 100) * 100).toLocaleString("en-US")}` : "none"
-uj = row("Unjournal engine defaults")
+uj = row("Unjournal engine, 9 November settings")
+ujNow = row("Unjournal engine, current defaults")
 rep = row("Rebuild engine, original settings")
 page = row("Rebuild page defaults (all changes)")
 cap6500 = row("Original + economies of scale stop at 6,500")
@@ -43,7 +46,7 @@ updown = (a, b) => b > a ? "raises" : b < a ? "lowers" : "leaves unchanged"
 
 - Alex rebuilt the model step by step (cell bank, seed train, production, harvest), fixed several errors, and added a **"what has to go right"** analysis: for each simulated world that comes in near chicken prices, it finds the smallest sets of favourable inputs that get it there. A set is built by starting from a baseline with every input at its central estimate and every technology failing, listing the ways the competitive world beats that baseline, then removing them one at a time while the world stays competitive. What is left is minimal: together these improvements make the world competitive, and dropping any one of them does not. ([How to read it](alt/bates-rebuild-v0.9.7.html#recipe-h), in the fold under "What has to go right".)
 - With the original's settings, his engine reproduces ours draw for draw (check on this run: ${replicates ? "identical" : "NOT identical, investigate"}). So the differences below come from his changes, not from bugs.
-- **The two models agree on the substance.** Out of ${cmp.n.toLocaleString("en-US")} simulated worlds, neither puts a single one below his chicken-parity line (\$12/kg dry cell mass; the cheapest world is ${usd(uj.cheapest)} in ours and ${usd(page.cheapest)} in his). Under his competitive-zone edge of \$36/kg dry: ${pct(uj.under36)} of worlds in ours, ${pct(page.under36)} in his. Medians: ${usd(uj.p50)} and ${usd(page.p50)} per kg dry.
+- **The two models agree on the substance.** Out of ${cmp.n.toLocaleString("en-US")} simulated worlds, neither puts a single one below his chicken-parity line (\$12/kg dry cell mass; the cheapest world is ${usd(uj.cheapest)} in ours and ${usd(page.cheapest)} in his). Under his competitive-zone edge of \$36/kg dry: ${pct(uj.under36)} of worlds in ours, ${pct(page.under36)} in his. Medians: ${usd(uj.p50)} and ${usd(page.p50)} per kg dry. Here "ours" is the main model as it stood on 9 November, which his rebuild started from. Since 17 November the main model includes two of his corrections; it now has a median of ${usd(ujNow.p50)} and ${pct(ujNow.under36)} of worlds under \$36.
 - **What those lines mean.** Alex sets parity at \$12/kg dry: US wholesale boneless chicken breast, about \$2.80–3.30/kg, divided by 27.5% solids. He puts the upper edge of his "competitive zone" at about three times that, \$36/kg dry, roughly the price level of organic chicken: between the two lines, whether cultured meat competes depends on preferences and regulation; well above it, it does not. That edge is his judgement, not a sourced figure. Per kg of product: \$12–36/kg dry is \$3.30–9.90 as all-cell meat at chicken moisture, or \$3.08–4.73 as a hybrid with 25% cells and \$3/kg plant filler. For comparison, US wholesale boneless chicken averaged about \$3.50/kg (2026 dollars, September 2022 to September 2026). These are cell ingredient costs; forming and packaging are extra, while wholesale chicken is already cut and packed.
 - The net effect of his changes ${updown(uj.under36, page.under36)} the competitive share, mostly through one unsourced number: economies of scale stop at a 6,500 m³ frontier plant. That sounds like a limit, but it works the other way: every world's reactors are now priced as if the plant were 6,500 m³, while the competitive worlds only need a median of about ${Math.round(cmp.volume_m3.under36.p50).toLocaleString("en-US")} m³ for the same output, so they get a bigger volume discount than before (details under point 1 below). His literature review points the other way: its evidence-based nutrient-yield range alone takes his share from ${pct(page.under36)} to ${pct(ny.under36)}.
 - Suggested next steps: keep the main model as the master copy (Alex suggests this too), adopt the clear corrections, treat the structural changes as forks to settle at the workshop, and point elicitation at the few favourable tails and joint probabilities that the "what has to go right" analysis says matter.
@@ -58,7 +61,8 @@ Each row changes one thing (from our model's settings, or from Alex's page defau
 {
   // Short labels, hover descriptions and links per scenario; full names are in the JSON.
   const S = [
-    ["Unjournal engine defaults", "Main model", "The main Unjournal model (engine 2026-11-09.1) at its default settings.", "index.html"],
+    ["Unjournal engine, 9 November settings", "Main model, 9 November", "The main Unjournal model as it stood on 9 November 2026 (engine 2026-11-09.1), which Alex's rebuild started from. Each 'Main +' row changes one thing from this.", "index.html"],
+    ["Unjournal engine, current defaults", "Main model today", "The main Unjournal model today (engine 2026-11-17.1). It now includes two of Alex's corrections: the cheaper-medium rule and the maturity correction.", "index.html"],
     ["Unjournal engine, maturity channels independent", "Main, maturity link off", "Main model, but each linked quantity (the four technologies and the cost of capital) gets its own independent maturity draw, so nothing moves together. Shows how much the maturity link matters.", "#linked-uncertainties"],
     ["Rebuild engine, original settings", "Rebuild, all changes off", "Alex's engine with all his changes switched off. It should equal the first row, draw for draw: a check that the engines match.", "#the-two-models-side-by-side"],
     ["Original + hydrolysate medium only", "Main + cheaper medium rule", "Main model, but where hydrolysates exist the plant buys whichever medium is cheaper, instead of always buying hydrolysate medium (Alex's error fix).", "#errors-and-economies-of-scale-that-never-run-out"],
@@ -103,7 +107,7 @@ Alex compares dry cell mass directly with chicken: about \$12/kg dry is US whole
 
 ### 1. Errors, and economies of scale that never run out
 
-**Hydrolysate medium charged even when dearer.** Confirmed. Our "cheapest feasible mode" option chooses only the process (fed-batch, perfusion, continuous). Inputs are not re-optimised: `cost-model.mjs` uses the hydrolysate price whenever hydrolysates exist, even in worlds where its drawn price is above the purified-amino-acid medium's. Fixing it moves the median from ${usd(uj.p50)} to ${usd(cheapMed.p50)} and the share under \$36 from ${pct(uj.under36)} to ${pct(cheapMed.under36)}: small, because in competitive worlds hydrolysate is almost always the cheaper option anyway. Worth adopting, since it follows directly from the "best available plant" estimand.
+**Hydrolysate medium charged even when dearer.** Confirmed. Our "cheapest feasible mode" option chooses only the process (fed-batch, perfusion, continuous). Inputs are not re-optimised: `cost-model.mjs` uses the hydrolysate price whenever hydrolysates exist, even in worlds where its drawn price is above the purified-amino-acid medium's. Fixing it moves the median from ${usd(uj.p50)} to ${usd(cheapMed.p50)} and the share under \$36 from ${pct(uj.under36)} to ${pct(cheapMed.under36)}: small, because in competitive worlds hydrolysate is almost always the cheaper option anyway. It follows directly from the "best available plant" estimand, and the main model adopted it on 17 November 2026 (engine `2026-11-17.1`).
 
 **Economies of scale.** In the main model, reactor cost per litre falls with total working volume as (volume ÷ 1,000 m³)^(s − 1), with s between 0.6 and 0.9 and no upper limit. Plant size is drawn (10–40 thousand t a year), so the model never builds an infinite plant. But the diagnosis is right in two ways: under a "best available plant" estimand, nothing in the model says why the best plant should stop growing, and worlds with low productivity need more reactor volume and so get a larger discount per litre, which partly cushions bad draws.
 
@@ -140,7 +144,7 @@ The "maturity" link in both models is ad hoc and nearly inert. A better structur
 
 <details><summary><strong>How the link works now, and why it is ad hoc</strong></summary>
 
-Each simulated world draws one "industry maturity" value (mean 0.40, sd 0.20). It adds k × (maturity − 0.5), with k between 0.20 and 0.30, to the probabilities of four technologies (hydrolysate medium, cheap growth factors, food-grade supplemental proteins, food-grade reactors) and lowers the cost of capital by 0.03 × (maturity − 0.5). Nothing else is linked: process blockers, harvest density, nutrient yield, cycle time and operating cost are all independent. The choice of what to link was a parsimony decision, not an evidence-based one: the docs note that a full correlation matrix would need about ten pairwise correlations with no data to calibrate them.
+Each simulated world draws one "industry maturity" value (mean 0.40, sd 0.20). It adds k × (maturity − 0.40), with k between 0.20 and 0.30, to the probabilities of four technologies (hydrolysate medium, cheap growth factors, food-grade supplemental proteins, food-grade reactors) and lowers the cost of capital by 0.03 × (maturity − 0.40). (Until 17 November 2026 both were measured from 0.5 rather than 0.40; see the next fold.) Nothing else is linked: process blockers, harvest density, nutrient yield, cycle time and operating cost are all independent. The choice of what to link was a parsimony decision, not an evidence-based one: the docs note that a full correlation matrix would need about ten pairwise correlations with no data to calibrate them.
 
 It also barely matters. Giving each channel its own independent maturity draw moves the share of worlds under \$36/kg dry from ${pct(uj.under36)} to ${pct(indepMat.under36)}: the nudges are small, typically a few percentage points of probability.
 
@@ -148,7 +152,9 @@ It also barely matters. Giving each channel its own independent maturity draw mo
 
 <details><summary><strong>Is it double counting?</strong></summary>
 
-Not in the usual sense. The nudge is meant to add correlation without changing each probability's average. In practice it shifts the averages slightly, because it is centred on 0.5 while maturity averages 0.40: hydrolysates are available in ${pct(cmp.realised.p_hydro_realised)} of worlds, not the ${pct(cmp.realised.p_hydro_stated)} entered (Alex's fix centres it on the mean). That is a small bias, not double counting.
+Not in the usual sense. The nudge is meant to add correlation without changing each probability's average. Until 17 November 2026 it did shift the averages slightly, because it was measured from 0.5 while maturity averages 0.40 at the default settings: hydrolysates were available in ${pct(cmp.realised.p_hydro_realised)} of worlds, not the ${pct(cmp.realised.p_hydro_stated)} entered. Alex spotted this, and the main model now measures the nudge from 0.40 (engine `2026-11-17.1`). That was a small bias, not double counting.
+
+One real case of double counting remains. The model also scales maturity by the target year, while the technology probabilities are already entered as "by the target year". For years other than 2036 that counts the passage of time twice; the effect is small (about 3 percentage points per technology between 2026 and 2036). Details are in the [docs](docs.qmd#maturity-factor).
 
 The real double-counting risk is in elicitation. If experts give probabilities or favourable ranges that already assume a good industry trajectory, a link layered on top counts that trajectory twice. Ask for each quantity unconditionally, and ask separately how much it depends on the others ("if cell lines are good enough for cheap growth factors, how likely is continuous culture to work?").
 
@@ -172,7 +178,7 @@ Direction of the effect: favourable inputs that tend to arrive together fatten t
 
 | Change in the rebuild | Suggestion for the main model |
 |---|---|
-| Hydrolysate medium bought only when cheaper (error fix) | Adopt. |
+| Hydrolysate medium bought only when cheaper (error fix) | Adopted on 17 November 2026 (engine `2026-11-17.1`). |
 | Frontier plant uses the cheapest process without a blocker; the probability-weighted mix is removed | Agree under the best-plant estimand; this is already the main model's *Cheapest feasible mode* option. Caveat: picking the cheapest of three independently drawn costs *after* they are known is optimistic, since a plant commits to a process first. Keep some choice noise, or choose on expected cost. |
 | Contract-manufacturer option and forming removed | Fine under the estimand. Forming is already outside the cell-mass cost. |
 | Harvest, wash and dewater costed, at the cited centrifuge figure | Adopt; the literature review's bottom-up figure (\$1.5–2.5/kg dry) supports a low default. |
@@ -180,7 +186,7 @@ Direction of the effect: favourable inputs that tend to arrive together fatten t
 | Fixed running costs and utilities merged into one plant operating cost | Reconsider. His own review recommends tying maintenance and insurance to capital (about 9% of capital a year in Humbird's design). The merged input is drawn independently of capital, his page reports it in 98% of minimal sets, and its favourable tail (about \$9/kg dry, \$1.80/kg wet) is, by his review, roughly labour alone. This is the most decision-relevant input and its favourable tail is the least supported. |
 | Economies of scale stop at a 6,500 m³ frontier plant | Right diagnosis; the fix needs a source and an engineering anchor (above). |
 | Medium-use multiplier floored at 1 (no free medium recycling) | Adopt. |
-| Maturity nudge centred on maturity's own mean | Adopt; without it every technology probability sits 2–3 points below the value entered. |
+| Maturity nudge centred on maturity's own mean | Adopted on 17 November 2026, measured from the average at the default settings (0.40). Before, every technology probability sat 2–3 points below the value entered. |
 | All inputs per kg dry, so the solids fraction cancels | Adopt; in the main model some inputs are still converted at a fixed 20% solids. |
 | Failed runs should not gross up harvest cost | Adopt (minor). |
 | Learn page: seed train overstated; cost shares describe the cheap worlds | Fix the Learn page text. |

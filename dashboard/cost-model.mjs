@@ -1,9 +1,16 @@
 // Canonical browser model. Pure ESM: used by both Quarto views and Node tests.
 // Parameter distributions are scenario assumptions, not a calibrated posterior.
-export const MODEL_VERSION = "2026-11-09.1";
+export const MODEL_VERSION = "2026-11-17.1";
 export const DEFAULT_PARAMS = Object.freeze({
   plant_kta_p5: 10, plant_kta_p95: 40, uptime_mean: 0.90,
   maturity_mean: 0.40, p_hydro_mean: 0.75, p_recfactors_mean: 0.50,
+  // Reference maturity at which the entered technology probabilities and cost of capital hold:
+  // the effective maturity at the default settings (slider 0.5, year 2036), i.e. maturityForYear(0.5, 2036).
+  // Before 2026-11-17.1 the nudge was centred on 0.5, which pulled every probability down at the defaults.
+  maturity_centre: 0.40,
+  // Where hydrolysate medium exists: "cheapest" buys the cheaper of the two media (since 2026-11-17.1);
+  // "hydrolysate" always buys hydrolysate medium (the earlier rule).
+  medium_choice: "cheapest",
   p_supp_protein_mean: 0.70, wacc_p5: 0.08, wacc_p95: 0.20,
   // Density inputs are g dry cells per litre (override range and expert prior).
   asset_life_lo: 8, asset_life_hi: 20, density_gL_p5: 6, density_gL_p95: 40,
@@ -69,6 +76,7 @@ export const REVIEW_PROVENANCE = Object.freeze({
   harvest: "October 26, 2026 design decision. Harvest, washing and dewatering to the standard basis belong inside the estimate. The $2.50–15/kg dry p5–p95 range ($0.50–3.00 per wet kg at 20% solids) is a placeholder until values from the planned process model are available (see docs); off by default.",
   mode_selection: "October 2026 design discussion. Least-cost selection prices each world under every process mode and keeps the cheapest feasible one; fed-batch is the always-feasible fallback. Feasibility defaults 0.70/0.30 reproduce the 20/50/30 weights when modes are strictly ranked; they are not elicited. Noise β > 0 gives P(mode) ∝ cost^(−1/β). Mode-specific failure rates and seed-train capital are modeled since November 7, 2026; cell-retention equipment, consumables and extra medium throughput are not, so selection still favors the least-specified modes.",
   forming: "November 7, 2026 (engine 2026-11-07.2): forming is a cost per kg of final hybrid product, lognormal p5–p95 $0.5–2.5 (2026 dollars), added to the hybrid cost only, not to cell-mass cost. Source: GFI 2021, Plant-based meat: anticipating 2030 production requirements, Tables 3–5 (order-of-magnitude, bottom-up): high-moisture extrusion plants at 70,000 t/yr (capex $91.2M, non-ingredient opex $22.1M/yr) and 7,000 t/yr ($18.2M; $9.5M/yr) imply conversion costs of about $0.49 and $1.70 per kg in 2021 dollars (capex at a 13% capital recovery factor), about $0.6–2.1 in 2026 dollars; miscellaneous opex includes packaging, so these slightly overstate forming alone. Scaffolded whole cuts would cost more and are not represented. The earlier $2–15/kg range had no recorded source and was added per wet kg of cells.",
+  maturity: "November 17, 2026 (engine 2026-11-17.1; David Reinstein's decision, flagged by Alex Bates's rebuild). Each world draws one maturity value (Beta, mean = slider × year factor, sd 0.2) and adds k × (maturity − centre) to four technology probabilities (k = 0.25 hydrolysates and cheap growth factors, 0.20 supplemental proteins, 0.30 custom reactors) and subtracts 0.03 × (maturity − centre) from the cost of capital. The centre was 0.5, but at the defaults maturity averages 0.40 (slider 0.5 × 0.8 for 2036), so every probability came out below the value entered (hydrolysates 72.5% instead of 75%). The centre is now 0.40, the maturity at the default settings, so the entered probabilities hold at the defaults (they are for 2036); moving the maturity slider or the target year still shifts them. The year factor and the k values date from February 2026 and have no empirical source; they are not calibrated to observed rates of progress.",
   reactor: "November 7, 2026: custom (food-grade, aseptic but not cGMP) reactor cost ratio changed from 0.35–0.85 to 0.15–0.55 of pharma-grade (mean 0.35). Humbird 2020 preprint Table 3.1 (Petrides): installed cost of an aseptic non-cGMP 20 m³ vessel is about 0.34 of a cGMP mammalian one (about 0.5 for the vessel alone); sanitary brewing vessels about 0.05, but Humbird argues animal-cell culture must stay aseptic. The low end allows for low-cost custom designs (company claims: Meatly, Vow). Provisional."
 });
 
@@ -106,10 +114,10 @@ function validateRange(lo, hi) {
     throw new RangeError("Uncertainty endpoints must be finite, positive, and ordered (low <= high).");
 }
 
-function adjustedAdoption(base, samples, maturity, strength) {
+function adjustedAdoption(base, samples, maturity, strength, centre) {
   // The UI's 0% and 100% choices are hard scenario settings.
   if (base === 0 || base === 1) return samples.map(() => base);
-  return clip(samples.map((p, i) => p + strength * (maturity[i] - 0.5)), 0, 1);
+  return clip(samples.map((p, i) => p + strength * (maturity[i] - centre)), 0, 1);
 }
 
 // Separate streams keep unrelated draws identical when a component is toggled.
@@ -338,7 +346,7 @@ function selectLeastCostMode(n, seed, params) {
 
 function simulateDrawnMode(n, seed, params) {
   if (!Number.isInteger(n) || n < 1) throw new RangeError("Sample count must be a positive integer.");
-  for (const key of ["maturity_mean", "uptime_mean", "p_hydro_mean", "p_recfactors_mean", "p_supp_protein_mean"]) {
+  for (const key of ["maturity_mean", "maturity_centre", "uptime_mean", "p_hydro_mean", "p_recfactors_mean", "p_supp_protein_mean"]) {
     if (!Number.isFinite(params[key]) || params[key] < 0 || params[key] > 1)
       throw new RangeError(`${key} must be between 0 and 1.`);
   }
@@ -346,7 +354,7 @@ function simulateDrawnMode(n, seed, params) {
   if (!Number.isFinite(params.gf_progress) || params.gf_progress < 0 || params.gf_progress > 100)
     throw new RangeError("GF progress must be between 0 and 100.");
   validateRange(params.asset_life_lo, params.asset_life_hi);
-  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"], cost_basis: ["dry", "wet"]})) {
+  for (const [key, choices] of Object.entries({dependence_mode: ["shared", "independent_maturity"], media_use_model: ["density", "direct", "yield"], gf_dose_model: ["per_kg", "media_linked"], cost_basis: ["dry", "wet"], medium_choice: ["cheapest", "hydrolysate"]})) {
     if (!choices.includes(params[key])) throw new RangeError(`Unknown ${key}: ${params[key]}`);
   }
   validateRange(params.fresh_media_p5, params.fresh_media_p95);
@@ -414,10 +422,10 @@ function simulateDrawnMode(n, seed, params) {
   rng = namedStream(seed, "adoption");
   // Adoption probabilities (maturity-adjusted)
   let p_hydro = sampleBetaMeanStdev(rng, params.p_hydro_mean, 0.10, n);
-  p_hydro = adjustedAdoption(params.p_hydro_mean, p_hydro, hydroMaturity, 0.25);
+  p_hydro = adjustedAdoption(params.p_hydro_mean, p_hydro, hydroMaturity, 0.25, params.maturity_centre);
 
   let p_recf = sampleBetaMeanStdev(rng, params.p_recfactors_mean, 0.15, n);
-  p_recf = adjustedAdoption(params.p_recfactors_mean, p_recf, gfMaturity, 0.25);
+  p_recf = adjustedAdoption(params.p_recfactors_mean, p_recf, gfMaturity, 0.25, params.maturity_centre);
 
   // Bernoulli draws for adoption
   const is_hydro = p_hydro.map(p => rng() < p);
@@ -503,7 +511,10 @@ function simulateDrawnMode(n, seed, params) {
   // dominant basal media cost component (~60-80%), this substantially lowers the pharma range.
   // Previous range ($1-4) was anchored on Humbird's Table 3.4 values.
   const media_cost_pharma = sampleLognormalP5P95(rng, 0.5, 2.5, n);
-  const media_cost_L = is_hydro.map((h, i) => h ? media_cost_hydro[i] : media_cost_pharma[i]);
+  // Where hydrolysates exist the plant buys whichever medium is cheaper (default since 2026-11-17.1;
+  // "hydrolysate" is the earlier rule: always hydrolysate medium when it exists, even if dearer).
+  const media_cost_L = is_hydro.map((h, i) => !h ? media_cost_pharma[i]
+    : params.medium_choice === "cheapest" ? Math.min(media_cost_hydro[i], media_cost_pharma[i]) : media_cost_hydro[i]);
   const cost_media = mul(L_per_kg, media_cost_L);
 
   rng = namedStream(seed, "growth-factors");
@@ -558,7 +569,7 @@ function simulateDrawnMode(n, seed, params) {
   // Cheap regime: food-grade recombinant at scale → p5=$0.03/kg, p95=$0.60/kg cell mass
   // Exp. regime:  pharma-grade → p5=$0.50/kg, p95=$4.00/kg cell mass
   let p_supp = sampleBetaMeanStdev(rng, params.p_supp_protein_mean, 0.12, n);
-  p_supp = adjustedAdoption(params.p_supp_protein_mean, p_supp, suppMaturity, 0.20);
+  p_supp = adjustedAdoption(params.p_supp_protein_mean, p_supp, suppMaturity, 0.20, params.maturity_centre);
   const is_supp_cheap = p_supp.map(p => rng() < p);
   const supp_cheap_cost = sampleLognormalP5P95(rng, 0.03, 0.60, n);
   const supp_exp_cost   = sampleLognormalP5P95(rng, 0.50, 4.00, n);
@@ -622,7 +633,7 @@ function simulateDrawnMode(n, seed, params) {
   // tornado chart even when CAPEX is excluded (in those cases they're
   // sampled here purely for the sensitivity export, with no cost effect).
   let wacc_samples_out = sampleLognormalP5P95(rng, params.wacc_p5, params.wacc_p95, n);
-  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (financeMaturity[i] - 0.5)), 0.03, 1);
+  wacc_samples_out = clip(wacc_samples_out.map((w, i) => w - 0.03 * (financeMaturity[i] - params.maturity_centre)), 0.03, 1);
   let asset_life_samples_out = sampleUniform(rng, params.asset_life_lo, params.asset_life_hi, n);
   if (!params.cdmo_mode && params.include_capex) {
     rng = namedStream(seed, "capex");
@@ -632,7 +643,7 @@ function simulateDrawnMode(n, seed, params) {
     // Food-grade (aseptic, not cGMP) ÷ pharma-grade installed cost; see REVIEW_PROVENANCE.reactor.
     const custom_ratio = sampleUniform(rng, 0.15, 0.55, n);
     let custom_share = sampleBetaMeanStdev(rng, 0.55, 0.15, n);
-    custom_share = clip(add(custom_share, scale(equipmentMaturity.map(m => m - 0.5), 0.30)), 0, 1);
+    custom_share = clip(add(custom_share, scale(equipmentMaturity.map(m => m - params.maturity_centre), 0.30)), 0, 1);
 
     const reactor_cost_L_avg = reactor_cost_L_pharma.map((p, i) =>
       p * (custom_share[i] * custom_ratio[i] + (1 - custom_share[i]))

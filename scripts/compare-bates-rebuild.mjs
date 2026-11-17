@@ -43,11 +43,15 @@ const fixed = v => AB.MODES.map(() => ({d: 'fixed', v}));
 const ln = (p5, p95) => AB.MODES.map(() => ({d: 'ln', p5, p95}));
 
 const rows = [];
-rows.push(row('Unjournal engine defaults', UJ.simulate(n, seed, {}).unit_cost));
+// The rebuild started from the main model as it stood on 9 November 2026 (engine 2026-11-09.1). Since engine
+// 2026-11-17.1 the main model includes two of the rebuild's corrections; OLD switches them back off so the
+// one-change-at-a-time rows stay paired with the rebuild's 'original settings'.
+const OLD = {maturity_centre: 0.5, medium_choice: 'hydrolysate'};
+rows.push(row('Unjournal engine, 9 November settings', UJ.simulate(n, seed, OLD).unit_cost));
 // How much does the shared 'maturity' link matter? Same model with one independent maturity draw per channel.
-const indep = UJ.simulate(n, seed, {dependence_mode: 'independent_maturity'});
+const indep = UJ.simulate(n, seed, {...OLD, dependence_mode: 'independent_maturity'});
 rows.push(row('Unjournal engine, maturity channels independent', indep.unit_cost));
-const ujShared = UJ.simulate(n, seed, {});
+const ujShared = UJ.simulate(n, seed, OLD);
 const realised = {p_hydro_stated: UJ.DEFAULT_PARAMS.p_hydro_mean,
   p_hydro_realised: ujShared.is_hydro_samples.reduce((a, b) => a + b, 0) / n};
 const L = AB.fromLegacy({}), O = AB.ORIGINAL_DECISIONS;
@@ -60,6 +64,7 @@ ab('Original + economies of scale stop at 1,000 m3 (no discount past the price q
 ab('Original + economies of scale stop at 20,000 m3', {...L, econ_scale_m3: fixed(20000)}, O);
 ab('Original + medium-use multiplier floored at 1', {...L, turnover_floor: 1}, O);
 ab('Original + maturity nudge centred on its mean', {...L, maturity_centre: 'mean'}, O);
+rows.push(row('Unjournal engine, current defaults', UJ.simulate(n, seed, {}).unit_cost));
 const page = AB.toEngineParams(), D = AB.defaultDecisions();
 ab('Rebuild page defaults (all changes)', page, D);
 ab('Rebuild page, economies of scale by volume, uncapped', {...page, econ_scale_m3: null}, D);

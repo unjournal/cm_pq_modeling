@@ -1,0 +1,183 @@
+---
+title: "The model in plain terms"
+subtitle: "A short guide: what the model works out, the few numbers that set the cost, how to read the price lines, and how far to trust it"
+toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+*Written by Claude (AI) with David Reinstein, 17 November 2026. Every number on this page is read from [`five-drivers-2026-11-17.json`](five-drivers-2026-11-17.json), which `scripts/five-drivers.mjs` computes from the current model (1,000,000 simulated worlds). Not yet reviewed by engineers or cell-culture experts.*
+
+```{ojs}
+//| echo: false
+fd = FileAttachment("five-drivers-2026-11-17.json").json()
+money = v => v >= 100 ? `$${Math.round(v).toLocaleString("en-US")}` : v >= 10 ? `$${v.toFixed(0)}` : v >= 1 ? `$${(Math.round(v * 100 + 1e-6) / 100).toFixed(2)}` : `$${v.toFixed(v < 0.01 ? 3 : 2)}`
+share = v => v === 0 ? "none" : v < 0.01 ? `${(100 * v).toFixed(2)}%` : `${(100 * v).toFixed(0)}%`
+oneIn = v => `about 1 in ${(Math.round(1 / v / 100) * 100).toLocaleString("en-US")}`
+A = fd.summary.all
+C = fd.summary.under36
+H = fd.summary.under100
+R = fd.spread_removed_when_held_at_median
+cellStyle = "padding:5px 8px;border-bottom:1px solid #e3e3e3;text-align:right;white-space:nowrap"
+headStyle = "padding:5px 8px;border-bottom:2px solid #bbb;text-align:right;vertical-align:bottom;line-height:1.25"
+```
+
+## In brief
+
+```{ojs}
+//| echo: false
+html`<ul>
+<li>The model works out what it would cost to produce one kilogram of cultured chicken cells (weighed dry) in a large, well-run plant using the technology of 2036. It does this ${fd.n.toLocaleString("en-US")} times, each time with a different combination of plausible inputs. Each run is one "simulated world".</li>
+<li>Although the model has about thirty inputs, the cost comes down to <strong>five numbers</strong>, and three of them (all about the liquid the cells grow in) account for nearly all of the uncertainty.</li>
+<li>In a typical simulated world the cells cost about ${money(fd.total.p50)} per kg dry. Chicken sells wholesale for about $3.50 per kg. Cultured cells would have to cost about $12 to $18 per kg dry to match that, and no simulated world gets there. Only ${oneIn(fd.price_lines[2].share_of_worlds_below)} gets under $36 per kg dry, roughly the price level of organic chicken.</li>
+<li>The arithmetic has been checked carefully. Most of the input ranges have not: many are placeholders without a source. So the model is best read as "what would have to be true for cultured meat to be cheap", not as a forecast.</li>
+</ul>`
+```
+
+## 1. The cost is five numbers
+
+The cost of a kilogram of dry cells is:
+
+> **litres of medium per kg × (price of medium per litre + growth-factor cost per litre) + plant running costs + capital charge**
+
+"Medium" is the nutrient liquid the cells grow in. "Growth factors" are signalling proteins added to the medium in tiny amounts; today they are very expensive. "Plant running costs" are labour, maintenance, energy, consumables and a few other proteins. The "capital charge" is the yearly cost of paying for the plant, spread over each kg it makes.
+
+```{ojs}
+//| echo: false
+{
+  const rows = [
+    ["Litres of medium per kg of dry cells", "litres", v => `${Math.round(v)} L`],
+    ["Price of medium, per litre", "medium_price", money],
+    ["Growth-factor cost, per litre of medium", "gf_per_litre", money],
+    ["Plant running costs, per kg of dry cells", "running", money],
+    ["Capital charge, per kg of dry cells", "capital", money]
+  ];
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr>
+    <th style="${headStyle};text-align:left">The five numbers</th>
+    <th style="${headStyle}">Typical world<br><span style="font-weight:400">(all ${fd.n.toLocaleString("en-US")})</span></th>
+    <th style="${headStyle}">Worlds where cells cost under $100<br><span style="font-weight:400">(${share(H.share_of_worlds)} of worlds)</span></th>
+    <th style="${headStyle}">Worlds where cells cost under $36<br><span style="font-weight:400">(${share(C.share_of_worlds)} of worlds)</span></th>
+  </tr></thead>
+  <tbody>
+  ${rows.map(([label, key, f]) => html`<tr><td style="${cellStyle};text-align:left;white-space:normal">${label}</td><td style="${cellStyle}">${f(A.drivers[key])}</td><td style="${cellStyle}">${f(H.drivers[key])}</td><td style="${cellStyle}">${f(C.drivers[key])}</td></tr>`)}
+  <tr><td style="${cellStyle};text-align:left;font-weight:600">Total cost per kg of dry cells</td><td style="${cellStyle};font-weight:600">${money(A.total_median)}</td><td style="${cellStyle};font-weight:600">${money(H.total_median)}</td><td style="${cellStyle};font-weight:600">${money(C.total_median)}</td></tr>
+  </tbody></table></div>
+  <p style="font-size:0.9em;color:#555">Each cell is the middle value (median) across the worlds in that column, so the rows do not multiply and add up exactly to the total.</p>`;
+}
+```
+
+**How to read it.**
+
+```{ojs}
+//| echo: false
+html`<ul>
+<li>In a typical world, a kg of dry cells takes about ${Math.round(A.drivers.litres)} litres of medium at about ${money(A.drivers.medium_price)} a litre. Medium is by far the largest cost: about ${money(A.lines_median.medium)} of the ${money(A.total_median)} total.</li>
+<li>To get under $36 per kg, everything has to be low at once: about ${Math.round(C.drivers.litres)} litres of medium at about ${money(C.drivers.medium_price)} a litre (about ${money(C.lines_median.medium)} of medium per kg), almost no growth-factor cost, plant running costs of about ${money(C.lines_median.running)} and a capital charge of about ${money(C.lines_median.capital)}.${C.lines_median.running > C.lines_median.medium ? " In those worlds, running the plant costs more than the medium." : ""}</li>
+<li>For comparison, the only measured production run for meat cells that Alex Bates's <a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">literature review</a> found (Pasitka and colleagues, 2024, in a 1.8-litre vessel) used about 64 litres of medium per kg of wet cells. That is roughly 210 to 320 litres per kg of dry cells, depending on how much water the cells are assumed to hold, with medium priced at $0.63 a litre. This is close to the model's typical world and far from its cheap worlds.</li>
+</ul>`
+```
+
+### Which of the five matters most?
+
+One way to ask this: if we knew one of the five numbers for certain, how much of the spread in the model's cost would disappear?
+
+```{ojs}
+//| echo: false
+{
+  const order = Object.entries(R).sort((a, b) => b[1] - a[1]);
+  const pctOf = v => v < 0.005 ? "less than 1%" : `${Math.round(100 * v)}%`;
+  return html`<div style="max-width:560px">${order.map(([k, v]) => html`<div style="display:grid;grid-template-columns:minmax(0,1fr) 6.5em;gap:8px;align-items:center;margin:4px 0">
+    <div><div style="font-size:0.93em">${fd.drivers[k].label}</div><div style="height:9px;background:#e9eef3;border-radius:3px"><div style="height:9px;width:${Math.max(1, 100 * v)}%;background:#2a78d6;border-radius:3px"></div></div></div>
+    <div style="text-align:right;font-variant-numeric:tabular-nums">${pctOf(v)}</div></div>`)}</div>
+  <p style="font-size:0.9em;color:#555">Share of the spread in cost that disappears when that one number is held at its typical value. The shares do not add to 100%, because the numbers multiply as well as add.</p>`;
+}
+```
+
+So nearly all of the model's uncertainty is about medium: how much of it a kg of cells needs, what a litre costs, and what the growth factors in it cost. Running costs and capital hardly affect the spread across all worlds. They matter in a different way: they set a floor that the cheapest worlds cannot get below.
+
+## 2. What the other inputs are for
+
+Most of the model's inputs exist only to produce one of the five numbers.
+
+| The number | Inputs that produce it |
+|---|---|
+| Litres of medium per kg | Nutrient yield (how many grams of cells a litre of medium can feed), cell density, and the medium-use multiplier |
+| Price of medium per litre | Whether cheap plant-based "hydrolysate" medium can be used, and a price range for each kind of medium |
+| Growth-factor cost per litre | Whether cheap growth factors exist by 2036, their price range, and how much goes into each litre |
+| Plant running costs | Fixed costs (labour, maintenance, overhead), utilities and consumables, and supplemental proteins such as albumin |
+| Capital charge | Reactor price, how much reactor volume the plant needs (set by cell density and how fast the cells grow), plant size, the cost of borrowing, and plant lifetime |
+
+The five numbers are themselves driven by a few deeper things: how good the cell line is, how cheap food-grade inputs become at scale, and how the plant is engineered. The model does not yet represent those deeper causes directly, which is why some inputs that should move together are drawn independently. A proposal for doing that is on the [notes page](bates-rebuild.qmd#linked-uncertainties).
+
+## 3. Reading the price lines
+
+The pages quote costs in three ways, which is a common source of confusion:
+
+- **Per kg of dry cells.** This is what the model calculates. Cells are mostly water, so a kg of dry cells is several kg of meat.
+- **Per kg of meat made only of cells,** at the water content of chicken meat. This is the dry-cell cost multiplied by 0.275.
+- **Per kg of a "hybrid" product:** one quarter cells and three quarters plant-based ingredients costing \$3 a kg. This is how products are likely to be sold, and it is what the threshold cards on the main model page use.
+
+```{ojs}
+//| echo: false
+html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+<thead><tr>
+  <th style="${headStyle};text-align:left">Price line</th>
+  <th style="${headStyle}">Per kg of dry cells</th>
+  <th style="${headStyle}">Per kg of meat made only of cells</th>
+  <th style="${headStyle}">Per kg of hybrid product</th>
+  <th style="${headStyle}">Share of simulated worlds below it</th>
+</tr></thead>
+<tbody>${fd.price_lines.map(l => html`<tr>
+  <td style="${cellStyle};text-align:left;white-space:normal">${l.label}</td>
+  <td style="${cellStyle}">${money(l.dry)}</td><td style="${cellStyle}">${money(l.all_cell_meat)}</td><td style="${cellStyle}">${money(l.hybrid)}</td>
+  <td style="${cellStyle}">${share(l.share_of_worlds_below)}</td></tr>`)}</tbody></table></div>`
+```
+
+Two things follow from this table.
+
+```{ojs}
+//| echo: false
+html`<ol>
+<li><strong>The threshold cards on the main page are not parity lines.</strong> Wholesale chicken costs about $3.50 per kg. A hybrid product at $10 per kg is nearly three times that. So "about ${share(fd.price_lines[4].share_of_worlds_below)} of worlds are under $10 per kg of hybrid product" and "almost no worlds are price-competitive with chicken" are both true. They refer to different lines.</li>
+<li><strong>A hybrid product hides most of the cell cost.</strong> Because three quarters of it is cheap filler, cells at $36 per kg dry give a hybrid at ${money(fd.price_lines[2].hybrid)} per kg. That is why hybrid figures look so much closer to chicken than cell figures do.</li>
+</ol>`
+```
+
+## 4. How far to trust it
+
+**What has been checked.** The arithmetic. The model has automated tests, and Alex Bates independently rebuilt it in November 2026; with the same settings his version reproduces ours exactly, world for world. His rebuild also found two logic errors, which were corrected on 17 November 2026 ([what changed](index.qmd)).
+
+**What has not.** Most of the input ranges. Several of the inputs that matter most have no published source:
+
+- plant running costs (the largest cost in the cheapest worlds);
+- the probabilities that hydrolysate medium, cheap growth factors and food-grade proteins work by 2036 (75%, 50% and 70%);
+- the favourable ends of the ranges for nutrient yield and medium price, which Alex's literature review finds more optimistic than the published evidence supports;
+- how strongly good outcomes are assumed to arrive together (the "maturity" factor, explained in the [technical reference](docs.qmd#maturity-factor)).
+
+**What that means.** The share of worlds that come out cheap depends mostly on how far those favourable ends reach and on whether they happen together. Neither has been asked of experts yet. Treat the model as a way to see what would have to go right, and how much, rather than as a prediction. The next step is to ask experts about the five numbers directly, and about the handful of breakthroughs behind them.
+
+## Terms used on these pages
+
+<details><summary><strong>Open the list</strong></summary>
+
+- **Simulated world** (also called a "draw"): one run of the model with one value chosen for every input.
+- **Dry cell mass:** the weight of the cells with the water removed. Sources often quote costs per kg of *wet* cells, which are 70–80% water, so a wet figure is roughly a fifth to a third of the dry figure.
+- **Nutrient yield:** grams of dry cells that one litre of medium can feed. It sets the least medium a kg of cells can use.
+- **Medium-use multiplier:** how many reactor-fulls of fresh medium are used per reactor-full of cells harvested.
+- **Hydrolysate:** a cheap digest of plant or yeast protein that could replace the purified amino acids in medium.
+- **Hybrid product:** a product that is part cultured cells and part plant-based ingredients. These pages assume one quarter cells.
+- **Maturity:** one number per simulated world that makes several technologies slightly more or less likely to work together. Its effect is small.
+- **Price-competitive zone:** on Alex Bates's page, cells costing between \$12 and \$36 per kg dry, that is, between matching ordinary chicken and matching organic chicken.
+- **Minimal set:** on Alex's page, one of the smallest combinations of things going well that gets a simulated world into the price-competitive zone.
+
+</details>
+
+## Where to go next
+
+- Try the numbers yourself: [Simplest model](simple.qmd) · [Advanced model](index.qmd)
+- Alex Bates's rebuild, our notes on it and the open questions for him: [notes and comparison](bates-rebuild.qmd) · [questions for Alex](alt/bates-rebuild-v0.9.7.html#questions-for-alex)
+- How cultured chicken is made: [Learn](learn.qmd) · Formulas and sources: [technical reference](docs.qmd) · Known weaknesses: [limits](limits.qmd)

@@ -37,6 +37,8 @@ format:
 
 The Advanced Model page ends with a tornado chart: one bar per input, showing how much the mean cost differs between draws where that input is in its top 10% and draws where it is in its bottom 10%. It is easy to read and, as a first pass, useful. It is also easy to over-read. Several of the inputs move together by construction, the 10% cut is arbitrary, the mean is pulled around by the right tail, and the question the chart answers ("what do costs look like in the worlds where this input is high?") is not the question people usually have in mind ("what happens to costs if this input changes?"). Neither is the question that matters for research prioritization ("would learning this change what we would do?").
 
+*Note, 17 November 2026: engine `2026-11-17.1` lowered the default median by about 7% (\$289 to \$270 per kg dry cell mass; see the [main page's update note](index.qmd)). The charts on this page use the current engine. The figures quoted in the text were computed with engine `2026-11-09.1` and have not yet been recomputed, so they differ slightly from the charts; the ranking of inputs is unchanged.*
+
 This page works through those problems with live numbers and then runs the alternatives on the same scenario. Everything below is computed from the same 30,000-draw simulation the main page uses, except the Shapley table, which is precomputed offline for the default scenario, and the intervention and structure checks (Sections 3.4 and 4.1), which re-run the engine with one setting changed. The methods and text were drafted with AI assistance and have not been independently reviewed; the code is in [`sensitivity-methods.mjs`](sensitivity-methods.mjs) with tests, and we welcome corrections via Hypothes.is annotations.
 
 ```{ojs}

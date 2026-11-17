@@ -12,6 +12,7 @@ project:
     - archive/**
     - alt/**
     - bates-rebuild-comparison-2026-11-17.json
+    - five-drivers-2026-11-17.json
     - llms.txt
 
 website:
@@ -41,6 +42,8 @@ website:
             target: _blank
       - text: "Learn"
         menu:
+          - text: "Start here: the model in plain terms"
+            href: guide.qmd
           - text: "How cultured chicken is made"
             href: learn.qmd
           - text: "TEA comparison"
