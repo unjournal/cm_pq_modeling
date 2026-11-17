@@ -53,25 +53,38 @@ Each row changes one thing (from our model's settings, or from Alex's page defau
 ```{ojs}
 //| echo: false
 {
-  // Short labels so the table fits; full scenario names are in the JSON.
-  const label = n => n
-    .replace("Unjournal engine defaults", "Main model, defaults")
-    .replace("Rebuild engine, original settings (should equal row 1)", "Rebuild engine, original settings (check: equals row 1)")
-    .replace(/^Original \+ /, "Main model + ")
-    .replace(" (no discount past the price quote)", "")
-    .replace("Rebuild page defaults (all changes)", "Rebuild, defaults (all changes)")
-    .replace(/^Rebuild page, /, "Rebuild, ").replace(/^Rebuild page \+ /, "Rebuild + ")
-    .replace(" (review evidence range)", " (review's range)").replace(/m3/g, "m³");
-  const th = "text-align:right;padding:4px 6px;vertical-align:bottom;font-weight:600";
+  // Short labels, hover descriptions and links per scenario; full names are in the JSON.
+  const S = [
+    ["Unjournal engine defaults", "Main model", "The main Unjournal model (engine 2026-11-09.1) at its default settings.", "index.html"],
+    ["Rebuild engine, original settings", "Rebuild, all changes off", "Alex's engine with all his changes switched off. It should equal the row above, draw for draw: a check that the engines match.", "#the-two-models-side-by-side"],
+    ["Original + hydrolysate medium only", "Main + cheaper medium rule", "Main model, but where hydrolysates exist the plant buys whichever medium is cheaper, instead of always buying hydrolysate medium (Alex's error fix).", "#errors-and-economies-of-scale-that-never-run-out"],
+    ["Original + least-cost feasible process", "Main + cheapest process", "Main model, but each world uses its cheapest process without a blocker (perfusion blocked with probability 0.3, continuous 0.7), instead of a process drawn from fixed weights.", "#what-the-rebuild-changes-and-what-we-suggest"],
+    ["Original + economies of scale stop at 6,500", "Main + scale priced at 6,500 m³", "Main model, but reactor cost per litre in every world is priced as for a 6,500 m³ plant: Alex's economies-of-scale cap.", "#errors-and-economies-of-scale-that-never-run-out"],
+    ["Original + economies of scale stop at 1,000", "Main + scale priced at 1,000 m³", "Main model, but reactor cost per litre is priced at the 1,000 m³ reference size of the reactor price quote in every world: no volume discount or small-plant premium.", "#errors-and-economies-of-scale-that-never-run-out"],
+    ["Original + economies of scale stop at 20,000", "Main + scale priced at 20,000 m³", "Main model, but reactor cost per litre is priced as for a 20,000 m³ plant in every world.", "#errors-and-economies-of-scale-that-never-run-out"],
+    ["Original + medium-use multiplier", "Main + medium-use floor", "Main model, but the medium-use multiplier cannot fall below one reactor volume per harvest (less would need medium recycling, which is not costed).", "#what-the-rebuild-changes-and-what-we-suggest"],
+    ["Original + maturity nudge", "Main + maturity centred", "Main model, but the maturity nudge is centred on maturity's mean (0.40) rather than 0.5, so technology probabilities come out at the values entered.", "#what-the-rebuild-changes-and-what-we-suggest"],
+    ["Rebuild page defaults", "Rebuild", "Alex's page at its default settings: all his changes together.", "alt/bates-rebuild-v0.9.7.html"],
+    ["Rebuild page, economies of scale by volume", "Rebuild, scale by own volume", "Alex's defaults, but economies of scale computed from each world's own reactor volume, as in the main model, instead of the 6,500 m³ cap.", "#errors-and-economies-of-scale-that-never-run-out"],
+    ["Rebuild page + oxygen cap", "Rebuild + oxygen cap", "Alex's defaults with harvest density capped at the oxygen-transfer limit (12–60 g dry/L), as his literature review suggests.", "#the-literature-review"],
+    ["Rebuild page + nutrient yield 2-15 g/L + oxygen", "Rebuild + review yield + oxygen cap", "Both of the two rows above.", "#the-literature-review"],
+    ["Rebuild page + nutrient yield 2-15 g/L (review", "Rebuild + review's nutrient yield", "Alex's defaults with nutrient yield drawn from 2–15 g dry cells per litre (his review's evidence range) instead of 3–30.", "#the-literature-review"]
+  ];
+  const info = n => S.find(([k]) => n.startsWith(k)) ?? [n, n, "", null];
+  const th = "text-align:right;padding:4px 6px;vertical-align:bottom;font-weight:600;max-width:6.5em;white-space:normal;line-height:1.2";
   const td = "text-align:right;padding:3px 6px;white-space:nowrap";
-  return html`<div style="overflow-x:auto"><table style="font-size:0.85em;border-collapse:collapse;width:100%">
-  <caption style="caption-side:top;text-align:left;font-size:0.9em">Cost in $/kg dry cell mass; shares and counts are of ${cmp.n.toLocaleString("en-US")} simulated worlds per row.</caption>
-  <thead><tr style="border-bottom:1px solid #ccc">
-    <th style="text-align:left;padding:4px 6px;vertical-align:bottom">Scenario</th><th style="${th}">Median</th><th style="${th}">Cheapest world</th>
-    <th style="${th}">Under $12 (parity)</th><th style="${th}">Under $36 (zone edge)</th><th style="${th}">Under $40 (= $5 hybrid)</th><th style="${th}">Worlds under $36</th></tr></thead>
-  <tbody>${cmp.rows.map(r => html`<tr style="border-bottom:1px solid #eee">
-    <td style="padding:3px 6px;min-width:12em">${label(r.name)}</td><td style="${td}">${usd(r.p50)}</td><td style="${td}">$${r.cheapest.toFixed(1)}</td>
-    <td style="${td}">${pct(r.under12)}</td><td style="${td}">${pct(r.under36)}</td><td style="${td}">${pct(r.under40)}</td><td style="${td}">${r.count_under36.toLocaleString("en-US")}</td></tr>`)}</tbody>
+  const first = "position:sticky;left:0;z-index:1;background:var(--bs-body-bg, #fff);padding:3px 8px 3px 4px;min-width:9.5em;max-width:13em;white-space:normal;line-height:1.25";
+  return html`<div style="overflow-x:auto"><table style="font-size:0.85em;border-collapse:separate;border-spacing:0;width:100%">
+  <caption style="caption-side:top;text-align:left;font-size:0.9em">Cost in $/kg dry cell mass; shares of ${cmp.n.toLocaleString("en-US")} simulated worlds per row. Hover over a scenario for what it changes, or click it for the relevant section.</caption>
+  <thead><tr>
+    <th style="${first};text-align:left;vertical-align:bottom;border-bottom:1px solid #ccc">Scenario</th>
+    <th style="${th};border-bottom:1px solid #ccc">Median</th><th style="${th};border-bottom:1px solid #ccc">Cheapest world</th>
+    <th style="${th};border-bottom:1px solid #ccc">Under $12 (parity)</th><th style="${th};border-bottom:1px solid #ccc">Under $36 (zone edge)</th>
+    <th style="${th};border-bottom:1px solid #ccc" title="The main model's lowest threshold: $5 per kg of hybrid product with 25% cells at chicken moisture and 75% plant filler at $3/kg. The filler alone costs $2.25, so $5 hybrid = $40/kg dry cells.">Under $40 (= $5/kg hybrid, 25% cells)</th></tr></thead>
+  <tbody>${cmp.rows.map(r => { const [, short, desc, href] = info(r.name); return html`<tr>
+    <td style="${first};border-bottom:1px solid #eee" title="${desc}">${href ? html`<a href="${href}">${short}</a>` : short}</td>
+    <td style="${td};border-bottom:1px solid #eee">${usd(r.p50)}</td><td style="${td};border-bottom:1px solid #eee">$${r.cheapest.toFixed(1)}</td>
+    <td style="${td};border-bottom:1px solid #eee">${pct(r.under12)}</td><td style="${td};border-bottom:1px solid #eee">${pct(r.under36)}</td><td style="${td};border-bottom:1px solid #eee">${pct(r.under40)}</td></tr>`; })}</tbody>
   </table></div>`;
 }
 ```
