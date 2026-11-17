@@ -21,6 +21,10 @@
    "under6500": 0.9979508196721312
   }
  },
+ "realised": {
+  "p_hydro_stated": 0.75,
+  "p_hydro_realised": 0.724753
+ },
  "unjournal_engine": "2026-11-09.1",
  "rebuild_engine": "0.9.0",
  "rebuild_page": "cultured-meat-model-v0.9.7.html",
@@ -44,6 +48,19 @@
    "under100": 0.087354,
    "count_under36": 488,
    "cheapest": 19.419280439677216
+  },
+  {
+   "name": "Unjournal engine, maturity channels independent",
+   "worlds": 1000000,
+   "p5": 84.28515498111082,
+   "p50": 289.8168836294536,
+   "mean": 579.3125643955094,
+   "under12": 0,
+   "under36": 0.00048,
+   "under40": 0.001042,
+   "under100": 0.086645,
+   "count_under36": 480,
+   "cheapest": 19.331511150813505
   },
   {
    "name": "Rebuild engine, original settings (should equal row 1)",

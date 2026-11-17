@@ -511,6 +511,11 @@ The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For 
 
 ### 4. Technology Adoption & Maturity {#maturity-factor}
 
+::: {.callout-warning}
+## Open question (November 17, 2026)
+The maturity link is ad hoc and, at the defaults, nearly inert: switching to independent channels barely moves the results. It also links only the four technologies and the cost of capital, while things that plausibly share causes (cell-line improvements such as gene editing affect growth-factor needs, density, nutrient yield and long-run stability together) stay independent. A proposed replacement with named common causes, and a note on double counting: [linked uncertainties](bates-rebuild.qmd#linked-uncertainties).
+:::
+
 The baseline uses a **shared maturity factor** to couple several developments. This is an uncalibrated structural assumption. Cheap growth factors and expensive financing can coexist; Advanced now offers independent maturity channels to test how results depend on the shared factor. Each channel keeps its original marginal distribution. Other process and accounting dependencies remain.
 
 **Why should these be correlated?** The underlying logic is not that technology *causes* cheaper financing or vice versa. Rather, both are driven by a common set of enabling conditions -- investor confidence, regulatory clarity, talent availability, and demonstrated unit economics. In a world where the cultured meat industry develops well by the projection year, we would expect *both* technological breakthroughs *and* improved financing terms, because both flow from the same underlying industry momentum. See the [detailed explanation below](#why-should-technology-success-correlate-with-cheaper-financing) for the full causal story.

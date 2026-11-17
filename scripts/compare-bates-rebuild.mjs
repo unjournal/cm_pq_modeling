@@ -44,6 +44,12 @@ const ln = (p5, p95) => AB.MODES.map(() => ({d: 'ln', p5, p95}));
 
 const rows = [];
 rows.push(row('Unjournal engine defaults', UJ.simulate(n, seed, {}).unit_cost));
+// How much does the shared 'maturity' link matter? Same model with one independent maturity draw per channel.
+const indep = UJ.simulate(n, seed, {dependence_mode: 'independent_maturity'});
+rows.push(row('Unjournal engine, maturity channels independent', indep.unit_cost));
+const ujShared = UJ.simulate(n, seed, {});
+const realised = {p_hydro_stated: UJ.DEFAULT_PARAMS.p_hydro_mean,
+  p_hydro_realised: ujShared.is_hydro_samples.reduce((a, b) => a + b, 0) / n};
 const L = AB.fromLegacy({}), O = AB.ORIGINAL_DECISIONS;
 const ab = (name, params, dec) => rows.push(row(name, AB.simulate(n, seed, params, dec).total));
 ab('Rebuild engine, original settings (should equal row 1)', L, O);
@@ -73,7 +79,7 @@ for (let i = 0; i < n; i++) {
 const vstats = a => ({worlds: a.length, p10: q(a, 0.1), p50: q(a, 0.5), p90: q(a, 0.9), under1000: share(a, 1000), under6500: share(a, 6500)});
 const volume_m3 = {note: 'Original settings: reactor working volume needed for the drawn plant size', all: vstats(vol), under36: vstats(volComp)};
 
-console.log(JSON.stringify({generated: new Date().toISOString().slice(0, 10), n, seed, volume_m3,
+console.log(JSON.stringify({generated: new Date().toISOString().slice(0, 10), n, seed, volume_m3, realised,
   unjournal_engine: UJ.MODEL_VERSION, rebuild_engine: AB.ENGINE_VERSION, rebuild_page: 'cultured-meat-model-v0.9.7.html',
   units: 'USD per kg dry cell mass; shares of all simulated worlds (worlds with every process blocked count as not competitive)',
   thresholds: {under12: 'Bates parity (wholesale chicken breast at 27.5% solids)', under36: 'Bates competitive-zone upper edge (~3x parity)',

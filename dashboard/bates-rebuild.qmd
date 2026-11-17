@@ -31,6 +31,7 @@ cheapMed = row("Original + hydrolysate medium only when cheaper")
 o2 = row("Rebuild page + oxygen cap on")
 ny = row("Rebuild page + nutrient yield 2-15 g/L (review")
 nyo2 = row("Rebuild page + nutrient yield 2-15 g/L + oxygen")
+indepMat = row("Unjournal engine, maturity channels independent")
 replicates = rep.p50 === uj.p50 && rep.under36 === uj.under36 && rep.mean === uj.mean
 updown = (a, b) => b > a ? "raises" : b < a ? "lowers" : "leaves unchanged"
 ```
@@ -56,7 +57,8 @@ Each row changes one thing (from our model's settings, or from Alex's page defau
   // Short labels, hover descriptions and links per scenario; full names are in the JSON.
   const S = [
     ["Unjournal engine defaults", "Main model", "The main Unjournal model (engine 2026-11-09.1) at its default settings.", "index.html"],
-    ["Rebuild engine, original settings", "Rebuild, all changes off", "Alex's engine with all his changes switched off. It should equal the row above, draw for draw: a check that the engines match.", "#the-two-models-side-by-side"],
+    ["Unjournal engine, maturity channels independent", "Main, maturity link off", "Main model, but each linked quantity (the four technologies and the cost of capital) gets its own independent maturity draw, so nothing moves together. Shows how much the maturity link matters.", "#linked-uncertainties"],
+    ["Rebuild engine, original settings", "Rebuild, all changes off", "Alex's engine with all his changes switched off. It should equal the first row, draw for draw: a check that the engines match.", "#the-two-models-side-by-side"],
     ["Original + hydrolysate medium only", "Main + cheaper medium rule", "Main model, but where hydrolysates exist the plant buys whichever medium is cheaper, instead of always buying hydrolysate medium (Alex's error fix).", "#errors-and-economies-of-scale-that-never-run-out"],
     ["Original + least-cost feasible process", "Main + cheapest process", "Main model, but each world uses its cheapest process without a blocker (perfusion blocked with probability 0.3, continuous 0.7), instead of a process drawn from fixed weights.", "#what-the-rebuild-changes-and-what-we-suggest"],
     ["Original + economies of scale stop at 6,500", "Main + scale priced at 6,500 m³", "Main model, but reactor cost per litre in every world is priced as for a 6,500 m³ plant: Alex's economies-of-scale cap.", "#errors-and-economies-of-scale-that-never-run-out"],
@@ -129,6 +131,40 @@ A possible structure, building on Alex's proposal:
 2. **Structural forks to settle or keep as user choices.** Economies of scale (limit and anchor); medium cost as nutrient mass × price per kg of nutrients (literature review change 1); fixed costs tied to capital; perfusion membrane costs and the oxygen cap; process chosen before or after costs are known; and the threshold itself (parity only, or up to about three times parity; cell mass or hybrid product).
 3. **Elicitation on the inputs that appear in most minimal sets:** plant operating cost, nutrient yield and medium price (ideally as one joint quantity), P(cheap food-grade medium by any route), P(cheap growth factors), P(perfusion or continuous culture works at scale), and harvest density. Ask for the favourable tail and for conditional probabilities, not just central values. Show the base rate first: Rethink Priorities found 80 of 90 resolved public predictions about cultured meat wrong, all on the optimistic side.
 4. **Close with routes, as probabilities.** "Which route to a competitive world do you find most plausible, and how likely is everything on it by 2036?" This keeps Alex's "is there a viable path" question but asks for a number rather than a yes or no.
+
+## Linked uncertainties: the maturity factor, and how to model cell-line improvements {#linked-uncertainties}
+
+The "maturity" link in both models is ad hoc and nearly inert. A better structure would tie inputs together through named common causes, such as the cell line, while leaving each input's own distribution unchanged.
+
+<details><summary><strong>How the link works now, and why it is ad hoc</strong></summary>
+
+Each simulated world draws one "industry maturity" value (mean 0.40, sd 0.20). It adds k × (maturity − 0.5), with k between 0.20 and 0.30, to the probabilities of four technologies (hydrolysate medium, cheap growth factors, food-grade supplemental proteins, food-grade reactors) and lowers the cost of capital by 0.03 × (maturity − 0.5). Nothing else is linked: process blockers, harvest density, nutrient yield, cycle time and operating cost are all independent. The choice of what to link was a parsimony decision, not an evidence-based one: the docs note that a full correlation matrix would need about ten pairwise correlations with no data to calibrate them.
+
+It also barely matters. Giving each channel its own independent maturity draw moves the share of worlds under \$36/kg dry from ${pct(uj.under36)} to ${pct(indepMat.under36)}: the nudges are small, typically a few percentage points of probability.
+
+</details>
+
+<details><summary><strong>Is it double counting?</strong></summary>
+
+Not in the usual sense. The nudge is meant to add correlation without changing each probability's average. In practice it shifts the averages slightly, because it is centred on 0.5 while maturity averages 0.40: hydrolysates are available in ${pct(cmp.realised.p_hydro_realised)} of worlds, not the ${pct(cmp.realised.p_hydro_stated)} entered (Alex's fix centres it on the mean). That is a small bias, not double counting.
+
+The real double-counting risk is in elicitation. If experts give probabilities or favourable ranges that already assume a good industry trajectory, a link layered on top counts that trajectory twice. Ask for each quantity unconditionally, and ask separately how much it depends on the others ("if cell lines are good enough for cheap growth factors, how likely is continuous culture to work?").
+
+</details>
+
+<details><summary><strong>A better structure: named common causes</strong></summary>
+
+Replace the single nudge with a few named drivers, each affecting the inputs it plausibly moves:
+
+1. **Cell-line quality** (gene editing, immortalisation, adaptation to suspension and serum-free growth): lowers growth-factor needs, raises harvest density and nutrient yield, shortens doubling time, and makes long perfusion or continuous runs more likely to stay stable.
+2. **Food-grade supply at scale**: prices of hydrolysates and amino acids, food-grade supplemental proteins, bulk growth-factor production by precision fermentation, food-grade reactors and plant.
+3. **Investment and policy climate**: cost of capital, plant scale, and the R&D spending that feeds the first two.
+
+Technically, a Gaussian copula: each input keeps exactly the distribution entered, and its draw is correlated with one or two drivers through a loading between 0 (independent) and 1. A yes/no technology becomes a threshold on a correlated normal draw, so its probability stays as entered. Because the averages don't move, there is no double counting; only the co-occurrence changes.
+
+Direction of the effect: favourable inputs that tend to arrive together fatten the joint tail, so price-competitive worlds would probably become more common than under independence, by an amount that depends on the loadings. Those loadings should be elicited, or shown as scenarios (say 0, 0.3 and 0.6). Gene editing may also carry its own regulatory and consumer-acceptance risk, which could be a separate yes/no input. Alex's literature review reaches a similar view: the cell line is the main common cause, and the correlations should be elicited as conditional probabilities.
+
+</details>
 
 ## What the rebuild changes, and what we suggest
 
