@@ -1,11 +1,16 @@
-// Make the hosted copy of Alex Bates's page: original content untouched, plus a slim
-// Unjournal host bar at the top and the Hypothes.is client.
+// Make the two hosted copies of Alex Bates's page (David, 17 Nov 2026):
+//   alt/bates-rebuild-v0.9.7-as-shared.html  his page as shared; only the typeface matched to this site,
+//                                            plus a one-line host bar and Hypothes.is
+//   alt/bates-rebuild-v0.9.7.html            the same plus Unjournal host notes and explanations
+// In both, Alex's model, text and code are untouched (major changes need his consent).
 import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 const src = '/Users/yosemite/githubs/cm_pq_modeling/models/bates-rebuild-2026-11/cultured-meat-model-v0.9.7.html';
 const outDir = '/Users/yosemite/githubs/cm_pq_modeling/dashboard/alt';
 const out = `${outDir}/bates-rebuild-v0.9.7.html`;
+const outShared = `${outDir}/bates-rebuild-v0.9.7-as-shared.html`;
 const DOC = 'https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit';
-let html = readFileSync(src, 'utf8');
+const original = readFileSync(src, 'utf8');
+let html = original;
 
 const headAdd = `<meta name="description" content="Alternative cultured chicken cost model: a step-structured rebuild by Alex Bates (v0.9.7), hosted by The Unjournal for comparison and discussion.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -31,12 +36,22 @@ const bar = `<div class="uj-host" role="note">
   <div class="uj-host-in">
     <p><strong>Alternative model, hosted for discussion.</strong> A step-structured rebuild of the Unjournal cost model by Alex Bates (file v0.9.7, 16 November 2026). The <a href="../index.html">main Unjournal model</a> remains the better-validated reference; this page proposes structural changes and a "what has to go right" analysis.</p>
     <p>Every input can be changed: open <em>Assumptions</em> under each step (central estimate and 95% optimistic value, per process where it matters). Alex removed some structural choices of the main model, such as the probability-weighted process mix and contract manufacturing; see his Notes at the bottom.</p>
+    <p>This version adds Unjournal host notes and explanations (marked as such); Alex's model and text are unchanged. <a href="bates-rebuild-v0.9.7-as-shared.html">Version as Alex shared it</a>.</p>
     <p class="links"><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="${DOC}">Literature review (Google Doc)</a><a href="../simple.html">Simplest model</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
+  </div>
+</div>
+`;
+const barShared = `<div class="uj-host" role="note">
+  <div class="uj-host-in">
+    <p><strong>Alex Bates's rebuild, as he shared it</strong> (file v0.9.7, 16 November 2026), hosted by The Unjournal for discussion. Only the typeface has been changed to match this site. The <a href="../index.html">main Unjournal model</a> remains the better-validated reference.</p>
+    <p class="links"><a href="bates-rebuild-v0.9.7.html">Version with host notes and explanations</a><a href="../bates-rebuild.html">Notes, comparison and suggestions</a><a href="${DOC}">Literature review (Google Doc)</a><span>Comment with Hypothes.is: the &lsaquo; tab on the right edge.</span></p>
   </div>
 </div>
 `;
 if (!html.includes('</head>') || !html.includes('<body>')) throw new Error('unexpected page structure');
 html = html.replace('</head>', headAdd + '</head>');
+let shared = html.replace('<body>', '<body>\n' + barShared)
+  .replace('</body>', '<script src="https://hypothes.is/embed.js" async></script>\n</body>');
 html = html.replace('<body>', '<body>\n' + bar);
 // Host explanations (David, 17 Nov 2026): what the dry-cell thresholds mean per kg of product.
 // Arithmetic: meat at 27.5% solids = dry x 0.275; hybrid = meat x 0.25 + $3 x 0.75 (the main model's conventions).
@@ -92,4 +107,5 @@ const hostScript = `<script>
 html = html.replace('</body>', hostScript + '<script src="https://hypothes.is/embed.js" async></script>\n</body>');
 mkdirSync(outDir, {recursive: true});
 writeFileSync(out, html);
-console.log(`wrote ${out}`);
+writeFileSync(outShared, shared);
+console.log(`wrote ${out} and ${outShared}`);
