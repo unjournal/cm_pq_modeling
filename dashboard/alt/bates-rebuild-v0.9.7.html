@@ -247,6 +247,13 @@ h1 { font-size: 2.1rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.2rem; }
 .uj-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; font-weight: 500; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
 .uj-nav .uj-sep { color: var(--ink-3); }
 </style>
+<style>
+.step:not(.substep) { border-left: 4px solid var(--accent); }
+.step:not(.substep) > .step-head .step-title h3 { font-size: 1.45rem; color: var(--accent); }
+.step.substep { margin-left: 18px; }
+.step.substep .step-title h3 { font-size: 1.1rem; }
+.step.substep .step-n { font-size: 1.05rem; }
+</style>
 </head>
 <body>
 <div class="uj-host" role="note">
@@ -481,10 +488,10 @@ const PARAMS = [
   // 1. Cell bank (new) --------------------------------------------------------
   P({id: "cell_bank_outlay", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [100000, 2000000], src: "new",
      label: "Outlay per cell bank", unit: "$ per bank, one-off",
-     help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank."}),
+     help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank. Default (central about $447,000) is Alex's assumption; no source given."}),
   P({id: "cell_bank_kg", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [1e6, 5e7], src: "new",
      label: "Output per cell bank", unit: "kg dry cell mass per bank",
-     help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank."}),
+     help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank. The default central value, about 7 million kg, is 7,000 tonnes of dry cells (about 35,000 t wet at 20% solids): roughly 1.75 years of output from a plant making 20,000 t of wet cells a year. Alex's assumption; no source given."}),
 
   // 2. Seed train -------------------------------------------------------------
   P({id: "seed_share", type: "table", family: "lognormal", scope: "mode", home: "seed_train", group: "Seed-train equipment", tier: "key",
@@ -498,13 +505,13 @@ const PARAMS = [
      label: "Probability a major technological blocker to use at scale is found", unit: "probability", src: "original",
      help: "A blocker is a technical problem that rules a process out at industrial scale in 2036 whatever it costs."}),
   P({id: "p_hydro", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.75, 0.10], legacy: {mean: "p_hydro_mean"}, src: "original",
-     label: "Hydrolysate medium available by 2036", unit: "probability",
+     label: "Hydrolysate medium usable at scale by 2036 (permitted and reliable in this process)", unit: "probability",
      help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids. The default probability (0.75) is carried over from the main Unjournal model; no published or elicited source was found."}),
   P({id: "p_recf", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.50, 0.15], legacy: {mean: "p_recfactors_mean"}, src: "original",
      label: "Cheap growth factors available by 2036", unit: "probability",
      help: "Growth factors are the signalling proteins that tell cells to divide. Today they are made like pharmaceuticals and cost thousands of dollars a gram. If this breakthrough arrives, they are made more like industrial chemicals and cost much less."}),
   P({id: "p_supp", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.70, 0.12], legacy: {mean: "p_supp_protein_mean"}, src: "original",
-     label: "Food-grade supplemental proteins available by 2036", unit: "probability",
+     label: "Food-grade supplemental proteins usable at scale by 2036 (permitted and reliable in this process)", unit: "probability",
      help: "Supplemental proteins such as albumin, transferrin and insulin are added to the medium. If food-grade versions exist, they are bought at food-industry prices; otherwise at pharma prices (3.2)."}),
   P({id: "p_fg_reactor", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.55, 0], src: "new", showIf: {plant: ["own"]},
      label: "Food-grade sterile reactors work at scale by 2036", unit: "probability",
@@ -612,7 +619,7 @@ const BY_ID = Object.fromEntries(PARAMS.map(p => [p.id, p]));
 const STEPS = [
   {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
   {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
-  {id: "production", n: 3, label: "Production", note: "Production reactors, the most major source of cost in the model. Divided into multiple subsections.",
+  {id: "production", n: 3, label: "Production", note: "Production reactors: the largest source of cost in the model. Divided into multiple subsections.",
    substeps: [
      {n: "3.1", group: "Technology in 2036", label: "Technology in 2036", lines: [], note: "Which technologies exist in each world."},
      {n: "3.2", group: "Medium", label: "Medium", lines: ["media", "supp_proteins"], note: "How much and what kind of medium is used."},
@@ -1599,10 +1606,10 @@ const PARAMS = [
   // 1. Cell bank (new) --------------------------------------------------------
   P({id: "cell_bank_outlay", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [100000, 2000000], src: "new",
      label: "Outlay per cell bank", unit: "$ per bank, one-off",
-     help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank."}),
+     help: "A cell bank is a frozen, safety-tested stock of the production cell line; every production run starts from it. This is the cost of making and qualifying one bank. Default (central about $447,000) is Alex's assumption; no source given."}),
   P({id: "cell_bank_kg", type: "table", family: "lognormal", scope: "shared", home: "cell_bank", group: "Cell bank", tier: "key", defaults: [1e6, 5e7], src: "new",
      label: "Output per cell bank", unit: "kg dry cell mass per bank",
-     help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank."}),
+     help: "Each cell bank can be used many times before it degrades, so this parameter identifies how many kg of dry mass you can obtain from one cell bank. The default central value, about 7 million kg, is 7,000 tonnes of dry cells (about 35,000 t wet at 20% solids): roughly 1.75 years of output from a plant making 20,000 t of wet cells a year. Alex's assumption; no source given."}),
 
   // 2. Seed train -------------------------------------------------------------
   P({id: "seed_share", type: "table", family: "lognormal", scope: "mode", home: "seed_train", group: "Seed-train equipment", tier: "key",
@@ -1616,13 +1623,13 @@ const PARAMS = [
      label: "Probability a major technological blocker to use at scale is found", unit: "probability", src: "original",
      help: "A blocker is a technical problem that rules a process out at industrial scale in 2036 whatever it costs."}),
   P({id: "p_hydro", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.75, 0.10], legacy: {mean: "p_hydro_mean"}, src: "original",
-     label: "Hydrolysate medium available by 2036", unit: "probability",
+     label: "Hydrolysate medium usable at scale by 2036 (permitted and reliable in this process)", unit: "probability",
      help: "Hydrolysates are cheap protein digests (from soy, yeast or similar) that could replace the purified amino acids in the basal medium. If they exist at scale in 2036, the plant buys whichever medium is cheaper (3.2); if not, it pays for purified amino acids. The default probability (0.75) is carried over from the main Unjournal model; no published or elicited source was found."}),
   P({id: "p_recf", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.50, 0.15], legacy: {mean: "p_recfactors_mean"}, src: "original",
      label: "Cheap growth factors available by 2036", unit: "probability",
      help: "Growth factors are the signalling proteins that tell cells to divide. Today they are made like pharmaceuticals and cost thousands of dollars a gram. If this breakthrough arrives, they are made more like industrial chemicals and cost much less."}),
   P({id: "p_supp", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.70, 0.12], legacy: {mean: "p_supp_protein_mean"}, src: "original",
-     label: "Food-grade supplemental proteins available by 2036", unit: "probability",
+     label: "Food-grade supplemental proteins usable at scale by 2036 (permitted and reliable in this process)", unit: "probability",
      help: "Supplemental proteins such as albumin, transferrin and insulin are added to the medium. If food-grade versions exist, they are bought at food-industry prices; otherwise at pharma prices (3.2)."}),
   P({id: "p_fg_reactor", type: "table", family: "prob", scope: "world", home: "production", group: "Technology in 2036", tier: "key", defaults: [0.55, 0], src: "new", showIf: {plant: ["own"]},
      label: "Food-grade sterile reactors work at scale by 2036", unit: "probability",
@@ -1730,7 +1737,7 @@ const BY_ID = Object.fromEntries(PARAMS.map(p => [p.id, p]));
 const STEPS = [
   {id: "cell_bank", n: 1, label: "Cell bank", note: "The frozen, tested stock of cells that every production run starts from. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
   {id: "seed_train", n: 2, label: "Seed train", note: "Growing cells from a frozen vial up through larger and larger vessels until there are enough to start a production reactor. Very minor cost, modelled with one or two summary inputs rather than built up from equipment, staff and materials."},
-  {id: "production", n: 3, label: "Production", note: "Production reactors, the most major source of cost in the model. Divided into multiple subsections.",
+  {id: "production", n: 3, label: "Production", note: "Production reactors: the largest source of cost in the model. Divided into multiple subsections.",
    substeps: [
      {n: "3.1", group: "Technology in 2036", label: "Technology in 2036", lines: [], note: "Which technologies exist in each world."},
      {n: "3.2", group: "Medium", label: "Medium", lines: ["media", "supp_proteins"], note: "How much and what kind of medium is used."},

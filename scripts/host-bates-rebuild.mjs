@@ -71,8 +71,22 @@ const EDITS = [
   ['lt2.textContent = `commercial chicken ${tickLabel(S.parity.dry)}–${tickLabel(S.parity.premium)}`;', 'lt2.textContent = `price-competitive zone to ${tickLabel(S.parity.premium)}`;'],
   ['reach the competitive zone', 'reach the price-competitive zone'],
   ['smallest sets of improvements on the central world that make it competitive', 'smallest sets of improvements on the central world that make it price-competitive'],
-  ['competitive worlds need one or the other', 'price-competitive worlds need one or the other']
+  ['competitive worlds need one or the other', 'price-competitive worlds need one or the other'],
+  ['Production reactors, the most major source of cost in the model.', 'Production reactors: the largest source of cost in the model.'],
+  ['label: "Food-grade supplemental proteins available by 2036"', 'label: "Food-grade supplemental proteins usable at scale by 2036 (permitted and reliable in this process)"'],
+  ['label: "Hydrolysate medium available by 2036"', 'label: "Hydrolysate medium usable at scale by 2036 (permitted and reliable in this process)"'],
+  ['This is the cost of making and qualifying one bank."', 'This is the cost of making and qualifying one bank. Default (central about $447,000) is Alex\'s assumption; no source given."'],
+  ['how many kg of dry mass you can obtain from one cell bank."', 'how many kg of dry mass you can obtain from one cell bank. The default central value, about 7 million kg, is 7,000 tonnes of dry cells (about 35,000 t wet at 20% solids): roughly 1.75 years of output from a plant making 20,000 t of wet cells a year. Alex\'s assumption; no source given."']
 ];
+// Edited version only: make steps and substeps visually distinct.
+const EDIT_CSS = `<style>
+.step:not(.substep) { border-left: 4px solid var(--accent); }
+.step:not(.substep) > .step-head .step-title h3 { font-size: 1.45rem; color: var(--accent); }
+.step.substep { margin-left: 18px; }
+.step.substep .step-title h3 { font-size: 1.1rem; }
+.step.substep .step-n { font-size: 1.05rem; }
+</style>
+`;
 if (!html.includes('</head>') || !html.includes('<body>')) throw new Error('unexpected page structure');
 html = html.replace('</head>', headAdd + '</head>');
 let shared = html.replace('<body>', '<body>\n' + barShared)
@@ -81,6 +95,7 @@ for (const [from, to] of EDITS) {
   if (!html.includes(from)) throw new Error(`first-pass edit target not found: ${from.slice(0, 60)}`);
   html = html.split(from).join(to);
 }
+html = html.replace('</head>', EDIT_CSS + '</head>');
 html = html.replace('<body>', '<body>\n' + bar);
 // Host explanations (David, 17 Nov 2026): what the dry-cell thresholds mean per kg of product.
 // Arithmetic: meat at 27.5% solids = dry x 0.275; hybrid = meat x 0.25 + $3 x 0.75 (the main model's conventions).
