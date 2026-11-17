@@ -53,7 +53,7 @@ format:
 ```
 
 ::: {#info-updates .info-panel}
-**November 17 (engine `2026-11-17.1`): two corrections, default results change.** (1) Where hydrolysate medium exists, the plant now buys whichever medium is cheaper. Before, it always bought hydrolysate medium, even in simulated worlds where its drawn price was above that of medium made with purified amino acids. (2) The maturity adjustment now leaves the technology probabilities you enter unchanged at the default settings. Before, it pulled each of them down by 2–3 percentage points (hydrolysates were available in 72.5% of draws, not the 75% entered). Both were pointed out by Alex Bates. The default median falls from about \$289 to \$270/kg dry (\$22.11 to \$20.78 per kg of hybrid product), and the share of draws under \$10/kg hybrid rises from 12.0% to 13.4%. See [the maturity factor](docs.qmd#maturity-factor) and the [plain-language guide](guide.qmd).
+**November 17 (engine `2026-11-17.1`): two corrections, default results change.** (1) Where hydrolysate medium exists, the plant now buys whichever medium is cheaper. Before, it always bought hydrolysate medium, even in simulated worlds where its drawn price was above that of medium made with purified amino acids. (2) The maturity adjustment now leaves the technology probabilities you enter unchanged at the default settings. Before, it pulled each of them down by 2–3 percentage points (hydrolysates were available in 72.5% of draws, not the 75% entered). Both were pointed out by Alex Bates. The default median falls from about \$289 to \$270/kg dry (\$22.11 to \$20.78 per kg of hybrid product), and the share of draws under \$10/kg hybrid rises from 12.0% to 13.4%. See [the maturity factor](docs.qmd#maturity-factor) and the [plain-language guide](guide.qmd). (3) The projection year no longer changes the results by itself: it used to lower the technology probabilities for earlier years, which counted time twice, because the probabilities are already entered as "by the target year". Default results (2036) are unaffected by this third change.
 
 **November 9 (engine `2026-11-09.1`): correction, default results change.** Growth-factor dose now follows medium use by default (fresh L/kg × 0.102 mg/L, × 0.4 with cheap growth factors) instead of a separate g/kg draw independent of medium use. The median rises from about \$276 to \$289/kg dry (\$21.25 to \$22.11 per kg of hybrid product); the expensive tail rises most. The earlier rule remains under *Structural stress tests → Growth-factor dosage*. See [the correction](docs.qmd#gf-dose-linked).
 
@@ -849,7 +849,7 @@ A synthetic latent variable (0 = nascent, 1 = mature) that correlates technology
 
 Recent evidence should update the **individual parameter distributions**, not be translated into a maturity learning rate. For example, GFI's [2026 industry report](https://gfi.org/resource/cultivated-meat-seafood-and-ingredients-state-of-the-industry/) records both tighter funding and 20,000-L production progress, while the FDA's [February 2026 inventory](https://hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=animalcellculturefoods) lists five completed cultured-cell food consultations. Those signals point in different directions and should not be compressed into a single estimated trend.
 
-**To approximate "today's conditions" (minimal technical progress):** set maturity to 0.1 and target year to 2026. Note that even then the parameter ranges reflect forward projections — the model has no explicitly calibrated 2024 cost baseline.
+**To approximate "today's conditions" (minimal technical progress):** set maturity to 0.1 and lower the technology probabilities. Note that even then the parameter ranges reflect forward projections — the model has no explicitly calibrated 2024 cost baseline.
 
 [Full explanation, calibration caveats, and stress-test guidance →](#industry-maturity-deep-dive)
 </details>
@@ -867,13 +867,9 @@ viewof target_year = Inputs.range([2026, 2050], {
 ```
 <details><summary>What does the year affect?</summary>
 
-Earlier years → lower effective maturity, less technology adoption. The model scales maturity by a factor of (0.5 + 0.5 × (year − 2024) / 20), so:
+The year labels the scenario: it appears in the chart titles, the input labels and the exported settings. **Changing the year alone does not change the results.** Set the technology probabilities and input ranges to what you believe for the year you choose.
 
-- 2026 → maturity scaled to ~55% of slider value
-- 2036 (default) → maturity scaled to ~80% of slider value
-- 2044 → maturity at full slider value
-
-This scaling is mechanical (linear interpolation), not fit to historical data. **To approximate minimal progress from today's state:** combine year = 2026 with maturity = 0.1.
+Until 17 November 2026 an earlier year also lowered every technology probability, through a mechanical scaling of the maturity factor that was not fitted to any data. Because the probabilities are already entered as "by the target year", that counted the passage of time twice, so it was removed. The default results (2036) are unchanged. See [the maturity factor](docs.qmd#maturity-factor).
 </details>
 
 ---
@@ -1429,7 +1425,10 @@ viewof structure_settings = modelControls.structuralControl(new URLSearchParams(
 
 // Shared parameter object — consumed by both the primary run and the comparison run
 simParams = {
-  const adjustedMaturity = costModel.maturityForYear(maturity, target_year);
+  // Since 17 November 2026 the target year no longer scales maturity: the technology probabilities are
+  // entered "by the target year", so scaling by the year as well counted time twice. The factor is held
+  // at its 2036 value, which leaves the default results unchanged.
+  const adjustedMaturity = costModel.maturityForYear(maturity, 2036);
   return {
     ...structure_settings,
     // Hybrid product used for the comparison cost and thresholds (dry basis)

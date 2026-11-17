@@ -521,7 +521,9 @@ The production-time range (p5–p95 0.5–5 days) is a scenario assumption. For 
 
 **Correction on November 17 (engine `2026-11-17.1`).** The adjustment used to be measured from a maturity of 0.5, but at the default settings maturity averages 0.40. So every technology probability came out lower than the value entered: hydrolysates were available in 72.5% of worlds, not 75%. The adjustment is now measured from 0.40, so at the default settings the probabilities used are the ones entered.
 
-**What is still unsatisfactory.** (1) The strengths of the link (0.20–0.30 per technology) were chosen in February 2026 without a source and are not calibrated to any observed rate of progress. (2) The model multiplies the maturity slider by a factor for the target year (0.8 for 2036, 0.55 for 2026). The technology probabilities are already entered as "by the target year", so for target years other than 2036 this counts the passage of time twice. The effect is small (moving the year from 2036 to 2026 lowers each probability by about 3 percentage points), but the logic is wrong; until it is redesigned, read the probabilities as probabilities for 2036 and leave the target year at 2036. (3) Things that plausibly share a cause, such as better cell lines improving density, nutrient yield and growth-factor needs together, are not linked at all. A proposed replacement is described under [linked uncertainties](bates-rebuild.qmd#linked-uncertainties).
+**What is still unsatisfactory.** (1) The strengths of the link (0.20–0.30 per technology) were chosen in February 2026 without a source and are not calibrated to any observed rate of progress. (2) Things that plausibly share a cause, such as better cell lines improving density, nutrient yield and growth-factor needs together, are not linked at all. A proposed replacement is described under [linked uncertainties](bates-rebuild.qmd#linked-uncertainties).
+
+**The target year (also corrected on November 17).** The model used to multiply the maturity slider by a factor for the target year (0.8 for 2036, 0.55 for 2026), so an earlier year lowered every technology probability. But the probabilities are already entered as "by the target year", so this counted the passage of time twice. The effect was small (about 3 percentage points per technology between 2026 and 2036). The factor is now held at its 2036 value whatever year is chosen, so the year only labels the scenario and the default results are unchanged.
 :::
 
 The baseline uses a **shared maturity factor** to couple several developments. This is an uncalibrated structural assumption. Cheap growth factors and expensive financing can coexist; Advanced now offers independent maturity channels to test how results depend on the shared factor. Each channel keeps its original marginal distribution. Other process and accounting dependencies remain.
@@ -536,7 +538,7 @@ The maturity factor is a single number between 0 and 1 representing overall indu
 - **$m = 0.5$**: Moderate development — pilots running, some commercial activity
 - **$m = 1$**: Mature industry — established supply chains, proven technology
 
-Each simulation draws $m$ from a Beta distribution with standard deviation 0.2. Its mean is the maturity slider (default 0.5) multiplied by a target-year factor, $0.5 + 0.5 \times (\text{year} - 2024)/20$, which is 0.8 for 2036. So at the default settings the mean is 0.40, not 0.5.
+Each simulation draws $m$ from a Beta distribution with standard deviation 0.2. Its mean is the maturity slider (default 0.5) multiplied by 0.8, so at the default settings the mean is 0.40, not 0.5. (The 0.8 was originally a target-year factor, $0.5 + 0.5 \times (\text{year} - 2024)/20$, evaluated at 2036; since November 17, 2026 it no longer varies with the year.)
 
 #### How Maturity Adjusts Adoption Probabilities
 

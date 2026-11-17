@@ -77,7 +77,7 @@ The cost of a kilogram of dry cells is:
 html`<ul>
 <li>In a typical world, a kg of dry cells takes about ${Math.round(A.drivers.litres)} litres of medium at about ${money(A.drivers.medium_price)} a litre. Medium is by far the largest cost: about ${money(A.lines_median.medium)} of the ${money(A.total_median)} total.</li>
 <li>To get under $36 per kg, everything has to be low at once: about ${Math.round(C.drivers.litres)} litres of medium at about ${money(C.drivers.medium_price)} a litre (about ${money(C.lines_median.medium)} of medium per kg), almost no growth-factor cost, plant running costs of about ${money(C.lines_median.running)} and a capital charge of about ${money(C.lines_median.capital)}.${C.lines_median.running > C.lines_median.medium ? " In those worlds, running the plant costs more than the medium." : ""}</li>
-<li>For comparison, the only measured production run for meat cells that Alex Bates's <a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">literature review</a> found (Pasitka and colleagues, 2024, in a 1.8-litre vessel) used about 64 litres of medium per kg of wet cells. That is roughly 210 to 320 litres per kg of dry cells, depending on how much water the cells are assumed to hold, with medium priced at $0.63 a litre. This is close to the model's typical world and far from its cheap worlds.</li>
+<li>For comparison with published work: Pasitka and colleagues (2024) priced their medium at $0.63 a litre (stated in the paper's abstract). Alex Bates's <a href="https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit">literature review</a> reports that their 20-day test run in a 1.8-litre vessel used about 64 litres of medium per kg of wet cells. That would be roughly 210 to 320 litres per kg of dry cells, depending on how much water the cells are assumed to hold, which is close to the model's typical world (${Math.round(A.drivers.litres)} litres). We could not confirm the 64-litre figure ourselves, because the paper's main text is behind a paywall. The paper's design for a full-size plant assumes much less medium: about 22 litres per kg of wet cells, or roughly 75 to 110 litres per kg dry (our calculation from its supplementary tables: $14.11 of nutrients per kg of wet cells at $0.63 a litre). Even that is well above the ${Math.round(C.drivers.litres)} litres of the worlds under $36.</li>
 </ul>`
 ```
 
@@ -159,6 +159,34 @@ html`<ol>
 - how strongly good outcomes are assumed to arrive together (the "maturity" factor, explained in the [technical reference](docs.qmd#maturity-factor)).
 
 **What that means.** The share of worlds that come out cheap depends mostly on how far those favourable ends reach and on whether they happen together. Neither has been asked of experts yet. Treat the model as a way to see what would have to go right, and how much, rather than as a prediction. The next step is to ask experts about the five numbers directly, and about the handful of breakthroughs behind them.
+
+## A possible shorter list of questions for experts {#shorter-questions}
+
+*This is a draft for discussion. It has not been adopted, and it does not replace the questions the project already asks. It is here so that the team and the experts can react to it.*
+
+The current plan asks experts about many of the model's individual inputs. Because the cost comes down to five numbers, one possibility is to ask about those five directly, and then about the few developments behind them. That would be about eight questions.
+
+<details><summary><strong>Read the draft questions</strong></summary>
+
+Each question is about a large plant built with the best technology available in 2036, and about cost in today's dollars. For each of the first five, we would ask for two values: your best single estimate, and a favourable value that you think has only about a 1-in-20 chance of being beaten.
+
+**The five numbers**
+
+1. **Medium needed.** How many litres of fresh medium would it take to produce one kg of cells (dry weight)?
+2. **Medium price.** What would that medium cost per litre, leaving out growth factors and other added proteins?
+3. **Growth factors.** What would growth factors cost per kg of cells (dry weight)?
+4. **Running the plant.** What would it cost to run the plant per kg of cells (dry weight): labour, maintenance, energy, consumables and added proteins, leaving out medium, growth factors and the cost of building the plant?
+5. **Building the plant.** How much would it cost to build the plant, per kg of cells (dry weight) it can produce each year?
+
+**What would have to happen**
+
+6. How likely is each of these by 2036: (a) food-grade medium that costs a small fraction of today's, by any route; (b) growth factors that are cheap, or cell lines that need very little of them; (c) perfusion or continuous culture working reliably at commercial scale?
+7. If the first of these happens, how likely are the other two? (This tells us whether good outcomes tend to arrive together, which the model currently has to guess.)
+8. Which single development would most change your answers to questions 1 to 5, and by roughly how much?
+
+**What this would gain and lose.** Experts would answer fewer questions, in units closer to what they see in practice, and the answers would bear directly on the numbers that decide the cost. The detailed inputs would still be in the model, but they would be set to agree with the answers rather than asked about one by one. What would be lost is the detail on why a number is high or low; question 8 is there to recover some of that. Whether experts find these five numbers natural to estimate is itself something to test before relying on them.
+
+</details>
 
 ## Terms used on these pages
 

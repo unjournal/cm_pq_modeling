@@ -131,7 +131,7 @@ viewof target_year_s = Inputs.range([2026, 2050], {
 })
 ```
 
-*Further-out years give more time for cost reductions and industry scale-up.*
+*The year labels the scenario. Changing it alone does not change the results: set the probabilities below to what you believe for the year you choose.*
 
 ---
 
@@ -309,7 +309,7 @@ simParams_simple = {
   return {
     ...costModel.DEFAULT_PARAMS,
     cell_inclusion_rate: blending_share_s / 100,
-    maturity_mean: costModel.maturityForYear(0.5, target_year_s),
+    maturity_mean: costModel.maturityForYear(0.5, 2036),  // the year no longer scales maturity (17 November 2026)
     target_year: target_year_s,
     p_hydro_mean: p_hydro_s / 100,
     p_recfactors_mean: p_recfactors_s / 100,

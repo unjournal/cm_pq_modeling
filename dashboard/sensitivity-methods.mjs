@@ -531,7 +531,8 @@ export function advancedUrlStateToParams(state = {}, maturityForYear) {
     plant_kta_p5: simpleMode ? 10 : plant_capacity * 0.5,
     plant_kta_p95: simpleMode ? 40 : plant_capacity * 2.0,
     uptime_mean: simpleMode ? 0.90 : num("uptime", 0.90),
-    maturity_mean: maturityForYear(num("maturity", 0.5), target_year),
+    // The target year no longer scales maturity (17 November 2026): held at its 2036 factor.
+    maturity_mean: maturityForYear(num("maturity", 0.5), 2036),
     p_hydro_mean: num("p_hydro", 0.75),
     p_recfactors_mean: num("p_recfactors", 0.5),
     p_supp_protein_mean: simpleMode ? 0.70 : num("p_supp_protein", 0.70),
