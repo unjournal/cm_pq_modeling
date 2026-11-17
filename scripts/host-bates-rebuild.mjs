@@ -44,9 +44,20 @@ const meat = d => (d * 0.275).toFixed(2), hybrid = d => (d * 0.275 * 0.25 + 3 * 
 const CHICKEN = 'US wholesale boneless chicken averaged about $3.50/kg (2026 dollars, September 2022 to September 2026; middle 80% of months $2.60-4.60; USDA)';
 const note = `What $12-36 per kg of dry cells means for a product: at chicken-meat moisture (27.5% solids) it is $${meat(12)}-${meat(36)} per kg of all-cell meat; as a hybrid product (25% cells, 75% plant-based filler at $3/kg) it is $${hybrid(12)}-${hybrid(36)} per kg. For comparison, ${CHICKEN}. These are ingredient costs for cell mass: forming, texturizing and packaging are not included, whereas wholesale chicken is already cut and packed. (Note added by the Unjournal host, not part of Alex's model.)`;
 const tip = `Under $36/kg dry = under $${meat(36)}/kg as all-cell meat at chicken moisture, or $${hybrid(36)}/kg as a 25%-cell hybrid. Wholesale slaughtered chicken: ${CHICKEN}. No wholesale price for cultivated chicken is published; Arthur D. Little puts the current cost of finished cultivated products in the low EUR 40s per kg (2026, as cited in Alex's literature review).`;
+// Explanation of the minimal-set analysis, paraphrasing the routes-src comments in Alex's page.
+const howTo = `<details class="more uj-host-howto"><summary>How to read this: what a "smallest set" is, and what the rows are</summary>
+<div class="more-body small">
+<p><strong>Baseline.</strong> Start from a deliberately unfavourable world: every uncertain input at its central estimate, and every technology in its bad state (it does not exist, or a blocker is found). That world is far from competitive.</p>
+<p><strong>Improvements.</strong> For each simulated world that does reach the competitive zone (under $36/kg dry), list every way it differs favourably from the baseline: an input that came out better than its central estimate, or a technology that worked. Each of these is a candidate improvement.</p>
+<p><strong>Smallest set.</strong> Switch the improvements off one at a time, in random order, keeping each one off only if the world is still competitive without it. What is left is a minimal set: together these improvements make the world competitive, and taking away any single one of them makes it uncompetitive. That is the sense of "necessary". "Smallest" means nothing more can be removed, not that no shorter set exists: a different removal order can leave a different minimal set, so the analysis tries three orders per world. Each competitive world counts once, so routes that come up often in the simulation carry more weight.</p>
+<p><strong>The rows</strong> are the bars directly below. Each is one input or technology; its percentage is the share of minimal sets that include it. "Plant operating cost 98%", for example, means almost every route to the competitive zone needs operating cost better than its central estimate. The grey line under each says how far that input typically had to move (for operating cost, "typically in its best 7.3%" of draws) or how likely the technology is. Inputs in fewer than 10% of sets are listed under "Rarely needed".</p>
+<p class="tiny">Explanation added by the Unjournal host, from the comments in Alex's code; not part of his page.</p>
+</div></details>`;
 const hostScript = `<script>
 (function () {
-  var note = ${JSON.stringify(note)}, tip = ${JSON.stringify(tip)};
+  var note = ${JSON.stringify(note)}, tip = ${JSON.stringify(tip)}, howTo = ${JSON.stringify(howTo)};
+  var leadEl = document.getElementById('recipe-lead');
+  if (leadEl) leadEl.insertAdjacentHTML('afterend', howTo);
   var wrap = document.getElementById('hist-wrap');
   if (wrap) { var p = document.createElement('p'); p.className = 'small muted uj-host-note'; p.textContent = note; wrap.insertAdjacentElement('afterend', p); }
   var lead = document.getElementById('recipe-lead');
