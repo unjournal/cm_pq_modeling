@@ -1,0 +1,150 @@
+---
+title: "Alternative model: the Bates rebuild"
+subtitle: "What Alex Bates's November 2026 rebuild changes, how it compares with the main model, and suggestions for the workshop"
+toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+*Drafted by Claude (AI) for David Reinstein on 17 November 2026, from Alex Bates's model page (file v0.9.7) and literature review (16 November 2026). Not yet reviewed by Alex. Numbers on this page are read from [`bates-rebuild-comparison-2026-11-17.json`](bates-rebuild-comparison-2026-11-17.json), produced by `scripts/compare-bates-rebuild.mjs` (1,000,000 simulated worlds, seed 42).*
+
+**Open the rebuild:** [interactive model (v0.9.7)](alt/bates-rebuild-v0.9.7.html) · [literature review (Google Doc, open for comments)](https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit) · **Main model:** [Simplest](simple.qmd) · [Advanced](index.qmd)
+
+```{ojs}
+//| echo: false
+cmp = FileAttachment("bates-rebuild-comparison-2026-11-17.json").json()
+row = name => { const r = cmp.rows.find(x => x.name.startsWith(name)); if (!r) throw new Error(`No row ${name}`); return r; }
+pct = v => v === 0 ? "0%" : v < 0.01 ? `${(100 * v).toFixed(3)}%` : `${(100 * v).toFixed(1)}%`
+usd = v => `$${Math.round(v).toLocaleString("en-US")}`
+oneIn = v => v > 0 ? `about 1 in ${(Math.round(1 / v / 100) * 100).toLocaleString("en-US")}` : "none"
+uj = row("Unjournal engine defaults")
+rep = row("Rebuild engine, original settings")
+page = row("Rebuild page defaults (all changes)")
+cap6500 = row("Original + economies of scale stop at 6,500")
+cap1000 = row("Original + economies of scale stop at 1,000")
+cap20000 = row("Original + economies of scale stop at 20,000")
+uncapped = row("Rebuild page, economies of scale by volume")
+cheapMed = row("Original + hydrolysate medium only when cheaper")
+o2 = row("Rebuild page + oxygen cap on")
+ny = row("Rebuild page + nutrient yield 2-15 g/L (review")
+nyo2 = row("Rebuild page + nutrient yield 2-15 g/L + oxygen")
+replicates = rep.p50 === uj.p50 && rep.under36 === uj.under36 && rep.mean === uj.mean
+updown = (a, b) => b > a ? "raises" : b < a ? "lowers" : "leaves unchanged"
+```
+
+::: {.callout-note}
+## In brief
+
+- Alex rebuilt the model step by step (cell bank, seed train, production, harvest), fixed several errors, and added a **"what has to go right"** analysis: for each simulated world that comes in near chicken prices, it finds the smallest sets of favourable inputs that get it there.
+- With the original's settings, his engine reproduces ours draw for draw (check on this run: ${replicates ? "identical" : "NOT identical, investigate"}). So the differences below come from his changes, not from bugs.
+- **The two models agree on the substance.** Out of ${cmp.n.toLocaleString("en-US")} simulated worlds, neither puts a single one below his chicken-parity line (\$12/kg dry cell mass; the cheapest world is ${usd(uj.cheapest)} in ours and ${usd(page.cheapest)} in his). Under his competitive-zone edge of \$36/kg dry: ${pct(uj.under36)} of worlds in ours, ${pct(page.under36)} in his. Medians: ${usd(uj.p50)} and ${usd(page.p50)} per kg dry.
+- The net effect of his changes ${updown(uj.under36, page.under36)} the competitive share, mostly through one unsourced number: economies of scale stop at a 6,500 m³ frontier plant. His literature review points the other way: its evidence-based nutrient-yield range alone takes his share from ${pct(page.under36)} to ${pct(ny.under36)}.
+- Suggested next steps: keep the main model as the master copy (Alex suggests this too), adopt the clear corrections, treat the structural changes as forks to settle at the workshop, and point elicitation at the few favourable tails and joint probabilities that the "what has to go right" analysis says matter.
+:::
+
+## The two models side by side
+
+Each row changes one thing (from our model's settings, or from Alex's page defaults) and keeps the same random draws, so differences between rows are paired comparisons, not noise. The competitive tail is thin, so the shares below rest on a few hundred worlds each; at the 30,000 draws the live pages use they rest on a few dozen.
+
+```{ojs}
+//| echo: false
+Inputs.table(cmp.rows.map(r => ({...r, count: r.count_under36})), {
+  columns: ["name", "p50", "mean", "cheapest", "under12", "under36", "under40", "count"],
+  header: {name: "Scenario", p50: "Median $/kg dry", mean: "Mean", cheapest: "Cheapest world", under12: "Under $12 (parity)", under36: "Under $36 (zone edge)", under40: "Under $40 (= $5 hybrid)", count: "Worlds under $36"},
+  format: {p50: usd, mean: usd, cheapest: v => `$${v.toFixed(1)}`, under12: pct, under36: pct, under40: pct},
+  width: {name: 340}, rows: 20, layout: "auto"
+})
+```
+
+<details><summary><strong>How the thresholds line up with the main model's</strong></summary>
+
+Alex compares dry cell mass directly with chicken: about \$12/kg dry is US wholesale boneless chicken breast divided by 27.5% solids, and \$36 (about three times that, roughly the organic-chicken price level) is the upper edge of his "competitive zone". The main model reports a hybrid product instead (25% cells at meat moisture, 75% filler at \$3/kg). A \$5/kg hybrid corresponds to \$40/kg dry, so his zone edge and our lowest threshold card are close. Our docs quote the under-\$5 share from 30,000 draws; at one million draws the same default model gives ${pct(uj.under40)}. Tail shares from 30,000 draws carry large Monte Carlo error and should be quoted with that caveat or recomputed at higher draw counts.
+
+</details>
+
+## The three points from the Slack thread
+
+### 1. Errors, and economies of scale that never run out
+
+**Hydrolysate medium charged even when dearer.** Confirmed. Our "cheapest feasible mode" option chooses only the process (fed-batch, perfusion, continuous). Inputs are not re-optimised: `cost-model.mjs` uses the hydrolysate price whenever hydrolysates exist, even in worlds where its drawn price is above the purified-amino-acid medium's. Fixing it moves the median from ${usd(uj.p50)} to ${usd(cheapMed.p50)} and the share under \$36 from ${pct(uj.under36)} to ${pct(cheapMed.under36)}: small, because in competitive worlds hydrolysate is almost always the cheaper option anyway. Worth adopting, since it follows directly from the "best available plant" estimand.
+
+**Economies of scale.** In the main model, reactor cost per litre falls with total working volume as (volume ÷ 1,000 m³)^(s − 1), with s between 0.6 and 0.9 and no upper limit. Plant size is drawn (10–40 thousand t a year), so the model never builds an infinite plant. But the diagnosis is right in two ways: under a "best available plant" estimand, nothing in the model says why the best plant should stop growing, and worlds with low productivity need more reactor volume and so get a larger discount per litre, which partly cushions bad draws.
+
+Alex's fix prices every world's reactors as if the plant were 6,500 m³. That ${updown(uj.under36, cap6500.under36)} the share under \$36 from ${pct(uj.under36)} to ${pct(cap6500.under36)}. The reason is that the competitive worlds are high-productivity worlds that need little reactor volume. Under the original settings their median is ${Math.round(cmp.volume_m3.under36.p50).toLocaleString("en-US")} m³, against ${Math.round(cmp.volume_m3.all.p50).toLocaleString("en-US")} m³ across all worlds, and ${pct(cmp.volume_m3.under36.under1000)} of them need less than the 1,000 m³ at which reactor prices are quoted, so the original charges them a small-plant premium. The rebuild gives them the price of a plant roughly ${Math.round(6500 / cmp.volume_m3.under36.p50)} times larger. That is consistent with a "best plant" reading only if a firm in such a world would build a plant producing about that many times more, which brings back the question of how big a 2036 plant can be.
+
+The cap value matters: priced at 1,000 m³ (no discount or premium relative to the quote) the share is ${pct(cap1000.under36)}; at 20,000 m³ it is ${pct(cap20000.under36)}. On his own page, switching back to volume-based scaling gives ${pct(uncapped.under36)} instead of ${pct(page.under36)}. His help text notes that 6,500 m³ has no engineering source yet.
+
+Suggestion: anchor the limit in engineering rather than in total plant volume. Most economies of scale come from vessel size, and vessel size is limited (oxygen transfer, mixing, sterility); past that, plants add identical trains, which is why his literature review finds plant-level exponents nearer 1. So: an exponent on vessel size up to an elicited maximum vessel, a modest plant-level economy for shared utilities, and a plant no larger than a 2036 market and lenders would plausibly support. That last clause is the estimand question Alex raises, and I agree we have not pinned it down. A possible wording: *the cost of a plant at the largest scale a 2036 market and its lenders would plausibly support, using the best technology available in 2036.*
+
+### 2. What the model should produce
+
+Both views can be satisfied by the same outputs. Alex is right that the mean and median are not the decision quantity: almost all simulated worlds are far above chicken prices, and how far above hardly matters. David is right that the unconditional probability matters for funding and strategy questions. The quantity both want is the probability mass in the competitive region, and "what has to go right" is that same mass broken down by route: the share of worlds under a threshold equals the probability that every condition in at least one minimal set holds.
+
+What the comparison shows is that this probability is ${oneIn(uj.under36)} in the main model and ${oneIn(page.under36)} in the rebuild, and that it depends almost entirely on two things nobody has elicited yet: how far the favourable tails of about six inputs reach, and whether those favourable values occur together. Proposals:
+
+1. Lead with the probabilities under the thresholds (the threshold cards already do this) and stop quoting the median as a headline.
+2. Pair Alex's minimal-set analysis with the [threshold profile](sensitivity.qmd) already on the sensitivity page; both describe the competitive worlds, from different angles.
+3. Compute tail shares at a million draws or more, or show their Monte Carlo error.
+
+On "the model structurally assumes a large commercial plant expecting a return on capital": yes, that is the estimand agreed on 26 October ([limits page](limits.qmd#estimand)), and it fits the pivotal question about cost-competitiveness. It does not fit other questions, such as niche premium markets, publicly financed plants with a low cost of capital, or how much extra R&D funding changes the odds. Those need different inputs or a different model, and are best named as out of scope rather than squeezed in.
+
+### 3. The workshop
+
+A possible structure, building on Alex's proposal:
+
+1. **Ten minutes on the two models side by side.** They agree on the headline; spend the time on why.
+2. **Structural forks to settle or keep as user choices.** Economies of scale (limit and anchor); medium cost as nutrient mass × price per kg of nutrients (literature review change 1); fixed costs tied to capital; perfusion membrane costs and the oxygen cap; process chosen before or after costs are known; and the threshold itself (parity only, or up to about three times parity; cell mass or hybrid product).
+3. **Elicitation on the inputs that appear in most minimal sets:** plant operating cost, nutrient yield and medium price (ideally as one joint quantity), P(cheap food-grade medium by any route), P(cheap growth factors), P(perfusion or continuous culture works at scale), and harvest density. Ask for the favourable tail and for conditional probabilities, not just central values. Show the base rate first: Rethink Priorities found 80 of 90 resolved public predictions about cultured meat wrong, all on the optimistic side.
+4. **Close with routes, as probabilities.** "Which route to a competitive world do you find most plausible, and how likely is everything on it by 2036?" This keeps Alex's "is there a viable path" question but asks for a number rather than a yes or no.
+
+## What the rebuild changes, and what we suggest
+
+| Change in the rebuild | Suggestion for the main model |
+|---|---|
+| Hydrolysate medium bought only when cheaper (error fix) | Adopt. |
+| Frontier plant uses the cheapest process without a blocker; the probability-weighted mix is removed | Agree under the best-plant estimand; this is already the main model's *Cheapest feasible mode* option. Caveat: picking the cheapest of three independently drawn costs *after* they are known is optimistic, since a plant commits to a process first. Keep some choice noise, or choose on expected cost. |
+| Contract-manufacturer option and forming removed | Fine under the estimand. Forming is already outside the cell-mass cost. |
+| Harvest, wash and dewater costed, at the cited centrifuge figure | Adopt; the literature review's bottom-up figure (\$1.5–2.5/kg dry) supports a low default. |
+| Food-grade reactors a yes/no technology with their own price | Adopt for the frontier-plant estimand. |
+| Fixed running costs and utilities merged into one plant operating cost | Reconsider. His own review recommends tying maintenance and insurance to capital (about 9% of capital a year in Humbird's design). The merged input is drawn independently of capital, his page reports it in 98% of minimal sets, and its favourable tail (about \$9/kg dry, \$1.80/kg wet) is, by his review, roughly labour alone. This is the most decision-relevant input and its favourable tail is the least supported. |
+| Economies of scale stop at a 6,500 m³ frontier plant | Right diagnosis; the fix needs a source and an engineering anchor (above). |
+| Medium-use multiplier floored at 1 (no free medium recycling) | Adopt. |
+| Maturity nudge centred on maturity's own mean | Adopt; without it every technology probability sits 2–3 points below the value entered. |
+| All inputs per kg dry, so the solids fraction cancels | Adopt; in the main model some inputs are still converted at a fixed 20% solids. |
+| Failed runs should not gross up harvest cost | Adopt (minor). |
+| Learn page: seed train overstated; cost shares describe the cheap worlds | Fix the Learn page text. |
+
+## The literature review
+
+Alex's [review](https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit) (an academic arm searched in PubMed plus a hand-searched grey literature arm; 18 academic studies, 26 grey sources, 423 extracted estimates) concludes that the favourable bounds defining the competitive zone are not supported: each needs values at or beyond the most favourable published figure, and those figures are model outputs or unverified company claims. Evidence quality and favourability are negatively correlated.
+
+Effect of two of its suggestions on the rebuild's own share under \$36/kg dry: oxygen cap on, ${pct(o2.under36)}; nutrient yield 2–15 g/L, ${pct(ny.under36)}; both, ${pct(nyo2.under36)} (from ${pct(page.under36)}).
+
+<details><summary><strong>Its nine suggested changes, with a proposed status</strong></summary>
+
+1. **Medium cost as kg of nutrients per kg of cells × price per kg of nutrients, plus a per-litre charge.** Strong case: removes worlds with a cheap, dilute litre and a high yield at once. Build as a structural fork.
+2. **Nutrient-yield upper bound about 15 g/L,** or a separate "engineered metabolism" world. Test as a fork; effect above.
+3. **Fixed costs tied to capital.** Adopt as a fork; it also fixes the merged operating-cost issue above.
+4. **Cost perfusion membranes; oxygen cap on by default.** Adopt membranes; test the oxygen-cap default.
+5. **Ask about cheap food-grade medium by any route,** with hydrolysate share as a blend. Adopt in the elicitation.
+6. **Load continuous culture on the maturity factor; elicit conditional probabilities.** Adopt in the elicitation.
+7. **Albumin as its own switch.** Consider.
+8. **Capital multipliers:** the 1.5–3.5 plant multiplier is low against published factors of about 3–7, unless the reactor price already covers part of the plant. Check the definition of the reactor price before changing.
+9. **Near-term failure rates** declining with maturity. Consider.
+
+**Documentation fixes it flags:** the "Garrison et al." link on the Learn page points to a different paper; docs give the maturity mean as 0.5 against a code default of 0.40; the contract-manufacturing toll is listed as \$4–40 with no basis (it is the wet equivalent of \$20–200/kg dry); "Kim et al." is a cell-culture paper, not a cost model; check passages citing Lever VC 2025, which it finds misreports Humbird.
+
+**Its limits, as Alex states them:** PubMed only (other databases were unreachable), a single screener, the hand search stopped on time budget, and the suggested probability ranges are judgement, not elicited values. Until someone reruns the core search in Scopus or Web of Science, "structured review" is the safer label.
+
+</details>
+
+## Provenance and files
+
+- Interactive page as hosted: [`alt/bates-rebuild-v0.9.7.html`](alt/bates-rebuild-v0.9.7.html) (Alex's file, unchanged apart from a host bar and the Hypothes.is client). The unmodified original and the review's .docx are in the repository under `models/bates-rebuild-2026-11/`.
+- The page header reads "rebuild v0.9.4" and its engine reports 0.9.0; the file is named v0.9.7.
+- Comparison: `node scripts/compare-bates-rebuild.mjs 1000000 42 > dashboard/bates-rebuild-comparison-2026-11-17.json` (about 4 minutes).
+- Discussion: comment on either page with Hypothes.is, on the Google Doc, or in the [discussion hub](https://github.com/unjournal/cm_pq_modeling/discussions/3).
+

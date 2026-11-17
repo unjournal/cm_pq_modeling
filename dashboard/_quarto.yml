@@ -10,6 +10,8 @@ project:
     - cm-model-critique-revision-briefing-2026-09-17-ai-narration.mp3
     - process_overview.mp3
     - archive/**
+    - alt/**
+    - bates-rebuild-comparison-2026-11-17.json
     - llms.txt
 
 website:
@@ -26,6 +28,15 @@ website:
         href: simple.qmd
       - text: "Advanced Model"
         href: index.qmd
+      - text: "Alt. model (Bates)"
+        menu:
+          - text: "Rebuild v0.9.7 (interactive)"
+            href: alt/bates-rebuild-v0.9.7.html
+          - text: "Notes, comparison & suggestions"
+            href: bates-rebuild.qmd
+          - text: "Literature review (Google Doc) ↗"
+            href: https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit
+            target: _blank
       - text: "Learn"
         menu:
           - text: "How cultured chicken is made"
