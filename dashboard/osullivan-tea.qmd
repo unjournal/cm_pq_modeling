@@ -1,0 +1,326 @@
+---
+title: "A bottom-up spreadsheet model (O'Sullivan): work in progress"
+subtitle: "What Denis O'Sullivan's draft spreadsheet does, how its six cases sit beside the main model, what its \"Future\" column rests on, and what its sensitivity table can and cannot show"
+toc: true
+format:
+  html:
+    include-after-body:
+      text: |
+        <script src="https://hypothes.is/embed.js" async></script>
+---
+
+*Drafted by Claude (AI) for David Reinstein on 24 November 2026, from the workbook Denis shared with the modelling group that day (`Cultured_Chicken_TEA_DOS_v1.xlsx`). Not yet reviewed by Denis. Every number on this page is read from [`osullivan-tea-2026-11-24.json`](osullivan-tea-2026-11-24.json), which `scripts/osullivan-tea.mjs` produces by re-running the workbook's formulas in code and by running the main model (300,000 simulated worlds, seed 42).*
+
+::: {.callout-warning appearance="simple"}
+**Work in progress on both sides.** These notes are a first pass and will change as Denis and the group respond. The spreadsheet is also a first draft, by its author's own description. Denis shared it to show a structure, not results. He wrote that the inputs are questionable, that some things may be counted twice, and that the numbers should not be given much weight. Read this page in that spirit: it is about what the structure offers and which inputs most need checking. It is not a critique of a finished model.
+:::
+
+```{ojs}
+//| echo: false
+t = FileAttachment("osullivan-tea-2026-11-24.json").json()
+money = v => v >= 100 ? `$${Math.round(v).toLocaleString("en-US")}` : v >= 10 ? `$${v.toFixed(0)}` : v >= 1 ? `$${(Math.round(v * 100 + 1e-6) / 100).toFixed(2)}` : `$${v.toFixed(v < 0.01 ? 3 : 2)}`
+num = (v, d = 0) => v.toLocaleString("en-US", {maximumFractionDigits: d, minimumFractionDigits: d})
+pct = v => v === 0 ? "none" : v < 0.00005 ? "under 0.01%" : v < 0.001 ? `${(100 * v).toFixed(2)}%` : v < 0.1 ? `${(100 * v).toFixed(1)}%` : v === 1 ? "all" : v > 0.9995 ? "over 99.9%" : v > 0.99 ? `${(100 * v).toFixed(1)}%` : `${Math.round(100 * v)}%`
+I0 = t.inputs.today
+I1 = t.inputs.future
+cs = (s, m) => t.cases.find(c => c.scenario === s && c.mode === m)
+today = ["A", "B", "C"].map(m => cs("today", m))
+future = ["A", "B", "C"].map(m => cs("future", m))
+range = (arr, f, fmt = money) => { const v = arr.map(f); return `${fmt(Math.min(...v))} to ${fmt(Math.max(...v))}`; }
+M = t.main_model.summary
+cellStyle = "padding:5px 8px;border-bottom:1px solid #e3e3e3;text-align:right;white-space:nowrap"
+headStyle = "padding:5px 8px;border-bottom:2px solid #bbb;text-align:right;vertical-align:bottom;line-height:1.25"
+leftCell = cellStyle + ";text-align:left;white-space:normal"
+procName = ({fedbatch: "Fed-batch", perfusion: "Perfusion", continuous: "Continuous"})
+```
+
+## In brief
+
+```{ojs}
+//| echo: false
+html`<ul>
+<li><strong>What it is.</strong> A spreadsheet that builds the cost of a cultured-chicken nugget from physical quantities: how fast cells divide, how densely they grow, how long a reactor is occupied, how many kilograms of nutrients a kilogram of cells needs, what the equipment costs and how many people run it. It gives one answer for each of six cases: "Today" and an intentionally optimistic "Future", each for three production processes. There are no probabilities.</li>
+<li><strong>The arithmetic holds up.</strong> We re-ran every formula in code and got the workbook's six totals exactly, and all ${t.replication.sensitivity_rows_checked} figures in its sensitivity table. The workbook carries a note asking whether depreciation and the capital charge should both be there. They should: together they are the standard yearly payment on the plant, counted once.</li>
+<li><strong>Its "Today" cases cost about what the main model's typical 2036 world costs. Its "Future" cases cost less than almost every world the main model produces.</strong> Per kg of dry cells: ${range(today, c => c.cost_dry_delivered)} today and ${range(future, c => c.cost_dry_delivered)} in the future. The main model's typical world is ${money(M.all.cost_dry.p50)}, its cheapest of ${t.n.toLocaleString("en-US")} is ${money(M.all.cost_dry.min)}, and ${pct(t.main_model.share_of_all_worlds_below["36"])} of its worlds are under $36.</li>
+<li><strong>The gap is in the medium and in running the plant, not in the cost of building it.</strong> The Future cases spend ${range(future, c => c.lines.medium)} on medium per kg of dry cells, against ${money(M.all.medium.p50)} in the main model's typical world, because the workbook buys nutrients by weight at commodity prices where the main model buys litres of medium.</li>
+<li><strong>"Future" is ${t.inputs.changed_that_lower_cost} inputs moved in the favourable direction at once.</strong> No single group of them cuts the cost by more than about ${Math.max(...Object.values(t.decomposition).flatMap(d => Object.values(d.groups).map(g => g.factor))).toFixed(1)} times; multiplied together they cut it ${range(Object.values(t.decomposition), d => d.ratio, v => v.toFixed(0))} times. Most of the future values are marked "Estimate" in the workbook or have no source. It is a statement of what would have to be true, not a forecast.</li>
+<li><strong>What we would take from it</strong> (a judgement, section 6): pricing nutrients by weight, and building running costs and capital from named items. Those are the two places where the main model is thinnest.</li>
+</ul>`
+```
+
+## 1. What the spreadsheet does
+
+The workbook answers one question: what does it cost to deliver one kilogram of finished product, a nugget or burger that is half cultured cells and half plant-based ingredients? It works forward in a chain, and every link is a quantity someone could measure.
+
+1. **How many cells a kilogram of product needs.** Half a kilogram of wet cells, plus a little extra for cells lost in harvesting.
+2. **How long a reactor takes to make them.** Cells start at a low density and double every 16 to 24 hours until they reach the harvest density. Add the time to empty, clean and refill the reactor. This gives the hours of reactor time behind each kilogram.
+3. **How much medium that takes.** For fed-batch, one reactor-full. For perfusion and continuous culture, a set volume of medium per cell per day.
+4. **What the medium costs.** In two parts. Ingredients needed at a fixed concentration (salts, buffer, growth factors, added proteins) are paid for per litre. Nutrients the cells are built from (amino acids and glucose) are paid for per kilogram of cells grown, at a price per kilogram of nutrient.
+5. **What the plant costs.** Ten reactors of 20 cubic metres each, with seed reactors, medium preparation and downstream equipment. The purchase prices are multiplied by an installation factor of 3.5 to 4.5 to cover piping, buildings and utilities. Yearly output is worked out from the reactor time in step 2, not assumed.
+6. **What it costs to run.** Staff counted in people, maintenance and insurance as a percentage of the plant's cost, energy from the power the equipment draws.
+7. **Everything after the reactor.** Plant-based ingredients, forming, packaging and transport, each a single figure per kilogram.
+
+```{ojs}
+//| echo: false
+{
+  const row = c => html`<tr><td style="${leftCell}">${c.label}</td>
+    <td style="${cellStyle}">${money(c.total)}</td><td style="${cellStyle}">${money(c.cost_dry_harvested)}</td>
+    <td style="${cellStyle}">${num(c.physical.output_t_product)} t</td><td style="${cellStyle}">$${num(c.physical.capex_musd)} million</td></tr>`;
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">Case</th><th style="${headStyle}">Delivered cost per kg of product<br><span style="font-weight:400">(half cells, half plant ingredients)</span></th>
+  <th style="${headStyle}">Cost per kg of dry cells<br><span style="font-weight:400">(the workbook's own row)</span></th><th style="${headStyle}">Product made per year</th><th style="${headStyle}">Cost to build the plant</th></tr></thead>
+  <tbody>${t.cases.map(row)}</tbody></table></div>
+  <p style="font-size:0.9em;color:#555">The same ten reactors make ${num(cs("today", "A").physical.output_t_product)} tonnes of product a year in the first case and ${num(cs("future", "C").physical.output_t_product)} in the last, because output is calculated from density and cycle time. Energy and labour prices are western European. The workbook leaves out working capital, start-up costs, land, research, regulatory approval, company overheads, profit and tax.</p>`;
+}
+```
+
+<details><summary><strong>How the three processes differ in the workbook</strong></summary>
+
+- **Fed-batch.** Fill the reactor, grow the cells to the harvest density while adding concentrated nutrients, empty it, clean it, repeat.
+- **Perfusion, then harvest.** The same, but fresh medium flows through continuously while a filter keeps the cells in. Cells reach a higher density and use more medium.
+- **Continuous perfusion.** Grow to a steady density, then draw off cells continuously at the rate they grow, for a run of 30 days (Today) or 90 days (Future).
+
+The workbook's orange flags mark two physical limits: the concentration of amino acids in the medium, and the rate at which oxygen can be supplied. They warn; they do not change the result.
+
+</details>
+
+## 2. The six cases beside the main model
+
+To compare, we put each case into the main model's terms: cost per kilogram of dry cells delivered, split into the four cost lines of the [plain-language guide](guide.qmd). The last column says where the case would fall among the main model's simulated worlds that use the same process.
+
+```{ojs}
+//| echo: false
+{
+  const row = c => html`<tr><td style="${leftCell}">${c.label}</td>
+    <td style="${cellStyle};font-weight:600">${money(c.cost_dry_delivered)}</td>
+    <td style="${cellStyle}">${money(c.lines.medium)}</td><td style="${cellStyle}">${money(c.lines.growth_factors)}</td>
+    <td style="${cellStyle}">${money(c.lines.running)}</td><td style="${cellStyle}">${money(c.lines.capital)}</td>
+    <td style="${cellStyle}">${pct(c.in_main_model.share_of_same_process_worlds_below.cost_dry)}</td></tr>`;
+  const ours = k => html`<tr><td style="${leftCell};color:#555">Main model, ${procName[k].toLowerCase()} worlds: typical (5th to 95th percentile)</td>
+    <td style="${cellStyle};color:#555">${money(M[k].cost_dry.p50)} (${money(M[k].cost_dry.p5)} to ${money(M[k].cost_dry.p95)})</td>
+    ${["medium", "growth_factors", "running", "capital"].map(q => html`<td style="${cellStyle};color:#555">${money(M[k][q].p50)}</td>`)}<td style="${cellStyle}"></td></tr>`;
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">Per kg of dry cells delivered</th><th style="${headStyle}">Total</th><th style="${headStyle}">Medium<br><span style="font-weight:400">(nutrients, salts)</span></th>
+  <th style="${headStyle}">Growth factors</th><th style="${headStyle}">Running the plant</th><th style="${headStyle}">Capital charge</th>
+  <th style="${headStyle}">Share of the main model's same-process worlds that are cheaper</th></tr></thead>
+  <tbody>${today.map(row)}${future.map(row)}
+  <tr><td colspan="7" style="border-bottom:1px solid #bbb;padding:3px"></td></tr>
+  ${["fedbatch", "perfusion", "continuous"].map(ours)}</tbody></table></div>
+  <p style="font-size:0.9em;color:#555">"Running the plant" is labour, maintenance, insurance, energy, consumables and the added proteins (albumin, insulin, transferrin), as in the guide. Totals here are ${Math.round(100 * (cs("future", "A").cost_dry_delivered / cs("future", "A").cost_dry_harvested - 1))}% to ${Math.round(100 * (cs("today", "A").cost_dry_delivered / cs("today", "A").cost_dry_harvested - 1))}% above the workbook's own row because the main model counts cost per kilogram that survives harvesting. Main model version ${t.main_model_version}.</p>`;
+}
+```
+
+**How to read it.**
+
+```{ojs}
+//| echo: false
+html`<ul>
+<li><strong>"Today" lands in the middle of the main model.</strong> The main model describes a plant built with 2036 technology. Its typical world (${money(M.all.cost_dry.p50)} per kg of dry cells) costs about what the workbook says a best-practice plant would cost now (${range(today, c => c.cost_dry_delivered)}). The two reach that figure differently: the workbook's Today plant is small (${range(today, c => c.physical.output_t_dry, v => num(v))} tonnes of dry cells a year, against ${num(t.main_model.plant_t_dry_per_year[0])} to ${num(t.main_model.plant_t_dry_per_year[1])} in the main model), so its running costs and capital charge per kilogram are high, while its medium is cheaper than the main model's.</li>
+<li><strong>"Future" is outside the main model's range.</strong> The perfusion and continuous Future cases are cheaper than every one of the main model's ${t.n.toLocaleString("en-US")} worlds, and only ${pct(cs("future", "A").in_main_model.share_of_all_worlds_below.cost_dry)} of those worlds are cheaper than the fed-batch one.</li>
+<li><strong>The difference is mostly medium.</strong> Future medium costs ${range(future, c => c.lines.medium)} per kg of dry cells. The main model's typical world spends ${money(M.all.medium.p50)}, and only ${pct(Math.max(...future.map(c => c.in_main_model.share_of_all_worlds_below.medium)))} of its worlds spend as little as the workbook. Running costs come second: ${range(future.slice(1), c => c.lines.running)} in the perfusion and continuous Future cases, below the main model's 5th percentile of ${money(M.all.running.p5)}.</li>
+<li><strong>Capital and growth factors are not where the two disagree.</strong> The Future capital charge (${range(future, c => c.lines.capital)}) and growth-factor cost (${range(future, c => c.lines.growth_factors)}) are low but inside the main model's range.</li>
+<li><strong>Against chicken.</strong> In the main model's convention (a product with 25% cells and plant ingredients at $3 per kg), the Future cases come to ${range(future, c => c.in_main_model.hybrid_on_main_model_convention)} per kg of product in ingredients, around the wholesale price of chicken (about $${t.main_model.chicken_wholesale.central.toFixed(2)}, range $${t.main_model.chicken_wholesale.low.toFixed(2)} to $${t.main_model.chicken_wholesale.high.toFixed(2)}). The workbook's own delivered product, with half cells and with forming, packaging and transport, is ${range(future, c => c.total)}.</li>
+</ul>`
+```
+
+### Why the medium is so much cheaper: nutrients by weight
+
+The main model multiplies litres of medium by a price per litre. The workbook asks how many kilograms of amino acids and glucose a kilogram of cells needs and prices those by weight.
+
+```{ojs}
+//| echo: false
+{
+  const perKgNutrient = c => c.detail.amino_acids_and_glucose / c.detail.nutrients_kg_per_kg_dry;
+  const ourLow = M.all.medium.p50 / Math.max(...t.cases.map(c => c.detail.nutrients_kg_per_kg_dry));
+  const ourHigh = M.all.medium.p50 / Math.min(...t.cases.map(c => c.detail.nutrients_kg_per_kg_dry));
+  return html`<ul>
+  <li>In the workbook a kilogram of dry cells needs ${range(today, c => c.detail.nutrients_kg_per_kg_dry, v => v.toFixed(1))} kg of amino acids and glucose today and ${range(future, c => c.detail.nutrients_kg_per_kg_dry, v => v.toFixed(1))} kg in the future, including what is wasted. That costs ${range(today, c => c.detail.amino_acids_and_glucose)} today and ${range(future, c => c.detail.amino_acids_and_glucose)} in the future: about ${money(perKgNutrient(today[0]))} and ${money(perKgNutrient(future[0]))} per kilogram of nutrient.</li>
+  <li>The main model's typical world spends ${money(M.all.medium.p50)} on medium per kg of dry cells. If the cells need the same weight of nutrients, that is roughly ${money(ourLow)} to ${money(ourHigh)} per kilogram of nutrient. (This is our illustration; the main model does not track nutrient weight.)</li>
+  <li>The workbook's medium is also much more concentrated than published media: ${range(t.cases, c => c.flags.aa_conc_g_per_L, v => v.toFixed(0))} grams of amino acids per litre, against about 1 to 7 grams in the media listed in the main model's <a href="docs.html#physical-consistency">documentation</a>. The Future fed-batch case, at ${cs("future", "A").flags.aa_conc_g_per_L.toFixed(0)} grams, trips the workbook's own warning (limit ${cs("future", "A").flags.aa_limit}).</li>
+  <li>So the two models put the Future cases at ${range(future, c => c.physical.litres_fresh_per_kg_dry, v => num(v))} litres of fresh medium per kg of dry cells (the main model's typical world: ${num(M.all.litres.p50)}) at ${range(future, c => c.physical.medium_price_per_L)} a litre (main model: ${money(M.all.medium_price.p50)}). Each figure alone is at the edge of the main model's range; together they are outside it.</li>
+  </ul>`;
+}
+```
+
+This is the most important difference between the two models, and the same point has come up twice before: reviewers argued that medium use should follow nutrient needs (the main model's [nutrient floor](docs.qmd#physical-consistency) was added for that), and Alex Bates's rebuild proposed pricing medium by its nutrient content ([notes](bates-rebuild.qmd)). The main model still draws the price of a litre without regard to how concentrated that litre has to be. Which is nearer the truth depends on whether cell-culture nutrients can really be bought and used at close to commodity prices, which is a question for people who buy them.
+
+<details><summary><strong>Physical quantities side by side</strong></summary>
+
+```{ojs}
+//| echo: false
+{
+  const q = [["density", "Cell density at harvest (g dry cells per litre)", v => v.toFixed(1)], ["litres", "Fresh medium (litres per kg dry cells)", v => num(v)],
+    ["medium_price", "Price of that medium per litre, without proteins and growth factors", money], ["productivity", "Dry cells made per litre of reactor per day (g)", v => v.toFixed(1)]];
+  const row = c => html`<tr><td style="${leftCell}">${c.label}</td>${q.map(([k, , f]) => html`<td style="${cellStyle}">${f(c.in_main_model.values[k])} <span style="color:#666">(${pct(c.in_main_model.share_of_same_process_worlds_below[k])})</span></td>`)}</tr>`;
+  const ours = k => html`<tr><td style="${leftCell};color:#555">Main model, ${procName[k].toLowerCase()}: 5th to 95th percentile</td>${q.map(([key, , f]) => html`<td style="${cellStyle};color:#555">${f(M[k][key].p5)} to ${f(M[k][key].p95)}</td>`)}</tr>`;
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">Case</th>${q.map(([, label]) => html`<th style="${headStyle}">${label}</th>`)}</tr></thead>
+  <tbody>${t.cases.map(row)}<tr><td colspan="5" style="border-bottom:1px solid #bbb;padding:3px"></td></tr>${["fedbatch", "perfusion", "continuous"].map(ours)}</tbody></table></div>
+  <p style="font-size:0.9em;color:#555">In brackets: the share of the main model's worlds with the same process that have a lower value. The workbook's densities are high for the main model in every case, and above its whole fed-batch range. That may say as much about the main model's fed-batch range (1 to 6 g dry per litre) as about the workbook: the <a href="compare.html">comparison of published studies</a> lists Humbird's modelled fed-batch limit at 110 g of wet cells per litre, which is well above it. Humbird's perfusion limit there is 195 g wet per litre; the workbook's Future perfusion case assumes ${num(cs("future", "B").physical.density_g_wet_per_L)}.</p>`;
+}
+```
+
+</details>
+
+## 3. What the "Future" column rests on
+
+The workbook describes Future as "optimistic, at scale (~2030+)". It is not tied to a year, and no probability is attached.
+
+```{ojs}
+//| echo: false
+html`<p>Of the workbook's ${t.inputs.total} inputs, ${t.inputs.changed_between_today_and_future} differ between Today and Future. Changed one at a time, ${t.inputs.changed_that_lower_cost} lower the cost, ${t.inputs.changed_with_no_effect_on_cost.length} have no effect on it, and ${t.inputs.changed_that_raise_cost.length === 0 ? "none raises it" : t.inputs.changed_that_raise_cost.length + " raise it"}. The table splits the fall in the cost of a kilogram of dry cells among seven groups of inputs.</p>`
+```
+
+```{ojs}
+//| echo: false
+{
+  const D = t.decomposition, keys = Object.keys(D.fedbatch.groups);
+  const order = keys.slice().sort((a, b) => D.perfusion.groups[b].share_of_fall - D.perfusion.groups[a].share_of_fall);
+  return html`<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:0.95em">
+  <thead><tr><th style="${headStyle};text-align:left">Group of inputs</th>${Object.keys(D).map(p => html`<th style="${headStyle}">${procName[p]}<br><span style="font-weight:400">share of the fall (cost divided by)</span></th>`)}</tr></thead>
+  <tbody>${order.map(g => html`<tr><td style="${leftCell}"><strong>${D.fedbatch.groups[g].label}</strong> (${D.fedbatch.groups[g].inputs_changed} inputs)<br><span style="color:#666;font-size:0.92em">${D.fedbatch.groups[g].detail}</span></td>
+    ${Object.keys(D).map(p => html`<td style="${cellStyle};vertical-align:top">${Math.round(100 * D[p].groups[g].share_of_fall)}% <span style="color:#666">(${D[p].groups[g].factor.toFixed(2)})</span></td>`)}</tr>`)}
+  <tr><td style="${leftCell};font-weight:600">All together: Today to Future, per kg of dry cells</td>${Object.keys(D).map(p => html`<td style="${cellStyle};font-weight:600">${money(D[p].today)} to ${money(D[p].future)} <span style="font-weight:400;color:#666">(${D[p].ratio.toFixed(1)})</span></td>`)}</tr>
+  </tbody></table></div>
+  <p style="font-size:0.9em;color:#555">Because the improvements multiply, the split depends on the order in which they are applied. The shares here average over every order (Shapley shares of the fall in the logarithm of cost), so they add to 100%. "Cost divided by" is the factor that group contributes; the factors multiply to the total.</p>`;
+}
+```
+
+Three things follow.
+
+**It is a compound of many moderate improvements.** No group is implausible taken alone: cells that divide every 16 hours instead of 24, a reactor at 40% of today's price, amino acids at about a quarter of today's price. The result comes from all of them holding at once. The workbook has no way to say how likely that is. Some of the improvements may also pull against each other: it assumes cells that grow denser and faster while wasting less, on nutrients that are cheaper and less pure.
+
+**Most future values are judgement.** The workbook's notes column marks most of them "Estimate" or gives no source. The ones with a named anchor are:
+
+- **Cell density.** Pasitka and colleagues (2024) reached 130 million cells per millilitre at laboratory or pilot scale; the Future perfusion case assumes 80 million at 20 cubic metres. The Future fed-batch density cites an investor report that the workbook itself labels unverified.
+- **Length of a continuous run.** The same paper showed more than 20 days; the Future case assumes 90.
+- **Reactor price.** The company Vow's public statement that its 20-cubic-metre vessel cost "well under \$1 million"; the Future case assumes \$0.6 million, against \$1.5 million today.
+- **Prices of growth factors and added proteins.** The Good Food Institute's cost targets. These are targets a competitive industry would need, not forecasts. The workbook's Future prices are two to five times *above* those targets, so here it is more cautious than the target. Its Today prices are the more surprising: \$2,000 a gram for the main growth factor. For comparison, a university laboratory making its own growth factor in bacteria estimated about 10,000 Canadian dollars a gram, and research-grade catalogue prices are far higher ([Venkatesan and colleagues 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9489951)).
+
+**Two physical limits move with the scenario.**
+
+```{ojs}
+//| echo: false
+{
+  const o = t.checks.oxygen, r = t.checks.retention;
+  return html`<ul>
+  <li><strong>Oxygen.</strong> The workbook's limit on how fast oxygen can be supplied is ${o.today_limit} units today and ${o.future_limit} in the future (millimoles per litre per hour). At today's limit the Future ${o.future_cases_over_today_limit.join(" and ")} cases would both be flagged. The Future perfusion case needs exactly ${o.future_perfusion_demand}, and passes only because the test is "greater than". The sources in the main model's <a href="docs.html#physical-consistency">documentation</a> put the limit for large reactors at about 13 to 25, so ${o.future_limit} is within the published range. The main model's optional oxygen cap allows ${t.main_model.oxygen_cap_g_dry_per_L[0]} to ${t.main_model.oxygen_cap_g_dry_per_L[1]} grams of dry cells per litre; the Future perfusion case is at ${cs("future", "B").physical.density_g_dry_per_L.toFixed(0)}.</li>
+  <li><strong>Filters.</strong> Perfusion and continuous culture need filters to hold the cells in. The workbook charges $${(1000 * r.perfusion.workbook_consumables_per_L).toFixed(0)} per cubic metre of medium for all consumables in the Future (${money(r.perfusion.workbook_consumables_per_L)} a litre). Published plant designs give ${money(t.main_model.retention_per_L[0])} to ${money(t.main_model.retention_per_L[1])} a litre for the filters alone (the low end from long-lasting tangential-flow filters in <a href="https://doi.org/10.1038/s43016-024-01022-w">Pasitka and colleagues 2024</a>, the high end from single-use hollow-fibre filters replaced after every run in <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8362201/">Humbird 2021</a>).${t.main_model.charges_filters ? " The main model uses the same range." : " The live main model does not yet charge for these filters separately; adding them is in progress."} At those rates filters would add ${money(r.perfusion.added_per_kg_dry_at_low)} to ${money(r.perfusion.added_per_kg_dry_at_high)} to the Future perfusion case's ${money(r.perfusion.cost_dry)} per kg of dry cells, and ${money(r.continuous.added_per_kg_dry_at_low)} to ${money(r.continuous.added_per_kg_dry_at_high)} to the continuous case's ${money(r.continuous.cost_dry)}.</li>
+  </ul>`;
+}
+```
+
+::: {.callout-note}
+## How we would describe the Future column (a judgement)
+
+```{ojs}
+//| echo: false
+html`<p>It is a useful statement of what would have to be true for a cultured-chicken product to cost ${range(future, c => c.total)} a kilogram delivered: a list of ${t.inputs.changed_that_lower_cost} things, with a number on each. It is not evidence that those things will happen, and it should not be read as "the cost in 2030". The natural next step is the one the main model takes: put a range and a probability on each input, with sources, and let the cheap cases be as rare as the evidence says they are.</p>`
+```
+:::
+
+## 4. The sensitivity table
+
+**What it does.** The workbook's last sheet takes two cases, Today fed-batch and Future continuous. For each of 16 or 17 inputs in turn it lowers that input by 25%, recalculates, raises it by 25%, recalculates, and reports the difference between the two results (the "swing"). Inputs are listed from the largest swing to the smallest. The table was computed once and does not update when inputs change.
+
+**What it shows.**
+
+```{ojs}
+//| echo: false
+{
+  const top = k => t.sensitivity.quarter[k].slice(0, 4).map(r => `${r.label.toLowerCase()} (${money(r.swing)})`).join("; ");
+  return html`<ul>
+  <li><strong>Today, fed-batch</strong> (${money(t.sensitivity.quarter.todayA[0].base)} per kg of product): ${top("todayA")}. Then the installation factor, the reactor price and the vessel size. Medium prices are well down the list and energy is last.</li>
+  <li><strong>Future, continuous</strong> (${money(t.sensitivity.quarter.futureC[0].base)} per kg of product): ${top("futureC")}. Once the cells are cheap, the plant-based half of the product matters as much as anything about the cells.</li>
+  </ul>`;
+}
+```
+
+**What justifies it.** Changing one input at a time by a fixed percentage is the standard first look at a cost model. It answers: "if this number were a quarter higher, how much would the answer move?" It finds inputs that barely matter (energy prices here), which can then be fixed and ignored. Denis's stated aim is exactly that. He also says what it lacks: the sensitivity to each input should be multiplied by how uncertain that input is.
+
+**Four cautions.**
+
+1. **A quarter either way is not equally likely for every input.** The workbook's own "typical range" for harvest density runs eightfold; for the number of shift crews it runs from 4.5 to 5.5. Some inputs cannot move 25% at all: a 97% recovery rate cannot rise by a quarter.
+2. **Design choices are mixed in with unknowns.** The top "driver" today is the share of cells in the product. That is a decision about what to make, not something to find out. Vessel size and number of reactors are also choices.
+3. **One result is partly an artefact.** "Wet mass per cell" ranks second because density is entered as a count of cells per millilitre, so heavier cells mean more kilograms in the same reactor. In reality what limits a reactor is the mass and volume of cells in it. If cells are 25% heavier and correspondingly fewer, the cost does not change at all (we checked). This is a case of inputs treated as independent that are in fact linked.
+4. **Inputs move one at a time, from one starting point.** The table cannot show that improvements pay off together, and the ranking changes between the two cases shown.
+
+<details><summary><strong>The same exercise across each input's stated range</strong></summary>
+
+Here each input is moved from the bottom to the top of the "typical range" the workbook gives for it, with everything else at the case's values. The outcome is the cost per kilogram of dry cells, so the share of cells in the product drops out. The workbook gives no range for medium ingredient prices, so those are missing here.
+
+```{ojs}
+//| echo: false
+{
+  const tbl = (k, title) => { const R = t.sensitivity.range[k];
+    return html`<p style="margin-bottom:2px"><strong>${title}</strong> (${money(R.base)} per kg of dry cells)</p>
+    <div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:0.93em;margin-bottom:14px">
+    <thead><tr><th style="${headStyle};text-align:left">Input</th><th style="${headStyle}">Range in the workbook</th><th style="${headStyle}">Cost at the two ends</th><th style="${headStyle}">Rank by range</th><th style="${headStyle}">Rank by ±25%</th></tr></thead>
+    <tbody>${R.rows.slice(0, 9).map(r => html`<tr><td style="${leftCell}">${r.label}</td><td style="${cellStyle}">${r.low.toLocaleString("en-US")} to ${r.high.toLocaleString("en-US")}</td>
+      <td style="${cellStyle}">${money(Math.min(r.cost_at_low, r.cost_at_high))} to ${money(Math.max(r.cost_at_low, r.cost_at_high))}</td><td style="${cellStyle}">${r.rank_range}</td><td style="${cellStyle}">${r.rank_quarter}</td></tr>`)}</tbody></table></div>`; };
+  return html`${tbl("todayA", "Today, fed-batch")}${tbl("futureC", "Future, continuous")}
+  <p style="font-size:0.9em;color:#555">The rankings differ. Inputs with wide ranges (vessel size, number of reactors, density, reactor price, failure rate) rise; inputs that are known fairly well fall. The ranges are the workbook's rough guides, not elicited, so this is an illustration of the method.</p>`;
+}
+```
+
+</details>
+
+The main model's [sensitivity page](sensitivity.qmd) does the version Denis describes as the goal: every input varies across its range at the same time, and each is scored by how much of the spread in cost it accounts for. The workbook could feed that directly, since it supplies the physical links between inputs that the main model lacks.
+
+## 5. Checks on the arithmetic
+
+```{ojs}
+//| echo: false
+html`<ul>
+<li><strong>The six totals reproduce exactly</strong>, as do all ${t.replication.sensitivity_rows_checked} sensitivity figures (largest difference ${t.replication.sensitivity_max_abs_difference.toFixed(5)} dollars, which is rounding in the printed table).</li>
+<li><strong>Depreciation and "capital charge" are not counted twice.</strong> The workbook defines the capital charge as the yearly annuity on the plant minus straight-line depreciation, so the two lines add up to the annuity: the standard yearly cost of paying for a plant over ${I0.life} years at ${Math.round(100 * I1.wacc)}% to ${Math.round(100 * I0.wacc)}% interest.</li>
+<li><strong>Staff do not change with the process or with output.</strong> The plant has ${cs("today", "A").physical.fte} people in every Today case and ${cs("future", "A").physical.fte} in every Future case, although output differs about fivefold between the processes (${num(cs("future", "A").physical.output_t_product)} to ${num(cs("future", "C").physical.output_t_product)} tonnes of product a year in the Future). Labour per kg of dry cells falls from ${money(cs("today", "A").detail.labour)} to ${money(cs("future", "C").detail.labour)} across the six cases, mostly because the same staff are spread over more output.</li>
+<li><strong>The "cost per kg of dry cells" row</strong> divides by cells harvested, before the ${Math.round(100 * (1 - I1.dsp_y))}% to ${Math.round(100 * (1 - I0.dsp_y))}% lost in recovery.</li>
+<li><strong>The sensitivity table is a snapshot.</strong> It was computed outside the workbook and does not change when inputs do.</li>
+<li>We found no errors in the formulas. The open questions are about inputs.</li>
+</ul>`
+```
+
+## 6. What it adds, what it repeats, and what we would take from it
+
+*The suggestions in this section are judgement, for the group to react to.*
+
+**New relative to the main model**
+
+- **Nutrients priced by weight** and separated from ingredients priced by the litre (section 2).
+- **A time chain for the plant.** Doubling time, seeding density, harvest density and turnaround give the reactor hours per kilogram, and so the plant's output. The main model draws density and an "effective cycle time" separately, which allows combinations no real process has.
+- **Running costs and capital built from named items**: a count of staff, a maintenance rate, an equipment list with an installation factor, energy from power draw. The main model enters running costs as ranges with no published source, and the [guide](guide.qmd) names this as its weakest part. Itemised figures can be checked one at a time by people who run plants.
+- **Costs after the reactor**: forming, packaging and transport as separate lines.
+- **A layout a reader can follow.** One sheet, top to bottom, each step in words.
+
+**Already in the main model**
+
+- Cost per kilogram of dry cells as the main unit, a breakdown by cost line, and the cost written as five numbers ([guide](guide.qmd)).
+- Three production processes, with the cheapest feasible one chosen where wanted ([docs](docs.qmd#least-cost-mode-selection)).
+- A nutrient floor on medium use, recovery losses, failed runs and seed reactors (added 7 November; [docs](docs.qmd#physical-consistency)).
+- Sensitivity weighted by uncertainty, and the Monte Carlo simulation Denis mentions as a possible later step ([sensitivity](sensitivity.qmd)).
+- A one-change-at-a-time comparison between two models to find which assumptions separate them ([Bates rebuild notes](bates-rebuild.qmd)).
+
+**What we would take from it**
+
+1. **Add nutrient-weight pricing of medium to the main model as an alternative structure**, with ranges for nutrient need, waste and price per kilogram. Alex Bates and now Denis have both pointed at this.
+2. **Replace the main model's unsourced running-cost and capital ranges with an itemised build-up** on the workbook's pattern, and ask plant engineers about the items.
+3. **Use the time chain** to tie density to cycle time.
+4. **Keep the main model's probabilities and its target.** The workbook's two columns would become ranges; "Future" would become the favourable end of each range, with a probability.
+5. **Do not adopt the delivered-product basis as the headline.** The pivotal question is about the cost of cell mass. Forming, packaging and transport are worth showing as an optional add-on.
+
+## 7. Questions for Denis and the group
+
+1. **Nutrient prices.** Can amino acids and glucose of the grade cell culture needs be bought at \$4 to \$15 a kilogram today, and at commodity prices at scale? What does today's medium actually cost per kilogram of nutrient?
+2. **Today's prices for insulin, transferrin, albumin and growth factors.** What are they based on? The growth-factor price is well below the current figures we have found; we have no current figures for the other three.
+3. **Density and oxygen.** Is 80 million cells per millilitre at 20 cubic metres a hope or an engineering expectation, and can a reactor that size supply the oxygen? The main model's fed-batch density range also looks low against both the workbook and Humbird; which is right?
+4. **Filters.** What should perfusion filters cost per litre, and do they wear out with volume or with time?
+5. **Staffing.** How should staff scale with output and with process?
+6. **Which Future inputs would Denis defend with a source,** and which are placeholders? A column for the source and one for his confidence would make the sheet much easier to review.
+7. **Joining the two.** Would it suit Denis to keep the spreadsheet as the readable statement of the physical chain, while the same formulas run inside the main model with ranges on the inputs? The code used for this page is a first version of that.
+
+## Where to go next
+
+- [The model in plain terms](guide.qmd): the main model's five numbers.
+- [Sensitivity methods](sensitivity.qmd).
+- [Alex Bates's rebuild](bates-rebuild.qmd): the other alternative model, compared the same way.

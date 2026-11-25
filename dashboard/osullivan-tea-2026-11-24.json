@@ -1,0 +1,2729 @@
+{
+ "generated": "2026-11-25",
+ "workbook": "Cultured_Chicken_TEA_DOS_v1.xlsx (shared 24 November 2026)",
+ "main_model_version": "2026-11-17.2",
+ "n": 300000,
+ "seed": 42,
+ "replication": {
+  "max_relative_error_six_cases": 1.3575089329910143e-16,
+  "capital_lines_equal_annuity": true,
+  "sensitivity_rows_checked": 33,
+  "sensitivity_max_abs_difference": 0.00004950047826532411
+ },
+ "inputs": {
+  "total": 85,
+  "changed_between_today_and_future": 60,
+  "changed_that_lower_cost": 58,
+  "changed_that_raise_cost": [],
+  "changed_with_no_effect_on_cost": [
+   "otr_max",
+   "rec_cost"
+  ],
+  "with_a_typical_range": 53,
+  "today": {
+   "inc": 0.5,
+   "ncost": 3,
+   "dsp_y": 0.92,
+   "mcell": 3.3,
+   "dm": 0.25,
+   "td": 24,
+   "lag": 12,
+   "qo2": 0.25,
+   "split": 10,
+   "xseed": 5000000,
+   "seed_ta": 24,
+   "nreac": 10,
+   "vves": 20,
+   "wvf": 0.8,
+   "ophr": 8000,
+   "ta": 24,
+   "fail_b": 0.05,
+   "fail_c": 0.1,
+   "otr_max": 10,
+   "xa": 15000000,
+   "mfa": 1,
+   "xb": 30000000,
+   "cspr": 60,
+   "xc": 30000000,
+   "td_ss": 36,
+   "camp": 30,
+   "rec": 0,
+   "rec_cost": 0.05,
+   "pec_ref": 1500000,
+   "v_ref": 20,
+   "exp": 0.6,
+   "perf_add": 0.4,
+   "mp_ref": 2000000,
+   "mp_cap": 100,
+   "dsp_ref": 4000000,
+   "dsp_cap": 5000,
+   "lang": 4.5,
+   "life": 15,
+   "wacc": 0.1,
+   "p_elec": 0.21,
+   "p_heat": 0.07,
+   "pv": 150,
+   "med_e": 5,
+   "med_th": 25,
+   "cip_th": 40,
+   "base": 2,
+   "fixed_fte": 40,
+   "rpo": 2,
+   "crews": 5,
+   "fte_cost": 85000,
+   "maint": 0.04,
+   "ins": 0.02,
+   "cons": 5,
+   "water": 4,
+   "qc": 2000,
+   "dsp_op": 1,
+   "pack": 0.25,
+   "logi": 0.4,
+   "salts_c": 10,
+   "salts_p": 1.5,
+   "hepes_c": 3.6,
+   "hepes_p": 40,
+   "ins_c": 5,
+   "ins_p": 20,
+   "tf_c": 5,
+   "tf_p": 20,
+   "alb_c": 0.5,
+   "alb_p": 200,
+   "fgf_c": 20,
+   "fgf_p": 2000,
+   "ogf_c": 20,
+   "ogf_p": 2000,
+   "vit_c": 1,
+   "vit_p": 0.1,
+   "aa_cons": 1.2,
+   "aa_util": 0.6,
+   "hydro_share": 0.3,
+   "p_aa": 15,
+   "p_hydro": 8,
+   "aa_floor": 1.5,
+   "aa_max": 30,
+   "glc_cons": 4,
+   "glc_util": 0.8,
+   "p_glc": 1,
+   "glc_floor": 3
+  },
+  "future": {
+   "inc": 0.5,
+   "ncost": 2.5,
+   "dsp_y": 0.97,
+   "mcell": 3.3,
+   "dm": 0.25,
+   "td": 16,
+   "lag": 6,
+   "qo2": 0.25,
+   "split": 10,
+   "xseed": 10000000,
+   "seed_ta": 12,
+   "nreac": 10,
+   "vves": 20,
+   "wvf": 0.8,
+   "ophr": 8400,
+   "ta": 12,
+   "fail_b": 0.01,
+   "fail_c": 0.03,
+   "otr_max": 20,
+   "xa": 30000000,
+   "mfa": 1,
+   "xb": 80000000,
+   "cspr": 40,
+   "xc": 60000000,
+   "td_ss": 24,
+   "camp": 90,
+   "rec": 0.25,
+   "rec_cost": 0.02,
+   "pec_ref": 600000,
+   "v_ref": 20,
+   "exp": 0.6,
+   "perf_add": 0.25,
+   "mp_ref": 1200000,
+   "mp_cap": 100,
+   "dsp_ref": 3000000,
+   "dsp_cap": 5000,
+   "lang": 3.5,
+   "life": 15,
+   "wacc": 0.08,
+   "p_elec": 0.21,
+   "p_heat": 0.07,
+   "pv": 75,
+   "med_e": 3,
+   "med_th": 10,
+   "cip_th": 25,
+   "base": 1,
+   "fixed_fte": 25,
+   "rpo": 4,
+   "crews": 5,
+   "fte_cost": 85000,
+   "maint": 0.03,
+   "ins": 0.015,
+   "cons": 2,
+   "water": 3,
+   "qc": 500,
+   "dsp_op": 0.5,
+   "pack": 0.2,
+   "logi": 0.3,
+   "salts_c": 10,
+   "salts_p": 0.8,
+   "hepes_c": 0,
+   "hepes_p": 40,
+   "ins_c": 2,
+   "ins_p": 5,
+   "tf_c": 2,
+   "tf_p": 5,
+   "alb_c": 0.5,
+   "alb_p": 20,
+   "fgf_c": 10,
+   "fgf_p": 500,
+   "ogf_c": 5,
+   "ogf_p": 500,
+   "vit_c": 1,
+   "vit_p": 0.03,
+   "aa_cons": 0.9,
+   "aa_util": 0.8,
+   "hydro_share": 0.7,
+   "p_aa": 4,
+   "p_hydro": 2.5,
+   "aa_floor": 1.5,
+   "aa_max": 30,
+   "glc_cons": 2,
+   "glc_util": 0.9,
+   "p_glc": 0.5,
+   "glc_floor": 3
+  }
+ },
+ "cases": [
+  {
+   "scenario": "today",
+   "mode": "A",
+   "process": "fedbatch",
+   "label": "Today, fed-batch",
+   "total": 51.30221401653418,
+   "cost_dry_harvested": 343.38798583259944,
+   "cost_wet_harvested": 85.84699645814986,
+   "cost_dry_delivered": 373.2478106876081,
+   "lines": {
+    "medium": 61.847562839172305,
+    "growth_factors": 8.218467409924314,
+    "running": 172.49170848242574,
+    "capital": 130.6900719560857
+   },
+   "detail": {
+    "amino_acids_and_glucose": 35.24027459954234,
+    "added_proteins": 30.81925278721618,
+    "labour": 61.36549223482606,
+    "upkeep": 59.64234467898895,
+    "energy": 9.16206365245146,
+    "consumables": 11.502555128943106,
+    "nutrients_kg_per_kg_dry": 8.009153318077804
+   },
+   "physical": {
+    "density_g_dry_per_L": 12.375,
+    "density_g_wet_per_L": 49.5,
+    "litres_fresh_per_kg_dry": 94.5123752141296,
+    "litres_total_per_kg_dry": 94.5123752141296,
+    "medium_price_per_L": 0.6020350000000001,
+    "gf_per_L": 0.08,
+    "supp_protein_per_L": 0.30000000000000004,
+    "gf_concentration_mg_per_L": 0.04,
+    "nutrients_g_per_L_fresh": 77.96249999999999,
+    "productivity_g_dry_per_L_day": 1.9315141745173874,
+    "cycle_h": 153.76537429460444,
+    "output_t_product": 720.2745124386972,
+    "output_t_dry": 97.8633848422143,
+    "capex_musd": 95.12608324808214,
+    "capex_per_L_working": 559.3601658119726,
+    "fte": 65,
+    "crf": 0.13147377688737216,
+    "filter_and_consumables_per_L": 0.009
+   },
+   "flags": {
+    "aa_conc_g_per_L": 22.275,
+    "aa_limit": 30,
+    "aa_high": false,
+    "o2_demand": 3.75,
+    "o2_limit": 10,
+    "o2_exceeds": false,
+    "o2_at_limit": false
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 373.2478106876081,
+     "medium": 61.847562839172305,
+     "growth_factors": 8.218467409924314,
+     "running": 172.49170848242574,
+     "capital": 130.6900719560857,
+     "density": 12.375,
+     "litres": 94.5123752141296,
+     "medium_price": 0.6020350000000001,
+     "productivity": 1.9315141745173874
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0.23445,
+     "medium": 0.01573,
+     "growth_factors": 0.39109666666666665,
+     "running": 0.9999,
+     "capital": 0.79249,
+     "density": 0.9984766666666667,
+     "litres": 0.0004133333333333333,
+     "medium_price": 0.53954,
+     "productivity": 0.5977833333333333
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0.62496,
+     "medium": 0.20330666666666666,
+     "growth_factors": 0.4721066666666667,
+     "running": 0.9998866666666667,
+     "capital": 0.9473833333333334,
+     "density": 0.45535,
+     "litres": 0.14204,
+     "medium_price": 0.53954,
+     "productivity": 0.14331
+    },
+    "hybrid_on_main_model_convention": 27.910786984773058
+   }
+  },
+  {
+   "scenario": "today",
+   "mode": "B",
+   "process": "perfusion",
+   "label": "Today, perfusion, then harvest",
+   "total": 46.4957600737164,
+   "cost_dry_harvested": 310.1805269917409,
+   "cost_wet_harvested": 77.54513174793523,
+   "cost_dry_delivered": 337.1527467301532,
+   "lines": {
+    "medium": 79.11852924542939,
+    "growth_factors": 13.553128848150436,
+    "running": 144.94454337560194,
+    "capital": 99.5365452609714
+   },
+   "detail": {
+    "amino_acids_and_glucose": 35.24027459954234,
+    "added_proteins": 50.82423318056414,
+    "labour": 35.471769070051536,
+    "upkeep": 45.42497262229259,
+    "energy": 5.584337034955855,
+    "consumables": 7.639231467737811,
+    "nutrients_kg_per_kg_dry": 8.009153318077804
+   },
+   "physical": {
+    "density_g_dry_per_L": 24.75,
+    "density_g_wet_per_L": 99,
+    "litres_fresh_per_kg_dry": 155.86098175373002,
+    "litres_total_per_kg_dry": 155.86098175373002,
+    "medium_price_per_L": 0.467012629375107,
+    "gf_per_L": 0.08,
+    "supp_protein_per_L": 0.30000000000000004,
+    "gf_concentration_mg_per_L": 0.04,
+    "nutrients_g_per_L_fresh": 47.27559758525158,
+    "productivity_g_dry_per_L_day": 3.3414831339177686,
+    "cycle_h": 177.76537429460444,
+    "output_t_product": 1246.0613371921622,
+    "output_t_dry": 169.3018121185003,
+    "capex_musd": 125.74159604911715,
+    "capex_per_L_working": 737.0091422871258,
+    "fte": 65,
+    "crf": 0.13147377688737216,
+    "filter_and_consumables_per_L": 0.009
+   },
+   "flags": {
+    "aa_conc_g_per_L": 13.507313595786165,
+    "aa_limit": 30,
+    "aa_high": false,
+    "o2_demand": 7.5,
+    "o2_limit": 10,
+    "o2_exceeds": false,
+    "o2_at_limit": false
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 337.1527467301532,
+     "medium": 79.11852924542939,
+     "growth_factors": 13.553128848150436,
+     "running": 144.94454337560194,
+     "capital": 99.5365452609714,
+     "density": 24.75,
+     "litres": 155.86098175373002,
+     "medium_price": 0.467012629375107,
+     "productivity": 3.3414831339177686
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0.6288966666666667,
+     "medium": 0.2721033333333333,
+     "growth_factors": 0.5170266666666666,
+     "running": 0.99986,
+     "capital": 0.9672066666666667,
+     "density": 0.8945333333333333,
+     "litres": 0.32977666666666666,
+     "medium_price": 0.37339,
+     "productivity": 0.13853333333333334
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0.5867466666666666,
+     "medium": 0.28450333333333333,
+     "growth_factors": 0.5127033333333333,
+     "running": 0.9998433333333333,
+     "capital": 0.92142,
+     "density": 0.8545566666666666,
+     "litres": 0.36007,
+     "medium_price": 0.37339,
+     "productivity": 0.24582
+    },
+    "hybrid_on_main_model_convention": 25.429251337698034
+   }
+  },
+  {
+   "scenario": "today",
+   "mode": "C",
+   "process": "continuous",
+   "label": "Today, continuous perfusion",
+   "total": 32.39392706922866,
+   "cost_dry_harvested": 209.36664753860697,
+   "cost_wet_harvested": 52.34166188465174,
+   "cost_dry_delivered": 227.5724429767467,
+   "lines": {
+    "medium": 86.23228978093982,
+    "growth_factors": 15.145705682807593,
+    "running": 91.55194251307961,
+    "capital": 34.64250499991963
+   },
+   "detail": {
+    "amino_acids_and_glucose": 37.19806763285024,
+    "added_proteins": 56.79639631052848,
+    "labour": 12.72256837905362,
+    "upkeep": 15.80961883962443,
+    "energy": 2.3263934674848485,
+    "consumables": 3.89696551638823,
+    "nutrients_kg_per_kg_dry": 8.454106280193237
+   },
+   "physical": {
+    "density_g_dry_per_L": 24.75,
+    "density_g_wet_per_L": 99,
+    "litres_fresh_per_kg_dry": 174.17561535228734,
+    "litres_total_per_kg_dry": 174.17561535228734,
+    "medium_price_per_L": 0.4554811328669883,
+    "gf_per_L": 0.08,
+    "supp_protein_per_L": 0.30000000000000004,
+    "gf_concentration_mg_per_L": 0.04,
+    "nutrients_g_per_L_fresh": 44.65480292431553,
+    "productivity_g_dry_per_L_day": 9.83395969352124,
+    "cycle_h": 897.7653742946045,
+    "output_t_product": 3474.141280527184,
+    "output_t_dry": 472.0300652890195,
+    "capex_musd": 128.89445278249602,
+    "capex_per_L_working": 715.1673104184832,
+    "fte": 65,
+    "crf": 0.13147377688737216,
+    "filter_and_consumables_per_L": 0.009
+   },
+   "flags": {
+    "aa_conc_g_per_L": 12.758515121233009,
+    "aa_limit": 30,
+    "aa_high": false,
+    "o2_demand": 7.5,
+    "o2_limit": 10,
+    "o2_exceeds": false,
+    "o2_at_limit": false
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 227.5724429767467,
+     "medium": 86.23228978093982,
+     "growth_factors": 15.145705682807593,
+     "running": 91.55194251307961,
+     "capital": 34.64250499991963,
+     "density": 24.75,
+     "litres": 174.17561535228734,
+     "medium_price": 0.4554811328669883,
+     "productivity": 9.83395969352124
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0.6244933333333333,
+     "medium": 0.51241,
+     "growth_factors": 0.5634166666666667,
+     "running": 0.9985933333333333,
+     "capital": 0.86687,
+     "density": 0.6928966666666667,
+     "litres": 0.7145666666666667,
+     "medium_price": 0.3574333333333333,
+     "productivity": 0.3796
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0.4235233333333333,
+     "medium": 0.31545,
+     "growth_factors": 0.5216433333333333,
+     "running": 0.9988766666666666,
+     "capital": 0.7248266666666666,
+     "density": 0.8545566666666666,
+     "litres": 0.4169933333333333,
+     "medium_price": 0.3574333333333333,
+     "productivity": 0.5964033333333333
+    },
+    "hybrid_on_main_model_convention": 17.89560545465134
+   }
+  },
+  {
+   "scenario": "future",
+   "mode": "A",
+   "process": "fedbatch",
+   "label": "Future, fed-batch",
+   "total": 6.976573249442175,
+   "cost_dry_harvested": 33.27751366612617,
+   "cost_wet_harvested": 8.319378416531542,
+   "cost_dry_delivered": 34.3067151197177,
+   "lines": {
+    "medium": 5.945352900731429,
+    "growth_factors": 0.2629649614966703,
+    "running": 17.819767099035968,
+    "capital": 10.278630158453637
+   },
+   "detail": {
+    "amino_acids_and_glucose": 4.612997095814966,
+    "added_proteins": 1.0518598459866813,
+    "labour": 10.272377116132372,
+    "upkeep": 3.959087210206255,
+    "energy": 1.31362781505325,
+    "consumables": 1.2228151116574086,
+    "nutrients_kg_per_kg_dry": 3.485600564638366
+   },
+   "physical": {
+    "density_g_dry_per_L": 24.75,
+    "density_g_wet_per_L": 99,
+    "litres_fresh_per_kg_dry": 34.01013502023603,
+    "litres_total_per_kg_dry": 45.34684669364804,
+    "medium_price_per_L": 0.16956687500000003,
+    "gf_per_L": 0.0075,
+    "supp_protein_per_L": 0.03,
+    "gf_concentration_mg_per_L": 0.015,
+    "nutrients_g_per_L_fresh": 99.41250000000002,
+    "productivity_g_dry_per_L_day": 6.15478669772768,
+    "cycle_h": 96.5102495297363,
+    "output_t_product": 2647.877866290895,
+    "output_t_dry": 341.22137452202253,
+    "capex_musd": 36.290387054872824,
+    "capex_per_L_working": 181.99964226771718,
+    "fte": 40,
+    "crf": 0.11682954493601999,
+    "filter_and_consumables_per_L": 0.005
+   },
+   "flags": {
+    "aa_conc_g_per_L": 33.4125,
+    "aa_limit": 30,
+    "aa_high": true,
+    "o2_demand": 7.5,
+    "o2_limit": 20,
+    "o2_exceeds": false,
+    "o2_at_limit": false
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 34.3067151197177,
+     "medium": 5.945352900731429,
+     "growth_factors": 0.2629649614966703,
+     "running": 17.819767099035968,
+     "capital": 10.278630158453637,
+     "density": 24.75,
+     "litres": 34.01013502023603,
+     "medium_price": 0.16956687500000003,
+     "productivity": 6.15478669772768
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0.0000033333333333333333,
+     "medium": 0,
+     "growth_factors": 0.03271,
+     "running": 0.15671,
+     "capital": 0.05838,
+     "density": 0.9999733333333334,
+     "litres": 0,
+     "medium_price": 0.01951,
+     "productivity": 0.93949
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0.0004,
+     "medium": 0.00019333333333333333,
+     "growth_factors": 0.10009333333333334,
+     "running": 0.13931,
+     "capital": 0.3363,
+     "density": 0.8545566666666666,
+     "litres": 0.00339,
+     "medium_price": 0.01951,
+     "productivity": 0.4222033333333333
+    },
+    "hybrid_on_main_model_convention": 4.608586664480592
+   }
+  },
+  {
+   "scenario": "future",
+   "mode": "B",
+   "process": "perfusion",
+   "label": "Future, perfusion, then harvest",
+   "total": 5.415609270338235,
+   "cost_dry_harvested": 22.065993380672996,
+   "cost_wet_harvested": 5.516498345168249,
+   "cost_dry_delivered": 22.74844678419897,
+   "lines": {
+    "medium": 6.479302715612442,
+    "growth_factors": 0.36834979338108076,
+    "running": 10.114080502409058,
+    "capital": 5.786713772796386
+   },
+   "detail": {
+    "amino_acids_and_glucose": 4.612997095814966,
+    "added_proteins": 1.473399173524323,
+    "labour": 4.7558256736555675,
+    "upkeep": 2.2289063945121312,
+    "energy": 0.6514121193557352,
+    "consumables": 1.0045371413613013,
+    "nutrients_kg_per_kg_dry": 3.485600564638366
+   },
+   "physical": {
+    "density_g_dry_per_L": 66,
+    "density_g_wet_per_L": 264,
+    "litres_fresh_per_kg_dry": 47.639906610619775,
+    "litres_total_per_kg_dry": 63.519875480826364,
+    "medium_price_per_L": 0.1319256077790683,
+    "gf_per_L": 0.0075,
+    "supp_protein_per_L": 0.03,
+    "gf_concentration_mg_per_L": 0.015,
+    "nutrients_g_per_L_fresh": 70.97059562550702,
+    "productivity_g_dry_per_L_day": 13.294072232007688,
+    "cycle_h": 119.1508495181978,
+    "output_t_product": 5719.301308849849,
+    "output_t_dry": 737.0233645425064,
+    "capex_musd": 46.792376058503585,
+    "capex_per_L_working": 221.3157510318929,
+    "fte": 40,
+    "crf": 0.11682954493601999,
+    "filter_and_consumables_per_L": 0.005
+   },
+   "flags": {
+    "aa_conc_g_per_L": 23.85318774135298,
+    "aa_limit": 30,
+    "aa_high": false,
+    "o2_demand": 20,
+    "o2_limit": 20,
+    "o2_exceeds": false,
+    "o2_at_limit": true
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 22.74844678419897,
+     "medium": 6.479302715612442,
+     "growth_factors": 0.36834979338108076,
+     "running": 10.114080502409058,
+     "capital": 5.786713772796386,
+     "density": 66,
+     "litres": 47.639906610619775,
+     "medium_price": 0.1319256077790683,
+     "productivity": 13.294072232007688
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0.000006666666666666667,
+     "medium": 0.00007333333333333333,
+     "growth_factors": 0.13346666666666668,
+     "running": 0.009606666666666666,
+     "capital": 0.18729666666666667,
+     "density": 0.9993966666666667,
+     "litres": 0.00446,
+     "medium_price": 0.00609,
+     "productivity": 0.7015166666666667
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0.000006666666666666667,
+     "medium": 0.00027,
+     "growth_factors": 0.13310333333333332,
+     "running": 0.009753333333333333,
+     "capital": 0.1755,
+     "density": 0.99896,
+     "litres": 0.016066666666666667,
+     "medium_price": 0.00609,
+     "productivity": 0.7078433333333334
+    },
+    "hybrid_on_main_model_convention": 3.8139557164136795
+   }
+  },
+  {
+   "scenario": "future",
+   "mode": "C",
+   "process": "continuous",
+   "label": "Future, continuous perfusion",
+   "total": 4.401737082714567,
+   "cost_dry_harvested": 14.948904981513998,
+   "cost_wet_harvested": 3.7372262453784995,
+   "cost_dry_delivered": 15.411242248983504,
+   "lines": {
+    "medium": 6.826084463044787,
+    "growth_factors": 0.41802118915422426,
+    "running": 5.7472955510722485,
+    "capital": 2.4198410457122432
+   },
+   "detail": {
+    "amino_acids_and_glucose": 4.708110437996718,
+    "added_proteins": 1.672084756616897,
+    "labour": 1.9474322294306903,
+    "upkeep": 0.9320660036524541,
+    "energy": 0.30937023437191735,
+    "consumables": 0.8863423270002895,
+    "nutrients_kg_per_kg_dry": 3.5574686175175074
+   },
+   "physical": {
+    "density_g_dry_per_L": 49.5,
+    "density_g_wet_per_L": 198,
+    "litres_fresh_per_kg_dry": 54.06407379727967,
+    "litres_total_per_kg_dry": 72.08543172970624,
+    "medium_price_per_L": 0.12247138375071184,
+    "gf_per_L": 0.0075,
+    "supp_protein_per_L": 0.03,
+    "gf_concentration_mg_per_L": 0.015,
+    "nutrients_g_per_L_fresh": 63.82694304411837,
+    "productivity_g_dry_per_L_day": 33.1348545341221,
+    "cycle_h": 2272.5102495297365,
+    "output_t_product": 13967.109914757655,
+    "output_t_dry": 1799.8852982935125,
+    "capex_musd": 55.60968991474657,
+    "capex_per_L_working": 226.0116027920614,
+    "fte": 40,
+    "crf": 0.11682954493601999,
+    "filter_and_consumables_per_L": 0.005
+   },
+   "flags": {
+    "aa_conc_g_per_L": 21.452209072919448,
+    "aa_limit": 30,
+    "aa_high": false,
+    "o2_demand": 15,
+    "o2_limit": 20,
+    "o2_exceeds": false,
+    "o2_at_limit": false
+   },
+   "in_main_model": {
+    "values": {
+     "cost_dry": 15.411242248983504,
+     "medium": 6.826084463044787,
+     "growth_factors": 0.41802118915422426,
+     "running": 5.7472955510722485,
+     "capital": 2.4198410457122432,
+     "density": 49.5,
+     "litres": 54.06407379727967,
+     "medium_price": 0.12247138375071184,
+     "productivity": 33.1348545341221
+    },
+    "share_of_same_process_worlds_below": {
+     "cost_dry": 0,
+     "medium": 0.00108,
+     "growth_factors": 0.2034,
+     "running": 0,
+     "capital": 0.06902666666666667,
+     "density": 0.98434,
+     "litres": 0.07257666666666666,
+     "medium_price": 0.00407,
+     "productivity": 0.8804133333333334
+    },
+    "share_of_all_worlds_below": {
+     "cost_dry": 0,
+     "medium": 0.0003333333333333333,
+     "growth_factors": 0.14619,
+     "running": 0.0000033333333333333333,
+     "capital": 0.042273333333333336,
+     "density": 0.99329,
+     "litres": 0.02628,
+     "medium_price": 0.00407,
+     "productivity": 0.93649
+    },
+    "hybrid_on_main_model_convention": 3.309522904617616
+   }
+  }
+ ],
+ "decomposition": {
+  "fedbatch": {
+   "today": 373.2478106876082,
+   "future": 34.30671511971771,
+   "ratio": 10.87973037888098,
+   "groups": {
+    "cells": {
+     "label": "How the cells perform",
+     "detail": "harvest density, doubling time, lag, seed density",
+     "inputs_changed": 7,
+     "share_of_fall": 0.3650011075651224,
+     "factor": 2.389828668285804,
+     "cost_if_only_this_changes": 165.107864976029,
+     "cost_if_everything_else_changes": 88.0358910099791
+    },
+    "operation": {
+     "label": "How the plant is run",
+     "detail": "turnaround times, operating hours, failure rates, length of a continuous run, recovery after harvest",
+     "inputs_changed": 7,
+     "share_of_fall": 0.08294958799491202,
+     "factor": 1.2189532427057266,
+     "cost_if_only_this_changes": 310.4658972510342,
+     "cost_if_everything_else_changes": 42.7695084813446
+    },
+    "recipe": {
+     "label": "How much of each medium ingredient is needed",
+     "detail": "medium per cell per day, recycling, concentrations of buffer, proteins and growth factors, nutrients consumed and wasted per kg of cells, share supplied as hydrolysate",
+     "inputs_changed": 13,
+     "share_of_fall": 0.11006348494822145,
+     "factor": 1.3004504349665595,
+     "cost_if_only_this_changes": 313.4150404477059,
+     "cost_if_everything_else_changes": 49.06617142738811
+    },
+    "prices": {
+     "label": "What medium ingredients cost",
+     "detail": "prices of salts, insulin, transferrin, albumin, growth factors, vitamins, amino acids, hydrolysate and glucose",
+     "inputs_changed": 10,
+     "share_of_fall": 0.12463870672681282,
+     "factor": 1.3464887941508648,
+     "cost_if_only_this_changes": 310.26199011216124,
+     "cost_if_everything_else_changes": 52.588017329219426
+    },
+    "capital": {
+     "label": "What the plant costs to build and finance",
+     "detail": "reactor price, perfusion add-on, media-preparation and downstream equipment, installation factor, cost of capital",
+     "inputs_changed": 6,
+     "share_of_fall": 0.23077012161795527,
+     "factor": 1.7346844786251903,
+     "cost_if_only_this_changes": 238.87522580232428,
+     "cost_if_everything_else_changes": 68.50410093545109
+    },
+    "overhead": {
+     "label": "Staffing, upkeep and consumables",
+     "detail": "fixed staff, reactors per operator, maintenance and insurance rates, consumables, water, quality control",
+     "inputs_changed": 7,
+     "share_of_fall": 0.07747762035312188,
+     "factor": 1.2031359564595308,
+     "cost_if_only_this_changes": 326.39070559035974,
+     "cost_if_everything_else_changes": 44.49960940031236
+    },
+    "energy": {
+     "label": "Energy use",
+     "detail": "mixing power, medium preparation and heating, cleaning heat, facility base load",
+     "inputs_changed": 5,
+     "share_of_fall": 0.009099370793854245,
+     "factor": 1.0219568823711724,
+     "cost_if_only_this_changes": 368.7000379716818,
+     "cost_if_everything_else_changes": 35.58598217980205
+    }
+   }
+  },
+  "perfusion": {
+   "today": 337.1527467301531,
+   "future": 22.748446784198972,
+   "ratio": 14.820912826643566,
+   "groups": {
+    "cells": {
+     "label": "How the cells perform",
+     "detail": "harvest density, doubling time, lag, seed density",
+     "inputs_changed": 7,
+     "share_of_fall": 0.3304987289500239,
+     "factor": 2.4376574893921545,
+     "cost_if_only_this_changes": 153.73648324831234,
+     "cost_if_everything_else_changes": 62.528901925922376
+    },
+    "operation": {
+     "label": "How the plant is run",
+     "detail": "turnaround times, operating hours, failure rates, length of a continuous run, recovery after harvest",
+     "inputs_changed": 7,
+     "share_of_fall": 0.06270770612990367,
+     "factor": 1.1841940713394725,
+     "cost_if_only_this_changes": 287.9520974581908,
+     "cost_if_everything_else_changes": 27.42582354871742
+    },
+    "recipe": {
+     "label": "How much of each medium ingredient is needed",
+     "detail": "medium per cell per day, recycling, concentrations of buffer, proteins and growth factors, nutrients consumed and wasted per kg of cells, share supplied as hydrolysate",
+     "inputs_changed": 13,
+     "share_of_fall": 0.19364643438067797,
+     "factor": 1.6855271784065002,
+     "cost_if_only_this_changes": 239.62206251838376,
+     "cost_if_everything_else_changes": 47.931930164624845
+    },
+    "prices": {
+     "label": "What medium ingredients cost",
+     "detail": "prices of salts, insulin, transferrin, albumin, growth factors, vitamins, amino acids, hydrolysate and glucose",
+     "inputs_changed": 10,
+     "share_of_fall": 0.17235483138872934,
+     "factor": 1.5914974792221446,
+     "cost_if_only_this_changes": 249.02733412706561,
+     "cost_if_everything_else_changes": 44.53555106772208
+    },
+    "capital": {
+     "label": "What the plant costs to build and finance",
+     "detail": "reactor price, perfusion add-on, media-preparation and downstream equipment, installation factor, cost of capital",
+     "inputs_changed": 6,
+     "share_of_fall": 0.1848971098880377,
+     "factor": 1.6462333472898818,
+     "cost_if_only_this_changes": 231.64644213881218,
+     "cost_if_everything_else_changes": 44.005500179486354
+    },
+    "overhead": {
+     "label": "Staffing, upkeep and consumables",
+     "detail": "fixed staff, reactors per operator, maintenance and insurance rates, consumables, water, quality control",
+     "inputs_changed": 7,
+     "share_of_fall": 0.050096349522162915,
+     "factor": 1.1446074304325704,
+     "cost_if_only_this_changes": 306.88998067406584,
+     "cost_if_everything_else_changes": 27.774823451971315
+    },
+    "energy": {
+     "label": "Energy use",
+     "detail": "mixing power, medium preparation and heating, cleaning heat, facility base load",
+     "inputs_changed": 5,
+     "share_of_fall": 0.005798839740464515,
+     "factor": 1.015756748096518,
+     "cost_if_only_this_changes": 334.36894435957464,
+     "cost_if_everything_else_changes": 23.389491174481016
+    }
+   }
+  },
+  "continuous": {
+   "today": 227.57244297674666,
+   "future": 15.411242248983502,
+   "ratio": 14.76665146781123,
+   "groups": {
+    "cells": {
+     "label": "How the cells perform",
+     "detail": "harvest density, doubling time, lag, seed density",
+     "inputs_changed": 7,
+     "share_of_fall": 0.2070476028073558,
+     "factor": 1.74621228871146,
+     "cost_if_only_this_changes": 141.60268985277693,
+     "cost_if_everything_else_changes": 28.642682782970706
+    },
+    "operation": {
+     "label": "How the plant is run",
+     "detail": "turnaround times, operating hours, failure rates, length of a continuous run, recovery after harvest",
+     "inputs_changed": 7,
+     "share_of_fall": 0.06501017729659817,
+     "factor": 1.1912837884009242,
+     "cost_if_only_this_changes": 192.0040024949039,
+     "cost_if_everything_else_changes": 18.31745006772288
+    },
+    "recipe": {
+     "label": "How much of each medium ingredient is needed",
+     "detail": "medium per cell per day, recycling, concentrations of buffer, proteins and growth factors, nutrients consumed and wasted per kg of cells, share supplied as hydrolysate",
+     "inputs_changed": 13,
+     "share_of_fall": 0.31829234296599024,
+     "factor": 2.3559903928117727,
+     "cost_if_only_this_changes": 115.27481588697324,
+     "cost_if_everything_else_changes": 45.96417757144388
+    },
+    "prices": {
+     "label": "What medium ingredients cost",
+     "detail": "prices of salts, insulin, transferrin, albumin, growth factors, vitamins, amino acids, hydrolysate and glucose",
+     "inputs_changed": 10,
+     "share_of_fall": 0.2626836695379114,
+     "factor": 2.0283892159026773,
+     "cost_if_only_this_changes": 130.59444021221637,
+     "cost_if_everything_else_changes": 39.04731189629965
+    },
+    "capital": {
+     "label": "What the plant costs to build and finance",
+     "detail": "reactor price, perfusion add-on, media-preparation and downstream equipment, installation factor, cost of capital",
+     "inputs_changed": 6,
+     "share_of_fall": 0.1102128794073348,
+     "factor": 1.3454573600813402,
+     "cost_if_only_this_changes": 191.31329234013833,
+     "cost_if_everything_else_changes": 23.833341698364443
+    },
+    "overhead": {
+     "label": "Staffing, upkeep and consumables",
+     "detail": "fixed staff, reactors per operator, maintenance and insurance rates, consumables, water, quality control",
+     "inputs_changed": 7,
+     "share_of_fall": 0.03263098718888766,
+     "factor": 1.0918295062516403,
+     "cost_if_only_this_changes": 216.32465223199057,
+     "cost_if_everything_else_changes": 17.66591621139429
+    },
+    "energy": {
+     "label": "Energy use",
+     "detail": "mixing power, medium preparation and heating, cleaning heat, facility base load",
+     "inputs_changed": 5,
+     "share_of_fall": 0.0041223407959218835,
+     "factor": 1.0111606932772337,
+     "cost_if_only_this_changes": 226.39743012503408,
+     "cost_if_everything_else_changes": 15.72421760987611
+    }
+   }
+  }
+ },
+ "sensitivity": {
+  "quarter": {
+   "todayA": [
+    {
+     "label": "Share of cells in the product",
+     "at_minus_25": 39.8505807355177,
+     "at_plus_25": 62.73089995349325,
+     "swing": 22.880319217975547,
+     "base": 51.30221401653418,
+     "workbook_swing": 22.8803
+    },
+    {
+     "label": "Wet mass per cell",
+     "at_minus_25": 65.56833523749454,
+     "at_plus_25": 42.72426203417878,
+     "swing": 22.84407320331576,
+     "base": 51.30221401653418,
+     "workbook_swing": 22.8441
+    },
+    {
+     "label": "Target cell density",
+     "at_minus_25": 63.39455061507241,
+     "at_plus_25": 44.085540893613285,
+     "swing": 19.309009721459127,
+     "base": 51.30221401653418,
+     "workbook_swing": 19.309
+    },
+    {
+     "label": "Doubling time (growth phase)",
+     "at_minus_25": 44.818637642501,
+     "at_plus_25": 57.76257398589416,
+     "swing": 12.943936343393155,
+     "base": 51.30221401653418,
+     "workbook_swing": 12.9439
+    },
+    {
+     "label": "Installation (Lang) factor",
+     "at_minus_25": 44.980266576542306,
+     "at_plus_25": 57.62416145652605,
+     "swing": 12.643894879983748,
+     "base": 51.30221401653418,
+     "workbook_swing": 12.6439
+    },
+    {
+     "label": "Bioreactor purchase price",
+     "at_minus_25": 45.631486839987076,
+     "at_plus_25": 56.97294119308127,
+     "swing": 11.341454353094193,
+     "base": 51.30221401653418,
+     "workbook_swing": 11.3415
+    },
+    {
+     "label": "Vessel size",
+     "at_minus_25": 57.38383466889696,
+     "at_plus_25": 47.344305530681346,
+     "swing": 10.039529138215613,
+     "base": 51.30221401653418,
+     "workbook_swing": 10.0395
+    },
+    {
+     "label": "Cost of capital",
+     "at_minus_25": 48.90033202794455,
+     "at_plus_25": 53.849825629530116,
+     "swing": 4.949493601585566,
+     "base": 51.30221401653418,
+     "workbook_swing": 4.9495
+    },
+    {
+     "label": "Price of per-litre medium components",
+     "at_minus_25": 49.2508075028851,
+     "at_plus_25": 53.35362053018326,
+     "swing": 4.102813027298154,
+     "base": 51.30221401653418,
+     "workbook_swing": 4.1028
+    },
+    {
+     "label": "Labour cost per person",
+     "at_minus_25": 49.38454238419587,
+     "at_plus_25": 53.2198856488725,
+     "swing": 3.835343264676631,
+     "base": 51.30221401653418,
+     "workbook_swing": 3.8353
+    },
+    {
+     "label": "Number of production reactors",
+     "at_minus_25": 53.39005109416862,
+     "at_plus_25": 50.489730683930745,
+     "swing": 2.9003204102378746,
+     "base": 51.30221401653418,
+     "workbook_swing": 2.9003
+    },
+    {
+     "label": "Turnaround time per cycle",
+     "at_minus_25": 49.98519983671389,
+     "at_plus_25": 52.61827580836973,
+     "swing": 2.633075971655842,
+     "base": 51.30221401653418,
+     "workbook_swing": 2.6331
+    },
+    {
+     "label": "Amino-acid and hydrolysate prices",
+     "at_minus_25": 50.379731179005574,
+     "at_plus_25": 52.224696854062785,
+     "swing": 1.8449656750572103,
+     "base": 51.30221401653418,
+     "workbook_swing": 1.845
+    },
+    {
+     "label": "Amino acids consumed per kg dry cells",
+     "at_minus_25": 50.379731179005574,
+     "at_plus_25": 52.224696854062785,
+     "swing": 1.8449656750572103,
+     "base": 51.30221401653418,
+     "workbook_swing": 1.845
+    },
+    {
+     "label": "Failure rate",
+     "at_minus_25": 50.68848908801749,
+     "at_plus_25": 51.93224194060905,
+     "swing": 1.2437528525915624,
+     "base": 51.30221401653418,
+     "workbook_swing": 1.2438
+    },
+    {
+     "label": "Price of non-cell ingredients",
+     "at_minus_25": 50.92721401653418,
+     "at_plus_25": 51.67721401653418,
+     "swing": 0.75,
+     "base": 51.30221401653418,
+     "workbook_swing": 0.75
+    },
+    {
+     "label": "Electricity price",
+     "at_minus_25": 51.03163018767188,
+     "at_plus_25": 51.57279784539648,
+     "swing": 0.5411676577245998,
+     "base": 51.30221401653418,
+     "workbook_swing": 0.5412
+    }
+   ],
+   "futureC": [
+    {
+     "label": "Wet mass per cell",
+     "at_minus_25": 4.8751812808091115,
+     "at_plus_25": 4.1149177283037455,
+     "swing": 0.760263552505366,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.7603
+    },
+    {
+     "label": "Doubling time at steady state",
+     "at_minus_25": 4.047062081078048,
+     "at_plus_25": 4.7502894435524805,
+     "swing": 0.7032273624744327,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.7032
+    },
+    {
+     "label": "Price of non-cell ingredients",
+     "at_minus_25": 4.089237082714567,
+     "at_plus_25": 4.714237082714567,
+     "swing": 0.625,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.625
+    },
+    {
+     "label": "Target cell density",
+     "at_minus_25": 4.64109041053709,
+     "at_plus_25": 4.253778467066894,
+     "swing": 0.3873119434701957,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.3873
+    },
+    {
+     "label": "Share of cells in the product",
+     "at_minus_25": 4.208142472529777,
+     "at_plus_25": 4.591875847317271,
+     "swing": 0.3837333747874947,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.3837
+    },
+    {
+     "label": "Medium per cell per day (perfusion rate)",
+     "at_minus_25": 4.228284023445376,
+     "at_plus_25": 4.573575812607849,
+     "swing": 0.3452917891624736,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.3453
+    },
+    {
+     "label": "Installation (Lang) factor",
+     "at_minus_25": 4.240657037024014,
+     "at_plus_25": 4.562817128405122,
+     "swing": 0.32216009138110824,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.3222
+    },
+    {
+     "label": "Vessel size",
+     "at_minus_25": 4.5674246516386035,
+     "at_plus_25": 4.294453004831342,
+     "swing": 0.27297164680726116,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.273
+    },
+    {
+     "label": "Price of per-litre medium components",
+     "at_minus_25": 4.2702345836264675,
+     "at_plus_25": 4.5332395818026665,
+     "swing": 0.26300499817619905,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.263
+    },
+    {
+     "label": "Amino-acid and hydrolysate prices",
+     "at_minus_25": 4.2915118329537,
+     "at_plus_25": 4.511962332475434,
+     "swing": 0.22045049952173468,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.2205
+    },
+    {
+     "label": "Amino acids consumed per kg dry cells",
+     "at_minus_25": 4.2915118329537,
+     "at_plus_25": 4.511962332475434,
+     "swing": 0.22045049952173468,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.2205
+    },
+    {
+     "label": "Bioreactor purchase price",
+     "at_minus_25": 4.323692684839793,
+     "at_plus_25": 4.479781480589342,
+     "swing": 0.15608879574954848,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.1561
+    },
+    {
+     "label": "Number of production reactors",
+     "at_minus_25": 4.48549264204476,
+     "at_plus_25": 4.34742602455887,
+     "swing": 0.13806661748589022,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.1381
+    },
+    {
+     "label": "Labour cost per person",
+     "at_minus_25": 4.340879825544858,
+     "at_plus_25": 4.4625943398842765,
+     "swing": 0.12171451433941805,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.1217
+    },
+    {
+     "label": "Cost of capital",
+     "at_minus_25": 4.346526849877632,
+     "at_plus_25": 4.460042716652041,
+     "swing": 0.11351586677440917,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.1135
+    },
+    {
+     "label": "Failure rate",
+     "at_minus_25": 4.3862633257713,
+     "at_plus_25": 4.4174487308167905,
+     "swing": 0.031185405045490278,
+     "base": 4.401737082714567,
+     "workbook_swing": 0.0312
+    },
+    {
+     "label": "Doubling time (growth phase)",
+     "at_minus_25": 4.392305175821676,
+     "at_plus_25": 4.411161579495547,
+     "swing": 0.018856403673871647,
+     "base": 4.401737082714567
+    },
+    {
+     "label": "Electricity price",
+     "at_minus_25": 4.393311647966474,
+     "at_plus_25": 4.41016251746266,
+     "swing": 0.016850869496185972,
+     "base": 4.401737082714567
+    },
+    {
+     "label": "Turnaround time per cycle",
+     "at_minus_25": 4.400769750591358,
+     "at_plus_25": 4.402704275917102,
+     "swing": 0.0019345253257432304,
+     "base": 4.401737082714567
+    }
+   ]
+  },
+  "range": {
+   "todayA": {
+    "base": 373.2478106876081,
+    "rows": [
+     {
+      "label": "Vessel size",
+      "low": 2,
+      "high": 200,
+      "value": 20,
+      "cost_at_low": 1308.5000368959797,
+      "cost_at_high": 193.93897110159494,
+      "swing": 1114.5610657943848,
+      "ratio": 6.746968025371868,
+      "quarter_swing": 77.83433339283403,
+      "rank_quarter": 10,
+      "rank_range": 1
+     },
+     {
+      "label": "Target cell density",
+      "low": 5000000,
+      "high": 40000000,
+      "value": 15000000,
+      "cost_at_low": 873.3397662934902,
+      "cost_at_high": 181.80175419764083,
+      "swing": 691.5380120958494,
+      "ratio": 4.803802747381979,
+      "quarter_swing": 152.56198172431056,
+      "rank_quarter": 4,
+      "rank_range": 2
+     },
+     {
+      "label": "Bioreactor purchase price",
+      "low": 500000,
+      "high": 4000000,
+      "value": 1500000,
+      "cost_at_low": 252.2722975879366,
+      "cost_at_high": 675.6865934367868,
+      "swing": 423.4142958488502,
+      "ratio": 2.6784018693184386,
+      "quarter_swing": 90.73163482475354,
+      "rank_quarter": 9,
+      "rank_range": 3
+     },
+     {
+      "label": "Number of production reactors",
+      "low": 1,
+      "high": 50,
+      "value": 10,
+      "cost_at_low": 759.6076516362017,
+      "cost_at_high": 336.9313386578361,
+      "swing": 422.6763129783656,
+      "ratio": 2.254487975686958,
+      "quarter_swing": 20.720663569012117,
+      "rank_quarter": 17,
+      "rank_range": 4
+     },
+     {
+      "label": "Dry-matter share of wet cells",
+      "low": 0.15,
+      "high": 0.3,
+      "value": 0.25,
+      "cost_at_low": 598.586168079652,
+      "cost_at_high": 316.9132213395971,
+      "swing": 281.6729467400549,
+      "ratio": 1.8888015007686298,
+      "quarter_swing": 180.27068591363508,
+      "rank_quarter": 3,
+      "rank_range": 5
+     },
+     {
+      "label": "Wet mass per cell",
+      "low": 2,
+      "high": 4,
+      "value": 3.3,
+      "cost_at_low": 592.9527091448507,
+      "cost_at_high": 314.0964918721965,
+      "swing": 278.8562172726542,
+      "ratio": 1.8878043037364411,
+      "quarter_swing": 180.27068591363513,
+      "rank_quarter": 2,
+      "rank_range": 6
+     },
+     {
+      "label": "Doubling time (growth phase)",
+      "low": 14,
+      "high": 36,
+      "value": 24,
+      "cost_at_low": 288.3668669697808,
+      "cost_at_high": 474.8163200579194,
+      "swing": 186.44945308813863,
+      "ratio": 1.6465703048598765,
+      "quarter_swing": 101.70705267431481,
+      "rank_quarter": 7,
+      "rank_range": 7
+     },
+     {
+      "label": "Installation (Lang) factor",
+      "low": 3,
+      "high": 6,
+      "value": 4.5,
+      "cost_at_low": 309.80367180924986,
+      "cost_at_high": 436.6919495659663,
+      "swing": 126.88827775671643,
+      "ratio": 1.4095764166244071,
+      "quarter_swing": 95.16620831753733,
+      "rank_quarter": 8,
+      "rank_range": 8
+     },
+     {
+      "label": "Seed transfer density",
+      "low": 2000000,
+      "high": 20000000,
+      "value": 5000000,
+      "cost_at_low": 422.2858892212111,
+      "cost_at_high": 299.99846278812555,
+      "swing": 122.28742643308556,
+      "ratio": 1.4076268434730324,
+      "quarter_swing": 30.546759614198436,
+      "rank_quarter": 16,
+      "rank_range": 9
+     },
+     {
+      "label": "Cost of capital",
+      "low": 0.06,
+      "high": 0.15,
+      "value": 0.1,
+      "cost_at_low": 344.906749680258,
+      "cost_at_high": 412.5553720634472,
+      "swing": 67.6486223831892,
+      "ratio": 1.196135977176156,
+      "quarter_swing": 37.253120468478244,
+      "rank_quarter": 12,
+      "rank_range": 10
+     },
+     {
+      "label": "Medium per batch (fed-batch)",
+      "low": 1,
+      "high": 2,
+      "value": 1,
+      "cost_at_low": 373.2478106876081,
+      "cost_at_high": 437.58586251174205,
+      "swing": 64.33805182413397,
+      "ratio": 1.1723735544640128,
+      "quarter_swing": 32.49197970326293,
+      "rank_quarter": 13,
+      "rank_range": 11
+     },
+     {
+      "label": "Failure rate",
+      "low": 0,
+      "high": 0.15,
+      "value": 0.05,
+      "cost_at_low": 354.58542015322763,
+      "cost_at_high": 417.1593178273267,
+      "swing": 62.573897674099044,
+      "ratio": 1.1764705882352942,
+      "quarter_swing": 9.824011640608887,
+      "rank_quarter": 26,
+      "rank_range": 12
+     },
+     {
+      "label": "Fixed staff",
+      "low": 15,
+      "high": 80,
+      "value": 40,
+      "cost_at_low": 349.6456982895981,
+      "cost_at_high": 411.01119052442414,
+      "swing": 61.365492234826036,
+      "ratio": 1.1755076425507724,
+      "quarter_swing": 18.88168991840803,
+      "rank_quarter": 20,
+      "rank_range": 13
+     },
+     {
+      "label": "Turnaround time per cycle",
+      "low": 8,
+      "high": 48,
+      "value": 24,
+      "cost_at_low": 349.89383801876005,
+      "cost_at_high": 409.1266592750641,
+      "swing": 59.23282125630408,
+      "ratio": 1.169287980582065,
+      "quarter_swing": 20.69085955942859,
+      "rank_quarter": 18,
+      "rank_range": 14
+     },
+     {
+      "label": "Recovery of cells after harvest",
+      "low": 0.85,
+      "high": 0.98,
+      "value": 0.92,
+      "cost_at_low": 403.98586568541106,
+      "cost_at_high": 350.39590391081566,
+      "swing": 53.589961774595395,
+      "ratio": 1.1529411764705884,
+      "quarter_swing": 199.065499033391,
+      "rank_quarter": 1,
+      "rank_range": 15
+     },
+     {
+      "label": "Working volume share",
+      "low": 0.7,
+      "high": 0.85,
+      "value": 0.8,
+      "cost_at_low": 411.1491606996751,
+      "cost_at_high": 357.6292499464727,
+      "swing": 53.519910753202396,
+      "ratio": 1.1496519391554603,
+      "quarter_swing": 141.52069393365804,
+      "rank_quarter": 5,
+      "rank_range": 16
+     },
+     {
+      "label": "Depreciation life",
+      "low": 10,
+      "high": 20,
+      "value": 15,
+      "cost_at_low": 404.3330210065377,
+      "cost_at_high": 359.3171958406705,
+      "swing": 45.01582516586723,
+      "ratio": 1.125281577633786,
+      "quarter_swing": 31.728133164335475,
+      "rank_quarter": 14,
+      "rank_range": 17
+     },
+     {
+      "label": "Lag after inoculation",
+      "low": 0,
+      "high": 24,
+      "value": 12,
+      "cost_at_low": 352.5153033034871,
+      "cost_at_high": 393.967326623993,
+      "swing": 41.45202332050593,
+      "ratio": 1.1175892874211453,
+      "quarter_swing": 10.362878980444123,
+      "rank_quarter": 24,
+      "rank_range": 18
+     },
+     {
+      "label": "Maintenance rate",
+      "low": 0.02,
+      "high": 0.06,
+      "value": 0.04,
+      "cost_at_low": 353.3670291279451,
+      "cost_at_high": 393.12859224727106,
+      "swing": 39.761563119325956,
+      "ratio": 1.11252199509799,
+      "quarter_swing": 19.880781559662978,
+      "rank_quarter": 19,
+      "rank_range": 19
+     },
+     {
+      "label": "Reactors per operator",
+      "low": 1,
+      "high": 6,
+      "value": 2,
+      "cost_at_low": 396.8499230856181,
+      "cost_at_high": 359.0865432488021,
+      "swing": 37.763379836816,
+      "ratio": 1.105165121185426,
+      "quarter_swing": 14.161267438806021,
+      "rank_quarter": 21,
+      "rank_range": 20
+     },
+     {
+      "label": "Labour cost per person",
+      "low": 60000,
+      "high": 110000,
+      "value": 85000,
+      "cost_at_low": 355.19913650089455,
+      "cost_at_high": 391.29648487432166,
+      "swing": 36.09734837342711,
+      "ratio": 1.1016256647722347,
+      "quarter_swing": 30.682746117413046,
+      "rank_quarter": 15,
+      "rank_range": 21
+     },
+     {
+      "label": "Operating hours per year",
+      "low": 7500,
+      "high": 8600,
+      "value": 8000,
+      "cost_at_low": 390.5725302087215,
+      "cost_at_high": 355.1172902585359,
+      "swing": 35.455239950185614,
+      "ratio": 1.0998409283996653,
+      "quarter_swing": 138.59775616890744,
+      "rank_quarter": 6,
+      "rank_range": 22
+     },
+     {
+      "label": "Share of medium recycled",
+      "low": 0,
+      "high": 0.5,
+      "value": 0,
+      "cost_at_low": 373.2478106876081,
+      "cost_at_high": 342.90368804752814,
+      "swing": 30.344122640079945,
+      "ratio": 1.088491677686109,
+      "quarter_swing": 0,
+      "rank_quarter": 38,
+      "rank_range": 23
+     },
+     {
+      "label": "Seed expansion ratio",
+      "low": 5,
+      "high": 20,
+      "value": 10,
+      "cost_at_low": 365.0329445099099,
+      "cost_at_high": 393.27906575057494,
+      "swing": 28.246121240665047,
+      "ratio": 1.0773796493316188,
+      "quarter_swing": 10.961373809515237,
+      "rank_quarter": 23,
+      "rank_range": 24
+     },
+     {
+      "label": "Quality control",
+      "low": 200,
+      "high": 5000,
+      "value": 2000,
+      "cost_at_low": 363.7276308968141,
+      "cost_at_high": 389.114777005598,
+      "swing": 25.387146108783895,
+      "ratio": 1.0697971337678933,
+      "quarter_swing": 5.288988772663345,
+      "rank_quarter": 27,
+      "rank_range": 25
+     },
+     {
+      "label": "Scale exponent",
+      "low": 0.5,
+      "high": 0.7,
+      "value": 0.6,
+      "cost_at_low": 387.9796492919949,
+      "cost_at_high": 362.66575693334863,
+      "swing": 25.313892358646285,
+      "ratio": 1.069799510636728,
+      "quarter_swing": 39.06718246145084,
+      "rank_quarter": 11,
+      "rank_range": 26
+     },
+     {
+      "label": "Insurance and overhead rate",
+      "low": 0.01,
+      "high": 0.03,
+      "value": 0.02,
+      "cost_at_low": 363.3074199077766,
+      "cost_at_high": 383.18820146743957,
+      "swing": 19.880781559662978,
+      "ratio": 1.054721650234145,
+      "quarter_swing": 9.940390779831489,
+      "rank_quarter": 25,
+      "rank_range": 27
+     },
+     {
+      "label": "Facility base load",
+      "low": 0.5,
+      "high": 4,
+      "value": 2,
+      "cost_at_low": 367.11814772750745,
+      "cost_at_high": 381.42069463440885,
+      "swing": 14.302546906901398,
+      "ratio": 1.038958975456363,
+      "quarter_swing": 4.08644197340044,
+      "rank_quarter": 29,
+      "rank_range": 28
+     },
+     {
+      "label": "Seed reactor turnaround",
+      "low": 8,
+      "high": 36,
+      "value": 24,
+      "cost_at_low": 368.50872717126026,
+      "cost_at_high": 377.98689420395596,
+      "swing": 9.478167032695694,
+      "ratio": 1.0257203326104427,
+      "quarter_swing": 0,
+      "rank_quarter": 37,
+      "rank_range": 29
+     },
+     {
+      "label": "Electricity price",
+      "low": 0.1,
+      "high": 0.3,
+      "value": 0.21,
+      "cost_at_low": 368.71231031810663,
+      "cost_at_high": 376.95867462629104,
+      "swing": 8.246364308184411,
+      "ratio": 1.0223653077953103,
+      "quarter_swing": 4.329341261796799,
+      "rank_quarter": 28,
+      "rank_range": 30
+     },
+     {
+      "label": "Shift crews",
+      "low": 4.5,
+      "high": 5.5,
+      "value": 5,
+      "cost_at_low": 370.8875994478071,
+      "cost_at_high": 375.6080219274091,
+      "swing": 4.720422479602007,
+      "ratio": 1.0127273666917684,
+      "quarter_swing": 11.801056199005018,
+      "rank_quarter": 22,
+      "rank_range": 31
+     },
+     {
+      "label": "Consumables per m³ of medium",
+      "low": 1,
+      "high": 15,
+      "value": 5,
+      "cost_at_low": 372.83688731711186,
+      "cost_at_high": 374.2751191138486,
+      "swing": 1.4382317967367158,
+      "ratio": 1.0038575362193534,
+      "quarter_swing": 0.25682710656013796,
+      "rank_quarter": 30,
+      "rank_range": 32
+     },
+     {
+      "label": "Mixing and aeration power",
+      "low": 30,
+      "high": 300,
+      "value": 150,
+      "cost_at_low": 372.94546573397804,
+      "cost_at_high": 373.6257418796456,
+      "swing": 0.6802761456675626,
+      "ratio": 1.0018240633233837,
+      "quarter_swing": 0.18896559601876106,
+      "rank_quarter": 33,
+      "rank_range": 33
+     },
+     {
+      "label": "Water and effluent",
+      "low": 2,
+      "high": 8,
+      "value": 4,
+      "cost_at_low": 373.04234900235997,
+      "cost_at_high": 373.6587340581043,
+      "swing": 0.6163850557443311,
+      "ratio": 1.0016523192538134,
+      "quarter_swing": 0.20546168524811037,
+      "rank_quarter": 32,
+      "rank_range": 34
+     },
+     {
+      "label": "Heat price",
+      "low": 0.04,
+      "high": 0.1,
+      "value": 0.07,
+      "cost_at_low": 373.0320759180976,
+      "cost_at_high": 373.4635454571186,
+      "swing": 0.43146953902100904,
+      "ratio": 1.0011566553304005,
+      "quarter_swing": 0.2516905644289409,
+      "rank_quarter": 31,
+      "rank_range": 35
+     },
+     {
+      "label": "Cleaning and sterilising heat",
+      "low": 15,
+      "high": 60,
+      "value": 40,
+      "cost_at_low": 373.04555934119196,
+      "cost_at_high": 373.40961176474093,
+      "swing": 0.3640524235489693,
+      "ratio": 1.0009758926609176,
+      "quarter_swing": 0.1618010771329068,
+      "rank_quarter": 34,
+      "rank_range": 36
+     },
+     {
+      "label": "Medium heating",
+      "low": 5,
+      "high": 40,
+      "value": 25,
+      "cost_at_low": 373.1039875079344,
+      "cost_at_high": 373.35567807236333,
+      "swing": 0.2516905644289409,
+      "ratio": 1.0006745855655685,
+      "quarter_swing": 0.08988948729603408,
+      "rank_quarter": 35,
+      "rank_range": 37
+     },
+     {
+      "label": "Medium preparation electricity",
+      "low": 2,
+      "high": 10,
+      "value": 5,
+      "cost_at_low": 373.1830902567549,
+      "cost_at_high": 373.35567807236333,
+      "swing": 0.17258781560843772,
+      "ratio": 1.0004624749087363,
+      "quarter_swing": 0.05393369237759771,
+      "rank_quarter": 36,
+      "rank_range": 38
+     },
+     {
+      "label": "Cost of recycling",
+      "low": 0.01,
+      "high": 0.1,
+      "value": 0.05,
+      "cost_at_low": 373.2478106876081,
+      "cost_at_high": 373.2478106876081,
+      "swing": 0,
+      "ratio": 1,
+      "quarter_swing": 0,
+      "rank_quarter": 39,
+      "rank_range": 39
+     }
+    ]
+   },
+   "futureC": {
+    "base": 15.411242248983504,
+    "rows": [
+     {
+      "label": "Vessel size",
+      "low": 2,
+      "high": 200,
+      "value": 20,
+      "cost_at_low": 39.29457701801053,
+      "cost_at_high": 11.512190232858584,
+      "swing": 27.782386785151942,
+      "ratio": 3.4133015719158526,
+      "quarter_swing": 1.8100017202747836,
+      "rank_quarter": 9,
+      "rank_range": 1
+     },
+     {
+      "label": "Target cell density",
+      "low": 10000000,
+      "high": 100000000,
+      "value": 60000000,
+      "cost_at_low": 39.97471886527721,
+      "cost_at_high": 13.334444380639756,
+      "swing": 26.640274484637455,
+      "ratio": 2.997854108065905,
+      "quarter_swing": 2.728583959113637,
+      "rank_quarter": 8,
+      "rank_range": 2
+     },
+     {
+      "label": "Doubling time at steady state",
+      "low": 18,
+      "high": 72,
+      "value": 24,
+      "cost_at_low": 12.767246624368179,
+      "cost_at_high": 35.835315561531544,
+      "swing": 23.068068937163368,
+      "ratio": 2.8068162710301645,
+      "quarter_swing": 5.26721598016602,
+      "rank_quarter": 4,
+      "rank_range": 3
+     },
+     {
+      "label": "Number of production reactors",
+      "low": 1,
+      "high": 50,
+      "value": 10,
+      "cost_at_low": 29.93979021861546,
+      "cost_at_high": 13.89597780569087,
+      "swing": 16.043812412924588,
+      "ratio": 2.154565201331432,
+      "quarter_swing": 0.7307614857038001,
+      "rank_quarter": 13,
+      "rank_range": 4
+     },
+     {
+      "label": "Bioreactor purchase price",
+      "low": 500000,
+      "high": 4000000,
+      "value": 600000,
+      "cost_at_low": 14.995005460318039,
+      "cost_at_high": 29.56329306360928,
+      "swing": 14.56828760329124,
+      "ratio": 1.9715426674464347,
+      "quarter_swing": 1.2487103659963914,
+      "rank_quarter": 11,
+      "rank_range": 5
+     },
+     {
+      "label": "Medium per cell per day (perfusion rate)",
+      "low": 20,
+      "high": 100,
+      "value": 40,
+      "cost_at_low": 12.616442613821123,
+      "cost_at_high": 23.55208786929022,
+      "swing": 10.935645255469096,
+      "ratio": 1.8667772358817898,
+      "quarter_swing": 2.7623343132997924,
+      "rank_quarter": 6,
+      "rank_range": 6
+     },
+     {
+      "label": "Dry-matter share of wet cells",
+      "low": 0.15,
+      "high": 0.3,
+      "value": 0.25,
+      "cost_at_low": 22.54666345630803,
+      "cost_at_high": 13.627386947152374,
+      "swing": 8.919276509155655,
+      "ratio": 1.6545111358285352,
+      "quarter_swing": 5.708336965859619,
+      "rank_quarter": 3,
+      "rank_range": 7
+     },
+     {
+      "label": "Wet mass per cell",
+      "low": 2,
+      "high": 4,
+      "value": 3.3,
+      "cost_at_low": 22.36827792612491,
+      "cost_at_high": 13.538194182060815,
+      "swing": 8.830083744064096,
+      "ratio": 1.6522349750134815,
+      "quarter_swing": 5.708336965859621,
+      "rank_quarter": 2,
+      "rank_range": 8
+     },
+     {
+      "label": "Failure rate",
+      "low": 0,
+      "high": 0.3,
+      "value": 0.03,
+      "cost_at_low": 14.948904981514,
+      "cost_at_high": 21.355578545020006,
+      "swing": 6.406673563506006,
+      "ratio": 1.428571428571429,
+      "quarter_swing": 0.2383324273799019,
+      "rank_quarter": 23,
+      "rank_range": 9
+     },
+     {
+      "label": "Fixed staff",
+      "low": 15,
+      "high": 80,
+      "value": 25,
+      "cost_at_low": 14.924384191625832,
+      "cost_at_high": 18.088961564450702,
+      "swing": 3.164577372824871,
+      "ratio": 1.2120407336203887,
+      "quarter_swing": 0.608572571697092,
+      "rank_quarter": 15,
+      "rank_range": 10
+     },
+     {
+      "label": "Installation (Lang) factor",
+      "low": 3,
+      "high": 6,
+      "value": 3.5,
+      "cost_at_low": 14.932398384788547,
+      "cost_at_high": 17.805461569958286,
+      "swing": 2.8730631851697392,
+      "ratio": 1.192404670109558,
+      "quarter_swing": 1.6759535246823472,
+      "rank_quarter": 10,
+      "rank_range": 11
+     },
+     {
+      "label": "Recovery of cells after harvest",
+      "low": 0.85,
+      "high": 0.98,
+      "value": 0.97,
+      "cost_at_low": 17.58694703707529,
+      "cost_at_high": 15.253984675014284,
+      "swing": 2.332962362061007,
+      "ratio": 1.1529411764705881,
+      "quarter_swing": 8.219329199457865,
+      "rank_quarter": 1,
+      "rank_range": 12
+     },
+     {
+      "label": "Share of medium recycled",
+      "low": 0,
+      "high": 0.5,
+      "value": 0.25,
+      "cost_at_low": 16.45536628589317,
+      "cost_at_high": 14.367118212073844,
+      "swing": 2.088248073819326,
+      "ratio": 1.1453491258994726,
+      "quarter_swing": 0.5220620184548324,
+      "rank_quarter": 17,
+      "rank_range": 13
+     },
+     {
+      "label": "Reactors per operator",
+      "low": 1,
+      "high": 6,
+      "value": 4,
+      "cost_at_low": 17.115245449735358,
+      "cost_at_high": 15.167813220304668,
+      "swing": 1.9474322294306905,
+      "ratio": 1.1283924189430106,
+      "quarter_swing": 0.4868580573576722,
+      "rank_quarter": 18,
+      "rank_range": 14
+     },
+     {
+      "label": "Cost of recycling",
+      "low": 0.01,
+      "high": 0.1,
+      "value": 0.02,
+      "cost_at_low": 15.225455053803849,
+      "cost_at_high": 16.897539810420746,
+      "swing": 1.672084756616897,
+      "ratio": 1.1098216605486055,
+      "quarter_swing": 0.18578719517965503,
+      "rank_quarter": 24,
+      "rank_range": 15
+     },
+     {
+      "label": "Length of a continuous run",
+      "low": 10,
+      "high": 180,
+      "value": 90,
+      "cost_at_low": 16.79018236507062,
+      "cost_at_high": 15.324301803795635,
+      "swing": 1.465880561274986,
+      "ratio": 1.0956572495140957,
+      "quarter_swing": 0.09177282293215683,
+      "rank_quarter": 30,
+      "rank_range": 16
+     },
+     {
+      "label": "Cost of capital",
+      "low": 0.06,
+      "high": 0.15,
+      "value": 0.08,
+      "cost_at_low": 15.124025468267686,
+      "cost_at_high": 16.5336052214148,
+      "swing": 1.4095797531471135,
+      "ratio": 1.0932013607160744,
+      "quarter_swing": 0.5905365751926261,
+      "rank_quarter": 16,
+      "rank_range": 17
+     },
+     {
+      "label": "Quality control",
+      "low": 200,
+      "high": 5000,
+      "value": 500,
+      "cost_at_low": 15.325326121214502,
+      "cost_at_high": 16.69998416551852,
+      "swing": 1.3746580443040166,
+      "ratio": 1.089698452968065,
+      "quarter_swing": 0.07159677314083268,
+      "rank_quarter": 32,
+      "rank_range": 18
+     },
+     {
+      "label": "Labour cost per person",
+      "low": 60000,
+      "high": 110000,
+      "value": 85000,
+      "cost_at_low": 14.83846806385683,
+      "cost_at_high": 15.984016434110178,
+      "swing": 1.1455483702533478,
+      "ratio": 1.0772012559061703,
+      "quarter_swing": 0.9737161147153444,
+      "rank_quarter": 12,
+      "rank_range": 19
+     },
+     {
+      "label": "Consumables per m³ of medium",
+      "low": 1,
+      "high": 15,
+      "value": 2,
+      "cost_at_low": 15.336927370911642,
+      "cost_at_high": 16.377335663917712,
+      "swing": 1.0404082930060703,
+      "ratio": 1.0678368142356423,
+      "quarter_swing": 0.07431487807186343,
+      "rank_quarter": 31,
+      "rank_range": 20
+     },
+     {
+      "label": "Working volume share",
+      "low": 0.7,
+      "high": 0.85,
+      "value": 0.8,
+      "cost_at_low": 16.14376951014846,
+      "cost_at_high": 15.10844545031455,
+      "swing": 1.0353240598339095,
+      "ratio": 1.0685261804888309,
+      "quarter_swing": 2.736918886264043,
+      "rank_quarter": 7,
+      "rank_range": 21
+     },
+     {
+      "label": "Depreciation life",
+      "low": 10,
+      "high": 20,
+      "value": 15,
+      "cost_at_low": 16.078186091187963,
+      "cost_at_high": 15.10102300862613,
+      "swing": 0.977163082561832,
+      "ratio": 1.0647084030004887,
+      "quarter_swing": 0.6909460464663812,
+      "rank_quarter": 14,
+      "rank_range": 22
+     },
+     {
+      "label": "Perfusion equipment add-on",
+      "low": 0.15,
+      "high": 0.6,
+      "value": 0.25,
+      "cost_at_low": 15.216589498950189,
+      "cost_at_high": 16.092526874100102,
+      "swing": 0.8759373751499133,
+      "ratio": 1.0575646320228553,
+      "quarter_swing": 0.24331593754163983,
+      "rank_quarter": 22,
+      "rank_range": 23
+     },
+     {
+      "label": "Maintenance rate",
+      "low": 0.02,
+      "high": 0.06,
+      "value": 0.03,
+      "cost_at_low": 15.20411647039407,
+      "cost_at_high": 16.032619584751806,
+      "swing": 0.828503114357737,
+      "ratio": 1.0544920262858433,
+      "quarter_swing": 0.3106886678841523,
+      "rank_quarter": 20,
+      "rank_range": 24
+     },
+     {
+      "label": "Operating hours per year",
+      "low": 7500,
+      "high": 8600,
+      "value": 8400,
+      "cost_at_low": 16.072451171821967,
+      "cost_at_high": 15.28310098486752,
+      "swing": 0.7893501869544473,
+      "ratio": 1.051648561881258,
+      "quarter_swing": 2.9387063237265014,
+      "rank_quarter": 5,
+      "rank_range": 25
+     },
+     {
+      "label": "Facility base load",
+      "low": 0.5,
+      "high": 4,
+      "value": 1,
+      "cost_at_low": 15.3058747098876,
+      "cost_at_high": 16.04344748355892,
+      "swing": 0.7375727736713209,
+      "ratio": 1.0481888678465954,
+      "quarter_swing": 0.10536753909590324,
+      "rank_quarter": 29,
+      "rank_range": 26
+     },
+     {
+      "label": "Water and effluent",
+      "low": 2,
+      "high": 8,
+      "value": 3,
+      "cost_at_low": 15.336927370911642,
+      "cost_at_high": 15.782816639342814,
+      "swing": 0.4458892684311717,
+      "ratio": 1.0290729203867037,
+      "quarter_swing": 0.11147231710779337,
+      "rank_quarter": 28,
+      "rank_range": 27
+     },
+     {
+      "label": "Insurance and overhead rate",
+      "low": 0.01,
+      "high": 0.03,
+      "value": 0.015,
+      "cost_at_low": 15.307679359688786,
+      "cost_at_high": 15.721930916867654,
+      "swing": 0.4142515571788685,
+      "ratio": 1.0270616824043073,
+      "quarter_swing": 0.15534433394207525,
+      "rank_quarter": 25,
+      "rank_range": 28
+     },
+     {
+      "label": "Doubling time (growth phase)",
+      "low": 14,
+      "high": 36,
+      "value": 16,
+      "cost_at_low": 15.377276441439435,
+      "cost_at_high": 15.750733346985132,
+      "swing": 0.373456905545698,
+      "ratio": 1.0242862841783404,
+      "quarter_swing": 0.13585703825292583,
+      "rank_quarter": 26,
+      "rank_range": 29
+     },
+     {
+      "label": "Electricity price",
+      "low": 0.1,
+      "high": 0.3,
+      "value": 0.21,
+      "cost_at_low": 15.270015914158327,
+      "cost_at_high": 15.526791068385922,
+      "swing": 0.25677515422759534,
+      "ratio": 1.0168156441794873,
+      "quarter_swing": 0.134806955969486,
+      "rank_quarter": 27,
+      "rank_range": 30
+     },
+     {
+      "label": "Scale exponent",
+      "low": 0.5,
+      "high": 0.7,
+      "value": 0.6,
+      "cost_at_low": 15.329223496843857,
+      "cost_at_high": 15.514737320370548,
+      "swing": 0.18551382352669066,
+      "ratio": 1.0121019713467474,
+      "quarter_swing": 0.2776368803427989,
+      "rank_quarter": 21,
+      "rank_range": 31
+     },
+     {
+      "label": "Shift crews",
+      "low": 4.5,
+      "high": 5.5,
+      "value": 5,
+      "cost_at_low": 15.338213540379853,
+      "cost_at_high": 15.484270957587155,
+      "swing": 0.14605741720730236,
+      "ratio": 1.009522452978164,
+      "quarter_swing": 0.36514354301825414,
+      "rank_quarter": 19,
+      "rank_range": 32
+     },
+     {
+      "label": "Medium heating",
+      "low": 5,
+      "high": 40,
+      "value": 10,
+      "cost_at_low": 15.391734593489641,
+      "cost_at_high": 15.528288181946687,
+      "swing": 0.1365535884570459,
+      "ratio": 1.0088718778008818,
+      "quarter_swing": 0.019507655493864462,
+      "rank_quarter": 36,
+      "rank_range": 33
+     },
+     {
+      "label": "Medium preparation electricity",
+      "low": 2,
+      "high": 10,
+      "value": 3,
+      "cost_at_low": 15.395636124588414,
+      "cost_at_high": 15.520485119749141,
+      "swing": 0.12484899516072723,
+      "ratio": 1.0081093755496944,
+      "quarter_swing": 0.023409186592637354,
+      "rank_quarter": 34,
+      "rank_range": 34
+     },
+     {
+      "label": "Seed transfer density",
+      "low": 2000000,
+      "high": 20000000,
+      "value": 10000000,
+      "cost_at_low": 15.496230149925466,
+      "cost_at_high": 15.37398568516285,
+      "swing": 0.12224446476261619,
+      "ratio": 1.0079513840630534,
+      "quarter_swing": 0.02722226595312449,
+      "rank_quarter": 33,
+      "rank_range": 35
+     },
+     {
+      "label": "Turnaround time per cycle",
+      "low": 8,
+      "high": 48,
+      "value": 12,
+      "cost_at_low": 15.402193653020904,
+      "cost_at_high": 15.49265123364035,
+      "swing": 0.09045758061944653,
+      "ratio": 1.0058730322873004,
+      "quarter_swing": 0.013572417222443178,
+      "rank_quarter": 37,
+      "rank_range": 36
+     },
+     {
+      "label": "Lag after inoculation",
+      "low": 0,
+      "high": 24,
+      "value": 6,
+      "cost_at_low": 15.39763710452216,
+      "cost_at_high": 15.452049128925506,
+      "swing": 0.05441202440334614,
+      "ratio": 1.0035337905442236,
+      "quarter_swing": 0.006802214364078907,
+      "rank_quarter": 38,
+      "rank_range": 37
+     },
+     {
+      "label": "Mixing and aeration power",
+      "low": 30,
+      "high": 300,
+      "value": 75,
+      "cost_at_low": 15.404005972646367,
+      "cost_at_high": 15.447423630669189,
+      "swing": 0.043417658022821826,
+      "ratio": 1.0028185952472313,
+      "quarter_swing": 0.00603023028094718,
+      "rank_quarter": 39,
+      "rank_range": 38
+     },
+     {
+      "label": "Heat price",
+      "low": 0.04,
+      "high": 0.1,
+      "value": 0.07,
+      "cost_at_low": 15.394203825083672,
+      "cost_at_high": 15.428280672883337,
+      "swing": 0.0340768477996658,
+      "ratio": 1.0022136154741657,
+      "quarter_swing": 0.019878161216471568,
+      "rank_quarter": 35,
+      "rank_range": 39
+     },
+     {
+      "label": "Seed expansion ratio",
+      "low": 5,
+      "high": 20,
+      "value": 10,
+      "cost_at_low": 15.425962366962167,
+      "cost_at_high": 15.420570109314024,
+      "swing": 0.005392257648143328,
+      "ratio": 1.0003496795261082,
+      "quarter_swing": 0.0008126804057813075,
+      "rank_quarter": 40,
+      "rank_range": 40
+     },
+     {
+      "label": "Cleaning and sterilising heat",
+      "low": 15,
+      "high": 60,
+      "value": 25,
+      "cost_at_low": 15.410945844405418,
+      "cost_at_high": 15.412279665006807,
+      "swing": 0.0013338206013884246,
+      "ratio": 1.0000865502101464,
+      "quarter_swing": 0.0003705057226088826,
+      "rank_quarter": 41,
+      "rank_range": 41
+     },
+     {
+      "label": "Seed reactor turnaround",
+      "low": 8,
+      "high": 36,
+      "value": 12,
+      "cost_at_low": 15.411242248983504,
+      "cost_at_high": 15.411242248983504,
+      "swing": 0,
+      "ratio": 1,
+      "quarter_swing": 0,
+      "rank_quarter": 42,
+      "rank_range": 42
+     }
+    ]
+   }
+  },
+  "mass_per_cell_note": {
+   "todayA_cost_if_cells_25pct_heavier_and_fewer": 51.30221401653418,
+   "todayA_base": 51.30221401653418
+  }
+ },
+ "checks": {
+  "oxygen": {
+   "future_perfusion_demand": 20,
+   "future_limit": 20,
+   "today_limit": 10,
+   "future_cases_over_today_limit": [
+    "perfusion",
+    "continuous"
+   ]
+  },
+  "retention": {
+   "perfusion": {
+    "workbook_consumables_per_L": 0.002,
+    "litres_total_per_kg_dry": 63.519875480826364,
+    "added_per_kg_dry_at_low": 0.6351987548082637,
+    "added_per_kg_dry_at_high": 31.759937740413182,
+    "cost_dry": 22.74844678419897
+   },
+   "continuous": {
+    "workbook_consumables_per_L": 0.002,
+    "litres_total_per_kg_dry": 72.08543172970624,
+    "added_per_kg_dry_at_low": 0.7208543172970624,
+    "added_per_kg_dry_at_high": 36.04271586485312,
+    "cost_dry": 15.411242248983504
+   }
+  }
+ },
+ "main_model": {
+  "summary": {
+   "all": {
+    "cost_dry": {
+     "p5": 81.28963463141133,
+     "p10": 100.72306245303203,
+     "p50": 271.77838816477396,
+     "p90": 1103.6616631511297,
+     "p95": 1742.6531705122907,
+     "min": 18.776791651466,
+     "max": 203090.85122785432
+    },
+    "medium": {
+     "p5": 29.629330377326482,
+     "p10": 40.84915035206165,
+     "p50": 138.69906420623695,
+     "p90": 537.0278194932383,
+     "p95": 793.8307399415472,
+     "min": 2.6364386297784064,
+     "max": 13110.152654866964
+    },
+    "growth_factors": {
+     "p5": 0.13006605287717596,
+     "p10": 0.26265868960693756,
+     "p50": 11.531413479492745,
+     "p90": 487.3474966589474,
+     "p95": 992.4246286791932,
+     "min": 0.0017327726614190053,
+     "max": 202209.4579530488
+    },
+    "running": {
+     "p5": 13.525907884352552,
+     "p10": 16.13597920878081,
+     "p50": 29.82697615138828,
+     "p90": 46.03813142111412,
+     "p95": 51.78393842556545,
+     "min": 5.632895547129612,
+     "max": 472.51992052292127
+    },
+    "capital": {
+     "p5": 2.637072054054903,
+     "p10": 3.937781943396781,
+     "p50": 16.790472338136084,
+     "p90": 83.43090147317076,
+     "p95": 135.10800089757058,
+     "min": 0.0951779599646409,
+     "max": 5218.652875024892
+    },
+    "density": {
+     "p5": 1.7013517524804531,
+     "p10": 2.462400154680107,
+     "p50": 13.382684694680727,
+     "p90": 27.768411532169168,
+     "p95": 33.270346782364776,
+     "min": 0.27016737781402556,
+     "max": 141.93373203969435
+    },
+    "litres": {
+     "p5": 65.19850242128928,
+     "p10": 82.26963826237527,
+     "p50": 204.75203133460366,
+     "p90": 650.696167924587,
+     "p95": 895.8635015563123,
+     "min": 10.622845448140474,
+     "max": 7845.377642510358
+    },
+    "medium_price": {
+     "p5": 0.21523551716746106,
+     "p10": 0.26660653097910075,
+     "p50": 0.5666945646223401,
+     "p90": 1.3247634036380493,
+     "p95": 1.7068331869486757,
+     "min": 0.04194590690375903,
+     "max": 7.372575234967799
+    },
+    "productivity": {
+     "p5": 0.8335983237670205,
+     "p10": 1.395901346879697,
+     "p50": 7.624612358696146,
+     "p90": 26.56584832698713,
+     "p95": 36.941804703573304,
+     "min": 0.03662345867854121,
+     "max": 441.407724038591
+    }
+   },
+   "fedbatch": {
+    "cost_dry": {
+     "p5": 191.73877178046305,
+     "p10": 246.3966133391372,
+     "p50": 672.8077681501861,
+     "p90": 2304.6522623597643,
+     "p95": 3484.803308847423,
+     "min": 33.831840518215955,
+     "max": 281443.57660836354
+    },
+    "medium": {
+     "p5": 93.55509423765191,
+     "p10": 125.73240211420587,
+     "p50": 365.07928163208805,
+     "p90": 1105.465336433802,
+     "p95": 1526.719447422908,
+     "min": 7.339150004810583,
+     "max": 19422.818520138157
+    },
+    "growth_factors": {
+     "p5": 0.3710299715370926,
+     "p10": 0.7268556356855329,
+     "p50": 29.409375159777007,
+     "p90": 1161.3083659336744,
+     "p95": 2263.20964725598,
+     "min": 0.0016454660232280943,
+     "max": 280137.1836593794
+    },
+    "running": {
+     "p5": 13.04234684247669,
+     "p10": 15.522092293504706,
+     "p50": 28.695827823917604,
+     "p90": 43.98281538277607,
+     "p95": 49.384278757488104,
+     "min": 5.62098810219125,
+     "max": 444.7052049157029
+    },
+    "capital": {
+     "p5": 9.500144553591513,
+     "p10": 13.94080152243102,
+     "p50": 54.47629570099587,
+     "p90": 216.8689906421481,
+     "p95": 321.4125985865736,
+     "min": 0.493969747984884,
+     "max": 8171.06249132742
+    },
+    "density": {
+     "p5": 1.0009825827965801,
+     "p10": 1.2183839416467144,
+     "p50": 2.4512568949706637,
+     "p90": 4.924549263119031,
+     "p95": 5.991049799778283,
+     "min": 0.19979317642163974,
+     "max": 33.37802762389365
+    },
+    "litres": {
+     "p5": 229.9022866401966,
+     "p10": 280.3622537713082,
+     "p50": 580.0931760810445,
+     "p90": 1221.147553191492,
+     "p95": 1512.9912032525458,
+     "min": 41.49432433082091,
+     "max": 8843.49317682347
+    },
+    "medium_price": {
+     "p5": 0.21523551716746106,
+     "p10": 0.26660653097910075,
+     "p50": 0.5666945646223401,
+     "p90": 1.3247634036380493,
+     "p95": 1.7068331869486757,
+     "min": 0.04194590690375903,
+     "max": 7.372575234967799
+    },
+    "productivity": {
+     "p5": 0.35963351305047114,
+     "p10": 0.4947860769650703,
+     "p50": 1.547170717297036,
+     "p90": 4.841733189170765,
+     "p95": 6.676481674300065,
+     "min": 0.03204606768936965,
+     "max": 68.25538783983279
+    }
+   },
+   "perfusion": {
+    "cost_dry": {
+     "p5": 86.32097488010945,
+     "p10": 106.00361648556235,
+     "p50": 255.84531663782204,
+     "p90": 852.6131909500231,
+     "p95": 1293.4986944402158,
+     "min": 19.766569115676468,
+     "max": 135295.10019408175
+    },
+    "medium": {
+     "p5": 33.6652710754669,
+     "p10": 45.33027873184065,
+     "p50": 132.37293187554468,
+     "p90": 411.3620015014351,
+     "p95": 573.1247013984647,
+     "min": 4.465815081330628,
+     "max": 8906.353441414065
+    },
+    "growth_factors": {
+     "p5": 0.13562259979952995,
+     "p10": 0.2644478448098651,
+     "p50": 10.790912995157552,
+     "p90": 426.5570133207478,
+     "p95": 832.1562291880077,
+     "min": 0.0017327726614190053,
+     "max": 134761.1912532514
+    },
+    "running": {
+     "p5": 13.541164349856455,
+     "p10": 16.14004013007845,
+     "p50": 29.82478389702858,
+     "p90": 45.92873779715628,
+     "p95": 51.68761049897947,
+     "min": 5.632895547129612,
+     "max": 486.65997278711507
+    },
+    "capital": {
+     "p5": 2.628783772258137,
+     "p10": 3.8470846718841814,
+     "p50": 14.592281053252254,
+     "p90": 55.14086672870561,
+     "p95": 80.76724180209585,
+     "min": 0.0951779599646409,
+     "max": 2325.623184376628
+    },
+    "density": {
+     "p5": 5.9881487959286614,
+     "p10": 7.152945739278363,
+     "p50": 13.418479706825835,
+     "p90": 25.12677476748252,
+     "p95": 29.9924671821242,
+     "min": 1.7122311762806026,
+     "max": 141.93373203969435
+    },
+    "litres": {
+     "p5": 79.76332824818357,
+     "p10": 97.42644247009088,
+     "p50": 201.05332432904294,
+     "p90": 438.0927624301613,
+     "p95": 552.1959532874807,
+     "min": 18.029681179030327,
+     "max": 4289.133876505133
+    },
+    "medium_price": {
+     "p5": 0.21523551716746106,
+     "p10": 0.26660653097910075,
+     "p50": 0.5666945646223401,
+     "p90": 1.3247634036380493,
+     "p95": 1.7068331869486757,
+     "min": 0.04194590690375903,
+     "max": 7.372575234967799
+    },
+    "productivity": {
+     "p5": 2.080483026932947,
+     "p10": 2.8280287879159522,
+     "p50": 8.446389133860247,
+     "p90": 25.3605109279568,
+     "p95": 34.693494611203114,
+     "min": 0.21975634575562197,
+     "max": 664.6578538769816
+    }
+   },
+   "continuous": {
+    "cost_dry": {
+     "p5": 67.27483431197078,
+     "p10": 80.99803426811118,
+     "p50": 178.5668100879355,
+     "p90": 559.8466192309431,
+     "p95": 843.0054275680604,
+     "min": 18.776791651466,
+     "max": 92145.60709142435
+    },
+    "medium": {
+     "p5": 21.204785131306004,
+     "p10": 28.528709925192874,
+     "p50": 83.86194750003267,
+     "p90": 263.6018705800008,
+     "p95": 368.7526219895425,
+     "min": 2.5105182622088633,
+     "max": 8859.463804466115
+    },
+    "growth_factors": {
+     "p5": 0.08604648431290775,
+     "p10": 0.16732190437609823,
+     "p50": 6.878395938478903,
+     "p90": 268.5153333050905,
+     "p95": 531.6968913754122,
+     "min": 0.0006941316383711942,
+     "max": 91839.73238186774
+    },
+    "running": {
+     "p5": 13.895651143845082,
+     "p10": 16.56471606558049,
+     "p50": 30.651840761064378,
+     "p90": 47.454527778025906,
+     "p95": 53.48628097330148,
+     "min": 5.803637581709863,
+     "max": 472.51992052292127
+    },
+    "capital": {
+     "p5": 2.046499393221122,
+     "p10": 2.977854991145117,
+     "p50": 11.132066758036657,
+     "p90": 41.30134633128077,
+     "p95": 59.974032922028066,
+     "min": 0.08868564108211036,
+     "max": 1351.3248389334374
+    },
+    "density": {
+     "p5": 10.018896670360967,
+     "p10": 11.670426615010676,
+     "p50": 20.016197270065092,
+     "p90": 34.34096260722362,
+     "p95": 40.01960084553547,
+     "min": 2.9233912774179607,
+     "max": 118.70687040411435
+    },
+    "litres": {
+     "p5": 48.720703788695445,
+     "p10": 59.55784196912439,
+     "p50": 123.73521079462847,
+     "p90": 273.54492041767526,
+     "p95": 346.7335113315226,
+     "min": 8.932706849186287,
+     "max": 2388.5517978241064
+    },
+    "medium_price": {
+     "p5": 0.21523551716746106,
+     "p10": 0.26660653097910075,
+     "p50": 0.5666945646223401,
+     "p90": 1.3247634036380493,
+     "p95": 1.7068331869486757,
+     "min": 0.04194590690375903,
+     "max": 7.372575234967799
+    },
+    "productivity": {
+     "p5": 3.294543371694006,
+     "p10": 4.4294954266467785,
+     "p50": 12.643769483442316,
+     "p90": 36.08642298110319,
+     "p95": 48.28861176770625,
+     "min": 0.3383765638271579,
+     "max": 441.407724038591
+    }
+   }
+  },
+  "share_of_all_worlds_below": {
+   "15": 0,
+   "18": 0,
+   "25": 0.00003,
+   "36": 0.0005633333333333333,
+   "50": 0.005043333333333334,
+   "100": 0.09795
+  },
+  "basis": {
+   "cell_inclusion_rate": 0.25,
+   "target_solids_fraction": 0.275,
+   "filler_cost": 3
+  },
+  "chicken_wholesale": {
+   "central": 3.5,
+   "low": 2.6,
+   "high": 4.6,
+   "recent": 2.95,
+   "latest": 2.67,
+   "retail": 9.27,
+   "label": "US wholesale boneless chicken",
+   "source": "USDA ERS Livestock and Meat Domestic Data (wholesale prices; USDA AMS national broiler parts, boneless breast)",
+   "url": "https://www.ers.usda.gov/data-products/livestock-and-meat-domestic-data"
+  },
+  "plant_t_dry_per_year": [
+   2000,
+   8000
+  ],
+  "density_ranges_g_dry_per_L": {
+   "fedbatch": [
+    1,
+    6
+   ],
+   "perfusion": [
+    6,
+    30
+   ],
+   "continuous": [
+    10,
+    40
+   ]
+  },
+  "oxygen_cap_g_dry_per_L": [
+   12,
+   60
+  ],
+  "gf_concentration_mg_per_L": 0.102,
+  "retention_per_L": [
+   0.01,
+   0.5
+  ],
+  "charges_filters": false
+ }
+}

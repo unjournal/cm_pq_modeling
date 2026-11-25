@@ -13,6 +13,7 @@ project:
     - alt/**
     - bates-rebuild-comparison-2026-11-17.json
     - five-drivers-2026-11-17.json
+    - osullivan-tea-2026-11-24.json
     - llms.txt
 
 website:
@@ -29,7 +30,7 @@ website:
         href: simple.qmd
       - text: "Advanced Model"
         href: index.qmd
-      - text: "Alt. model (Bates)"
+      - text: "Alt. models"
         menu:
           - text: "Rebuild v0.9.7, first-pass edits"
             href: alt/bates-rebuild-v0.9.7.html
@@ -40,6 +41,9 @@ website:
           - text: "Literature review (Google Doc) ↗"
             href: https://docs.google.com/document/d/1yjP2WTf3bWa_OjaTolOXJXydQDxH4ZsbcXMPOdrz2mo/edit
             target: _blank
+          - text: "---"
+          - text: "Bottom-up spreadsheet (O'Sullivan): notes, work in progress"
+            href: osullivan-tea.qmd
       - text: "Learn"
         menu:
           - text: "Start here: the model in plain terms"
